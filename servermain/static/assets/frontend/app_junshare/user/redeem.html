@@ -1,0 +1,34 @@
+<div class="container">
+  <div class="row">
+    <div class="col-md-2">
+      <div ng-include src="'/static/assets/frontend/app_junshare/user/sidebar.html'"></div>
+    </div>
+    <div class="col-md-10">
+
+        <h4>Redeem Code</h4>
+        <div class="col-md-5 no-padding-left">
+	        <form id="redeem_form" novalidate="novalidate" ng-submit="processForm()">
+	            <div class="form-group">
+				    <label>Redeem code:</label>
+	                <input type="text" class="form-control"
+	                       name="redeem_code" id="redeem_code"
+	                       tabindex="2" placeholder="Redeem Code" ng-model="redeem_code" required>
+	            </div>
+	            <div class="form-group">
+				    <label>Code type:</label>
+	                <select type="text" name="code_type" id="code_type" tabindex="3" class="form-control"
+	                        ng-model="code_type.value" ng-options="v.name for v in code_type.values track by v.id" required>
+	                  <option value="">- Choose Code Type -</option>
+	                </select>
+	            </div>
+	            <button type="submit" class="btn btn-success">Submit</button>
+
+	        </form>
+          </div>
+
+    </div>
+
+
+  </div>
+  <div ng-include src="'/static/assets/frontend/app_junshare/layout/modals.html'"></div>
+</div>

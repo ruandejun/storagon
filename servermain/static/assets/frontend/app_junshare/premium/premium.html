@@ -1,0 +1,140 @@
+<!--<div class="sub-header alt-3">
+    <div class="message">
+        <div class="row">
+            <div class="small-12 columns">
+                <div class="message-intro">
+                    <span class="message-line"></span>
+                    <p>Premium</p>
+                    <span class="message-line"></span>
+                </div>
+                <h1>Unlimited Download. Support 24x7</h1>
+            </div>
+        </div>
+    </div>
+</div>-->
+
+<div class="container">
+	    <div class="row">
+	        <h2 class="text-center">Getting Premium is easy.</h2>
+	        <hr>
+	        <div class="vertical-padding-top"></div>
+	        <div class="row">
+	            <div data-wow-delay="0.4s" class="col-md-4 text-center">
+	              <img src="static/assets/frontend/images/icons/vps_step_2.png" alt=""/>
+	                <h3>Signup or Signin Your Account</h3>
+	            </div>
+	            <div data-wow-delay="0.2s"  class="col-md-4 text-center">
+	              <img src="static/assets/frontend/images/icons/vps_step_1.png" alt=""/>
+	                <h3>Choose a Premium Plan</h3>
+	            </div>
+	            <div data-wow-delay="0.6s" class="col-md-4 text-center">
+	              <img src="static/assets/frontend/images/icons/vps_step_3.png" alt=""/>
+	                <h3>Complete Your Payment</h3>
+	            </div>
+	        </div>
+	    </div>
+	    <hr>
+	    <div class="vertical-padding-top"></div>
+
+	    <a id="pricing-table"></a>
+	    <div class="row">
+	        <div ng-repeat="plan in plans" class="col-xs-12 col-sm-6 col-md-3">
+	            <div class="panel price panel-red">
+			            <div class="panel-heading  text-center">
+	                        <h3>{{ (plan.planid === 4) ? 'Risk Trial Plan' : 'Plan ' + plan.planid }}</h3>
+	                    </div>
+	                    <div class="panel-body text-center">
+							<p class="lead" style="font-size:25px">
+	                            <strong>
+	                                {{ plan.price/100 | currency }}/ {{plan.expires | duration | lowercase}}
+	                            </strong>
+	                        </p>
+						</div>
+	                    <ul class="list-group list-group-flush text-center">
+							<li class="list-group-item"><i class="icon-ok text-danger"></i>
+	                            {{ plan.storage | filesize }} storage
+	                        </li>
+							<li class="list-group-item"><i class="icon-ok text-danger"></i>
+	                            {{ plan.download_bandwidth | filesize }} Download bandwidth
+	                        </li>
+							<li class="list-group-item"><i class="icon-ok text-danger"></i> Unlimited Upload bandwidth</li>
+		                    <li class="list-group-item"><i class="icon-ok text-danger"></i> Maximum download speed</li>
+							<li class="list-group-item"><i class="icon-ok text-danger"></i> No waiting, No captcha</li>
+						</ul>
+	                    <div class="panel-footer">
+							<a class="btn btn-lg btn-block btn-danger" href="javascript:;" ng-click="paymentMethod( plan.planid )">
+	                            UPGRADE NOW
+	                        </a>
+						</div>
+				</div>
+	        </div>
+	    </div>
+
+		<div class="vertical-padding-top"></div>
+
+	    <div class="row">
+	        <div class="text-center">
+	          <h2>Free vs Premium comparision</h2>
+	        </div>
+			<hr>
+	        <div class="col-md-8 col-md-offset-2">
+				<table class="table table-hover table-bordered">
+	            <thead>
+	                <tr>
+	                    <th>FEATURES</th>
+	                    <th>FREE</th>
+	                    <th>PREMIUM</th>
+	                </tr>
+	            </thead>
+	            <tbody>
+	                <tr>
+	                    <th>Monthly Bandwidth</th>
+	                    <th>500 GB</th>
+	                    <th>Unlimited</th>
+	                </tr>
+	                <tr>
+	                    <th>Download Speed</th>
+	                    <th>Slow</th>
+	                    <th>Unlimited</th>
+	                </tr>
+	                <tr>
+	                    <th>Download Wait</th>
+	                    <th>30 seconds</th>
+	                    <th>No wait</th>
+	                </tr>
+	                <tr>
+	                    <th>Access to Premium files</th>
+	                    <th><span class="glyphicon glyphicon-remove"></span></th>
+	                    <th><span class="glyphicon glyphicon-ok"></span></th>
+	                </tr>
+	                <tr>
+	                    <th>Access to Premium tools</th>
+	                    <th><span class="glyphicon glyphicon-remove"></span></th>
+	                    <th><span class="glyphicon glyphicon-ok"></span></th>
+	                </tr>
+	                <tr>
+	                    <th>24/7 Customer Support</th>
+	                    <th><span class="glyphicon glyphicon-remove"></span></th>
+	                    <th><span class="glyphicon glyphicon-ok"></span></th>
+	                </tr>
+	                <tr>
+	                    <th>Automatic Delete File</th>
+	                    <th>Never</th>
+	                    <th>Never</th>
+	                </tr>
+	            </tbody>
+			</table>
+			</div>
+		        <div class="text-center col-sm-12">
+		            <button  id="go_to_pricing_table" class="btn btn-success btn-lg">Upgrade Now</button>
+	                <script>
+	                    $("#go_to_pricing_table").click(function() {
+						    $('html, body').animate({
+						        scrollTop: $("#pricing-table").offset().top
+						    }, 500);
+						});
+	                </script>
+		        </div>
+	  </div>
+	    <div ng-include src="'/static/assets/frontend/app_junshare/layout/modals.html'"></div>
+</div>

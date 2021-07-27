@@ -1,0 +1,32 @@
+{% extends "custom_admin_site/custom_site_base.html" %}
+{% load i18n admin_static %}
+
+{% block navigator_menu %}
+    <li class="active"><a href="{% url 'CustomAdmin:sendServerFileSignal' %}">Send ServerFile Signal</a></li>
+{% endblock %}
+
+{% block extrajs %}
+<script type="text/javascript" src="/admin/jsi18n/"></script>
+{% endblock %}
+
+
+{% block content %}
+  <div id="content-main">
+      <form target="{% url 'CustomAdmin:sendServerFileSignal' %}" method="POST">
+          <table>
+              {{form.as_table}}
+          </table>
+          <input type="submit" class="btn btn-success btn-large" value="Send Signal">
+      </form>
+      {% if result %}
+      <div class="well">
+            {{result}}
+      </div>
+      {% endif %}
+  </div>
+{% endblock %}
+
+
+{% block sidebar %}
+
+{% endblock %}

@@ -1,0 +1,22 @@
+<div class="padding-top-30 padding-bottom-30">
+  <div class="row padding-bottom-100">
+    <div class="large-10 push-2 columns">
+      <h5>Your current point: {{ pointBalance}}</h5>
+      <div class="row">
+        <div ng-repeat="pack in packs" class="small-12 large-3 medium-3 columns">
+          <div class="panel callout radius">
+            <ul style="list-style: none; text-align: center;">
+              <li style="padding: 5px;">{{ pack.name}}</li>
+              <li style="padding: 5px;">{{ pack.value}}</li>
+              <a href="" class="tiny button success radius" ng-click="exchange(pack.name)">Exchange</a>                                                        
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="large-2 pull-10 columns">
+      <div ng-include src="'/static/assets/frontend/app_junshare/user/sidebar.html'"></div>
+    </div>
+  </div>
+  <div ng-include src="'/static/assets/frontend/app_junshare/layout/modals.html'"></div>
+</div>

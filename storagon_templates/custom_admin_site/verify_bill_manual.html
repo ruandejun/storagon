@@ -1,0 +1,50 @@
+{% extends "custom_admin_site/custom_site_base.html" %}
+{% load i18n admin_static %}
+
+{% block navigator_menu %}
+    <li class="active"><a href="{% url 'CustomAdmin:sendServerFileSignal' %}">Send ServerFile Signal</a></li>
+{% endblock %}
+
+{% block extrajs %}
+<script type="text/javascript" src="/admin/jsi18n/"></script>
+{% endblock %}
+
+
+{% block content %}
+  <div id="content-main">
+
+
+      <form target="{% url 'CustomAdmin:verifyBillManual' %}" method="POST">
+          <table>
+              {{form.as_table}}
+          </table>
+          <input type="submit" class="btn btn-success" value="Verify">
+      </form>
+
+      {% if result %}
+      <div class="well">
+            {{result}}
+      </div>
+      {% endif %}
+  </div>
+{% endblock %}
+
+
+{% block sidebar %}
+<div id="content-related">
+  <div class="btn-group">
+   <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+    Create bill session and buy plan
+    <span class="caret"></span>
+  </a>
+    <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
+     {% for paygate_id,paygateConfig in paygateConfigDict.items %}
+        {% for plan_id in paygateConfig.plan_available %}
+         <li> <a href="{% url 'buyPremium' plan_id paygate_id %}" target="_blank">{{paygateConfig.paygate_name}} plan {{plan_id}} </a></li>
+        {% endfor %}
+        <li class="divider"></li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

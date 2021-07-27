@@ -1,0 +1,302 @@
+{% extends "custom_admin_site/custom_site_base.html" %}
+{% load i18n admin_static %}
+
+{% block navigator_menu %}
+    <li class="active"><a href="{% url 'CustomAdmin:showUserStatistic' %}">{% trans 'User statistic' %}</a></li>
+{% endblock %}
+
+{% block extrajs %}
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+
+<script src="http://code.highcharts.com/highcharts.js"></script>
+<script src="http://code.highcharts.com/modules/heatmap.js"></script>
+<script src="http://code.highcharts.com/modules/exporting.js"></script>
+
+<script type="text/javascript">
+    uploadSessionResult = {{ uploadSessionResult | safe}};
+
+    downloadSessionResult = {{ downloadSessionResult | safe}};
+
+    serverFileJSONData = {{ serverFileJSONData | safe}};
+
+//    console.log(uploadSessionResult);
+    console.log(serverFileJSONData);
+
+    var lineChartArrayDate = new Array();
+
+    var lineChartArrayCount = new Array();
+
+    var areaChartArraySumBandwidth = new Array();
+
+    for(var i in uploadSessionResult){
+        group_id = uploadSessionResult[i]._id;
+        count = uploadSessionResult[i].count;
+        sum_bandwidth = uploadSessionResult[i].sum_bandwidth;
+
+        date = group_id.day +'/' + group_id.month;
+
+        lineChartArrayDate.push(date);
+
+        lineChartArrayCount.push(count);
+
+        areaChartArraySumBandwidth.push(sum_bandwidth);
+
+    }
+
+
+    var downloadLineChartArrayDate = new Array();
+
+    var downloadLineChartArrayCount = new Array();
+
+    var downloadAreaChartArraySumBandwidth = new Array();
+
+    for(var i in downloadSessionResult){
+        group_id = downloadSessionResult[i]._id;
+        count = downloadSessionResult[i].count;
+        sum_bandwidth = downloadSessionResult[i].sum_bandwidth;
+
+        date = group_id.day +'/' + group_id.month;
+
+        downloadLineChartArrayDate.push(date);
+
+        downloadLineChartArrayCount.push(count);
+
+        downloadAreaChartArraySumBandwidth.push(sum_bandwidth);
+
+    }
+
+
+</script>
+
+
+<script type="text/javascript">
+
+
+     $(function () {
+    $('#linechartUpload').highcharts({
+        chart: {
+            type: 'line'
+        },
+        title: {
+            text: 'Upload session by day Line Chart'
+        },
+        subtitle: {
+            text: ''
+        },
+        xAxis: {
+            title: {
+                text: 'Date'
+            },
+            categories: lineChartArrayDate
+        },
+        yAxis: {
+            title: {
+                text: 'Count'
+            }
+        },
+        plotOptions: {
+            line: {
+                dataLabels: {
+                    enabled: true,
+                    format: '<b>{y}</b>'
+                },
+                enableMouseTracking: false
+            }
+        },
+        series: [{
+            name: 'Upload Session Count',
+            data: lineChartArrayCount
+        }
+        ]
+    });
+});
+
+</script>
+
+<script type="text/javascript">
+    $(function () {
+    $('#areachartUpload').highcharts({
+        chart: {
+            type: 'areaspline'
+        },
+        title: {
+            text: 'Upload bandwidth by day Area Chart'
+        },
+        legend: {
+            layout: 'vertical',
+            align: 'left',
+            verticalAlign: 'top',
+            x: 150,
+            y: 100,
+            floating: true,
+            borderWidth: 1,
+            backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
+        },
+        xAxis: {
+            categories: lineChartArrayDate,
+            plotBands: [{ // visualize the weekend
+                from: 4.5,
+                to: 6.5,
+                color: 'rgba(68, 170, 213, .2)'
+            }]
+        },
+        yAxis: {
+            title: {
+                text: 'Bandwidth'
+            }
+        },
+        tooltip: {
+            shared: true,
+            valueSuffix: ' bytes'
+        },
+        credits: {
+            enabled: false
+        },
+        plotOptions: {
+            areaspline: {
+                fillOpacity: 0.5
+            }
+        },
+        series: [{
+            name: 'Bandwidth',
+            data: areaChartArraySumBandwidth
+        }
+//            ,{
+//            name: 'Jane',
+//            data: [1, 3, 4, 3, 3, 5, 4]
+//        }
+        ]
+    });
+});
+
+</script>
+
+<script type="text/javascript">
+
+
+     $(function () {
+    $('#linechartDownload').highcharts({
+        chart: {
+            type: 'line'
+        },
+        title: {
+            text: 'Download session by day Line Chart'
+        },
+        subtitle: {
+            text: ''
+        },
+        xAxis: {
+            title: {
+                text: 'Date'
+            },
+            categories: downloadLineChartArrayDate
+        },
+        yAxis: {
+            title: {
+                text: 'Count'
+            }
+        },
+        plotOptions: {
+            line: {
+                dataLabels: {
+                    enabled: true,
+                    format: '<b>{y}</b>'
+                },
+                enableMouseTracking: false
+            }
+        },
+        series: [{
+            name: 'Upload Session Count',
+            data: downloadLineChartArrayCount
+        }
+        ]
+    });
+});
+
+</script>
+
+<script type="text/javascript">
+    $(function () {
+    $('#areachartDownload').highcharts({
+        chart: {
+            type: 'areaspline'
+        },
+        title: {
+            text: 'Download bandwidth by day Area Chart'
+        },
+        legend: {
+            layout: 'vertical',
+            align: 'left',
+            verticalAlign: 'top',
+            x: 150,
+            y: 100,
+            floating: true,
+            borderWidth: 1,
+            backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
+        },
+        xAxis: {
+            categories: downloadLineChartArrayDate,
+            plotBands: [{ // visualize the weekend
+                from: 4.5,
+                to: 6.5,
+                color: 'rgba(68, 170, 213, .2)'
+            }]
+        },
+        yAxis: {
+            title: {
+                text: 'Bandwidth'
+            }
+        },
+        tooltip: {
+            shared: true,
+            valueSuffix: ' bytes'
+        },
+        credits: {
+            enabled: false
+        },
+        plotOptions: {
+            areaspline: {
+                fillOpacity: 0.5
+            }
+        },
+        series: [{
+            name: 'Bandwidth',
+            data: downloadAreaChartArraySumBandwidth
+        }
+//            ,{
+//            name: 'Jane',
+//            data: [1, 3, 4, 3, 3, 5, 4]
+//        }
+        ]
+    });
+});
+
+</script>
+
+{% endblock %}
+
+
+{% block content %}
+  <div id="content-main">
+    <form>
+        <select name="tzname">
+            <option value="Asia/Bangkok">Asia/Bangkok</option>
+            <option value="UTC">UTC</option>
+        </select><br/>
+        <input type="submit" value="Show" class="btn btn-small">
+    </form>
+
+      <div id="linechartUpload" style="width: 800px; height: 400px;"></div><br/>
+      <div id="areachartUpload" style="width: 800px; height: 400px;"></div><br/>
+
+      <div id="linechartDownload" style="width: 800px; height: 400px;"></div><br/>
+      <div id="areachartDownload" style="width: 800px; height: 400px;"></div><br/>
+  </div>
+{% endblock %}
+
+
+{% block sidebar %}
+  <!--<div id="content-related">-->
+    <!--<div id="piechart2" style="width: 450px; height: 250px;"></div>-->
+  <!--</div>-->
+{% endblock %}

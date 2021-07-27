@@ -1,0 +1,57 @@
+<div class="container">
+  <div class="row">
+    <div class="col-md-2">
+	  <div ng-include src="'/static/assets/frontend/app_junshare/user/sidebar.html'"></div>
+    </div>
+    <div class="col-md-10">
+        <div class="col-md-5 no-padding-left">
+	        <h4>Personal Information</h4>
+	        <form id="profile_form" novalidate="novalidate" ng-submit="processForm()">
+	            <div class="form-group">
+					    <label>Full Name:</label>
+	                    <input type="text" name="full_name" class="form-control"
+	                           id="full_name" tabindex="2" placeholder="Full Name" ng-model="full_name" required>
+	            </div>
+	            <div class="form-group">
+					    <label>Address:</label>
+	                    <input type="text" name="address" class="form-control"
+	                           id="address" tabindex="3" placeholder="Address" ng-model="address" required>
+	            </div>
+	             <div class="form-group">
+					    <label>Email:</label>
+	                    <input type="text" name="email" class="form-control"
+	                           id="email" tabindex="4" placeholder="Email" ng-model="email" required>
+
+	            </div>
+	            <h4>Change Password</h4>
+	            <div class="form-group">
+					    <label>Current Password:</label>
+	                    <input type="password" name="account-password" class="form-control"
+	                           id="account-password" tabindex="4" ng-model="old_password">
+	            </div>
+	            <div class="form-group">
+					    <label>New Password:</label>
+	                    <input type="password" name="account-new-password" class="form-control"
+	                           id="account-new-password" tabindex="5" ng-model="password">
+	            </div>
+	            <div class="form-group">
+					    <label>Confirm New Password:</label>
+	                    <input type="password" name="account-confirm-password" class="form-control"
+	                           id="account-confirm-password" tabindex="6" ng-model="password2">
+	            </div>
+	            <button type="submit" class="btn btn-success">Submit</button>
+	            <div data-alert="" class="alert-box success" ng-show="success">
+	                {{ message}}
+	                <a href="" class="close">×</a>
+	              </div>
+	              <div data-alert="" class="alert-box alert" ng-show="error">
+	                {{ message}}
+	                <a href="" class="close">×</a>
+	              </div>
+	        </form>
+        </div>
+    </div>
+
+
+  </div>
+</div>

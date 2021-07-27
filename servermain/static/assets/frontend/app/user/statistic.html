@@ -1,0 +1,117 @@
+<div class="padding-top-30 padding-bottom-30">
+  <div class="row padding-bottom-100">
+    <div class="large-10 push-2 columns">
+      <ul class="tabs" data-tab="">
+        <li class="tab-title active"><a href="#overview" aria-selected="true" tabindex="0">Overview</a></li>
+        <li class="tab-title"><a href="#downloadSessions" aria-selected="false" tabindex="-1">Download Sessions</a></li>
+        <li class="tab-title"><a href="#downloadCountChart" aria-selected="false" tabindex="-1">Download Count Chart</a></li>
+        <li class="tab-title"><a href="#myOriginalUser" aria-selected="false" tabindex="-1">My Original User</a></li>        
+      </ul>
+      <div class="tabs-content">
+        <div class="content active" id="overview" aria-hidden="false">
+          <h4 class="session-title">Overview</h4>          
+          <div class="input-append date right">
+            <label>To</label>
+            <input class="span2 toDate" size="16" type="text">
+          </div>
+          <div class="input-append date right">
+            <label>From</label>
+            <input class="span2 fromDate" size="16" type="text">
+          </div>
+          <hr>
+          <table role="grid" class="table fixed_layout">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Downloads</th>
+                <th>Premium Sales</th>
+                <th>Re-bills</th>
+                <th>Site Sales</th>
+                <th>Referrals</th>
+                <th>Referrals PPD</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>              
+              <tr ng-repeat="(key, value) in transactionStatsitic">
+                <td>{{ key }}</td>
+                <td>{{ value.ppd[0] + value.downloadRaw[0] }} / ${{ value.ppd[1] | amount : 4 }}</td>
+                <td>{{ value.bill[0] }} / ${{ value.bill[1] | amount : 0 }}</td>
+                <td>{{ value.rebill[0] }} / ${{ value.rebill[1] | amount : 0 }}</td>
+                <td>{{ value.website[0] }} / ${{ value.website[1] | amount : 0 }}</td>
+                <td>{{ value.referer[0] }} / ${{ value.referer[1] | amount : 0 }}</td>
+                <td>{{ value.refererPPD[0] }} / ${{ value.refererPPD[1] | amount : 4 }}</td>
+                <td>${{ value.totalOverall }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="content" id="downloadSessions" aria-hidden="true" tabindex="-1">
+          <h4 class="session-title">Download Sessions</h4>          
+          <div class="input-append date right">
+            <label>To</label>
+            <input class="span2 toDate" size="16" type="text">
+          </div>
+          <div class="input-append date right">
+            <label>From</label>
+            <input class="span2 fromDate" size="16" type="text">
+          </div>
+          <select id="download-count-perpage" class="right">
+            <option value="25" selected>25 Items</option>
+            <option value="50">50 Items</option>
+            <option value="0">Show All</option>
+          </select>
+          <input type="hidden" id="totalRecords">
+          <hr>
+          <table role="grid" class="table fixed_layout">
+            <thead>
+              <tr>
+                <th width="40%">Name</th>
+                <th>Country</th>
+                <th>Size</th>
+                <th>Status</th>
+                <th>Created</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="downloadCount in downloadCounts">
+                <td data-tooltip aria-haspopup="true" class="has-tip" title="{{downloadCount.data.website_url}}">{{downloadCount.data.file_name}}</td>
+                <td>{{downloadCount.data.iso_code}}</td>
+                <td>{{downloadCount.data.file_size| filesize: downloadCount.data.file_size}}</td>
+                <td class="{{(downloadCount.status| enumSessionStatus: downloadCount.status === 'completed') ? 'success' : 'danger'}}">{{downloadCount.status| enumSessionStatus: downloadCount.status}}</td>
+                <td>{{downloadCount.created}}</td>
+              </tr>
+            </tbody>
+          </table>
+          <ul class='pagination right' id='session_pagination' role='menubar' aria-label='Pagination'></ul>
+        </div>
+        <div class="content" id="downloadCountChart" aria-hidden="true" tabindex="-1">
+          <div class="input-append date right">
+            <label>To</label>
+            <input class="span2 toDate" size="16" type="text">
+          </div>
+          <div class="input-append date right">
+            <label>From</label>
+            <input class="span2 fromDate" size="16" type="text">
+          </div>
+          <div id="linechartDownload" class="highchart"></div>
+        </div>
+        <div class="content" id="myOriginalUser" aria-hidden="true" tabindex="-1">
+          <div class="input-append date right">
+            <label>To</label>
+            <input class="span2 toDate" size="16" type="text">
+          </div>
+          <div class="input-append date right">
+            <label>From</label>
+            <input class="span2 fromDate" size="16" type="text">
+          </div>
+          <div id="linechartOriginalUser" class="highchart"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="large-2 pull-10 columns">
+      <div ng-include src="'/static/assets/frontend/app/user/sidebar.html'"></div>
+    </div>
+  </div>
+</div>

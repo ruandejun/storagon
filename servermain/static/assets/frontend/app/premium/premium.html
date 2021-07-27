@@ -1,0 +1,144 @@
+<!--<div class="sub-header alt-3">
+    <div class="message">
+        <div class="row">
+            <div class="small-12 columns">
+                <div class="message-intro">
+                    <span class="message-line"></span>
+                    <p>Premium</p>
+                    <span class="message-line"></span>
+                </div>
+                <h1>Unlimited Download. Support 24x7</h1>
+            </div>
+        </div>
+    </div>
+</div>-->
+
+<div class="vps-order-steps">
+    <div class="row">
+        <div class="small-12 columns">
+            <h2>Getting Premium is easy.</h2>            
+            <hr>
+            <div class="spacing-top-50"></div>
+            <div class="row">
+                <div data-wow-delay="0.4s" class="large-4 medium-4 columns text-center wow zoomIn hide-for-small-only">
+                  <img src="static/assets/frontend/images/icons/vps_step_2.png" alt=""/>
+                </div>
+                <div data-wow-delay="0.2s"  class="large-4 medium-4 columns text-center wow zoomIn hide-for-small-only">
+                  <img src="static/assets/frontend/images/icons/vps_step_1.png" alt=""/>
+                </div>                
+                <div data-wow-delay="0.6s" class="large-4 medium-4 columns text-center wow zoomIn hide-for-small-only">
+                  <img src="static/assets/frontend/images/icons/vps_step_3.png" alt=""/>
+                </div>
+                <div class="large-12 columns hide-for-small-only">
+                    <div class="order-step">
+                        <div class="row collapse">
+                            <div data-wow-delay="0.2s" class="order-circle large-4 medium-4 columns wow fadeInUp">
+                                <div class="line left-side"></div>
+                                <span class="left-side">1</span>
+                            </div>
+                            <div data-wow-delay="0.4s" class="order-circle large-4 medium-4 columns wow fadeInUp">
+                                <div class="line"></div>
+                                <span>2</span>
+                            </div>
+                            <div data-wow-delay="0.6s" class="order-circle large-4 medium-4 columns wow fadeInUp">
+                                <div class="line right-side"></div>
+                                <span class="right-side">3</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="large-4 medium-4 small-12 columns text-center">
+                    <img class="show-for-small-only" src="static/assets/frontend/images/icons/vps_step_2.png" alt=""/>
+                    <h3>Signup or Signin Your Account</h3>                    
+                </div>
+                <div class="large-4 medium-4 small-12 columns text-center">
+                    <img class="show-for-small-only" src="static/assets/frontend/images/icons/vps_step_1.png" alt="" />
+                    <h3>Choose a Premium Plan</h3>                    
+                </div>                
+                <div class="large-4 medium-4 small-12 columns text-center">
+                    <img class="show-for-small-only" src="static/assets/frontend/images/icons/vps_step_3.png" alt=""/>
+                    <h3>Complete Your Payment</h3>                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="pricingboxes">
+    <div class="row">
+        <div ng-repeat="plan in plans" data-wow-delay="0.2s" class="small-12 large-3 medium-3 columns wow fadeInUp">
+            <div class="title">{{ (plan.planid === 4) ? 'Risk Trial Plan' : 'Plan ' + plan.planid }}</div>
+            <ul class="pricing-table">
+                <li class="description">Grant <strong>Premium</strong> status</li>
+                <li class="bullet-item">{{ plan.storage | filesize }} storage</li>
+                <li class="bullet-item">{{ plan.download_bandwidth | filesize }} Download bandwidth</li>
+                <li class="bullet-item">Unlimited Upload bandwidth</li>
+                <li class="bullet-item">Maximum download speed</li>
+                <!--<li class="bullet-item">Download speed {{ plan.download_speed | filesize }} / s</li>-->
+                <li class="bullet-item">No waiting, No captcha</li>
+                <li class="price"><span>{{ plan.price/100 | currency }}</span>{{plan.expires | duration}}</li>
+                <li class="cta-button"><p><span><a href="javascript:;" ng-click="paymentMethod( plan.planid )">UPGRADE NOW</a></span></p></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+  <div class="padding-top-50 padding-bottom-100">
+    <div class="pricingboxes-comparison">
+      <div class="row">
+        <div class="small-12 columns">
+          <h2>Free vs Premium comparision</h2>
+          <hr>
+        </div>
+      </div>
+
+      <div class="spacing-30"></div>
+
+      <div class="row collapse">
+        <div data-wow-delay="0.2s" class="small-12 large-4 medium-4 columns wow zoomIn hostingfeatures animated" style="visibility: visible; -webkit-animation: zoomIn 0.2s;">
+          <div class="title-features">FEATURES</div>
+          <ul class="pricing-table alter features">
+            <li class="bullet-item"><span data-tooltip="" class="has-tip tip-right radius open" data-selector="tooltip-i4j8ypv80" aria-describedby="tooltip-i4j8ypv80" title="">Storage Space</span></li>
+            <li class="bullet-item"><span data-tooltip="" class="has-tip tip-right radius" data-selector="tooltip-i4j8ypv81" aria-describedby="tooltip-i4j8ypv81" title="">Monthly Bandwidth</span></li>
+            <li class="bullet-item"><span data-tooltip="" class="has-tip tip-right radius" data-selector="tooltip-i4j8ypv82" aria-describedby="tooltip-i4j8ypv82" title="">Download Speed</span></li>
+            <li class="bullet-item"><span data-tooltip="" class="has-tip tip-right radius" data-selector="tooltip-i4j8ypv83" aria-describedby="tooltip-i4j8ypv83" title="">Download Wait</span></li>
+            <li class="bullet-item"><span data-tooltip="" class="has-tip tip-right radius" data-selector="tooltip-i4j8ypv84" aria-describedby="tooltip-i4j8ypv84" title="">Access to Premium files</span></li>
+            <li class="bullet-item"><span data-tooltip="" class="has-tip tip-right radius" data-selector="tooltip-i4j8ypv85" aria-describedby="tooltip-i4j8ypv85" title="">Access to Premium tools</span></li>            
+            <li class="bullet-item"><span data-tooltip="" class="has-tip tip-right radius" data-selector="tooltip-i4j8ypv87" aria-describedby="tooltip-i4j8ypv87" title="">24/7 Customer Support</span></li>
+            <li class="bullet-item"><span data-tooltip="" class="has-tip tip-right radius" data-selector="tooltip-i4j8ypv88" aria-describedby="tooltip-i4j8ypv88" title="">Automatic Delete File</span></li>
+          </ul>
+        </div>
+
+        <div data-wow-delay="0.4s" class="small-12 large-4 medium-4 columns wow zoomIn animated" style="visibility: visible; -webkit-animation: zoomIn 0.4s;">
+          <div class="title-alt">FREE</div>
+          <ul class="pricing-table alter">
+            <li class="bullet-item">20 GB</li>
+            <li class="bullet-item">500 GB</li>
+            <li class="bullet-item">Slow</li>
+            <li class="bullet-item">30 seconds</li>
+            <li class="bullet-item"><i class="fa fa-times"></i> <div class="show-for-small">No</div></li>
+            <li class="bullet-item"><i class="fa fa-times"></i> <div class="show-for-small">No</div></li>            
+            <li class="bullet-item"><i class="fa fa-times"></i> <div class="show-for-small">No</div></li>
+            <li class="bullet-item">Never</li>
+          </ul>
+        </div>
+
+        <div data-wow-delay="0.6s" class="small-12 large-4 medium-4 columns wow zoomIn animated" style="visibility: visible; -webkit-animation: zoomIn 0.6s;">
+          <div class="title-alt">PREMIUM</div>
+          <ul class="pricing-table alter">
+            <li class="bullet-item">100 GB and more</li>
+            <li class="bullet-item">Unlimited</li>
+            <li class="bullet-item">Unlimited</li>
+            <li class="bullet-item">No wait</li>
+            <li class="bullet-item"><i class="fa fa-check"></i> <div class="show-for-small">Yes</div></li>
+            <li class="bullet-item"><i class="fa fa-check"></i> <div class="show-for-small">Yes</div></li>            
+            <li class="bullet-item"><i class="fa fa-check"></i> <div class="show-for-small">Yes</div></li>
+            <li class="bullet-item">Never</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div ng-include src="'/static/assets/frontend/app/layout/modals.html'"></div>
+</section>

@@ -1,0 +1,50 @@
+<header class="{{ headerClass }}">
+    <div class="top" ng-controller="headerController">
+        <div class="row">
+            <div class="small-12 large-3 medium-3 columns">
+                <div class="logo">
+                    <a href="/#/" title=""><img src="/static/assets/frontend/images/logo.png" alt="" title=""/></a>
+                </div>
+            </div>
+            <div class="small-12 large-9 medium-9 columns">
+                <nav class="desktop-menu">
+                    <ul class="sf-menu">
+                        <li ng-hide="showUserMenu">
+                            <a href="/#/">Home</a>
+                        </li>                        
+                        <li ng-show="showUserMenu" class="has-dropdown">
+                            <a href="/#/account">Account</a>
+                            <ul class="dropdown">
+                                <li><a href="/#/account">Overview</a></li>
+                                <li><a href="/#/profile">Profile</a></li>
+                                <li><a href="/#/billing">Billing history</a></li>
+                                <li><a href="/#/statistic">Statistic</a></li>
+                                <li><a href="/#/inbox">Inbox</a></li>
+                                <li><a href="/#/report">Report</a></li>
+                                <li><a href="/#/redeem">Redeem</a></li>
+                            </ul>
+                        </li>
+                        <li ng-show="showUserMenu">
+                            <a href="/#/fm2">File Manager</a>
+                        </li>                        
+                        <li ng-hide="showUserMenu">
+                            <a href="/#/login">Login</a>
+                        </li>
+                        <li ng-hide="showUserMenu">
+                            <a href="/#/signup">Register</a>
+                        </li>
+                        <li>
+                            <a href="/#/premium">Premium</a>
+                        </li>
+                        <li>
+                            <a href="/download-tool">Tool</a>
+                        </li>
+                        <li ng-show="showUserMenu">
+                            <a href="/#/logout">Logout</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>

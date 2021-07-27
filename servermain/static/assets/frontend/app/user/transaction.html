@@ -1,0 +1,114 @@
+<div class="padding-top-30 padding-bottom-30">
+  <div class="row padding-bottom-100">
+    <div class="large-10 push-2 columns">
+      <ul class="tabs" data-tab="" id="affiliate-tab">        
+        <li class="tab-title active"><a href="#agency" aria-selected="true" tabindex="0">Agency Transaction</a></li>
+        <li class="tab-title"><a href="#referrer" aria-selected="false" tabindex="-1">Referer Transaction</a></li>
+        <li class="tab-title"><a href="#website" aria-selected="false" tabindex="-1">Website Transaction</a></li>        
+      </ul>
+      <div class="tabs-content">        
+        <div class="content active" id="agency" aria-hidden="false">
+          <h4 class="session-title">Agency Transaction ( 60% of your bills )</h4>
+          <div class="input-append date right">
+            <label>To</label>
+            <input class="span2 toDate" size="16" type="text">
+          </div>
+          <div class="input-append date right">
+            <label>From</label>
+            <input class="span2 fromDate" size="16" type="text">
+          </div>
+          <hr>
+          <table role="grid" class="table fixed_layout">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Transaction Amount</th>
+                <th>Bill Amount</th>
+                <th>User's File ID</th>
+                <th>Created</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="(key, value) in agencyData">
+                <td>{{ key}}</td>
+                <td>${{ value.fields.amount | amount : 0 }}</td>
+                <td>${{ value.fields.invoice_amount | amount : 0 }}</td>
+                <td>{{ value.fields.data.userfile_id }}</td>
+                <td>{{ value.fields.created_date | date:'dd/MM/yyyy':'UTC' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="content" id="referrer" aria-hidden="true" tabindex="-1">
+          <h4 class="session-title">Referrer Transaction ( 10% of your referrer's agency program )</h4>
+          <div class="input-append date right">
+            <label>To</label>
+            <input class="span2 toDate" size="16" type="text">
+          </div>
+          <div class="input-append date right">
+            <label>From</label>
+            <input class="span2 fromDate" size="16" type="text">
+          </div>
+          <hr>
+          <table role="grid" class="table fixed_layout">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Transaction Amount</th>
+                <th>Bill Amount</th>
+                <th>Referrer</th>
+                <th>Created</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="(key, value) in refererData">
+                <td>{{ key}}</td>
+                <td>${{ value.fields.amount | amount : 0 }}</td>
+                <td>${{ value.fields.invoice_amount | amount : 0 }}</td>
+                <td>{{ value.fields.username }}</td>
+                <td>{{ value.fields.created_date | date:'dd/MM/yyyy':'UTC' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="content" id="website" aria-hidden="true" tabindex="-1">
+          <h4 class="session-title">Website Transaction ( 5% of bills originated from your websites )</h4>
+          <div class="input-append date right">
+            <label>To</label>
+            <input class="span2 toDate" size="16" type="text">
+          </div>
+          <div class="input-append date right">
+            <label>From</label>
+            <input class="span2 fromDate" size="16" type="text">
+          </div>
+          <hr>
+          <table role="grid" class="table fixed_layout">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Transaction Amount</th>
+                <th>Bill Amount</th>
+                <th>Website</th>
+                <th>Created</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="(key, value) in websiteData">
+                <td>{{ key}}</td>
+                <td>${{ value.fields.amount | amount : 0 }}</td>
+                <td>${{ value.fields.invoice_amount | amount : 0 }}</td>
+                <td>{{ value.fields.data.website_origin }}</td>
+                <td>{{ value.fields.created_date | date:'dd/MM/yyyy':'UTC' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>        
+      </div>            
+    </div>
+
+    <div class="large-2 pull-10 columns">
+      <div ng-include src="'/static/assets/frontend/app/user/sidebar.html'"></div>
+    </div>        
+  </div>
+  <div ng-include src="'/static/assets/frontend/app/layout/modals.html'"></div>
+</div>

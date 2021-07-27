@@ -1,0 +1,129 @@
+<div class="container">
+  <div class="row">
+    <div class="col-md-2">
+      <div ng-include="'/static/assets/frontend/app_junshare/user/sidebar.html'"></div>
+    </div>
+    <div class="col-md-10">
+      <div class="row">
+        <div class="col-md-4">
+          <h4>Account details</h4>
+            <table class="table table-bordered">
+              <tbody>
+                <tr>
+                  <td>Username</td>
+                  <td>{{ username}}</td>
+                </tr>
+                <tr class="active-account" ng-show="accountStatus === 'emailNotActivated'">
+                  <td></td>
+                  <td><button ng-click="resendActivationEmail()"
+                              ng-disabled="isProcessingResendActivationEmail"
+                                class="btn btn-success btn-xs" role="button">Resend activation email</button></td>
+                </tr>
+                <tr>
+                  <td>Email</td>
+                  <td>{{ email}}</td>
+                </tr>
+                <tr>
+                  <td>Status</td>
+                  <td>{{ accountStatus }}</td>
+                </tr>
+                <tr>
+                  <td>Account Type</td>
+                  <td>{{ accountType }} </td>
+                </tr>
+                <tr class="apply-affiliate" ng-show="accountType !== 'affiliate' && accountType !== 'affiliatePPD' && accountStatus !== 'emailNotActivated'">
+                  <td></td>
+                  <td><button ng-click="applyAffiliate()" class="tiny"> Apply to become Affiliate</button></td>
+                </tr>
+              </tbody>
+            </table>
+
+        </div>
+        <div class="col-md-8">
+            <h4>Account Limitations</h4>
+              <table class="table table-bordered">
+                <thead>
+                  <tr>
+                    <th width="200">FEATURES</th>
+                    <th width="200">LIMITS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Monthly Bandwidth</td>
+                    <td> {{ monthly_bandwidth | filesize }} </td>
+                  </tr>
+                  <tr>
+                    <td>Download Speed</td>
+                    <td>{{ (download_speed >= 10485760) ? "Unlimited" : ((download_speed | filesize) + " / s") }}</td>
+                  </tr>
+                  <tr>
+                    <td>Download Wait</td>
+                    <td>{{ download_wait }}</td>
+                  </tr>
+                  <tr>
+                    <td>Access to Premium files</td>
+                    <td>{{ access_premium_files }}</td>
+                  </tr>
+                  <tr>
+                    <td>Access to Premium tools</td>
+                    <td>{{ access_premium_tools }}</td>
+                  </tr>
+                </tbody>
+              </table>                           
+
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <h4>Used space: {{ storageUsed | filesize : 1 }} of {{ storageSpace | filesize }}</h4>
+          <div class="progress">
+              <div class="progress-bar progress-bar-info progress-bar-striped" role="progressbar"
+                   aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"
+                        style="width:{{ storageUsed / storageSpace | percentage }}">
+                  <span class="meter" style="width: {{ storageUsed / storageSpace | percentage }}"></span>
+              </div>
+		  </div>
+          <p>You have total of {{ folder | number }} folders with {{ file | number }} files inside.</p>
+        </div>
+        <div class="col-md-6">
+          <h4>Used bandwidth: {{ bandwidthUsed | filesize : 1 }} of {{ monthly_bandwidth | filesize }}</h4>
+          <div class="progress">
+              <div class="progress-bar progress-bar-info progress-bar-striped" role="progressbar"
+                   aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"
+                        style="width:{{ bandwidthUsed / monthly_bandwidth | percentage }}">
+              </div>
+		  </div>
+        </div>
+      </div>
+
+
+      <div class="row">
+          <div class="col-sm-6 col-md-6">
+	          <div class="thumbnail">
+			      <div class="caption">
+			        <h3>Premium Status: {{ premiumStatus | uppercase }}</h3>
+			        <p>Plan expired in: {{ planExpired | date:'medium' }}.</p>
+			        <p><a href="/#/premium" class="btn btn-success" role="button">Extend your premium</a></p>
+			      </div>
+			    </div>
+          </div>
+          <div class="col-sm-6 col-md-6">
+	          <div class="thumbnail">
+			      <div class="caption">
+			        <h3>Point: {{ pointBalance}}</h3>
+			        <p>You can use this point to exchange to premium.</p>
+			        <p><a href="javascript:void(0)" class="btn btn-success" role="button">Exchange your Premium</a></p>
+			      </div>
+			    </div>
+          </div>
+
+      </div>
+    </div>
+
+
+  </div>
+  <div ng-include="'/static/assets/frontend/app_junshare/layout/modals.html'"></div>
+
+</div>

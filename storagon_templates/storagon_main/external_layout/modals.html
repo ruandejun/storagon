@@ -1,0 +1,467 @@
+<div id="auth-modal" class="reveal-modal large" data-reveal aria-labelledby="Please Sign In or Register" aria-hidden="false" role="dialog">
+  <div class="row">
+    <h4 class="text-center">Please login or register in order to download this file.</h4>
+    <div class="large-6 columns">
+      <div class="login-form" style="padding: 30px 30px;">
+        <h4>Sign In</h4>
+        <form name="login" id="login" action="javascript:;">
+          Username: <input type="text" name="login_username" required=""/>
+          Password: <input type="password" name="login_password" required=""/>
+          <input type="submit" id="login-submit" value="Login"/>
+        </form>
+      </div>
+    </div>
+    <div class="large-6 columns">
+      <div class="login-form" style="padding: 30px 30px;">
+        <h4>Sign Up</h4>
+        <form id="signup" name="signup" action="javascript:;">
+          Username: <input type="text" name="username" required="" />
+          Password: <input type="password" name="password" id="password" required="" />
+          Retype Password: <input type="password" name="retype_password" id="retype_password" onkeyup="checkPassword()" required="" />
+          <div class="msg-block">
+            <small class="error">Password don't match</small>
+          </div>
+          Email: <input type="text" name="email" required="" />
+          <input type="checkbox" id="agree" name="agree" required>
+          <label for="agree">I have read and agree to the <a href="/#/tos" target="_blank">Terms & Conditions</a></label>
+          <div id="recaptcha-signup"></div>          
+          <input type="submit" id="signup-submit" value="Sign up"/>
+        </form>
+      </div>
+    </div>
+    <div class="loader">
+      <img id="loading-image" src="/static/assets/frontend/images/ajax-spinner.gif" alt="Loading..." />
+    </div>
+  </div>
+</div>
+
+<div id="planModal" class="reveal-modal" data-reveal>
+  <h4 class="text-center">Select plan</h4>
+  <div class="pricingboxes padding-top-10">
+    <div class="row">
+    </div>
+  </div>
+</div>
+
+<div id="modal-download-guidance" class="reveal-modal" data-reveal data-options="close_on_background_click: false" aria-labelledby="Download guidance" aria-hidden="true" role="dialog">
+  <div class="panel">
+    <h4 class="text-center">Guidance for downloading</h4>
+    <p>Thank you for using our service. This is the guidance when you decide to choose the <span id="download_method"></span> download method. Following these steps will make it easier for you to understand the downloading process. If you have known how to download the files, please ignore this notification</p>
+    <ol id="torrent_download_guidance">
+      <li>After downloading the torrent file, you must open it with torrent clients, e.g. uTorrent, bitTorrent, Transmission, etc to continue downloading the real encrypted file through our torrent tracker</li>
+      <li>When the download progress is completed, please use the following <a href="/download-tool" target="_blank">Decrypt Application</a> to decrypt the encrypted file</li>      
+    </ol>
+    <div id="browser_download_guidance">
+      When you choose this download type, you will have to wait for the decrypt process to finish. Unfortunately, sometimes this progress will be crashed and you have to re-initialize the download. If you want to avoid this problem, please choose one of two other download methods
+      <ol>
+        <li><a href="javascript:void(0)" onclick="$(this).foundation('reveal', 'close'); $('#help_message_download, .btn-wrapper-download').fadeIn(); $('.hvr-hang').css({'display' : 'block'});$('a#torrentdl').trigger('mouseenter');">Torrent download</a></li>
+        <li><a href="javascript:void(0)" onclick="$(this).foundation('reveal', 'close'); $('#help_message_download, .btn-wrapper-download').fadeIn(); $('.hvr-hang').css({'display' : 'block'});$('a#idmdl').trigger('mouseenter');">Direct download</a></li>
+        <li>You may use our tool to download file without waiting and captcha: <a href="/download-tool" target="_blank">Downloader tool</a></li>
+      </ol>
+    </div>
+    <ol id="direct_download_guidance">
+      <li>When the download progress is completed, please use the following <a href="/download-tool" target="_blank">Decrypt Application</a> to decrypt the encrypted file that you have just downloaded</li>
+    </ol>
+    <div id="decrypt_tool_guidance">
+      <p>The Storagon Decrypt Tool is easy to use, to decrypt files. You just need to follow these steps to decrypt encrypted files.</p>
+      <ol>
+        <li>First, open the tool and click "Add File" button</li>
+        <li>Choose files you want to decrypt and click "Open"</li>
+        <li>After all files have been added to the process bar, click "Decrypt Now" to start decrypting them</li>
+      </ol>
+      <p>In the process of decrypting file, you can stop/ resume/ remove this file by right click on the file and choose the corresponding option</p>
+      <p>Or you can decrypt files just by right click on them and choose "Decrypt With Storagon App". If you want to do that, please take the following steps</p>
+      <ol>
+        <li>Open the tool and click "Option" button on the menu bar</li>
+        <li>Then click "Add Decrypt Button", we will add the button to your context menu to allow you decrypt file from the context menu</li>
+      </ol>
+      <img src="/static/assets/frontend/images/tool.png">
+      <p>If you don't want to you this function anymore, click "Option" button again and click "Remove Decrypt Button"</p>
+    </div>
+  </div>
+  <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+</div>
+
+<div id="modal-error" class="reveal-modal medium" data-reveal data-options="close_on_background_click: false" aria-labelledby="Error" aria-hidden="true" role="dialog">
+  <p class="modal-body"></p>
+  <p><a href="javascript:void(0);" aria-label="Close" class="button success small pull-left close"></a></p>
+<!--  <a class="close-reveal-modal" aria-label="Close">&#215;</a>-->
+</div>
+
+<div id="modal-input-filekey" class="reveal-modal" data-reveal data-options="close_on_background_click: false" aria-labelledby="Input filekey" aria-hidden="true" role="dialog">
+  <form name="filekey-input" id="filekey-input" action="javascript:;" onsubmit="processInputFilekeyForm()">    
+    <label for="filekey">Please fill in the correct file key</label>
+    <input name="filekey" id="filekey" type="text">
+
+    <button type="submit" class="button small">Submit file key</button>
+  </form>
+  <div data-alert="" class="alert-box success">
+    <a href="" class="close">×</a>
+  </div>
+  <div data-alert="" class="alert-box alert">
+    <a href="" class="close">×</a>
+  </div>
+  <div class="loader">
+    <img id="loading-image" src="/static/assets/frontend/images/ajax-spinner.gif" alt="Loading..." />
+  </div>
+  <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+</div>
+
+<div id="modal-report" class="reveal-modal" data-reveal aria-labelledby="Report" aria-hidden="true" role="dialog">
+  <form name="report-form" id="report-form" action="javascript:;" onsubmit="processReportForm()">    
+    <label for="text">Report type*:</label>
+    <select id="text" required="required">
+      <option value="DMCA" selected>DMCA</option>
+    </select>
+
+    <label for="file_url">URL:*</label>
+    <input name="file_url" id="file_url" type="text">
+
+    <label for="detail">Message:*</label>
+    <textarea name="detail" id="detail" cols="12" rows="6" tabindex="3"></textarea>
+    
+    <div data-alert class="alert-box alert radius">
+      This report is a serious legal document - please be careful to be accurate in your report. You may wish to first notice that Storagon DO NOT take any responbility for your actions.
+      <a href="javascript:void(0)" class="close">&times;</a>
+    </div>
+    
+    <button type="submit" class="button small">Submit report</button>
+  </form>
+  <div data-alert="" class="alert-box success">
+    <a href="" class="close">×</a>
+  </div>
+  <div data-alert="" class="alert-box alert">
+    <a href="" class="close">×</a>
+  </div>
+  <div class="loader">
+    <img id="loading-image" src="/static/assets/frontend/images/ajax-spinner.gif" alt="Loading..." />
+  </div>
+</div>
+
+<div class="reveal-modal" data-reveal id="paygateModal" aria-labelledby="Paygate" aria-hidden="true" role="dialog">
+  <h4 class="text-center">Select your favorite payment method</h4>
+  <div class="row">
+    <div class="small-12 large-12 medium-12 columns">
+      <div class="panel callout radius">
+        <ul class="listPaygate text-center">
+          <li class="text-center"><a class="button small" data-reveal-id="paymentModal" href="javascript:;">Credit Card<br><img src="/static/assets/frontend/images/icons/visa_mastercard.png"></a></li>
+          <li class="text-center"><a class="button small" href="javascript:;" onclick="processPaypal()">Paypal<br><img src="/static/assets/frontend/images/icons/paypal.png"></a></li>
+          <li class="text-center"><a class="button small secondary disabled" href="javascript:;">WebMoney<br><img src="/static/assets/frontend/images/icons/webmoney.png"></a></li>
+        </ul>
+      </div>
+      <form name="empty-form" id="empty-form" method="post" action="">        
+      </form>
+    </div>
+  </div>
+  <h6 class="subheader text-center">100% Safe and Anonymous</h6>
+  <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+</div>
+
+<div class="reveal-modal" data-reveal id="paymentModal" aria-labelledby="Payment" aria-hidden="true" role="dialog">  
+  <h4 class="text-center">Please enter your payment information</h4>
+  <div class="padding-top-30 padding-bottom-30">
+    <!--payment.$valid && -->
+    <!--ng-submit="processForm()"-->
+    <form id="payment" name="payment" onsubmit="processForm()" action="javascript:;">
+      <div class="loader">
+        <img id="loading-image" src="/static/assets/frontend/images/ajax-spinner.gif" alt="Loading..." />
+      </div>
+      <input type="hidden" id="planID">
+      <div class="row">
+        <div class="large-12 columns">
+          <div data-alert class="alert-box success radius" style="display: none">
+            <a href="#" class="close">&times;</a>
+          </div>
+          <div data-alert class="alert-box alert radius" style="display: none">
+            <a href="#" class="close">&times;</a>
+          </div>
+        </div>
+        <div class="large-6 columns">
+          <h5>Billing Information</h5>
+          <input type="text" name="first_name" id="first_name" placeholder="First Name" required>
+          <input type="text" name="last_name" id="last_name" placeholder="Last Name" required>
+          <input type="text" name="email" id="email" placeholder="Email Address" required>
+          <input type="text" name="phone_number" id="phone_number" placeholder="Phone" required>
+          <input type="text" name="address" id="address" placeholder="Address" required>
+          <input type="text" name="city" id="city" placeholder="City" required>
+          <input type="text" name="state" id="state" placeholder="State" required>
+          <input type="text" name="zipcode" id="zipcode" placeholder="Zip/Postal code" required>
+          <select id="country" name="country" required>
+            <option value="">Select Country</option>
+            <option value="AF">Afghanistan</option>
+            <option value="AX">Åland Islands</option>
+            <option value="AL">Albania</option>
+            <option value="DZ">Algeria</option>
+            <option value="AS">American Samoa</option>
+            <option value="AD">Andorra</option>
+            <option value="AO">Angola</option>
+            <option value="AI">Anguilla</option>
+            <option value="AQ">Antarctica</option>
+            <option value="AG">Antigua and Barbuda</option>
+            <option value="AR">Argentina</option>
+            <option value="AM">Armenia</option>
+            <option value="AW">Aruba</option>
+            <option value="AU">Australia</option>
+            <option value="AT">Austria</option>
+            <option value="AZ">Azerbaijan</option>
+            <option value="BS">Bahamas</option>
+            <option value="BH">Bahrain</option>
+            <option value="BD">Bangladesh</option>
+            <option value="BB">Barbados</option>
+            <option value="BY">Belarus</option>
+            <option value="BE">Belgium</option>
+            <option value="BZ">Belize</option>
+            <option value="BJ">Benin</option>
+            <option value="BM">Bermuda</option>
+            <option value="BT">Bhutan</option>
+            <option value="BO">Bolivia, Plurinational State of</option>
+            <option value="BQ">Bonaire, Sint Eustatius and Saba</option>
+            <option value="BA">Bosnia and Herzegovina</option>
+            <option value="BW">Botswana</option>
+            <option value="BV">Bouvet Island</option>
+            <option value="BR">Brazil</option>
+            <option value="IO">British Indian Ocean Territory</option>
+            <option value="BN">Brunei Darussalam</option>
+            <option value="BG">Bulgaria</option>
+            <option value="BF">Burkina Faso</option>
+            <option value="BI">Burundi</option>
+            <option value="KH">Cambodia</option>
+            <option value="CM">Cameroon</option>
+            <option value="CA">Canada</option>
+            <option value="CV">Cape Verde</option>
+            <option value="KY">Cayman Islands</option>
+            <option value="CF">Central African Republic</option>
+            <option value="TD">Chad</option>
+            <option value="CL">Chile</option>
+            <option value="CN">China</option>
+            <option value="CX">Christmas Island</option>
+            <option value="CC">Cocos (Keeling) Islands</option>
+            <option value="CO">Colombia</option>
+            <option value="KM">Comoros</option>
+            <option value="CG">Congo</option>
+            <option value="CD">Congo, the Democratic Republic of the</option>
+            <option value="CK">Cook Islands</option>
+            <option value="CR">Costa Rica</option>
+            <option value="CI">Côte d'Ivoire</option>
+            <option value="HR">Croatia</option>
+            <option value="CU">Cuba</option>
+            <option value="CW">Curaçao</option>
+            <option value="CY">Cyprus</option>
+            <option value="CZ">Czech Republic</option>
+            <option value="DK">Denmark</option>
+            <option value="DJ">Djibouti</option>
+            <option value="DM">Dominica</option>
+            <option value="DO">Dominican Republic</option>
+            <option value="EC">Ecuador</option>
+            <option value="EG">Egypt</option>
+            <option value="SV">El Salvador</option>
+            <option value="GQ">Equatorial Guinea</option>
+            <option value="ER">Eritrea</option>
+            <option value="EE">Estonia</option>
+            <option value="ET">Ethiopia</option>
+            <option value="FK">Falkland Islands (Malvinas)</option>
+            <option value="FO">Faroe Islands</option>
+            <option value="FJ">Fiji</option>
+            <option value="FI">Finland</option>
+            <option value="FR">France</option>
+            <option value="GF">French Guiana</option>
+            <option value="PF">French Polynesia</option>
+            <option value="TF">French Southern Territories</option>
+            <option value="GA">Gabon</option>
+            <option value="GM">Gambia</option>
+            <option value="GE">Georgia</option>
+            <option value="DE">Germany</option>
+            <option value="GH">Ghana</option>
+            <option value="GI">Gibraltar</option>
+            <option value="GR">Greece</option>
+            <option value="GL">Greenland</option>
+            <option value="GD">Grenada</option>
+            <option value="GP">Guadeloupe</option>
+            <option value="GU">Guam</option>
+            <option value="GT">Guatemala</option>
+            <option value="GG">Guernsey</option>
+            <option value="GN">Guinea</option>
+            <option value="GW">Guinea-Bissau</option>
+            <option value="GY">Guyana</option>
+            <option value="HT">Haiti</option>
+            <option value="HM">Heard Island and McDonald Islands</option>
+            <option value="VA">Holy See (Vatican City State)</option>
+            <option value="HN">Honduras</option>
+            <option value="HK">Hong Kong</option>
+            <option value="HU">Hungary</option>
+            <option value="IS">Iceland</option>
+            <option value="IN">India</option>
+            <option value="ID">Indonesia</option>
+            <option value="IR">Iran, Islamic Republic of</option>
+            <option value="IQ">Iraq</option>
+            <option value="IE">Ireland</option>
+            <option value="IM">Isle of Man</option>
+            <option value="IL">Israel</option>
+            <option value="IT">Italy</option>
+            <option value="JM">Jamaica</option>
+            <option value="JP">Japan</option>
+            <option value="JE">Jersey</option>
+            <option value="JO">Jordan</option>
+            <option value="KZ">Kazakhstan</option>
+            <option value="KE">Kenya</option>
+            <option value="KI">Kiribati</option>
+            <option value="KP">Korea, Democratic People's Republic of</option>
+            <option value="KR">Korea, Republic of</option>
+            <option value="KW">Kuwait</option>
+            <option value="KG">Kyrgyzstan</option>
+            <option value="LA">Lao People's Democratic Republic</option>
+            <option value="LV">Latvia</option>
+            <option value="LB">Lebanon</option>
+            <option value="LS">Lesotho</option>
+            <option value="LR">Liberia</option>
+            <option value="LY">Libya</option>
+            <option value="LI">Liechtenstein</option>
+            <option value="LT">Lithuania</option>
+            <option value="LU">Luxembourg</option>
+            <option value="MO">Macao</option>
+            <option value="MK">Macedonia, the former Yugoslav Republic of</option>
+            <option value="MG">Madagascar</option>
+            <option value="MW">Malawi</option>
+            <option value="MY">Malaysia</option>
+            <option value="MV">Maldives</option>
+            <option value="ML">Mali</option>
+            <option value="MT">Malta</option>
+            <option value="MH">Marshall Islands</option>
+            <option value="MQ">Martinique</option>
+            <option value="MR">Mauritania</option>
+            <option value="MU">Mauritius</option>
+            <option value="YT">Mayotte</option>
+            <option value="MX">Mexico</option>
+            <option value="FM">Micronesia, Federated States of</option>
+            <option value="MD">Moldova, Republic of</option>
+            <option value="MC">Monaco</option>
+            <option value="MN">Mongolia</option>
+            <option value="ME">Montenegro</option>
+            <option value="MS">Montserrat</option>
+            <option value="MA">Morocco</option>
+            <option value="MZ">Mozambique</option>
+            <option value="MM">Myanmar</option>
+            <option value="NA">Namibia</option>
+            <option value="NR">Nauru</option>
+            <option value="NP">Nepal</option>
+            <option value="NL">Netherlands</option>
+            <option value="NC">New Caledonia</option>
+            <option value="NZ">New Zealand</option>
+            <option value="NI">Nicaragua</option>
+            <option value="NE">Niger</option>
+            <option value="NG">Nigeria</option>
+            <option value="NU">Niue</option>
+            <option value="NF">Norfolk Island</option>
+            <option value="MP">Northern Mariana Islands</option>
+            <option value="NO">Norway</option>
+            <option value="OM">Oman</option>
+            <option value="PK">Pakistan</option>
+            <option value="PW">Palau</option>
+            <option value="PS">Palestinian Territory, Occupied</option>
+            <option value="PA">Panama</option>
+            <option value="PG">Papua New Guinea</option>
+            <option value="PY">Paraguay</option>
+            <option value="PE">Peru</option>
+            <option value="PH">Philippines</option>
+            <option value="PN">Pitcairn</option>
+            <option value="PL">Poland</option>
+            <option value="PT">Portugal</option>
+            <option value="PR">Puerto Rico</option>
+            <option value="QA">Qatar</option>
+            <option value="RE">Réunion</option>
+            <option value="RO">Romania</option>
+            <option value="RU">Russian Federation</option>
+            <option value="RW">Rwanda</option>
+            <option value="BL">Saint Barthélemy</option>
+            <option value="SH">Saint Helena, Ascension and Tristan da Cunha</option>
+            <option value="KN">Saint Kitts and Nevis</option>
+            <option value="LC">Saint Lucia</option>
+            <option value="MF">Saint Martin (French part)</option>
+            <option value="PM">Saint Pierre and Miquelon</option>
+            <option value="VC">Saint Vincent and the Grenadines</option>
+            <option value="WS">Samoa</option>
+            <option value="SM">San Marino</option>
+            <option value="ST">Sao Tome and Principe</option>
+            <option value="SA">Saudi Arabia</option>
+            <option value="SN">Senegal</option>
+            <option value="RS">Serbia</option>
+            <option value="SC">Seychelles</option>
+            <option value="SL">Sierra Leone</option>
+            <option value="SG">Singapore</option>
+            <option value="SX">Sint Maarten (Dutch part)</option>
+            <option value="SK">Slovakia</option>
+            <option value="SI">Slovenia</option>
+            <option value="SB">Solomon Islands</option>
+            <option value="SO">Somalia</option>
+            <option value="ZA">South Africa</option>
+            <option value="GS">South Georgia and the South Sandwich Islands</option>
+            <option value="SS">South Sudan</option>
+            <option value="ES">Spain</option>
+            <option value="LK">Sri Lanka</option>
+            <option value="SD">Sudan</option>
+            <option value="SR">Suriname</option>
+            <option value="SJ">Svalbard and Jan Mayen</option>
+            <option value="SZ">Swaziland</option>
+            <option value="SE">Sweden</option>
+            <option value="CH">Switzerland</option>
+            <option value="SY">Syrian Arab Republic</option>
+            <option value="TW">Taiwan, Province of China</option>
+            <option value="TJ">Tajikistan</option>
+            <option value="TZ">Tanzania, United Republic of</option>
+            <option value="TH">Thailand</option>
+            <option value="TL">Timor-Leste</option>
+            <option value="TG">Togo</option>
+            <option value="TK">Tokelau</option>
+            <option value="TO">Tonga</option>
+            <option value="TT">Trinidad and Tobago</option>
+            <option value="TN">Tunisia</option>
+            <option value="TR">Turkey</option>
+            <option value="TM">Turkmenistan</option>
+            <option value="TC">Turks and Caicos Islands</option>
+            <option value="TV">Tuvalu</option>
+            <option value="UG">Uganda</option>
+            <option value="UA">Ukraine</option>
+            <option value="AE">United Arab Emirates</option>
+            <option value="GB">United Kingdom</option>
+            <option value="US">United States</option>
+            <option value="UM">United States Minor Outlying Islands</option>
+            <option value="UY">Uruguay</option>
+            <option value="UZ">Uzbekistan</option>
+            <option value="VU">Vanuatu</option>
+            <option value="VE">Venezuela, Bolivarian Republic of</option>
+            <option value="VN">Viet Nam</option>
+            <option value="VG">Virgin Islands, British</option>
+            <option value="VI">Virgin Islands, U.S.</option>
+            <option value="WF">Wallis and Futuna</option>
+            <option value="EH">Western Sahara</option>
+            <option value="YE">Yemen</option>
+            <option value="ZM">Zambia</option>
+            <option value="ZW">Zimbabwe</option>
+          </select>
+        </div>
+        <div class="large-6 columns">
+          <h5>Credit Card Information</h5>
+          <ul class="inline-list">
+            <li>We accept:</li>
+            <li><img src="/static/assets/frontend/images/icons/visa.png"></li>
+            <li><img src="/static/assets/frontend/images/icons/mastercard.png"></li>
+            <li><img src="/static/assets/frontend/images/icons/jcb.png"></li>
+          </ul>
+          <input type="text" name="card_number" id="card_number" placeholder="Card Number" required>
+          <input type="text" name="card_name" id="card_name" placeholder="Full Name" required>
+          <input type="text" name="card_expiry" id="card_expiry" placeholder="MM/YY" required>
+          <input type="text" name="card_cvc" id="card_cvc" placeholder="CVC" required>
+          <div class="panel callout radius">
+            <ul class="no-bullet">
+              <li class="storage"></li>
+              <li class="bandwidth"></li>
+              <li class="price"></li>
+            </ul>
+          </div>
+          <button type="submit" class="button small expand"> Checkout </button>
+        </div>
+      </div>
+    </form>
+  </div>
+  <a class="close-reveal-modal" aria-label="Close">&#215;</a> 
+</div>

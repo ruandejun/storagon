@@ -1,0 +1,45 @@
+<div class="padding-top-30 padding-bottom-30">
+  <div class="row padding-bottom-100">
+    <div class="large-10 push-2 columns">
+      <div class="clearfix">
+        <h5 class="left">Message Inbox</h5>
+        <button class="button tiny right" data-reveal-id="myModal">
+          Send Message
+        </button>
+        <!-- Reveal Modals begin -->
+        <div id="modal-inbox" class="reveal-modal tiny" data-reveal aria-labelledby="Inbox" aria-hidden="true" role="dialog">
+          <p class="modal-body"></p>
+          <p><a href="javascript:void(0);" aria-label="Close" class="button success small pull-left close">OK</a></p>
+          <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+        </div>
+      </div>
+      <table role="grid" class="table fixed_layout">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Sender</th>
+            <th>Content</th>
+            <th>Created</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="message in inboxMessages">
+            <td>{{message.sid}}</td>
+            <td>{{message.data.sender_username}}</td>
+            <td>{{message.text}}</td>
+            <td>{{message.created.$date| date:'medium'}}</td>                  
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="large-2 pull-10 columns">
+      <div ng-include src="'/static/assets/frontend/app/user/sidebar.html'"></div>
+    </div>
+  </div>
+  <div ng-include src="'/static/assets/frontend/app/layout/modals.html'"></div>
+</div>
+
+<script>
+    $(document).foundation();
+</script>

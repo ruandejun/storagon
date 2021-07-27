@@ -1,0 +1,35 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_static %}
+
+{% block extrastyle %}
+  {{ block.super }}
+{% endblock %}
+
+{% block coltype %}colMS{% endblock %}
+
+{% block bodyclass %}dashboard{% endblock %}
+
+{% block breadcrumbs %}
+    <ul class="breadcrumb">
+            <li><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+            <span class="divider">&raquo;</span></li>
+
+
+            {% block navigator_menu %}
+            {% endblock %}
+     </ul>
+{% endblock %}
+
+
+{% block content %}
+  <div id="content-main">
+      <p>Test custom admin page</p>
+  </div>
+{% endblock %}
+
+
+{% block sidebar %}
+  <div id="content-related">
+        <p>Custom admin page side bar</p>
+  </div>
+{% endblock %}

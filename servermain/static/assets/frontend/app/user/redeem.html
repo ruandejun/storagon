@@ -1,0 +1,35 @@
+<div class="padding-top-30 padding-bottom-30">
+  <div class="row padding-bottom-100">
+    <div class="large-10 push-2 columns">
+      <div id="redeem">
+        <form id="redeem_form" novalidate="novalidate" ng-submit="processForm()">
+          <div class="row">
+            <div class="large-8 columns">              
+              <h5>Redeem Code</h5>
+              <p>
+                <label for="redeem_code">Redeem code:</label>
+                <input type="text" name="redeem_code" id="redeem_code" tabindex="2" placeholder="Redeem Code" ng-model="redeem_code" required>
+              </p>
+              <p>
+                <label for="code_type">Code type:</label>
+                <select type="text" name="code_type" id="code_type" tabindex="3" ng-model="code_type.value" ng-options="v.name for v in code_type.values track by v.id" required>
+                  <option value="">- Choose Code Type -</option>
+                </select>
+              </p>
+              <button type="submit" class="button expand">Submit</button>              
+              <!-- Loader begin -->
+              <div class="loader">
+                <img id="loading-image" src="/static/assets/frontend/images/ajax-spinner.gif" alt="Loading..." />
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="large-2 pull-10 columns">
+      <div ng-include src="'/static/assets/frontend/app/user/sidebar.html'"></div>
+    </div>
+  </div>
+  <div ng-include src="'/static/assets/frontend/app/layout/modals.html'"></div>
+</div>

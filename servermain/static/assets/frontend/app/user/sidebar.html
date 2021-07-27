@@ -1,0 +1,34 @@
+<div ng-controller="menuController">
+    <p><img class="th" src="http://placehold.it/128x128&text=Avatar"/></p>
+    <ul class="side-nav">
+      <li><a href="#/account">Overview</a></li>
+      <li>
+        <a href="javascript:;" data-options="is_hover:true; align:right" data-dropdown="drop1">My Account</a>
+        <ul id="drop1" class="f-dropdown" data-dropdown-content>                    
+          <li><a href="#/billing">Billing history</a></li>
+          <li class="divider"></li>
+          <li><a href="#/redeem">Redeem</a></li>
+          <li class="divider"></li>
+          <li><a href="#/profile">Edit Profile</a></li>
+        </ul>
+      </li>
+      <li><a href="#/inbox">Inbox</a></li>
+      <li><a href="#/report">Report</a></li>       
+      <!--<li><a href="#exchange">Exchange</a></li>-->
+      <li ng-show="showAffiliate">
+        <a href="javascript:;" data-options="is_hover:true; align:right" data-dropdown="drop3">Affiliate</a>
+        <ul id="drop3" class="f-dropdown" data-dropdown-content>
+          <li><a href="/#/manage">Dashboard</a></li>
+          <li class="divider"></li>
+          <li><a href="#/statistic">Statistic</a></li>
+          <li class="divider"></li>
+          <li><a href="/#/transaction">Transactions</a></li>
+          <li class="divider"></li>
+          <li><a href="/#/request-history">Request History</a></li>
+          <li class="divider"></li>
+          <li><a href="/affiliate-tool" target="_blank">Affiliate Tools</a></li>
+        </ul>
+      </li>
+      <li ng-show="showReseller"><a href="#/reseller">Reseller</a></li>
+    </ul>
+</div>

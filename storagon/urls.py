@@ -1,0 +1,21 @@
+from django.conf.urls import patterns, include, url
+from django.contrib import admin
+from django.contrib.auth.views import login, logout, logout_then_login
+
+
+urlpatterns = patterns('',
+
+	url(r'^adl/track/', include('attendance_tracking.urls')),
+	url(r'^adl/custom/', include('servermain.CustomAdmin_urls', namespace='CustomAdmin')),
+	url(r'^adl/doc/', include('django.contrib.admindocs.urls')),
+	url(r'^adl/', include(admin.site.urls)),
+	url(r'^sf/', include('serverfile.urls')),
+
+	url(r'^tracker/', include('private_tracker.urls')),
+
+
+	url(r'', include('servermain.urls')),  # pass all other url request to servermain
+)
+
+
+handler400 = 'storagon.tool.custom_400';

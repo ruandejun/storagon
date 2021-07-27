@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Storagon</title>
+
+    {# font #}
+    <link rel="stylesheet" href='http://fonts.googleapis.com/css?family=Lato:300,400,700,900' />
+
+    {# css #}
+    <link rel="stylesheet" href="/static/assets/frontend/css/normalize.css" />
+    <link rel="stylesheet" href="/static/assets/frontend/css/foundation.min.css" />
+    <link rel="stylesheet" href="/static/assets/frontend/css/font-foundation/foundation-icons.css" />
+    <link rel="stylesheet" href="/static/assets/frontend/css/foundation-datepicker.css" />
+    <link rel="stylesheet" href="/static/assets/frontend/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="/static/assets/frontend/css/animate.min.css" />
+    <link rel="stylesheet" href="/static/assets/frontend/css/morphext.css" />
+    <link rel="stylesheet" href="/static/assets/frontend/css/owl.carousel.css" />
+    <link rel="stylesheet" href="/static/assets/frontend/css/owl.theme.css" />
+    <link rel="stylesheet" href="/static/assets/frontend/css/owl.transitions.css" />
+    <link rel="stylesheet" href="/static/assets/frontend/css/slicknav.css" />
+    <link rel="stylesheet" href="/static/assets/frontend/css/ng-grid.css" />
+    <link rel="stylesheet" href="/static/assets/frontend/css/ngProgress.css" />
+    <link rel="stylesheet" href="/static/assets/frontend/css/angular-block-ui.min.css" />
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css" />
+    <link rel="stylesheet" href="/static/assets/frontend/css/style.css" />
+    <link rel="shortcut icon" href="/static/assets/frontend/images/icons/favicon.png" />
+    <script type="text/javascript">
+        {% load cache %}
+        {% cache 600 CURRENT_USER request.user.username %}
+        {% if user.is_authenticated %}
+            var CURRENT_USER = {
+                username: '{{user.username}}',
+                id: {{user.id}},
+                email: '{{user.email}}',
+                is_active: '{{user.is_active}}',
+                is_staff: '{{user.is_staff}}',
+                last_login: '{{user.last_login}}',
+                first_name: '{{user.first_name}}',
+                last_name: '{{user.last_name}}'
+            };
+            {% else %}
+            CURRENT_USER = null;
+        {% endif %}
+        {% endcache %}
+    </script>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-62259564-1', 'auto');
+      if(CURRENT_USER !== null){
+        ga('set','&uid', CURRENT_USER.id);
+      }
+      ga('require', 'linkid', 'linkid.js');
+    </script>
+    <!--Start of Tawk.to Script-->
+    <script type="text/javascript">
+        var $_Tawk_API={},$_Tawk_LoadStart=new Date();
+        (function(){
+        var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+        s1.async=true;
+        s1.src='https://embed.tawk.to/555555f1e193f463706f0235/default';
+        s1.charset='UTF-8';
+        s1.setAttribute('crossorigin','*');
+        s0.parentNode.insertBefore(s1,s0);
+        })();
+    </script>
+    <!--End of Tawk.to Script-->
+</head>
+<body {% verbatim %} class="{{ bodyClass }}" {% endverbatim %}>          
+    <div class="container show">        
+      <!-- BEGIN: App-Loading Screen. -->
+      <div id="loader-wrapper">
+        <div id="loader"></div>      
+        <div class="loader-section section-left"></div>
+        <div class="loader-section section-right"></div>
+        <div class="perc">1%</div>
+      </div>
+      <!-- END: App-Loading Screen. -->
+      <div ng-include src="'/static/assets/frontend/app/layout/header.html'"></div>
+      <section class="content">
+        {% verbatim %}
+        <div id="main" ng-animate-children="">
+          <div ng-view autoscroll=""></div>          
+        </div>
+        {% endverbatim %}
+      </section>
+      <div ng-include src="'/static/assets/frontend/app/layout/footer.html'" ng-show="showFooter"></div>
+      <div ng-include src="'/static/assets/frontend/app/layout/panel.html'" ng-hide="showPanel"></div>
+    </div>
+    </div>
+      <a href="javascript:void(0)" id="back-to-top"><i class="fa fa-angle-up"></i></a>
+    </div>
+
+    {# javascript #}    
+    <script src="/static/assets/frontend/js/vendor/modernizr.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+    <script src="/static/assets/frontend/js/my_resumable.js"></script>
+    <script type="text/javascript">
+      jQuery.cachedScript = function( url, options ) {
+        options = $.extend( options || {}, {
+          dataType: "script",
+          cache: true,
+          url: url
+        });
+        return jQuery.ajax( options );
+      };
+      $.cachedScript("/static/assets/frontend/js/jquery.preload.min.js").done(function(script, textStatus) {
+        var loader = $(document).preload({          
+          OnStep: function(percent) {        
+            $(".perc").html(percent + "%");
+          },
+          OnComplete: function() {            
+            $('.test-speed').remove();
+            $('#loader-wrapper').fadeOut(2000, function(){
+              angular.bootstrap( document, [ "Storagon" ] );              
+              if(navigator.appName === "Microsoft Internet Explorer"){
+                $('#modal-notice-browser').foundation('reveal', 'open');
+              }
+            });                  
+          }
+        });
+      });
+    </script>
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      var pluginUrl =
+      '//www.google-analytics.com/plugins/ga/inpage_linkid.js';
+      _gaq.push(['_require', 'inpage_linkid', pluginUrl]);
+      _gaq.push(['_setAccount', 'UA-62259564-1']);
+      _gaq.push(['_setDomainName', 'storagon.com']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[3]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.16/angular.min.js" defer></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.16/angular-route.min.js" defer></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.16/angular-cookies.min.js" defer></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.16/angular-animate.min.js" defer></script>
+<!--    <script src="/static/assets/frontend/js/vendor/angularjs/angular-translate.min.js" async></script>-->
+<!--    <script src="/static/assets/frontend/js/vendor/angularjs/ng-grid.min.js" defer></script>-->
+<!--    <script src="/static/assets/frontend/js/vendor/angularjs/ngProgress.min.js" async></script>-->
+    <script src="/static/assets/frontend/js/vendor/angularjs/angular-block-ui.min.js" defer></script>
+</body>
+</html>

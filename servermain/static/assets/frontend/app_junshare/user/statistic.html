@@ -1,0 +1,142 @@
+<div class="container">
+  <div class="row">
+	<div class="col-md-2">
+      <div ng-include src="'/static/assets/frontend/app_junshare/user/sidebar.html'"></div>
+    </div>
+    <div class="col-md-10">
+      <ul class="nav nav-pills" role="tablist" data-tab="">
+        <li role="presentation" class="active">
+            <a href="#overview" aria-controls="overview" role="tab" data-toggle="tab">Overview</a>
+        </li>
+        <li role="presentation">
+            <a href="#downloadSessions" aria-controls="downloadSessions" role="tab" data-toggle="tab">Download Sessions</a>
+        </li>
+        <li role="presentation">
+            <a href="#downloadCountChart" aria-controls="downloadCountChart" role="tab" data-toggle="tab">Download Count Chart</a>
+        </li>
+        <li role="presentation">
+            <a href="#myOriginalUser" aria-controls="myOriginalUser" role="tab" data-toggle="tab">My Original User</a>
+        </li>
+      </ul>
+      <div class="vertical-padding-top"></div>
+      <div class="tab-content">
+        <div role="tabpanel" class="tab-pane active" id="overview">
+          <div class="row">
+                <div class="col-md-6">
+	                <h4 class="session-title">Overview</h4>
+                </div>
+                <div class="col-md-6">
+	                <span class="pull-right">
+                        <label>From</label>
+                        <input class="span2 fromDate" size="16" type="text">
+                        <label>To</label>
+                        <input class="span2 toDate" size="16" type="text">
+                    </span>
+                </div>
+            </div>
+          <div class="vertical-padding-top"></div>
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Downloads</th>
+                <th>Premium Sales</th>
+                <th>Re-bills</th>
+                <th>Site Sales</th>
+                <th>Referrals</th>
+                <th>Referrals PPD</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>              
+              <tr ng-repeat="(key, value) in transactionStatsitic">
+                <td>{{ key }}</td>
+                <td>{{ value.ppd[0] + value.downloadRaw[0] }} / ${{ value.ppd[1] | amount : 4 }}</td>
+                <td>{{ value.bill[0] }} / ${{ value.bill[1] | amount : 0 }}</td>
+                <td>{{ value.rebill[0] }} / ${{ value.rebill[1] | amount : 0 }}</td>
+                <td>{{ value.website[0] }} / ${{ value.website[1] | amount : 0 }}</td>
+                <td>{{ value.referer[0] }} / ${{ value.referer[1] | amount : 0 }}</td>
+                <td>{{ value.refererPPD[0] }} / ${{ value.refererPPD[1] | amount : 4 }}</td>
+                <td>${{ value.totalOverall }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div role="tabpanel" class="tab-pane" id="downloadSessions">
+          <div class="row">
+                <div class="col-md-6">
+	                <h4 class="session-title">Download Sessions</h4>
+                </div>
+                <div class="col-md-6">
+	                <span class="pull-right">
+                        <select id="download-count-perpage" class="right">
+				            <option value="25" selected>25 Items</option>
+				            <option value="50">50 Items</option>
+				            <option value="0">Show All</option>
+                        </select>
+                        <label>To</label>
+                        <input class="span2 toDate" size="16" type="text">
+                        <label>From</label>
+                        <input class="span2 fromDate" size="16" type="text">
+                    </span>
+                </div>
+            </div>
+          <div class="vertical-padding-top"></div>
+          <input type="hidden" id="totalRecords">
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th width="40%">Name</th>
+                <th>Country</th>
+                <th>Size</th>
+                <th>Status</th>
+                <th>Created</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="downloadCount in downloadCounts">
+                <td data-tooltip aria-haspopup="true" class="has-tip" title="{{downloadCount.data.website_url}}">{{downloadCount.data.file_name}}</td>
+                <td>{{downloadCount.data.iso_code}}</td>
+                <td>{{downloadCount.data.file_size| filesize: downloadCount.data.file_size}}</td>
+                <td class="{{(downloadCount.status| enumSessionStatus: downloadCount.status === 'completed') ? 'success' : 'danger'}}">{{downloadCount.status| enumSessionStatus: downloadCount.status}}</td>
+                <td>{{downloadCount.created | date:'medium':'UTC'}}</td>
+              </tr>
+            </tbody>
+          </table>
+          <ul class='pagination right' id='session_pagination' role='menubar' aria-label='Pagination'></ul>
+        </div>
+        <div role="tabpanel" class="tab-pane" id="downloadCountChart">
+          <div class="row">
+                <div>
+	                <span class="pull-right">
+                        <label>To</label>
+                        <input class="span2 toDate" size="16" type="text">
+                        <label>From</label>
+                        <input class="span2 fromDate" size="16" type="text">
+                    </span>
+                </div>
+            </div>
+          <div class="vertical-padding-top"></div>
+          <div id="linechartDownload" class="highchart"></div>
+        </div>
+        <div role="tabpanel" class="tab-pane" id="myOriginalUser">
+          <div class="row">
+                <div class="col-md-6">
+	                <h4 class="session-title">Overview</h4>
+                </div>
+                <div class="col-md-6">
+	                <span class="pull-right">
+                        <label>To</label>
+                        <input class="span2 toDate" size="16" type="text">
+                        <label>From</label>
+                        <input class="span2 fromDate" size="16" type="text">
+                    </span>
+                </div>
+          </div>
+
+          <div id="linechartOriginalUser" class="highchart"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

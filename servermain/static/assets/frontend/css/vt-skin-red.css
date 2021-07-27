@@ -1,0 +1,91 @@
+
+	/**************************************************************/
+	/* First line 					  											  */
+	/**************************************************************/
+				
+	ul.vt-skin-red li.vt-line-first div.vt-header
+	{
+		background:#E28879;
+	}
+	
+	ul.vt-skin-red li.vt-line-first div.vt-header-arrow
+	{
+		border-left-color:#E28879;
+	}
+	
+	ul.vt-skin-red li.vt-line-first:hover
+	{
+		outline-color:#E28879;
+	}
+		
+	/*****************************************************************/
+	/* Second line 						  										  */
+	/*****************************************************************/
+		
+	ul.vt-skin-red li.vt-line-second div.vt-header
+	{
+		background:#D74E4E;
+	}
+	
+	ul.vt-skin-red li.vt-line-second div.vt-header-arrow
+	{
+		border-left-color:#D74E4E;
+	}		
+	
+	ul.vt-skin-red li.vt-line-second:hover
+	{
+		outline-color:#D74E4E;
+	}
+		
+	/*****************************************************************/
+	/* Third line 						  										  	  */
+	/*****************************************************************/		
+		
+	ul.vt-skin-red li.vt-line-third div.vt-header
+	{
+		background:#BC2D2D;
+	}
+	
+	ul.vt-skin-red li.vt-line-third div.vt-header-arrow
+	{
+		border-left-color:#BC2D2D;
+	}	
+	
+	ul.vt-skin-red li.vt-line-third:hover
+	{
+		outline-color:#BC2D2D;
+	}
+		
+	/*****************************************************************/
+	/* Fourth line		 				  										  	  */
+	/*****************************************************************/				
+		
+	ul.vt-skin-red li.vt-line-fourth div.vt-header
+	{
+		background:#830C14;
+	}
+	
+	ul.vt-skin-red li.vt-line-fourth div.vt-header-arrow
+	{
+		border-left-color:#830C14;
+	}	
+	
+	ul.vt-skin-red li.vt-line-fourth:hover
+	{
+		outline-color:#830C14;
+	}
+	
+	/*****************************************************************/
+	/* Line hover		 				  										  	  */
+	/*****************************************************************/	
+	
+	ul.vt-skin-red li.vt-line:hover
+	{
+		background:#FBEEEE;	
+	}
+	
+	ul.vt-skin-red li.vt-line:hover div.vt-content ul.vt-features li
+	{
+		background-image:url('../images/skin/red/tick_active.png');
+	}
+	

@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html ng-app="Storagon" class="no-js" lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Junshare, file hosting">
+    <title>Junshare</title>
+
+    {# font #}
+    <link rel="stylesheet" href='http://fonts.googleapis.com/css?family=Lato:300,400,700,900' />
+
+    {# css #}
+    <!--<link rel="stylesheet" href="/static/assets/frontend/css/normalize.css" />
+    <link rel="stylesheet" href="/static/assets/frontend/css/ng-grid.css" />
+    <link rel="stylesheet" href="/static/assets/frontend/css/ngProgress.css" />
+    <link rel="stylesheet" href="/static/assets/frontend/css/angular-block-ui.min.css" />
+    -->
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css" />
+
+    <link href="/static/assets/frontend/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/assets/frontend/css/animate.css" rel="stylesheet">
+    <link href="/static/assets/frontend/css/app.css" rel="stylesheet">
+    <link rel="shortcut icon" href="/static/assets/frontend/images/junshare.png" />
+    <script type="text/javascript">
+      var file_id = {{file_id}};
+      var file_name = "{{file_name}}";
+      var file_size = {{file_size}};
+      {% if user.is_anonymous %}
+      var countDownTime = 5;
+      {% elif user.profile.getPlanID == 0 %}
+      var countDownTime = 5;
+      {% else %}
+      var countDownTime = 2;
+      {% endif %}
+      var loader;
+
+        {% if user.is_authenticated %}
+            var CURRENT_USER = {
+                username: '{{user.username}}',
+                id: {{user.id}},
+                email: '{{user.email}}',
+                is_active: '{{user.is_active}}',
+                is_staff: '{{user.is_staff}}',
+                last_login: '{{user.last_login}}',
+                first_name: '{{user.first_name}}',
+                last_name: '{{user.last_name}}'
+            };
+            {% else %}
+            CURRENT_USER = null;
+        {% endif %}
+
+    </script>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-62259564-1', 'auto');
+      ga('require', 'linkid', 'linkid.js');
+    </script>
+    <!--Start of Tawk.to Script-->
+	<script type="text/javascript">
+		var $_Tawk_API={},$_Tawk_LoadStart=new Date();
+		(function(){
+		var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+		s1.async=true;
+		s1.src='https://embed.tawk.to/55a86d8b84d307454c02a1a4/default';
+		s1.charset='UTF-8';
+		s1.setAttribute('crossorigin','*');
+		s0.parentNode.insertBefore(s1,s0);
+		})();
+	</script>
+	<!--End of Tawk.to Script-->
+  </head>  
+  <body>
+    {% include "junshare_main/external_layout/header.html" %}
+    <div class="container">
+		<div class="text-center">
+	        <h3>File Information</h3>
+	        <p>Name: <strong>{{file_name}}</strong></p>
+	        <p>Size: <strong>{{file_size|filesizeformat}}</strong></p>
+
+        </div>
+		<!--<div class="vertical-padding-top"></div>-->
+        <div class="col-sm-12 col-md-8 col-md-offset-2">
+          <table class="table table-hover table-bordered" style="display:none;">
+            <thead>
+                <tr>
+                    <th>FEATURES</th>
+                    <th>FREE</th>
+                    <th>PREMIUM</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th>Storage Space</th>
+                    <th>50 GB</th>
+                    <th>500 GB and more</th>
+                </tr>
+                <tr>
+                    <th>Monthly Bandwidth</th>
+                    <th>250 GB</th>
+                    <th>1 TB and more</th>
+                </tr>
+                <tr>
+                    <th>Download Speed</th>
+                    <th>Average</th>
+                    <th>Unlimited</th>
+                </tr>
+                <tr>
+                    <th>Download Wait</th>
+                    <th>30 seconds</th>
+                    <th>No wait</th>
+                </tr>
+                <tr>
+                    <th>Access to Premium files</th>
+                    <th><span class="glyphicon glyphicon-remove"></span></th>
+                    <th><span class="glyphicon glyphicon-ok"></span></th>
+                </tr>
+                <tr>
+                    <th>Access to Premium tools</th>
+                    <th><span class="glyphicon glyphicon-remove"></span></th>
+                    <th><span class="glyphicon glyphicon-ok"></span></th>
+                </tr>
+                <tr>
+                    <th>Limit number of download per day</th>
+                    <th><span class="glyphicon glyphicon-ok"></span></th>
+                    <th><span class="glyphicon glyphicon-remove"></span></th>
+                </tr>
+                <tr>
+                    <th>24/7 Customer Support</th>
+                    <th><span class="glyphicon glyphicon-remove"></span></th>
+                    <th><span class="glyphicon glyphicon-ok"></span></th>
+                </tr>
+                <tr>
+                    <th>Automatic Delete File</th>
+                    <th>Never</th>
+                    <th>Never</th>
+                </tr>
+                <tr>
+                    <th>Pricing</th>
+                    <th>Free</th>
+                    <th><h3>$12.99 /mo</h3></th>
+                </tr>
+                <tr>
+                    <th>Spped</th>
+                    <th>Slow</th>
+                    <th>Fast</th>
+                </tr>
+                <tr>
+                    <th>&nbsp</th>
+                    <th>
+                        <a href="javascript:void(0)" id="showFreeDownloadProcess" class="btn btn-danger">Slow Download</a>
+
+                    </th>
+                    <th>
+                        <a href="javascript:void(0)" id="showPlanModal" class="btn btn-danger">Fast Download</a>
+                    </th>
+                </tr>
+            </tbody>
+		</table>
+        </div>
+        <div class="vertical-padding-top"></div>
+        <div class="col-sm-12 col-md-8 col-md-offset-2" id="downloadProcess" style="display:none;">
+	        <div class="row text-center countdown">
+                <h1>
+	                <span class="hours">00</span>:
+	                <span class="minutes">00</span>:
+		            <span class="seconds">00</span>
+                </h1>
+	          <div id="progress"></div>
+	        </div>
+            <div class="text-center">
+                <a id="result_file" class="text-center" href="javascript:void(0)" download="{{file_name}}"></a>
+            </div>
+{#	        {% if user.profile.getPlanID == 0 or user.is_anonymous %}#}
+{#                <div class="text-center">#}
+{#	                <div id="recaptcha-download" style="display: inline-block"></div>#}
+{#                </div>#}
+{#	        {% endif %}#}
+	        <div id="help_message_download" class="row text-center">
+	          <h3>Please choose your download type</h3>
+	        </div>
+            <div class="vertical-padding-top"></div>
+            <div class="text-center">
+                <a class="btn btn-success" id="freedl" title="Download and decrypt file using browser">Download</a>
+	            <a class="btn btn-primary" id="torrentdl" title="Download encrypted file with torrent">Download torrent</a>
+            </div>
+	        <input type="hidden" id="user_id" value="{{ user.profile.id }}">
+            <div class="vertical-padding-top"></div>
+        </div>
+
+
+      {% include "junshare_main/external_layout/footer.html" %}
+      {% include "junshare_main/external_layout/modals.html" %}
+    </div>
+
+
+    {# javascript #}
+    <script src="/static/assets/frontend/js/vendor/modernizr.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>    
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="/static/assets/frontend/js/library2.min.js" defer></script>
+    <script src="/static/assets/frontend/js/junshare_downloader.js" defer></script>
+    <script src="/static/assets/frontend/js/cryptojs/aes.js" defer></script>
+    <script src='https://www.google.com/recaptcha/api.js?onload=callRecaptcha&render=explicit' defer></script>
+    <script type="text/javascript">
+      // ______________ LOAD CACHED SCRIPT
+      jQuery.cachedScript = function( url, options ) {
+        options = $.extend( options || {}, {
+          dataType: "script",
+          cache: true,
+          url: url
+        });
+        return jQuery.ajax( options );
+      };
+      
+      // ______________ INITIALIZE RECAPTCHA
+      var recaptcha1, recaptcha2;
+      var verifyCallback = function(response) {
+        console.log(response);
+      };
+      var callRecaptcha = function() {
+        if($('#recaptcha-download').length > 0){
+          recaptcha1 = grecaptcha.render('recaptcha-download', {
+            'sitekey' : '6LeAKwQTAAAAADQGSxeqaWehXOFJwuVIgWPEiQrX',
+            'callback' : verifyCallback,
+            'theme' : 'light'
+          });
+        }
+        recaptcha2 = grecaptcha.render('recaptcha-signup', {
+          'sitekey' : '6LeAKwQTAAAAADQGSxeqaWehXOFJwuVIgWPEiQrX',
+          'theme' : 'light'
+        });
+      };
+      
+      // ______________ DECLARE METHODS TO PROCESS FORMS
+
+      function paymentMethod(planid, download_bandwidth, price, storage){
+
+        {% if user.is_anonymous %}
+          //$('#auth-modal').modal('show');
+            $('#planModal').modal('hide');
+            setTimeout(function(){
+			   $('#auth-modal').modal('show');
+			}, 500);
+        {% else %}
+
+          $('#paymentModal input#planID').val(planid);
+          $('#paymentModal .storage').html("Storage: "+filesize(storage));
+          $('#paymentModal .bandwidth').html("Bandwidth: "+filesize(download_bandwidth));
+          $('#paymentModal .price').html("Price: "+currency(price/100));
+            $('#planModal').modal('hide');
+            setTimeout(function(){
+			   $('#paygateModal').modal('show');
+			}, 500);
+        {% endif %}
+      }      
+      function processForm() {
+          $('.loader').show();
+          $('div.success').html("Your payment is being processing at the moment, please wait...");
+          $('div.success').show();
+          buyPremiumDirectProcess($('#planID').val(),1,$('#card_number').val(),$('#card_name').val(),$('#card_expiry').val(),$('#card_cvc').val(),$('#first_name').val(),$('#last_name').val(),$('#email').val(),$('#phone_number').val(),$('#address').val(),$('#country').val(),$('#state').val(),$('#city').val(),$('#zipcode').val()
+            ,function (data){
+              $('.loader').hide();
+              $('div.success').html("Process payment success! Your bill session ID is "+data.billSession_id);                
+            }
+            ,function (data){
+              $('.loader').hide();
+              $('div.alert').html("Process failed with error="+data.responseJSON.error+" code="+data.responseJSON.code);
+              $('div.success').hide();
+              $('div.alert').show();                              
+            }
+          );
+      }      
+      function processReportForm(){
+        $('.loader').show();
+        url_path_array = window.location.pathname.split('/');
+        createReport($('#text').val(), url_path_array[2], $('#user_id').val(), $('#detail').val(), function(data){          
+          $('.loader').hide();
+          $('.alert-box.success').prepend("Your report is successfuly sent to us! You can find your report in session history");
+          $('.alert-box.success').show();
+        });
+      }      
+      function processInputFilekeyForm(){
+        $('.loader').show();
+        encodedKey = $('input#filekey').val();
+        $('.loader').hide();
+        $('.alert-box.success').prepend("Your filekey is successfuly inserted");
+        $('.alert-box.success').show();
+      }      
+      function checkPassword(){
+        var pass1 = document.getElementById('password').value;
+        var pass2 = document.getElementById('retype_password').value;
+        if (pass1 !== pass2){
+          $('.msg-block').show();
+        }
+        else{          
+          $('.msg-block').hide();
+        }
+      }
+      function processPaypal(){
+        $('#empty-form').attr('action', '/buypremium/' + $('input#planID').val() + '/2/');
+        $('#empty-form').submit();
+      }
+      
+      // ______________ START COUNTDOWN TIMER
+      function startTimer(duration, container, callback) {
+        if(duration > 0){
+          duration--;
+          //container.find('.minutes').text(minutes);
+          container.find('.seconds').text(("0" + duration).slice(-2));
+          setTimeout(function(){
+            startTimer(duration, container, callback);
+          }, 1000);
+        }else{
+          callback();
+        }
+      }
+      // ______________ CREATE DOWNLOAD SESSION
+      function createSession(download_type){
+        createDownloadSession({file_id:file_id,download_type:download_type}, function(data){
+          switch(download_type){
+            case 1:             
+              location.href = data.download_link;
+              break;
+            case 2:
+              $.cachedScript("/static/assets/frontend/js/jquery.percentageloader.min.js").done(function(){
+                  loader = $("#progress").percentageLoader({
+                  width : 200, height : 200, progress : 0, value : '0KB/s'
+                });
+                $('ul.countdown').css({"display" : "none"});
+                $('div#progress').css({"display" : "block"});
+                decryptDownload(data.download_link);
+              });
+              break;
+            case 3:
+              location.href = data.download_link;
+              break;
+          }
+          $('div#recaptcha-download').css({"display" : "none"});
+          $('#modal-download-guidance').modal('show');
+          $('#freedl, #torrentdl, #idmdl').unbind('click');
+          $('#help_message').html("If your browser is stop responding or crashed while download, please reload your browser (F5) and click Decrypt Download button to resume progress of downloading your file.");
+	        $('#freedl, #torrentdl').bind('click', function(){
+				callbackError("You've already downloaded the file. If you want to download gain," +
+	            "please reload this page");
+	        });
+        },function(jqXHR, textStatus, errorThrown){                                   
+          callbackError(JSON.parse(jqXHR.responseText).error);
+        });
+      }
+      
+      // ______________ CALLBACK ERROR
+      function callbackError(responseText){
+        $('#modal-error p.modal-body').html(responseText);
+        $('#modal-error a.close').html("Close");
+        $('#modal-error').modal('show');
+        if(responseText.indexOf("premium") > 0){
+          $('#modal-error').prepend("<h3 class=\"text-center\">Premium Upgrade Notice</h3>")          
+          $(document).on('closed.fndtn.reveal', '#modal-error', function () {
+            $('#showPlanModal').trigger('click');
+          });
+        }
+        else{
+          $('#modal-error h3').remove();   
+        }
+      }
+      
+      $(document).ready(function () {
+
+        
+        // ______________ DECLARE VARIABLES
+        {% if user.is_anonymous %}
+            $('#auth-modal').modal('show');
+        {% endif %}
+        {% if user.profile.getPlanID > 0 %}
+        var premium_user = 1;
+        {% else %}
+        var premium_user = 0;
+        {% endif %}
+        var login_form = $('#login');
+        var signup_form = $('#signup');
+        var autoDownloadSignal = window.location.hash.substr(1).split("?").pop().split("=").pop();        
+
+        // ______________ NOTICE IE USER
+        if(navigator.appName === "Microsoft Internet Explorer"){
+          $('#modal-notice-browser').modal('show');
+        }
+        
+        // ______________ CHECK FILE KEY
+        /*if(window.location.hash.substr(1) === ""){
+          $('#auth-modal').modal('close');
+          $('.alert-box').css({"display" : "none"});
+          $('#modal-input-filekey').modal('show');
+        }
+        else{
+          encodedKey = String(window.location.hash.substr(1).split("?").slice(0,1));
+        }*/
+        
+        // ______________ BIND CLICK EVENTS AND SHOW MODALS
+
+
+        $('#login-button, #signup-button').on('click', function(){
+            $('#auth-modal').modal('show');
+        });        
+        $("#showPlanModal").on('click', function(){
+          var stringHTML = "";
+          getPlanAndPaygateInfo(function(data){
+            for (var i in data.planIDList) {
+              var k = data.planIDList[i];
+              var planTitle = (k === 4) ? 'Risk Trial Plan' : 'Plan ' + k;
+              if(parseInt(k) % 2 === 0){
+                var additionalTweakClass = "vt-line-grey";
+              }
+              else{
+                var additionalTweakClass = "";
+              }
+                stringHTML += "<div class='col-xs-12 col-sm-6 col-md-3'>" +
+                            "<div class='panel price panel-red'>" +
+                                "<div class='panel-heading text-center'>" +
+                                    "<h3>" + planTitle +"</h3>" +
+                                "</div>" +
+                                "<div class='panel-body text-center'>" +
+                                    "<h2>" +
+                                        currency(data.planConfigDict[k].price/100) +
+                                        "<span>/&nbsp;" + duration(data.planConfigDict[k].expires) + ".</span> " +
+                                    "</h2>" +
+                                "</div>" +
+                                "<ul class='list-group list-group-flush text-center'>" +
+                                    "<li class='list-group-item'><i class='icon-ok text-danger'></i>" +
+                                        filesize(data.planConfigDict[k].storage) + " Storage " +
+                                    "</li>" +
+                                    "<li class='list-group-item'><i class='icon-ok text-danger'></i>" +
+                                        filesize(data.planConfigDict[k].download_bandwidth) + "Download Bandwidth </li>" +
+                                    "<li class='list-group-item'><i class='icon-ok text-danger'></i>" +
+                                        filesize(data.planConfigDict[k].upload_bandwidth) + "Upload Bandwidth " +
+                                    "</li>" +
+                                "</ul>" +
+	                            "<div class='panel-footer'>" +
+	                                "<a class='btn btn-lg btn-block btn-danger' href=\"javascript:void(0)\" " +
+	                                    "onclick=\"paymentMethod(" + k + ", " + data.planConfigDict[k].download_bandwidth +
+	                                        ", " + data.planConfigDict[k].price + ", " +data.planConfigDict[k].storage + ")\">UPGRADE NOW" +
+	                                "</a>" +
+	                            "</div>" +
+                            "</div>" +
+                            "</div>";
+            }
+            $("#planModal .pricingboxes").html(stringHTML);
+            $("#planModal").modal('show');
+          });          
+        });
+
+        $('#paybycreditcard').on('click', function() {
+
+          $('#paygateModal').modal('hide');
+	        setTimeout(function(){
+			    $('#paymentModal').modal('show');
+			}, 500);
+
+        });
+        // ______________ LOGIN / SIGNUP FORM PROCESS
+        login_form.on('submit', function (e) {
+          e.preventDefault();
+          var login_username = login_form.find('input[name="login_username"]').val();
+          var login_password = login_form.find('input[name="login_password"]').val();
+          $('.loader').show();
+          login(login_username, login_password, function() {
+            $('.loader').hide();
+            location.reload(true);
+          }, function () {
+            $('.loader').hide();
+            callbackError("Username or password is not valid");          
+          });
+        });
+        signup_form.on('submit', function (e) {
+          e.preventDefault();
+          var username = signup_form.find('input[name="username"]').val();
+          var password = signup_form.find('input[name="password"]').val();
+          var email = signup_form.find('input[name="email"]').val();
+          $('.loader').show();
+          signup(username, password, email, grecaptcha.getResponse(recaptcha2), function () {
+            $('.loader').hide();
+            location.reload(true);
+          }, function (data) {
+            $('.loader').hide();
+            grecaptcha.reset(recaptcha2);
+            callbackError("Signup Error: " + data['error']);
+          });
+        });                
+        
+        // ______________ INITIALIZE COUNTDOWN TIMER AND TRIGGER DOWNLOAD BUTTON AFTER FINISHED
+        var startDownloadProcess = function() {
+          startTimer(countDownTime, $(".countdown"), function(){
+            $.when(
+                $.cachedScript( "/static/assets/frontend/js/cryptojs/lib-typedarrays-min.js"),
+                $.cachedScript( "/static/assets/frontend/js/cryptojs/mode-ctr-min.js"),
+                $.cachedScript( "/static/assets/frontend/js/cryptojs/mode-ecb.js"),                
+                $.Deferred(function( deferred ){
+                  $( deferred.resolve );
+                })
+            ).done(function(){
+              $('#help_message_download, .btn-wrapper-download, #help_message').fadeIn();
+              $('#freedl').click(function(event){
+                event.stopPropagation();                
+
+                  if(typeof(recaptcha1) !== 'undefined' && !grecaptcha.getResponse(recaptcha1).length && !premium_user){
+                    callbackError("You must complete the Captcha challenge before download");
+                    grecaptcha.reset(recaptcha1);
+                    return false;
+                  }
+                  else{                
+                    $('div.countdown, #torrent_download_guidance, #direct_download_guidance, #decrypt_tool_guidance').css({"display" : "none"});
+                    $('div#progress, #browser_download_guidance').css({"display" : "block"});
+                    $('#help_message_download, .btn-wrapper-download').fadeOut();
+                    $('span.tooltip').hide();               
+                    createSession(3, false);
+                  }
+
+              });
+
+              $('#idmdl').click(function(event){  
+                event.stopPropagation();
+                var encodedKey = getEncodedKey();
+                if(typeof(recaptcha1) !== 'undefined' && !grecaptcha.getResponse(recaptcha1).length && !premium_user){
+                  callbackError("You must complete the Captcha challenge before download");
+                  grecaptcha.reset(recaptcha1);
+                  return false;
+                }
+                else{
+                  $('#help_message_download, .btn-wrapper-download').fadeOut();
+                  $('span.tooltip').hide();
+                  $('#direct_download_guidance, #decrypt_tool_guidance').css({"display" : "block"});
+                  $('#torrent_download_guidance, #browser_download_guidance').css({"display" : "none"});                
+                  createSession(3, false);
+                }
+              });
+
+              $('#torrentdl').click(function(event){ 
+                event.stopPropagation();
+                var encodedKey = getEncodedKey();
+                if(typeof(recaptcha1) !== 'undefined' && !grecaptcha.getResponse(recaptcha1).length && !premium_user && autoDownloadSignal.length > 7){
+                  callbackError("You must complete the Captcha challenge before download");
+                  grecaptcha.reset(recaptcha1);
+                  return false;
+                }
+                else{
+                  $('#help_message_download, .btn-wrapper-download').fadeOut();
+                  $('span.tooltip').hide();
+                  $('#torrent_download_guidance, #decrypt_tool_guidance').css({"display" : "block"});
+                  $('#browser_download_guidance, #direct_download_guidance').css({"display" : "none"});
+                  createSession(1, true);
+                }
+              });
+              if(autoDownloadSignal.length <= 7){
+                switch(autoDownloadSignal){
+                  case "1":
+                  case "torrent":
+                    $('#torrentdl').trigger('click');
+                    break;
+                  case "2":
+                  case "browser":
+                    $('#freedl').trigger('click');
+                    break;
+                  case "3":
+                  case "direct":
+                    $('#idmdl').trigger('click');
+                    break;
+                }
+              }
+            });
+          });
+        };
+
+        if(premium_user === 1){
+          $('#downloadProcess').show();
+          startDownloadProcess();
+          $('#showFreeDownloadProcess').unbind('click');
+        }
+        else{
+          $('#showFreeDownloadProcess').click(function(){
+            $('#downloadProcess').show();
+            startDownloadProcess();
+            $('#showFreeDownloadProcess').unbind('click');
+
+          });
+        }
+        $('#showFreeDownloadProcess').trigger('click');
+      });
+
+    </script>
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      var pluginUrl =
+      '//www.google-analytics.com/plugins/ga/inpage_linkid.js';
+      _gaq.push(['_require', 'inpage_linkid', pluginUrl]);
+      _gaq.push(['_setAccount', 'UA-62259564-1']);
+      _gaq.push(['_setDomainName', 'storagon.com']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+              ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+              var s = document.getElementsByTagName('script')[3]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+  </body>
+</html>

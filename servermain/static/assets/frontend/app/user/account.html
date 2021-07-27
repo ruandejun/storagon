@@ -1,0 +1,132 @@
+<div class="padding-top-30 padding-bottom-30">
+  <div class="row padding-bottom-100">
+    <div class="large-10 push-2 columns">
+      <div class="row padding-bottom-10">
+        <div class="large-4 columns">
+          <h5>Account details</h5>
+          <div class="row collapse">
+            <table role="grid" width="100%">             
+              <tbody>
+                <tr>
+                  <td>Username</td>
+                  <td>{{ username}}</td>
+                </tr>
+                <tr class="active-account" ng-show="accountStatus === 'emailNotActivated'">
+                  <td></td>
+                  <td><button ng-click="resendActivationEmail()" ng-disabled="isProcessingResendActivationEmail" class="tiny">Resend activation email</button></td>
+                </tr>
+                <tr>
+                  <td>Email</td>
+                  <td>{{ email}}</td>
+                </tr>
+                <tr>
+                  <td>Status</td>
+                  <td>{{ accountStatus }}</td>
+                </tr>
+                <tr>
+                  <td>Account Type</td>
+                  <td>{{ accountType }} </td>                  
+                </tr>
+                <tr class="apply-affiliate" ng-show="accountType !== 'affiliate' && accountType !== 'affiliatePPD' && accountStatus !== 'emailNotActivated'">
+                  <td></td>
+                  <td><button ng-click="applyAffiliate()" class="tiny"> Apply to become Affiliate</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>        
+        </div>
+        <div class="large-8 columns">
+            <h5>Account Limitations</h5>                
+            <div class="row collapse">
+              <table role="grid" width="100%">
+                <thead>
+                  <tr>
+                    <th width="200">FEATURES</th>
+                    <th width="200">LIMITS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Monthly Bandwidth</td>
+                    <td> {{ monthly_bandwidth | filesize }} </td>
+                  </tr>
+                  <tr>
+                    <td>Download Speed</td>
+                    <td>{{ (download_speed >= 10485760) ? "Unlimited" : ((download_speed | filesize) + " / s") }}</td>
+                  </tr>
+                  <tr>
+                    <td>Download Wait</td>
+                    <td>{{ download_wait }}</td>
+                  </tr>
+                  <tr>
+                    <td>Access to Premium files</td>
+                    <td>{{ access_premium_files }}</td>
+                  </tr>
+                  <tr>
+                    <td>Access to Premium tools</td>
+                    <td>{{ access_premium_tools }}</td>
+                  </tr>
+                </tbody>
+              </table>                           
+            </div>      
+        </div>
+      </div>
+      <hr>
+      <div class="row padding-bottom-30">
+        <div class="large-6 columns">
+          <h5>Used space: {{ storageUsed | filesize : 1 }} of {{ storageSpace | filesize }}</h5>
+          <div class="progress small success round">
+            <span class="meter" style="width: {{ storageUsed / storageSpace | percentage }};"></span>
+          </div>
+          <p>You have total of {{ folder | number }} folders with {{ file | number }} files inside.</p>
+        </div>
+        <div class="large-6 columns">
+          <h5>Used bandwidth: {{ bandwidthUsed | filesize : 1 }} of {{ monthly_bandwidth | filesize }}</h5>
+          <div class="progress small round">
+            <span class="meter" style="width: {{ bandwidthUsed / monthly_bandwidth | percentage }};"></span>
+          </div>
+        </div>
+      </div>
+      <hr>
+
+      <div class="row padding-bottom-30">
+        <ul class="small-block-grid-1 large-block-grid-2 medium-block-grid-2 domainfeatures">
+          <li>
+            <div class="row">
+              <div class="small-12 large-3 medium-3 columns">
+                <div class="circle">
+                  <i class="fa fa-trophy"></i>
+                </div>
+              </div>
+              <div class="small-12 large-9 medium-9 columns">
+                <h3>Premium Status: {{ premiumStatus | uppercase }}</h3>
+                <p>Plan expired in: {{ planExpired | date:'medium' }}.</p>
+                <a href="/#/premium" class="tiny button">Extend your premium</a>
+              </div>
+            </div>
+          </li>
+
+          <li>
+            <div class="row">
+              <div class="small-12 large-3 medium-3 columns">
+                <div class="circle">
+                  <i class="fa fa-dollar"></i>
+                </div>
+              </div>
+              <div class="small-12 large-9 medium-9 columns">
+                <h3>Point: {{ pointBalance}}</h3>
+                <p>You can use this point to exchange to premium.</p>
+                <a href="javascript:void(0)" class="tiny button">Exchange your Premium</a>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>      
+    </div>
+
+    <div class="large-2 pull-10 columns">
+      <div ng-include="'/static/assets/frontend/app/user/sidebar.html'"></div>
+    </div>
+  </div>
+  <div ng-include="'/static/assets/frontend/app/layout/modals.html'"></div>
+</div>

@@ -1,0 +1,28 @@
+<div class="login-container">
+  <div class="row">
+    <div class="small-12 large-7 large-centered medium-7 medium-centered columns">
+      <div class="login-form" ng-show="showLogin">
+        <form id="login_form" name="login_form" ng-submit="login_form.$valid && processLoginForm()">
+          Username: <input type="text" name="username" size="50" ng-model="username" required/>
+          Password: <input type="password" name="password" size="20" ng-model="password" required/>
+          <p id="nameHelpText"><a href="javascript:void(0)" class="reset-pass-link">Forgot username or password ?</a></p>
+          <input type="submit" value="Login" ng-disabled="isProcessing"/>
+        </form>                
+        <div class="loader">
+          <img id="loading-image" src="/static/assets/frontend/images/ajax-spinner.gif" alt="Loading..." />
+        </div>
+      </div>  
+      <div class="login-form" ng-hide="showReset">
+        <form id="reset_form" name="reset_form" ng-submit="reset_form.$valid && processResetForm()">
+          Email: <input type="text" name="email" size="50" ng-model="email" required/>
+          <p id="emailHelpText"><a href="javascript:void(0)" class="reset-pass-link">Back to login</a></p>
+          <input type="submit" value="Reset Password" ng-disabled="isProcessing"/>
+        </form>
+        <div class="loader">
+          <img id="loading-image" src="/static/assets/frontend/images/ajax-spinner.gif" alt="Loading..." />
+        </div>
+      </div> 
+    </div>
+  </div>
+  <div ng-include src="'/static/assets/frontend/app/layout/modals.html'"></div>
+</div>

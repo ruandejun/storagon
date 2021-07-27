@@ -1,0 +1,32 @@
+version: '3.2'
+services:
+  storagon:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      labels:
+        - build.version=${BUILD_VERSION:-local}
+      args:
+        - buildflag=clear_sourcecode
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/opt/project
+    ports: [ "8000:8000" ]
+  mongodb:
+    image: mongo:3.3.15
+    ports:
+      - 27017:27017
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: password
+      ME_CONFIG_MONGO_INITDB_DATABASE: storagon
+  rediscache:
+    image: redis:alpine
+  postgredb:
+    image: postgres:12-alpine
+    environment:
+      POSTGRES_DB: storagon
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: 123
+    ports: [ "5432:5432" ]
+    command: "-c 'shared_buffers=256MB' -c 'max_connections=512'"

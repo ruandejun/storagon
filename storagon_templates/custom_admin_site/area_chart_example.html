@@ -1,0 +1,105 @@
+{% extends "custom_admin_site/custom_site_base.html" %}
+{% load i18n admin_static %}
+
+{% block navigator_menu %}
+    <li class="active"><a href="{% url 'CustomAdmin:statistics_count_new_user' %}">{% trans 'New User' %}</a></li>
+{% endblock %}
+
+{% block extrajs %}
+<script type="text/javascript" src="/admin/jsi18n/"></script>
+<script type="text/javascript" src="/static/admin/js/core.js"></script>
+<script type="text/javascript" src="/static/admin/js/admin/RelatedObjectLookups.js"></script>
+<script type="text/javascript" src="/static/admin/js/jquery.min.js"></script>
+<script type="text/javascript" src="/static/admin/js/jquery.init.js"></script>
+<script type="text/javascript" src="/static/admin/js/actions.min.js"></script>
+<script type="text/javascript" src="/static/admin/js/SelectBox.js"></script>
+<script type="text/javascript" src="/static/admin/js/SelectFilter2.js"></script>
+<script type="text/javascript" src="/static/admin/js/calendar.js"></script>
+<script type="text/javascript" src="/static/admin/js/admin/DateTimeShortcuts.js"></script>
+
+
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script type="text/javascript">
+      google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawChart);
+      function drawChart() {
+        var data = google.visualization.arrayToDataTable([
+          ['Day', 'User'],
+          {% for item in result %}
+            ['{{item.day|date:"d/m"}}',  {{item.available}}],
+          {% endfor %}
+        ]);
+
+        var options = {
+          title: 'New User',
+          hAxis: {title: 'Day/Month',  titleTextStyle: {color: '#333'}},
+          vAxis: {minValue: 0}
+        };
+
+        var chart = new google.visualization.AreaChart(document.getElementById('chart_div'));
+        chart.draw(data, options);
+      }
+</script>
+
+<script type="text/javascript">
+      google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawChart);
+      function drawChart() {
+
+        var data = google.visualization.arrayToDataTable([
+          ['Platform',  'User'],
+           {% for item in resultPlatform %}
+            ['{{item.platform}}',  {{item.available}}],
+          {% endfor %}
+        ]);
+
+        var options = {
+          title: 'New User by Platform in this duration'
+        };
+
+        var chart = new google.visualization.PieChart(document.getElementById('piechart'));
+
+        chart.draw(data, options);
+      }
+</script>
+
+<script type="text/javascript">
+      google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawChart);
+      function drawChart() {
+
+        var data = google.visualization.arrayToDataTable([
+          ['Dt',  'User'],
+           {% for item in resultDistributor %}
+            ['{{item.dt}}',  {{item.available}}],
+          {% endfor %}
+        ]);
+
+        var options = {
+          title: 'New User by Dt ID in this duration'
+        };
+
+        var chart = new google.visualization.PieChart(document.getElementById('piechart2'));
+
+        chart.draw(data, options);
+      }
+</script>
+{% endblock %}
+
+
+{% block content %}
+  <div id="content-main">
+      <form>{{ form.as_table }}
+      <input type="submit" class="btn btn-success" value="View" />
+      </form>
+      <div id="chart_div" style="width: 900px; height: 500px;"></div>
+  </div>
+{% endblock %}
+
+
+{% block sidebar %}
+  <div id="content-related">
+      <div id="piechart" style="width: 450px; height: 250px;"></div>
+      <div id="piechart2" style="width: 450px; height: 250px;"></div>
+  </div>
+{% endblock %}

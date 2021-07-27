@@ -1,0 +1,96 @@
+{% extends "custom_admin_site/custom_site_base.html" %}
+{% load i18n admin_static %}
+
+{% block navigator_menu %}
+    <li class="active"><a href="{% url 'CustomAdmin:showUserStatistic' %}">{% trans 'User statistic' %}</a></li>
+{% endblock %}
+
+{% block extrajs %}
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+
+<script src="http://code.highcharts.com/highcharts.js"></script>
+<script src="http://code.highcharts.com/modules/heatmap.js"></script>
+<script src="http://code.highcharts.com/modules/exporting.js"></script>
+
+<script type="text/javascript">
+    new_user_count_by_date = {{ new_user_count_by_date | safe}};
+
+    lineChartArrayDay = new Array();
+    lineChartArrayNewUserCount = new Array();
+
+    for(var i in new_user_count_by_date){
+        lineChartArrayDay.push(new_user_count_by_date[i][0]);
+        lineChartArrayNewUserCount.push(new_user_count_by_date[i][1]);
+    }
+
+</script>
+
+
+<script type="text/javascript">
+
+
+     $(function () {
+    $('#linechart').highcharts({
+        chart: {
+            type: 'line'
+        },
+        title: {
+            text: 'New User by day Line Chart'
+        },
+        subtitle: {
+            text: ''
+        },
+        xAxis: {
+            title: {
+                text: 'Date'
+            },
+            categories: lineChartArrayDay
+        },
+        yAxis: {
+            title: {
+                text: 'New User'
+            }
+        },
+        plotOptions: {
+            line: {
+                dataLabels: {
+                    enabled: true,
+                    format: '<b>{y}</b>'
+                },
+                enableMouseTracking: false
+            }
+        },
+        series: [{
+            name: 'New User',
+            data: lineChartArrayNewUserCount
+        }
+        ]
+    });
+});
+
+</script>
+
+{% endblock %}
+
+
+{% block content %}
+  <div id="content-main">
+    <form>
+        <select name="tzname">
+            <option value="Asia/Bangkok">Asia/Bangkok</option>
+            <option value="UTC">UTC</option>
+        </select><br/>
+        <input type="submit" value="Show" class="btn btn-small">
+    </form>
+
+      <div id="linechart" style="width: 800px; height: 400px;"></div><br/>
+
+  </div>
+{% endblock %}
+
+
+{% block sidebar %}
+  <!--<div id="content-related">-->
+    <!--<div id="piechart2" style="width: 450px; height: 250px;"></div>-->
+  <!--</div>-->
+{% endblock %}

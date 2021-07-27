@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html ng-app="Storagon" class="no-js" lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Storagon</title>
+
+    {# font #}
+    <link rel="stylesheet" href='http://fonts.googleapis.com/css?family=Lato:300,400,700,900' />
+
+    {# css #}
+    <link rel="stylesheet" href="/static/assets/frontend/css/normalize.css" />
+    <link rel="stylesheet" href="/static/assets/frontend/css/foundation.min.css" />
+    <link rel="stylesheet" href="/static/assets/frontend/css/font-awesome.min.css" />
+<!--    <link rel="stylesheet" href="/static/assets/frontend/css/animate.min.css" />
+    <link rel="stylesheet" href="/static/assets/frontend/css/morphext.css" />
+    <link rel="stylesheet" href="/static/assets/frontend/css/owl.carousel.css" />
+    <link rel="stylesheet" href="/static/assets/frontend/css/owl.theme.css" />
+    <link rel="stylesheet" href="/static/assets/frontend/css/owl.transitions.css" />
+    <link rel="stylesheet" href="/static/assets/frontend/css/slicknav.css" />-->
+    <link rel="stylesheet" href="/static/assets/frontend/css/style.css" />
+    <link rel="shortcut icon" href="/static/assets/frontend/images/icons/favicon.png" />
+    <link href='http://fonts.googleapis.com/css?family=Oswald' rel='stylesheet' type='text/css'>
+    <script>
+              (function(i, s, o, g, r, a, m){i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function(){
+              (i[r].q = i[r].q || []).push(arguments)}, i[r].l = 1 * new Date(); a = s.createElement(o),
+                      m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+              })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+              ga('create', 'UA-62259564-1', 'auto');
+              ga('require', 'linkid', 'linkid.js');    </script>
+  </head>  
+  <body>
+    {% include "storagon_main/external_layout/header.html" %}
+    <div class="container show">
+      <section class="content">
+        <div id="main">
+          <div class="vps-order-steps">
+            <div class="row">
+              <div class="small-12 columns">
+                <h3 class="download-tool-title">Download tool</h3>            
+                <h5>Current version is v1.0.0 (2015/04/27)</h5>
+                <div class="spacing-top-50"></div>
+                <div class="row">
+                  <div data-wow-delay="0.4s" class="large-4 medium-4 columns text-center wow zoomIn hide-for-small-only">
+                    <img src="/static/assets/frontend/images/icons/os_windows.png" alt=""/>
+                  </div>
+                  <div data-wow-delay="0.2s"  class="large-4 medium-4 columns text-center wow zoomIn hide-for-small-only">
+                    <img src="/static/assets/frontend/images/icons/os_mac.png" alt=""/>
+                  </div>                
+                  <div data-wow-delay="0.6s" class="large-4 medium-4 columns text-center wow zoomIn hide-for-small-only">
+                    <img src="/static/assets/frontend/images/icons/os_linux.png" alt=""/>
+                  </div>
+                  <div class="large-4 medium-4 small-12 columns text-center">                    
+                    <h4>Windows (32-bit and 64-bit)</h4>
+                    <p>Windows XP or later</p>
+                    <p><a href="/download/storagon_tool/storagon_client_setup.rar">Storagon_client_setup.rar <br/> (Decrypt & Download Tool)</a></p>
+                  </div>
+                  <div class="large-4 medium-4 small-12 columns text-center">                    
+                    <h4>Mac OS X</h4>
+                    <p>OS X 10.6 or later</p>
+<!--                    <p><a href="javascript:void(0)" class="button large">Download</a></p>-->
+                  </div>                
+                  <div class="large-4 medium-4 small-12 columns text-center">                    
+                    <h4>Linux (32-bit and 64-bit)</h4>
+                    <p>All distributions</p>
+<!--                    <p><a href="javascript:void(0)" class="button large">Download</a></p>-->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>         
+        </div>
+      </section>
+      {% include "storagon_main/external_layout/footer.html" %}
+    </div>    
+    <a href="#top" id="back-to-top"><i class="fa fa-angle-up"></i></a>
+    {# javascript #}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+<!--    <script src="/static/assets/frontend/js/fm/jquery-ui-min.js"></script>-->
+    <script src="/static/assets/frontend/js/foundation/foundation.min.js"></script>
+<!--    <script src="/static/assets/frontend/js/vendor/modernizr.js"></script>
+    <script src="/static/assets/frontend/js/vendor/hoverIntent.js"></script>
+    <script src="/static/assets/frontend/js/vendor/superfish.min.js"></script>
+    <script src="/static/assets/frontend/js/vendor/wow.min.js"></script>
+    <script src="/static/assets/frontend/js/vendor/morphext.min.js"></script>
+    <script src="/static/assets/frontend/js/vendor/jquery.slicknav.min.js"></script>
+    <script src="/static/assets/frontend/js/vendor/waypoints.min.js"></script>
+    <script src="/static/assets/frontend/js/vendor/jquery.animateNumber.min.js"></script>
+    <script src="/static/assets/frontend/js/vendor/owl.carousel.min.js"></script>
+    <script src="/static/assets/frontend/js/vendor/retina.min.js"></script>
+    <script src="/static/assets/frontend/js/custom.js"></script>-->
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      var pluginUrl =
+      '//www.google-analytics.com/plugins/ga/inpage_linkid.js';
+      _gaq.push(['_require', 'inpage_linkid', pluginUrl]);
+      _gaq.push(['_setAccount', 'UA-62259564-1']);
+      _gaq.push(['_setDomainName', 'storagon.com']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+              ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+              var s = document.getElementsByTagName('script')[3]; s.parentNode.insertBefore(ga, s);
+      })();
+      $(document).ready(function () {
+        if(navigator.appName === "Microsoft Internet Explorer"){
+          $('#modal-notice-browser').foundation('reveal', 'open');
+        }
+        
+        // ______________ LIVECHAT BUTTON
+        $('#livechat').on('click', function(e){
+          e.stopPropagation();
+          if(!$('#tawkchat-iframe-container').hasClass('active')){            
+            $('#tawkchat-iframe-container').get(0).style.setProperty('display', 'block', 'important');
+            $_Tawk.toggle();
+            $('#tawkchat-iframe-container').addClass('active');
+          }
+          else{      
+            $('#tawkchat-iframe-container').get(0).style.setProperty('display', 'none', 'important');
+            $_Tawk.toggle();
+            $('#tawkchat-iframe-container').removeClass('active');
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

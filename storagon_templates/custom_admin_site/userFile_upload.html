@@ -1,0 +1,43 @@
+{% extends "custom_admin_site/custom_site_base.html" %}
+{% load i18n admin_static %}
+
+{% block navigator_menu %}
+    <li class="active"><a href="{% url 'CustomAdmin:userFileUpload' %}">UserFile Upload</a></li>
+{% endblock %}
+
+{% block extrajs %}
+<script type="text/javascript" src="/admin/jsi18n/"></script>
+<!--<script type="text/javascript" src="/static/admin_resumable/js/resumable.js"></script>-->
+<script src="/static/assets/frontend/js/cryptojs/aes.js" type="text/javascript"></script>
+<script src="/static/assets/frontend/js/cryptojs/md5.js" type="text/javascript"></script>
+<script src="/static/assets/frontend/js/cryptojs/lib-typedarrays-min.js" type="text/javascript"></script>
+<script src="/static/assets/frontend/js/cryptojs/mode-ctr-min.js" type="text/javascript"></script>
+
+<script src="/static/assets/frontend/js/clientAPI_SDK.js" type="text/javascript"></script>
+<script src="/static/assets/frontend/js/my_resumable.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+
+    applyResumableToInput('userFile_input','userFile_submit','userFile_progress','userFile_upspeed',0,
+            function(){alert("Successs")},
+            function(){alert("Error")})
+
+</script>
+
+{% endblock %}
+
+
+{% block content %}
+  <div id="content-main">
+
+      <input id="userFile_input" type="file" min="1" max="1"/>
+      <button id="userFile_submit" class="btn btn-success">Upload</button>
+      <progress id="userFile_progress" value="0" max="1" style="width:500px"></progress>
+      <p id="userFile_upspeed"></p>
+  </div>
+{% endblock %}
+
+
+{% block sidebar %}
+
+{% endblock %}

@@ -1,0 +1,30 @@
+<div class="padding-top-30 padding-bottom-30">
+    <div class="row padding-bottom-100">
+        <div class="large-10 push-2 columns">
+          <h5>Billing Information</h5>
+          <table role="grid" class="table fixed_layout">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Plan</th>
+                <th>Bill Amount</th>
+                <th>Date</th>
+                <th>Bill ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="bill in bills">
+                <td>{{bill.pk}}</td>
+                <td>{{bill.fields.plan_id}}</td>
+                <td class="success">{{bill.fields.money_charged | amount : 0}}</td>
+                <td>{{bill.fields.created_date | date:'medium'}}</td>
+                <td>{{bill.fields.detail._id.$oid}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="large-2 pull-10 columns">
+            <div ng-include src="'/static/assets/frontend/app/user/sidebar.html'"></div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,36 @@
+<div class="container">
+  <div class="row">
+    <div class="col-md-2">
+      <div ng-include src="'/static/assets/frontend/app_junshare/user/sidebar.html'"></div>
+    </div>
+    <div class="col-md-10">
+        <h3 class="left">Message Inbox</h3>
+        <button class="btn btn-success" data-toggle="modal" data-target="#myModal">
+          Send Message
+        </button>
+
+        <div class="vertical-padding-top"></div>
+        <table class="table table-bordered">
+	        <thead>
+	          <tr>
+	            <th>ID</th>
+	            <th>Sender</th>
+	            <th>Content</th>
+	            <th>Created</th>
+	          </tr>
+	        </thead>
+	        <tbody>
+	          <tr ng-repeat="message in inboxMessages">
+	            <th>{{message.sid}}</th>
+	            <th>{{message.data.sender_username}}</th>
+	            <th>{{message.text}}</th>
+	            <th>{{message.created.$date| date:'medium'}}</th>
+	          </tr>
+	        </tbody>
+        </table>
+      </div>
+
+  </div>
+
+</div>
+<div ng-include src="'/static/assets/frontend/app_junshare/layout/modals.html'"></div>

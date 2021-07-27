@@ -1,0 +1,927 @@
+<div class="modal fade bs-example-modal-lg" id="download" aria-labelledby="Download" aria-hidden="true" role="dialog">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">List download links</h4>
+      </div>
+      <div class="modal-body">
+        <table class="table fixed_layout" role="grid">
+	        <tbody id="download_url_list">
+	        </tbody>
+	        <tbody id="no_key_url_list">
+	        </tbody>
+	        <tbody id="torrent_url_list">
+	        </tbody>
+	        <tbody id="browser_url_list">
+	        </tbody>
+	        <tbody id="direct_url_list">
+            </tbody>
+        </table>
+        <div class="loader">
+                    <img id="loading-image" src="/static/assets/frontend/images/loading.gif" alt="Loading..." />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-success">Save changes</button>
+          <div class="row padding-top-10 text-left col-md-10">
+		    <div>
+
+		      <input type="checkbox" id="auto-download-torrent" rel="torrent" name="option" required>
+		      <label for="auto-download-torrent">Torrent Link</label>
+		      <input type="checkbox" id="normal-download" rel="direct" name="option" checked required>
+		      <label for="normal-download">Normal Link</label>
+		    </div>
+		    <div>
+		      <a href="javascript:void(0)" class="btn btn-primary btn-sm" id="sort_by_name">Sort by name</a>
+		      <a href="javascript:void(0)" class="btn btn-primary btn-sm" id="copy_links_to_clipboard">Copy links</a>
+		    </div>
+		    <div id="contentClipboard">
+		      <textarea style="width: 100%;"></textarea>
+		    </div>
+          </div>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" id="newfolder" aria-labelledby="Create Folder" aria-hidden="true" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Create folder</h4>
+      </div>
+      <div class="modal-body">
+        <form>
+
+		      <div class="form-group">
+		        <label>Folder name
+		          <input id="dirName" class="form-control" autofocus="autofocus">
+		        </label>
+		      </div>
+	            <button class="btn btn-success close-modal" type="button">Cancel</button>
+		        <button class="btn btn-primary" type="button" id="newDir">Create</button>
+
+        </form>
+      </div>
+      <div class="modal-footer">
+			<div class="loader">
+                    <img id="loading-image" src="/static/assets/frontend/images/loading.gif" alt="Loading..." />
+            </div>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade bs-example-modal-lg" id="uploadfile" aria-hidden="true" role="dialog">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Upload file</h4>
+      </div>
+      <div class="modal-body">
+        <form action="" id="gsUploadForm" enctype="multipart/form-data" method="post">
+		      <div class="row">
+		        <div class="small-4 columns">
+		          <a href="javascript:void(0)" class="button tiny" id="gs_uploadAddField">Add more file</a>
+		        </div>
+		        <div class="large-12 columns" id="upload-fields">
+		        </div>
+		      </div>
+		      <div class="row">
+		        <div class="small-8 columns">
+		          <button class="button tiny close-modal" type="button">Cancel</button>
+		          <button class="button tiny primary" type="button" id="gsuploadfiles_button">Upload</button>
+		        </div>
+		      </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" id="modal-login" aria-hidden="true" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+
+      </div>
+      <div class="modal-body">
+
+      </div>
+      <div class="modal-footer">
+
+		<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" id="modal-notice-browser" aria-hidden="true" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Dear Customer</h4>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+	        <div class="small-12 columns">
+			      <p>You are using a version of Internet Explorer.
+                      At the moment the website Storagon does not support this browser.
+                      We are very sorry for this inconvinient. Please use other Web Browsers</p>
+            </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" id="modal-activate-email" aria-hidden="true" aria-labelledby="Resend activation email " role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+      </div>
+      <div class="modal-body">
+
+      </div>
+      <div class="modal-footer">
+
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" id="modal-exchange" aria-labelledby="Exchange point" aria-hidden="true" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+      </div>
+      <div class="modal-body">
+      </div>
+      <div class="modal-footer">
+          <div class="loader">
+                    <img id="loading-image" src="/static/assets/frontend/images/loading.gif" alt="Loading..." />
+                </div>
+		<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" id="modal-redeem" aria-labelledby="Redeem" aria-hidden="true" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+      </div>
+      <div class="modal-body">
+          <p class="modal-body-content"></p>
+      </div>
+      <div class="modal-footer">
+          <div class="loader">
+                    <img id="loading-image" src="/static/assets/frontend/images/loading.gif" alt="Loading..." />
+            </div>
+		<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" id="modal-signup" aria-labelledby="Sign up" aria-hidden="true" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+      </div>
+      <div class="modal-body">
+      </div>
+      <div class="modal-footer">
+          <div class="loader">
+                    <img id="loading-image" src="/static/assets/frontend/images/loading.gif" alt="Loading..." />
+            </div>
+		<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" id="modal-apply-affiliate" aria-labelledby="Apply to become Affiliate" aria-hidden="true" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Terms of Service for Affiliate</h4>
+      </div>
+      <div class="modal-body">
+        <form name="affiliate-form" id="affiliate-form" ng-submit="processForm()" action="javascript:;">
+	        <div class="panel">
+
+		      <p>You are legally responsible for all of your uploaded data on our server</p>
+		      <p>We reserve the right to delete your files without the need to consult if we receive any feedback that your file copyright infringement or violation of law in your country and in the world</p>
+		      <p>We may also delete your files automatically if there are no downloads arising from that file within 45 days. For uploader who purchased premium plans, the limitation is 90 days</p>
+		      <p>We will not pay for your bills if you have actions that violate the rules seriously when using our services joining the affiliate program</p>
+		      <p>We will pay you according to the following table</p>
+		      <table class="table" role="grid">
+		        <tbody>
+		          <tr>
+		            <th>Affiliate Program</th>
+		            <td>Agency transaction</td>
+		            <td>Referrer Transaction</td>
+		            <td>Website Transaction</td>
+		          </tr>
+		          <tr>
+		            <th>Payment</th>
+		            <td>60% of your bills</td>
+		            <td>10% of your referrer's agency program</td>
+		            <td>5% of bills originated from your websites</td>
+		          </tr>
+		        </tbody>
+		      </table>
+		    </div>
+
+		    <input type="checkbox" id="agree" name="agree" required>
+		    <label for="agree">I have read and agree to the Terms & Conditions</label>
+		    <button type="submit" class="button expand">Submit Application</button>
+	    </form>
+		  <div data-alert="" class="alert-box success" ng-show="success">
+		    {{ message}}
+		    <a href="" class="close">×</a>
+		  </div>
+		  <div data-alert="" class="alert-box alert" ng-show="error">
+		    {{ message}}
+		    <a href="" class="close">×</a>
+		  </div>
+		  <div class="loader">
+                    <img id="loading-image" src="/static/assets/frontend/images/loading.gif" alt="Loading..." />
+            </div>
+      </div>
+      <div class="modal-footer">
+
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade bs-example-modal-lg" id="modal-add-aff-website" aria-labelledby="Add more website" aria-hidden="true" role="dialog">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Guidance for adding your Website</h4>
+      </div>
+      <div class="modal-body">
+        <form name="affiliate-form" ng-submit="processAddAffWebForm()" action="javascript:;">
+		    <div class="jumbotron">
+		      <div>Before you add another Website to your Affiliate Program, please following these steps to help us verify that you are the owner of that Site. <b>If we can not validate your information, the Website address will be considered to be invalid</b></div>
+		      <ol>
+		        <li>First, create a text file named "storagon.txt" in your website's root directory. E.g. <a href="javascript:void(0)">http://yourdomain.com/storagon.txt</a></li>
+		        <li>Fill in the text file your Storagon account ID (username)</li>
+		        <li>Congratulation! Now you can add your website address to complete the process</li>
+		      </ol>
+		    </div>
+            <div class="form-group">
+		        <label for="website_address">Your website address:</label>
+		        <input type="text" name="website_address" class="form-control" id="website_address" ng-model="$parent.website_address" required placeholder="http://yourdomain.com">
+			</div>
+		    <button type="submit" class="btn btn-success">Add this website</button>
+	    </form>
+		  <div data-alert="" class="alert-box success" ng-show="success">
+		    {{ message}}
+
+		  </div>
+		  <div data-alert="" class="alert-box alert" ng-show="error">
+		    {{ message}}
+		    <a href="" class="close">×</a>
+		  </div>
+
+      </div>
+      <div class="modal-footer">
+			<div class="loader">
+                    <img id="loading-image" src="/static/assets/frontend/images/loading.gif" alt="Loading..." />
+                </div>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade bs-example-modal-lg" id="modal-add-account" aria-labelledby="Add more account" aria-hidden="true" role="dialog">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+
+      </div>
+      <div class="modal-body">
+        <form name="affiliate-form" ng-submit="processAddAccForm()" action="javascript:;">
+            <div class="form-group">
+		        <label for="balance_type">Balance type:</label>
+			    <select id="balance_type" class="form-control" ng-model="$parent.balance_type" required>
+			      <option value="2" selected>Paypal</option>
+			      <option value="3">Web Money</option>
+			    </select>
+            </div>
+            <div class="form-group">
+		        <label for="account_id">Account id:</label>
+		        <input type="text" name="account_id" class="form-control"
+                       id="account_id" ng-model="$parent.account_id" required>
+			</div>
+		    <button type="submit" class="btn btn-success">Add account</button>
+	    </form>
+		  <div data-alert="" class="alert-box success" ng-show="success">
+		    {{ message}}
+		  </div>
+		  <div data-alert="" class="alert-box alert" ng-show="error">
+		    {{ message}}
+		  </div>
+
+      </div>
+      <div class="modal-footer">
+			<div class="loader">
+                    <img id="loading-image" src="/static/assets/frontend/images/loading.gif" alt="Loading..." />
+                </div>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade bs-example-modal-lg" id="myModal" aria-hidden="true" role="dialog">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+          <h3>Compose new message</h3>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+		      <div id="contactform" class="col-md-9 col-md-offset-1">
+		        <div class="form-group">
+		          <label for="name">To:*</label>
+		          <input type="text" name="name" class="form-control" id="name" tabindex="1" ng-model="to_username">
+		        </div>
+		        <div class="form-group">
+		          <label for="message">Message:*</label>
+		          <textarea name="message" class="form-control" id="message"  tabindex="3" ng-model="message"></textarea>
+		        </div>
+		        <button ng-click="submit()" class="btn btn-success">Send</button>
+		      </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+			<div data-alert class="alert-box alert radius" ng-show="error">
+		        {{ message }}
+            </div>
+            <div class="loader">
+                    <img id="loading-image" src="/static/assets/frontend/images/loading.gif" alt="Loading..." />
+            </div>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade bs-example-modal-lg" id="modal-report" aria-labelledby="Report" aria-hidden="true" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+      </div>
+      <div class="modal-body">
+        <form name="report-form" id="report-form" ng-submit="processForm()" action="javascript:;">
+            <div class="form-group">
+			    <label for="text">Report type*:</label>
+			    <select id="text" ng-model="$parent.text" class="form-control" required="required">
+			      <option value="BUG" selected>BUG</option>
+			      <option value="HELP">HELP</option>
+			      <option value="DMCA">DMCA</option>
+			    </select>
+			</div>
+            <div class="form-group">
+			    <label ng-show="text=='DMCA'" for="file_url">URL:*</label>
+			    <input class="form-control" id="file_url" ng-model="$parent.file_url" ng-show="text=='DMCA'" type="text">
+			</div>
+            <div class="form-group">
+			    <label for="detail">Message:*</label>
+			    <textarea name="detail" class="form-control" id="detail" tabindex="3" ng-model="$parent.detail"></textarea>
+			</div>
+		    <div data-alert class="alert alert-danger">
+		      This report is a serious legal document - please be careful to be accurate in your report. You may wish to first notice that Junshare DO NOT take any responbility for your actions.
+		    </div>
+		    <button type="submit" class="btn btn-success">Submit report</button>
+        </form>
+	    <div data-alert class="alert-box alert radius" ng-show="error">
+	        {{ message }}
+	    </div>
+      </div>
+      <div class="modal-footer">
+          <div class="loader">
+                    <img id="loading-image" src="/static/assets/frontend/images/loading.gif" alt="Loading..." />
+                </div>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade bs-example-modal-lg" id="modal-search" tabindex="-1" aria-labelledby="Search files and folders" aria-hidden="true" role="dialog">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+      </div>
+      <div class="modal-body">
+        <div class="row">
+			<div>
+                <div class="col-md-10" style="padding-right: 0;">
+		          <input id="inside_filename_input" class="form-control" placeholder="Search files and folders..." type="text">
+                </div>
+                <div class="col-md-2" style="padding-left: 0;">
+		          <a class="btn btn-success" id="inside_search_file" href="javascript:void(0)">Search</a>
+                </div>
+			</div>
+		    <div class="col-md-12">
+		      <input type="checkbox" name="folder_search_include" id="folder_search_include" style="width: auto !important;">
+		      <label for="folder_search_include">Include folders</label>
+		    </div>
+		  </div>
+
+        <div>
+		      <table class="table fixed_layout" role="grid">
+		        <caption>Search Result</caption>
+		        <thead>
+		          <tr>
+		            <th width="47%">File / Folder name</th>
+		            <th>File Size</th>
+		            <th>Upload date</th>
+		          </tr>
+		        </thead>
+		        <tbody id="search_result">
+		        </tbody>
+		      </table>
+		      <div class="loader">
+                    <img id="loading-image" src="/static/assets/frontend/images/loading.gif" alt="Loading..." />
+                </div>
+		    </div>
+
+	    <div class="row padding-top-10">
+		    <div class="col-sm-6">
+		<!--      <a href="javascript:void(0)" class="button success small" id="gs_newdirbutton">Go to folder</a>-->
+		      <a href="javascript:void(0)" class="btn btn-primary btn-sm" id="gs_getlinkfromsearch">Get Link</a>
+		      <a href="javascript:void(0)" class="btn btn-primary btn-sm" id="gs_selectallfromsearch">Select all</a>
+		      <a href="javascript:void(0)" class="btn btn-primary btn-sm" id="gs_deselectallfromsearch">Deselect all</a>
+		    </div>
+		  </div>
+      </div>
+      <div class="modal-footer">
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" id="purchaseModal" aria-hidden="true" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">How many key do you want to buy?</h4>
+      </div>
+      <div class="modal-body">
+        <div class="padding-top-30 padding-bottom-30">
+    <!--payment.$valid && -->
+		    <!--ng-submit="processForm()"-->
+		    <form id="payment" name="payment" ng-submit="payment.$valid && processForm()" action="javascript:;">
+		      <div class="row">
+		        <div class="large-12 columns">
+		          <div data-alert class="alert-box success radius" ng-show="success">
+		            {{ message }}
+		            <a href="#" class="close">&times;</a>
+		          </div>
+		          <div data-alert class="alert-box alert radius" ng-show="error">
+		            {{ message }}
+		            <a href="#" class="close">&times;</a>
+		          </div>
+		        </div>
+		        <div class="large-12 columns">
+		          <input type="text" name="max_num_key" id="max_num_key" ng-model="$parent.max_num_key" placeholder="Enter your desired quantity" required>
+		          <button type="submit" class="button small expand" ng-show="max_num_key"> Purchase {{ max_num_key }} Premium Key </button>
+		          <!-- Reveal Modals begin -->
+		          <div id="modal-reseller" class="reveal-modal tiny" data-reveal aria-labelledby="Reseller" aria-hidden="true" role="dialog">
+		            <p class="modal-body"></p>
+		            <p><a href="javascript:void(0);" aria-label="Close" class="button success small pull-left close">OK</a></p>
+		            <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+		          </div>
+		          <!-- Loader begin -->
+		          <div class="loader">
+                    <img id="loading-image" src="/static/assets/frontend/images/loading.gif" alt="Loading..." />
+                </div>
+		        </div>
+		      </div>
+		    </form>
+		  </div>
+      </div>
+      <div class="modal-footer">
+
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade bs-example-modal-lg" id="paygateModal" tabindex="-1"
+     aria-labelledby="Paygate" aria-hidden="true" role="dialog">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h3 class="modal-title">Select your favorite payment method</h3>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+		    <div class="col-md-4 text-center">
+                <a class="button small" ng-click="show_payment_modal()"
+                        href="javascript:;">Credit Card<br/>
+                    <img src="/static/assets/frontend/images/icons/visa_mastercard.png">
+                </a>
+
+            </div>
+            <div class="col-md-4 text-center">
+                <a class="button small" href="javascript:;" ng-click="processPaypal(planid)">Paypal<br>
+                    <img src="/static/assets/frontend/images/icons/paypal.png">
+                </a>
+            </div>
+            <div class="col-md-4 text-center">
+                <a class="button small secondary disabled" href="javascript:;">WebMoney<br>
+                    <img src="/static/assets/frontend/images/icons/webmoney.png">
+                </a>
+
+            </div>
+	        <form name="empty-form" id="empty-form" method="post" action="">
+		      </form>
+	    </div>
+	    <h6 class="subheader text-center">100% Safe and Anonymous</h6>
+      </div>
+      <div class="modal-footer">
+			<div class="loader">
+                    <img id="loading-image" src="/static/assets/frontend/images/loading.gif" alt="Loading..." />
+            </div>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+<div class="modal fade bs-example-modal-lg" id="paymentModal" tabindex="-1"
+     aria-labelledby="Payment" aria-hidden="true" role="dialog">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h3 class="modal-title text-center">Please enter your payment information</h3>
+      </div>
+      <div class="modal-body">
+
+		  <div class="row">
+		    <!--payment.$valid && -->
+		    <!--ng-submit="processForm()"-->
+		    <form id="payment" name="payment" ng-submit="payment.$valid && processForm()" action="javascript:;">
+
+		        <div class="col-xs-12">
+		          <div data-alert class="alert-box success radius" ng-show="success">
+		            {{ message }}
+		            <a href="#" class="close">&times;</a>
+		          </div>
+		          <div data-alert class="alert-box alert radius" ng-show="error">
+		            {{ message }}
+		            <a href="#" class="close">&times;</a>
+		          </div>
+		        </div>
+		        <div class="col-xs-12 col-md-6">
+		          <h3>Billing Information</h3>
+                    <div class="form-group">
+		                <input type="text" name="first_name" class="form-control" id="first_name" ng-model="$parent.first_name" placeholder="First Name" required>
+                    </div>
+                    <div class="form-group">
+		                <input type="text" name="last_name" class="form-control" id="last_name" ng-model="$parent.last_name" placeholder="Last Name" required>
+                    </div>
+                    <div class="form-group">
+		                <input type="text" name="email" class="form-control" id="email" ng-model="$parent.email" placeholder="Email Address" required>
+                    </div>
+                    <div class="form-group">
+		                <input type="text" name="phone_number" class="form-control" id="phone_number" ng-model="$parent.phone_number" placeholder="Phone" required>
+
+                    </div>
+                    <div class="form-group">
+		                <input type="text" name="address" class="form-control" id="address" ng-model="$parent.address" placeholder="Address" required>
+                    </div>
+                    <div class="form-group">
+		                <input type="text" name="city" class="form-control" id="city" ng-model="$parent.city" placeholder="City" required>
+                    </div>
+                    <div class="form-group">
+		                <input type="text" name="state" class="form-control" id="state" ng-model="$parent.state" placeholder="State" required>
+                    </div>
+                    <div class="form-group">
+		                <input type="text" name="zipcode" class="form-control" id="zipcode" ng-model="$parent.zipcode" placeholder="Zip/Postal code" required>
+                    </div>
+                    <div class="form-group">
+		                <select id="country" class="form-control" name="country" ng-model="$parent.country" required>
+		            <option value="">Select Country</option>
+		            <option value="AF">Afghanistan</option>
+		            <option value="AX">Åland Islands</option>
+		            <option value="AL">Albania</option>
+		            <option value="DZ">Algeria</option>
+		            <option value="AS">American Samoa</option>
+		            <option value="AD">Andorra</option>
+		            <option value="AO">Angola</option>
+		            <option value="AI">Anguilla</option>
+		            <option value="AQ">Antarctica</option>
+		            <option value="AG">Antigua and Barbuda</option>
+		            <option value="AR">Argentina</option>
+		            <option value="AM">Armenia</option>
+		            <option value="AW">Aruba</option>
+		            <option value="AU">Australia</option>
+		            <option value="AT">Austria</option>
+		            <option value="AZ">Azerbaijan</option>
+		            <option value="BS">Bahamas</option>
+		            <option value="BH">Bahrain</option>
+		            <option value="BD">Bangladesh</option>
+		            <option value="BB">Barbados</option>
+		            <option value="BY">Belarus</option>
+		            <option value="BE">Belgium</option>
+		            <option value="BZ">Belize</option>
+		            <option value="BJ">Benin</option>
+		            <option value="BM">Bermuda</option>
+		            <option value="BT">Bhutan</option>
+		            <option value="BO">Bolivia, Plurinational State of</option>
+		            <option value="BQ">Bonaire, Sint Eustatius and Saba</option>
+		            <option value="BA">Bosnia and Herzegovina</option>
+		            <option value="BW">Botswana</option>
+		            <option value="BV">Bouvet Island</option>
+		            <option value="BR">Brazil</option>
+		            <option value="IO">British Indian Ocean Territory</option>
+		            <option value="BN">Brunei Darussalam</option>
+		            <option value="BG">Bulgaria</option>
+		            <option value="BF">Burkina Faso</option>
+		            <option value="BI">Burundi</option>
+		            <option value="KH">Cambodia</option>
+		            <option value="CM">Cameroon</option>
+		            <option value="CA">Canada</option>
+		            <option value="CV">Cape Verde</option>
+		            <option value="KY">Cayman Islands</option>
+		            <option value="CF">Central African Republic</option>
+		            <option value="TD">Chad</option>
+		            <option value="CL">Chile</option>
+		            <option value="CN">China</option>
+		            <option value="CX">Christmas Island</option>
+		            <option value="CC">Cocos (Keeling) Islands</option>
+		            <option value="CO">Colombia</option>
+		            <option value="KM">Comoros</option>
+		            <option value="CG">Congo</option>
+		            <option value="CD">Congo, the Democratic Republic of the</option>
+		            <option value="CK">Cook Islands</option>
+		            <option value="CR">Costa Rica</option>
+		            <option value="CI">Côte d'Ivoire</option>
+		            <option value="HR">Croatia</option>
+		            <option value="CU">Cuba</option>
+		            <option value="CW">Curaçao</option>
+		            <option value="CY">Cyprus</option>
+		            <option value="CZ">Czech Republic</option>
+		            <option value="DK">Denmark</option>
+		            <option value="DJ">Djibouti</option>
+		            <option value="DM">Dominica</option>
+		            <option value="DO">Dominican Republic</option>
+		            <option value="EC">Ecuador</option>
+		            <option value="EG">Egypt</option>
+		            <option value="SV">El Salvador</option>
+		            <option value="GQ">Equatorial Guinea</option>
+		            <option value="ER">Eritrea</option>
+		            <option value="EE">Estonia</option>
+		            <option value="ET">Ethiopia</option>
+		            <option value="FK">Falkland Islands (Malvinas)</option>
+		            <option value="FO">Faroe Islands</option>
+		            <option value="FJ">Fiji</option>
+		            <option value="FI">Finland</option>
+		            <option value="FR">France</option>
+		            <option value="GF">French Guiana</option>
+		            <option value="PF">French Polynesia</option>
+		            <option value="TF">French Southern Territories</option>
+		            <option value="GA">Gabon</option>
+		            <option value="GM">Gambia</option>
+		            <option value="GE">Georgia</option>
+		            <option value="DE">Germany</option>
+		            <option value="GH">Ghana</option>
+		            <option value="GI">Gibraltar</option>
+		            <option value="GR">Greece</option>
+		            <option value="GL">Greenland</option>
+		            <option value="GD">Grenada</option>
+		            <option value="GP">Guadeloupe</option>
+		            <option value="GU">Guam</option>
+		            <option value="GT">Guatemala</option>
+		            <option value="GG">Guernsey</option>
+		            <option value="GN">Guinea</option>
+		            <option value="GW">Guinea-Bissau</option>
+		            <option value="GY">Guyana</option>
+		            <option value="HT">Haiti</option>
+		            <option value="HM">Heard Island and McDonald Islands</option>
+		            <option value="VA">Holy See (Vatican City State)</option>
+		            <option value="HN">Honduras</option>
+		            <option value="HK">Hong Kong</option>
+		            <option value="HU">Hungary</option>
+		            <option value="IS">Iceland</option>
+		            <option value="IN">India</option>
+		            <option value="ID">Indonesia</option>
+		            <option value="IR">Iran, Islamic Republic of</option>
+		            <option value="IQ">Iraq</option>
+		            <option value="IE">Ireland</option>
+		            <option value="IM">Isle of Man</option>
+		            <option value="IL">Israel</option>
+		            <option value="IT">Italy</option>
+		            <option value="JM">Jamaica</option>
+		            <option value="JP">Japan</option>
+		            <option value="JE">Jersey</option>
+		            <option value="JO">Jordan</option>
+		            <option value="KZ">Kazakhstan</option>
+		            <option value="KE">Kenya</option>
+		            <option value="KI">Kiribati</option>
+		            <option value="KP">Korea, Democratic People's Republic of</option>
+		            <option value="KR">Korea, Republic of</option>
+		            <option value="KW">Kuwait</option>
+		            <option value="KG">Kyrgyzstan</option>
+		            <option value="LA">Lao People's Democratic Republic</option>
+		            <option value="LV">Latvia</option>
+		            <option value="LB">Lebanon</option>
+		            <option value="LS">Lesotho</option>
+		            <option value="LR">Liberia</option>
+		            <option value="LY">Libya</option>
+		            <option value="LI">Liechtenstein</option>
+		            <option value="LT">Lithuania</option>
+		            <option value="LU">Luxembourg</option>
+		            <option value="MO">Macao</option>
+		            <option value="MK">Macedonia, the former Yugoslav Republic of</option>
+		            <option value="MG">Madagascar</option>
+		            <option value="MW">Malawi</option>
+		            <option value="MY">Malaysia</option>
+		            <option value="MV">Maldives</option>
+		            <option value="ML">Mali</option>
+		            <option value="MT">Malta</option>
+		            <option value="MH">Marshall Islands</option>
+		            <option value="MQ">Martinique</option>
+		            <option value="MR">Mauritania</option>
+		            <option value="MU">Mauritius</option>
+		            <option value="YT">Mayotte</option>
+		            <option value="MX">Mexico</option>
+		            <option value="FM">Micronesia, Federated States of</option>
+		            <option value="MD">Moldova, Republic of</option>
+		            <option value="MC">Monaco</option>
+		            <option value="MN">Mongolia</option>
+		            <option value="ME">Montenegro</option>
+		            <option value="MS">Montserrat</option>
+		            <option value="MA">Morocco</option>
+		            <option value="MZ">Mozambique</option>
+		            <option value="MM">Myanmar</option>
+		            <option value="NA">Namibia</option>
+		            <option value="NR">Nauru</option>
+		            <option value="NP">Nepal</option>
+		            <option value="NL">Netherlands</option>
+		            <option value="NC">New Caledonia</option>
+		            <option value="NZ">New Zealand</option>
+		            <option value="NI">Nicaragua</option>
+		            <option value="NE">Niger</option>
+		            <option value="NG">Nigeria</option>
+		            <option value="NU">Niue</option>
+		            <option value="NF">Norfolk Island</option>
+		            <option value="MP">Northern Mariana Islands</option>
+		            <option value="NO">Norway</option>
+		            <option value="OM">Oman</option>
+		            <option value="PK">Pakistan</option>
+		            <option value="PW">Palau</option>
+		            <option value="PS">Palestinian Territory, Occupied</option>
+		            <option value="PA">Panama</option>
+		            <option value="PG">Papua New Guinea</option>
+		            <option value="PY">Paraguay</option>
+		            <option value="PE">Peru</option>
+		            <option value="PH">Philippines</option>
+		            <option value="PN">Pitcairn</option>
+		            <option value="PL">Poland</option>
+		            <option value="PT">Portugal</option>
+		            <option value="PR">Puerto Rico</option>
+		            <option value="QA">Qatar</option>
+		            <option value="RE">Réunion</option>
+		            <option value="RO">Romania</option>
+		            <option value="RU">Russian Federation</option>
+		            <option value="RW">Rwanda</option>
+		            <option value="BL">Saint Barthélemy</option>
+		            <option value="SH">Saint Helena, Ascension and Tristan da Cunha</option>
+		            <option value="KN">Saint Kitts and Nevis</option>
+		            <option value="LC">Saint Lucia</option>
+		            <option value="MF">Saint Martin (French part)</option>
+		            <option value="PM">Saint Pierre and Miquelon</option>
+		            <option value="VC">Saint Vincent and the Grenadines</option>
+		            <option value="WS">Samoa</option>
+		            <option value="SM">San Marino</option>
+		            <option value="ST">Sao Tome and Principe</option>
+		            <option value="SA">Saudi Arabia</option>
+		            <option value="SN">Senegal</option>
+		            <option value="RS">Serbia</option>
+		            <option value="SC">Seychelles</option>
+		            <option value="SL">Sierra Leone</option>
+		            <option value="SG">Singapore</option>
+		            <option value="SX">Sint Maarten (Dutch part)</option>
+		            <option value="SK">Slovakia</option>
+		            <option value="SI">Slovenia</option>
+		            <option value="SB">Solomon Islands</option>
+		            <option value="SO">Somalia</option>
+		            <option value="ZA">South Africa</option>
+		            <option value="GS">South Georgia and the South Sandwich Islands</option>
+		            <option value="SS">South Sudan</option>
+		            <option value="ES">Spain</option>
+		            <option value="LK">Sri Lanka</option>
+		            <option value="SD">Sudan</option>
+		            <option value="SR">Suriname</option>
+		            <option value="SJ">Svalbard and Jan Mayen</option>
+		            <option value="SZ">Swaziland</option>
+		            <option value="SE">Sweden</option>
+		            <option value="CH">Switzerland</option>
+		            <option value="SY">Syrian Arab Republic</option>
+		            <option value="TW">Taiwan, Province of China</option>
+		            <option value="TJ">Tajikistan</option>
+		            <option value="TZ">Tanzania, United Republic of</option>
+		            <option value="TH">Thailand</option>
+		            <option value="TL">Timor-Leste</option>
+		            <option value="TG">Togo</option>
+		            <option value="TK">Tokelau</option>
+		            <option value="TO">Tonga</option>
+		            <option value="TT">Trinidad and Tobago</option>
+		            <option value="TN">Tunisia</option>
+		            <option value="TR">Turkey</option>
+		            <option value="TM">Turkmenistan</option>
+		            <option value="TC">Turks and Caicos Islands</option>
+		            <option value="TV">Tuvalu</option>
+		            <option value="UG">Uganda</option>
+		            <option value="UA">Ukraine</option>
+		            <option value="AE">United Arab Emirates</option>
+		            <option value="GB">United Kingdom</option>
+		            <option value="US">United States</option>
+		            <option value="UM">United States Minor Outlying Islands</option>
+		            <option value="UY">Uruguay</option>
+		            <option value="UZ">Uzbekistan</option>
+		            <option value="VU">Vanuatu</option>
+		            <option value="VE">Venezuela, Bolivarian Republic of</option>
+		            <option value="VN">Viet Nam</option>
+		            <option value="VG">Virgin Islands, British</option>
+		            <option value="VI">Virgin Islands, U.S.</option>
+		            <option value="WF">Wallis and Futuna</option>
+		            <option value="EH">Western Sahara</option>
+		            <option value="YE">Yemen</option>
+		            <option value="ZM">Zambia</option>
+		            <option value="ZW">Zimbabwe</option>
+		          </select>
+                    </div>
+		        </div>
+		        <div class="col-xs-12 col-md-6">
+		          <h3>Credit Card Information</h3>
+		          <span>
+		            We accept:
+		            <img src="/static/assets/frontend/images/icons/visa.png">
+		            <img src="/static/assets/frontend/images/icons/mastercard.png">
+		            <img src="/static/assets/frontend/images/icons/jcb.png">
+		          </span>
+                  <div class="vertical-padding-top"></div>
+                  <div class="form-group">
+		            <input type="text" name="card_number" class="form-control" id="card_number" ng-model="$parent.card_number" placeholder="Card Number" required>
+                  </div>
+                  <div class="form-group">
+		            <input type="text" name="card_name" class="form-control" id="card_name" ng-model="$parent.card_name" placeholder="Full Name" required>
+                  </div>
+                  <div class="form-group">
+		            <input type="text" name="card_expiry" class="form-control" id="card_expiry" ng-model="$parent.card_expiry" placeholder="MM/YY" required>
+                  </div>
+                  <div class="form-group">
+		            <input type="text" name="card_cvc" class="form-control" id="card_cvc" ng-model="$parent.card_cvc" placeholder="CVC" required>
+                  </div>
+		          <div class="panel callout radius">
+		            <ul class="no-bullet">
+		              <li>Storage: {{ plan_storage | filesize }}</li>
+		              <li>Bandwidth: {{ plan_bandwidth | filesize }}</li>
+		              <li>Price: {{ plan_price/100 | currency }}</li>
+		            </ul>
+		          </div>
+		          <button type="submit" class="btn btn-success"> Checkout </button>
+		        </div>
+			</form>
+
+		  </div>
+      </div>
+      <div class="modal-footer">
+			<div class="loader">
+                    <img id="loading-image" src="/static/assets/frontend/images/loading.gif" alt="Loading..." />
+            </div>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

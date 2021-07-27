@@ -1,0 +1,140 @@
+{% extends "custom_admin_site/custom_site_base.html" %}
+{% load i18n admin_static suit_list admin_modify suit_tags admin_urls %}
+
+{% block extrajs %}
+<script type="text/javascript" src="/adl/jsi18n/"></script>
+<script type="text/javascript" src="/static/admin/js/core.js"></script>
+<script type="text/javascript" src="/static/admin/js/admin/RelatedObjectLookups.js"></script>
+<script type="text/javascript" src="/static/admin/js/jquery.min.js"></script>
+<script type="text/javascript" src="/static/admin/js/jquery.init.js"></script>
+<script type="text/javascript" src="/static/admin/js/actions.min.js"></script>
+<script type="text/javascript" src="/static/admin/js/SelectBox.js"></script>
+<script type="text/javascript" src="/static/admin/js/SelectFilter2.js"></script>
+<script type="text/javascript" src="/static/admin/js/calendar.js"></script>
+<script type="text/javascript" src="/static/admin/js/admin/DateTimeShortcuts.js"></script>
+<script type="text/javascript">
+    $('input#action-toggle').click(function () {
+        $('input[name="_selected_action"]').prop('checked',this.checked)
+        $('#selected_checkbox_num').text($('input[name="_selected_action"]:checked').length);
+    });
+</script>
+{% endblock %}
+
+
+{% block navigator_menu %}
+    <li class="active"><a href="{% url 'CustomAdmin:mongoListSessionView' %}">Session</a></li>
+{% endblock %}
+
+{% block content %}
+
+{% block object-tools %}
+    {% if has_add_permission %}
+    <a href="add/" class="btn btn-success" style="float:right" ><i class="icon-plus-sign icon-white"></i>&nbsp; Add Session</a>
+    {% endif %}
+    <form>
+    <table>{{form.as_table}}</table>
+    <input type="submit" class="btn btn-info" value="Search">
+    </form>
+{% endblock %}
+
+  <div id="content-main">
+
+{% if result_hidden_fields %}
+    <div class="hiddenfields">{# DIV for HTML validation #}
+        {% for item in result_hidden_fields %}{{ item }}{% endfor %}
+    </div>
+{% endif %}
+{% if results %}
+    <div class="results">
+        <form method="post">
+        <table id="result_list" class="table table-striped table-bordered table-hover table-condensed">
+            <thead>
+            <tr>
+                <th scope="col" class="action-checkbox-column">
+                    <div class="text"><span><input type="checkbox" id="action-toggle" style="display: inline-block;"></span></div>
+                </th>
+                {% for header in result_headers %}
+                    <th scope="col" {{ header.class_attrib }}>
+                        <div class="text">{% if header.sortable %}
+                            <a href="{{ header.url_primary }}">{{ header.text|capfirst }}</a>{% else %}<span>{{ header.text|capfirst }}</span>{% endif %}
+                        </div>
+                    </th>{% endfor %}
+            </tr>
+            </thead>
+            <tbody>
+            {% for result in results %}
+                <tr>
+                    <td class="action-checkbox"><input class="action-select" name="_selected_action" type="checkbox" value="{{ result|first }}"></td>
+                    {% for item in result %}
+                    <td class="nowrap">
+                        {% if forloop.first %}
+                        <a href="{{ item }}/">{{ item }}</a>
+                        {% else %}
+                        {{ item | safe }}
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+            <div class="actions">
+            <label>
+                <span class="action-label">Action:</span>
+                    <select name="action">
+                        <option value="" selected="selected">---------</option>
+                        <option value="delete_selected">Delete selected Session</option>
+                    </select>
+            </label>
+                <input class="select-across" name="select_across" type="hidden" value="0">
+                &nbsp;
+                <button type="button" class="btn" onclick="$('#confirm_go').toggle()">Go</button>
+                    <div class="alert alert-block fade in" role="alert" id="confirm_go" hidden="true">
+                      <h4>Confirmation</h4>
+                      <p>Are you sure ?</p>
+                      <p>
+                        <button type="submit" class="btn btn-warning" title="Run the selected action" name="index" value="0">OK</button>
+                      </p>
+                    </div>
+                &nbsp;
+                <script type="text/javascript">
+                    $('input[name="_selected_action"]').click(function () {
+                        $('#selected_checkbox_num').text($('input[name="_selected_action"]:checked').length);
+                    });
+                </script>
+                <span class="action-counter" style="display: inline;"><p id="selected_checkbox_num" style="display: inline;">0</p> of {{limit}} selected</span>
+            </div>
+
+        </form>
+    </div>
+
+    <div class="pagination-block">
+
+            <div class="pagination">
+              <ul>
+                  {% for value,page in page_range %}
+                    {% ifequal value -1 %}
+                    <li class="disabled"><a href="#" onclick="return false;">{{page}}</a></li>
+                    {% else %}
+                    <li {%ifequal offset value %}class="active"{% endifequal %}><a href="{{page_url}}&offset={{value}}">{{page}}</a></li>
+                    {% endifequal %}
+                  {% endfor %}
+              </ul>
+            </div>
+
+
+          <div class="pagination-info muted">
+            {{ offset }} - {{ offset|add:limit }}
+            &nbsp; / &nbsp;
+            {{ filter_count}} &nbsp;&nbsp;
+              <a href="{{ show_all_url }}" class="showall">{% trans 'Show all' %}</a>
+          </div>
+    </div>
+{% endif %}
+
+  </div>
+{% endblock %}
+
+{% block sidebar %}
+
+{% endblock %}

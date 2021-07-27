@@ -1,0 +1,254 @@
+<div class="container">
+  <div class="row">
+    <div class="col-md-2">
+      <div ng-include src="'/static/assets/frontend/app_junshare/user/sidebar.html'"></div>
+    </div>
+    <div class="col-md-10">
+      <div class="alert alert-warning text-center" role="alert">
+          <h4>Your Current Balance: ${{ creditBalance | amount : affMode }} <span class="success"> ( Available: ${{ availableBalance | amount: affMode }} )</span></h4>
+          <h4>Your affiliate URL: http://storagon.com/#/signup?referer={{ username}}</h4>
+      </div>
+      <ul class="nav nav-pills" role="tablist" data-tab="" id="affiliate-tab">
+        <li role="presentation" class="active">
+            <a href="#affWebsite" aria-controls="affWebsite" role="tab" data-toggle="tab">Affiliate Websites</a>
+        </li>
+        <li role="presentation">
+            <a href="#accountBalance" aria-controls="accountBalance" role="tab" data-toggle="tab">Account Balance</a>
+        </li>
+        <li role="presentation">
+            <a href="#listReferrer" aria-controls="listReferrer" role="tab" data-toggle="tab">List Referrer</a>
+        </li>
+        <li role="presentation">
+            <a href="#changeAffMode" aria-controls="changeAffMode" role="tab" data-toggle="tab">Change Mode</a>
+        </li>
+        <li role="presentation">
+            <a href="#withdraw" aria-controls="withdraw" role="tab" data-toggle="tab">Withdraw Money</a>
+        </li>
+      </ul>
+        <div class="vertical-padding-top"></div>
+      <div class="tab-content ">
+        <div role="tabpanel" class="tab-pane active" id="affWebsite">
+            <div class="row">
+                <div class="col-md-8">
+	                <h4 class="session-title">Affiliate Website</h4>
+                </div>
+                <div class="col-md-4">
+	                <a href="javascript:void(0)"
+                       class="btn btn-success addAffWebsite pull-right" ng-click="addAffWebsite()">Add more website</a>
+                </div>
+            </div>
+          <div class="vertical-padding-top"></div>
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Website address</th>
+                <th>Added at</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="(key, value) in affWebsiteData">
+                <td>{{ key}}</td>
+                <td>{{ value.fields.website_domain}}</td>
+                <td>{{ value.fields.created_date | date:'dd/MM/yyyy':'UTC' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div role="tabpanel" class="tab-pane" id="accountBalance">
+	        <div class="row">
+	            <div class="col-md-8">
+	                <h4 class="session-title">Account Balance</h4>
+	            </div>
+	            <div class="col-md-4">
+	                <a href="javascript:void(0)"
+	                   class="btn btn-success addAffWebsite pull-right" ng-click="addAccount()">Add more account</a>
+	            </div>
+	        </div>
+          <div class="vertical-padding-top"></div>
+          <table class="table table-bordered vertical-padding-top">
+            <thead>
+              <tr>
+                <th>Account ID</th>                
+                <th>Amount</th>
+                <th>Balance type</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="(key, value) in accountBalance">
+                <td>{{ value.account_id }}</td>
+                <td>{{ (value.balance_type === 0 || value.balance_type === 4) ? '$' : '' }}{{ value.amount | amount : value.balance_type }}{{ (value.balance_type === 1) ? ' point' : '' }}</td>
+                <td>{{ value.balance_type | enumBalanceType }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div role="tabpanel" class="tab-pane" id="listReferrer">
+          <h4 class="session-title">List Referrer</h4>          
+          <div class="vertical-padding-top"></div>
+          <table class="table table-bordered vertical-padding-top">
+            <thead>
+              <tr>
+                <th>Your Referrer</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="(key, value) in referrer">
+                <td>{{ value }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div role="tabpanel" class="tab-pane" id="changeAffMode">
+          <h4 class="session-title">Change Affiliate Mode</h4>          
+          <div class="vertical-padding-top"></div>
+          <form name="affiliate-form" id="affiliate-form" ng-submit="processPPDForm()" action="javascript:;">    
+            <div class="panel panel-info">
+                <div class="panel-heading">
+				    <h3 class="panel-title">Terms of Service for Affiliate</h3>
+                </div>
+                <div class="panel-body">
+				    <p>You are legally responsible for all of your uploaded data on our server</p>
+                    <p>We reserve the right to delete your files without the need to consult if we receive any feedback that your file copyright infringement or violation of law in your country and in the world</p>
+                    <p>We may also delete your files automatically if there are no downloads arising from that file within 45 days. For uploader who purchased premium plans, the limitation is 90 days</p>
+                    <p>We will not pay for your bills if you have actions that violate the rules seriously when using our services joining the affiliate program</p>
+                    <p>What we offer</p>
+                    <p>
+		                <a href="javascript:;" class="btn btn-success" id="pps" ng-click="displayProg($event)">Pay Per Sale</a>
+		                <a href="javascript:;" class="btn btn-success" id="ppd" ng-click="displayProg($event)">Pay Per Download</a>
+                    </p>
+                    <table class="table" role="grid" ng-show="pps">
+		                <tbody>
+		                  <tr>
+		                    <th>Affiliate Program</th>
+		                    <td>Agency transaction</td>
+		                    <td>Referrer Transaction</td>
+		                    <td>Website Transaction</td>
+		                  </tr>
+		                  <tr>
+		                    <th>Payment</th>
+		                    <td>60% of your bills</td>
+		                    <td>10% of your referrer's agency program</td>
+		                    <td>5% of bills originated from your websites</td>
+		                  </tr>
+		                </tbody>
+		              </table>
+		              <table class="table" role="grid" ng-show="ppd">
+		                <tbody>
+		                  <tr>
+		                    <th>Size / Group*</th>
+		                    <th>1 - 50 MB</th>
+		                    <th>50 - 100 MB</th>
+		                    <th>100 - 250 MB</th>
+		                    <th>250 - 500 MB</th>
+		                    <th>500 - 1000 MB</th>
+		                    <th>> 1000 MB</th>
+		                  </tr>
+		                  <tr>
+		                    <th>I</th>
+		                    <td>$3.00</td>
+		                    <td>$5.00</td>
+		                    <td>$7.00</td>
+		                    <td>$10.00</td>
+		                    <td>$20.00</td>
+		                    <td>$40.00</td>
+		                  </tr>
+		                  <tr>
+		                    <th>II</th>
+		                    <td>$1.00</td>
+		                    <td>$3.00</td>
+		                    <td>$5.00</td>
+		                    <td>$6.00</td>
+		                    <td>$7.00</td>
+		                    <td>$10.00</td>
+		                  </tr>
+		                  <tr>
+		                    <th>III</th>
+		                    <td>$1.00</td>
+		                    <td>$1.00</td>
+		                    <td>$1.50</td>
+		                    <td>$2.00</td>
+		                    <td>$2.50</td>
+		                    <td>$3.00</td>
+		                  </tr>
+		                  <tr>
+		                    <th>IV</th>
+		                    <td>$0.50</td>
+		                    <td>$0.50</td>
+		                    <td>$0.50</td>
+		                    <td>$0.50</td>
+		                    <td>$0.50</td>
+		                    <td>$0.50</td>
+		                  </tr>
+		                </tbody>
+		              </table>
+		              <p ng-show="ppd">*Country groups: </p>
+		              <ol type="I" ng-show="ppd">
+		                <li>Belgium, United States, Saudi Arabia, Poland, Netherlands, United Kingdom, France, Spain, Germany, Canada</li>
+		                <li>Japan, Kuwait, Monaco, Norway, New Zealand, Portugal, Qatar, Russian Federation, Sweden, Singapore, South Africa, Italy, Isle of Man, Andorra, United Arab Emirates, Austria, Australia, Switzerland, Cyprus, Czech Republic, Denmark, Finland, Ireland, Israel</li>
+		                <li>Luxembourg, Latvia, Mauritius, Malaysia, Oman, Slovenia, Turkey, Ukraine, Lithuania, Korea, Republic of, Argentina, Bulgaria, Brazil, Dominican Republic, Estonia, Greece, Hong Kong, Hungary</li>
+		                <li>All others</li>
+		              </ol>
+                </div>
+            </div>
+            <div>
+              <label><h4>Choose Your Program</h4></label>
+              <input type="radio" ng-model="Mode" name="mode" value="pps" id="pps_mode"><label for="pps_mode">I want to join the PPS Program</label>
+              <input type="radio" ng-model="Mode" name="mode" value="ppd" id="ppd_mode"><label for="ppd_mode">I want to join the PPD Program</label>
+            </div>
+            <button type="submit" class="btn btn-success">Change Mode</button>
+          </form>
+          <div data-alert="" class="alert-box success" ng-show="success">
+            {{ message}}
+            <a href="" class="close">×</a>
+          </div>
+          <div data-alert="" class="alert-box alert" ng-show="error">
+            {{ message}}
+            <a href="" class="close">×</a>
+          </div>
+
+        </div>
+        <div role="tabpanel" class="tab-pane" id="withdraw">
+          <h4 class="session-title">Withdraw Money</h4>          
+          <div class="panel panel-info">
+              <div class="panel-heading">
+				    <h3 class="panel-title">Terms of Service for Withdraw Money</h3>
+              </div>
+              <div class="panel-body">
+                  <p>You are legally responsible for all of your uploaded data on our server</p>
+                  <p>We reserve the right to delete your files without the need to consult if we receive any
+                    feedback that your file copyright infringement or violation of law in your country and in the world</p>
+              </div>
+          </div>
+          <h5>Information for withdrawing</h5>
+          <form name="withdraw-form" id="withdraw-form" ng-submit="processWithdrawForm()" action="javascript:;">
+              <div class="form-group">
+			    <label>Withdraw Amount ($):</label>
+                <input type="text" name="withdraw_amount" class="form-control" id="withdraw_amount"
+                       placeholder="Please input in dollar" ng-model="withdraw_amount" required>
+			  </div>
+               <div class="form-group">
+			    <label>Deposit Balance:</label>
+                <select type="text" name="deposit_balance_id" id="deposit_balance_id" class="form-control"
+                        ng-model="deposit_balance_id" ng-options="v.name for v in deposit_balance_type.values track by v.id" required>
+                  <option value="">- Choose Deposit Balance -</option>
+                </select>
+			  </div>
+              <button type="submit" class="btn btn-success">Submit</button>
+              <div data-alert="" class="alert-box success" ng-show="success">
+              {{ message}}
+              <a href="" class="close">×</a>
+              </div>
+              <div data-alert="" class="alert-box alert" ng-show="error">
+                {{ message}}
+                <a href="" class="close">×</a>
+              </div>
+          </form>          
+
+        </div>
+
+      </div>
+  </div>
+  </div>
+  <div ng-include src="'/static/assets/frontend/app_junshare/layout/modals.html'"></div>
+</div>

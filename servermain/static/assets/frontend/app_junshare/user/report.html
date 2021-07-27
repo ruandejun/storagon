@@ -1,0 +1,36 @@
+<div class="container">
+  <div class="row">
+    <div class="col-md-2">
+      <div ng-include src="'/static/assets/frontend/app_junshare/user/sidebar.html'"></div>
+    </div>
+
+    <div class="col-md-10">
+        <h3 class="left">Report</h3>
+        <button class="btn btn-success" data-toggle="modal" data-target="#modal-report">
+          Create report
+        </button>
+		<div class="vertical-padding-top"></div>
+        <table class="table table-bordered">
+	        <thead>
+	          <tr>
+	            <th>Report Kind</th>
+	            <th>Status</th>
+	            <th>Detail</th>
+	            <th>Created</th>
+	          </tr>
+	        </thead>
+	        <tbody>
+	          <tr ng-repeat="report in reports">
+	            <th>{{report.text}}</th>
+	            <th class="{{(report.status| enumSessionStatus: report.status === 'completed') ? 'success' : 'danger'}}">{{report.status| enumSessionStatus: report.status}}</th>
+	            <th>{{(report.data.detail === "") ? report.data.file_link : report.data.detail}}</th>
+	            <th>{{report.created | date:'medium'}}</th>
+	          </tr>
+	        </tbody>
+	      </table>
+    </div>
+
+  </div>
+  <div ng-include src="'/static/assets/frontend/app_junshare/layout/modals.html'"></div>
+</div>
+

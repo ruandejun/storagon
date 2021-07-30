@@ -8,11 +8,11 @@
 #  Copyright (c) 2014 __MyCompanyName__. All rights reserved.
 #
 
-from urlparse import urlparse
+from urllib.parse import urlparse
 from django.utils import timezone
 import json
-from bunch import Bunch
-import BalanceController
+from munch import Munch
+from . import BalanceController
 from servermain.mongo_models import Session
 from servermain.models import AccountBalance, TransactionLog, UserProfile, UserFile, WebsiteAgency
 from storagon.tool import *
@@ -339,7 +339,7 @@ def countMoneyOnWithdrawingOfBalance(balance):
 	sum_money = 0;
 	count_application = 0;
 	for application in querySet:
-		data = Bunch(json.loads(application.data))
+		data = Munch(json.loads(application.data))
 		if balance.id != data.withdraw_balance_id:continue;
 		sum_money+=data.withdraw_amount
 		count_application+=1

@@ -1,0 +1,25 @@
+Django==1.8
+django-suit==0.2.13
+django-suit-redactor==0.0.4
+django-cors-headers==1.3.1
+djangorestframework==3.6.3
+djangorestframework-msgpack==1.0.2
+django-rest-framework-mongoengine==3.4.1
+mongoengine==0.16.3
+maxminddb==1.4.1
+geoip2==2.9.0
+-e git://github.com/ianare/django-memcache-admin.git@a27159e4ecca06c242c01f059cf8a1e815d82837#egg=django_memcache_admin
+celery==3.1.25
+django-celery-beat==1.0.1
+importlib-metadata==2.1.1
+zipp==0.5.0
+configparser==3.8.1
+redis==3.3.11
+django-cache-machine==0.9.1
+blinker==1.1
+PyCrypto==2.6.1
+pyyaml==5.3.1
+bunch==1.0.1
+python-memcached==1.58
+mysqlclient==1.3.13
+PyMySQL==0.7.11

@@ -11,15 +11,15 @@
 from django import shortcuts
 from django.template import RequestContext
 from django.http import *
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from django.conf import settings;
 from django.views.decorators.csrf import csrf_exempt,csrf_protect
 from django.contrib.auth.decorators import login_required
 
 from system_configure.controllers import SystemConfigureController
-from signals import post_verify_code
-from models import SystemConfig
+from .signals import post_verify_code
+from .models import SystemConfig
 
 
 def verifyCode(request):

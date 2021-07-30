@@ -9,7 +9,7 @@ from django.core.cache import cache
 import logging, json, sys, os
 # from django.core.exceptions import PermissionDenied as Http403
 # from django.core.exceptions import SuspiciousOperation as Http400
-from browser import Browser
+from .browser import Browser
 
 #/var/log/system.log
 # logFilePath = getattr(settings, 'LOG_FILE_PATH', 'logging_local.log')

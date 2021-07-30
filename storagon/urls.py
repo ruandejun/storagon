@@ -1,9 +1,9 @@
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 from django.contrib import admin
-from django.contrib.auth.views import login, logout, logout_then_login
+#from django.contrib.auth.views import login, logout, logout_then_login
 
 
-urlpatterns = patterns('',
+urlpatterns = [
 
 	url(r'^adl/track/', include('attendance_tracking.urls')),
 	url(r'^adl/custom/', include('servermain.CustomAdmin_urls', namespace='CustomAdmin')),
@@ -15,7 +15,7 @@ urlpatterns = patterns('',
 
 
 	url(r'', include('servermain.urls')),  # pass all other url request to servermain
-)
+]
 
 
 handler400 = 'storagon.tool.custom_400';

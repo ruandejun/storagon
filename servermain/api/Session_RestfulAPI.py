@@ -11,7 +11,7 @@
 from django import shortcuts
 from django.template import RequestContext
 from django.http import *
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from django.conf import settings;
 from django.views.decorators.csrf import csrf_exempt,csrf_protect
@@ -23,7 +23,7 @@ from storagon.enum import *
 from servermain.models import UserFile
 from servermain.mongo_models import Session
 from system_configure.controllers import Tool
-from bunch import Bunch
+from munch import Munch
 from rest_framework import serializers, mixins, permissions, exceptions, filters, status, generics, viewsets
 from rest_framework.decorators import detail_route,list_route
 from servermain.controllers import RestfulController
@@ -81,7 +81,7 @@ class SessionClientAPI(mongo_viewsets.MongoGenericViewSet, mongo_generics.ListAP
 		if not form.is_valid():
 			raise Tool.BadRequest(form.errors);
 		#::type: SessionFilterForm
-		data=Bunch(form.data)
+		data=Munch(form.data)
 
 		if data.type not in [SessionType.upload, SessionType.download, SessionType.report, SessionType.inbox]:
 			raise Tool.ServerError(u"SessionType=%s is not allowed" % (data.type))
@@ -135,7 +135,7 @@ class SessionClientAPIView(viewsets.GenericViewSet):
 		if not formPOST.is_valid():
 			return Tool.errorResponseRestful(formPOST.errors,code=status.HTTP_400_BAD_REQUEST);
 		#::type: CreateReportForm
-		data=Bunch(formPOST.data)
+		data=Munch(formPOST.data)
 
 		user_id=0;
 		if request.user:

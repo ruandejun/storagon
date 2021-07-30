@@ -8,14 +8,13 @@
 #  Copyright (c) 2015 storagon. All rights reserved.
 #
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.core.mail import send_mail
 from django.template import Context, Template
 
 from system_configure.controllers import SystemConfigureController
 from storagon.tool import *
-
-import UserController
+from . import UserController
 
 
 def sendWelcomeToStoragonMail(toAddress):

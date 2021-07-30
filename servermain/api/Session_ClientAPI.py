@@ -13,7 +13,7 @@ import datetime
 
 from django import shortcuts
 from django.http import *
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth.decorators import user_passes_test
 from mongoengine import Q
@@ -364,7 +364,7 @@ def sendInboxMessage(request):
 			try:
 				to_user = User.objects.get(username=to_username)
 			except User.DoesNotExist:
-				print u"user:%s does not exist!" % (to_username)
+				print(u"user:%s does not exist!" % (to_username))
 				raise Http400(u"user:%s does not exist!" % (to_username))
 			else:
 				to_user_id = to_user.id

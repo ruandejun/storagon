@@ -1,4 +1,4 @@
-from settings_base import *
+from .settings_base import *
 
 DEBUG = True
 LOG_FILE_PATH = os.path.join(BASE_DIR, 'log/junshare.log')
@@ -46,7 +46,7 @@ CELERYBEAT_SCHEDULE = {
 
 if IS_RUNNING_UNIT_TEST:
 	DATABASES['default'] = {
-		'ENGINE': 'django.db.backends.sqlite3',
+		#'ENGINE': 'django.db.backends.sqlite3',
 		'NAME': 'storagon_test',
 	}
-	print "Swiching default DB to test using in-memory DB: %s"%(DATABASES['default']['NAME'])
+	print("Swiching default DB to test using in-memory DB: %s"%(DATABASES['default']['NAME']))

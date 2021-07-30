@@ -8,15 +8,15 @@
 #  Copyright (c) 2014 __MyCompanyName__. All rights reserved.
 #
 
-from django import shortcuts
-from django.template import RequestContext
-from django.http import *
-from django.core.urlresolvers import reverse
-
-from django.conf import settings  # site setting
-from django.views.decorators.csrf import csrf_exempt, csrf_protect
-from django.contrib.auth.decorators import login_required
-from bson import json_util
+# from django import shortcuts
+# from django.template import RequestContext
+# from django.http import *
+# from django.urls import reverse
+#
+# from django.conf import settings  # site setting
+# from django.views.decorators.csrf import csrf_exempt, csrf_protect
+# from django.contrib.auth.decorators import login_required
+# from bson import json_util
 
 from django.utils import timezone
 from django.db.models import F

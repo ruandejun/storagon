@@ -8,10 +8,10 @@
 #  Copyright (c) 2015 storagon. All rights reserved.
 #
 
-from django.conf.urls import patterns, include, url
-from django.views.generic import RedirectView, TemplateView
-
-from rest_framework.urlpatterns import format_suffix_patterns
+# from django.conf.urls import patterns, include, url
+# from django.views.generic import RedirectView, TemplateView
+#
+# from rest_framework.urlpatterns import format_suffix_patterns
 
 from servermain.api.User_RestfulAPI import CurrentUserProfileView,CurrentUserAccountBalanceView,CurrentUserWebsiteAgencyView,CurrentUserUserApplyList,CurrentUserUserApplyView,CurrentUserView
 

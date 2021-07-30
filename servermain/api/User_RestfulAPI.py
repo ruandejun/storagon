@@ -11,7 +11,7 @@
 from django import shortcuts
 from django.template import RequestContext
 from django.http import *
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from django.conf import settings;
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
@@ -23,7 +23,7 @@ from servermain.models import User, UserProfile, AccountBalance, WebsiteAgency, 
 from storagon.enum import *
 from storagon.tool import *
 from system_configure.controllers import Tool
-from bunch import Bunch
+from munch import Munch
 import redis
 
 from rest_framework.renderers import JSONRenderer
@@ -182,7 +182,7 @@ class CurrentUserUserApplyView(viewsets.GenericViewSet):
 		if not formPOST.is_valid():
 			return Tool.errorResponseRestful(formPOST.errors,code=status.HTTP_400_BAD_REQUEST);
 		#::type: RequestPayForm
-		data=Bunch(formPOST.data)
+		data=Munch(formPOST.data)
 
 		try: withdraw_balance = AccountBalance.objects.get(id=data.withdraw_balance_id);
 		except AccountBalance.DoesNotExist:
@@ -251,7 +251,7 @@ class CurrentUserView(viewsets.GenericViewSet):
 		if not formPOST.is_valid():
 			return Tool.errorResponseRestful(formPOST.errors,code=status.HTTP_400_BAD_REQUEST);
 		#::type: InvokeDesktopClientForm
-		data=Bunch(formPOST.data)
+		data=Munch(formPOST.data)
 		data.invoke_data.update({'type':data.invoke_type});
 
 		db = redis.StrictRedis(connection_pool=settings.REDIS_POOL);

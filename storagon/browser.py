@@ -10,11 +10,15 @@
 
 import sys
 import urllib
-import urllib2
-import cookielib
+import urllib.request as urllib2
+try:
+    import cookielib
+except:
+    import http.cookiejar
+    cookielib = http.cookiejar
 import re
 import time
-import header
+#import header
 
 
 class Browser:
@@ -24,7 +28,7 @@ class Browser:
 
 	def __init__(self, cookieJar=None):
 #		print "Browser Init!"
-		header.initBrowser(self, cookieJar)
+		#header.initBrowser(self, cookieJar)
 		self.br = self.browser
 		# browser setup
 		self.quite = False
@@ -46,7 +50,7 @@ class Browser:
 			if isinstance(data, str) == False:
 				data = urllib.urlencode(data)
 			if not self.quite:
-				print "___payload: " + data
+				print("___payload: " + data)
 
 		if isinstance(url, str) or isinstance(url, unicode):
 			if extraHeader:
@@ -58,11 +62,11 @@ class Browser:
 
 		url = req.get_full_url()
 		if not self.quite:
-			print "___request: " + str(url)
+			print("___request: " + str(url))
 
 		if self.delayTimeBeforeRequest > 0:
 			if not self.quite:
-				print "requesting..."
+				print("requesting...")
 			time.sleep(self.delayTimeBeforeRequest)
 
 		if forceReferer:
@@ -71,7 +75,7 @@ class Browser:
 		try:
 			response = self.br.open(req)
 		except urllib2.HTTPError as e:
-			print e.getcode(), e.read()
+			print(e.getcode(), e.read())
 			raise e
 
 		self.setAddHeader('Host', url.split('/')[2])
@@ -85,7 +89,7 @@ class Browser:
 		html = response.read()
 		response.close()
 		if not self.quite:
-			print "___response: " + html[:self.showResponseMax]
+			print("___response: " + html[:self.showResponseMax])
 
 		if folowRedirect > 0:
 			redirectLink = response.headers.getheader('location')
@@ -95,19 +99,19 @@ class Browser:
 				redirectLink = urllib.basejoin(url, m.group(1).strip())
 			if redirectLink:
 				if not self.quite:
-					print "redirect left=%d" % (folowRedirect)
+					print("redirect left=%d" % (folowRedirect))
 				return self.open(redirectLink, folowRedirect=folowRedirect - 1)
 
 		return html
 
 	def download(self, link, pathToSave):
 		if not self.quite:
-			print "___download: " + str(link)
+			print("___download: " + str(link))
 
 		try:
 			response = self.br.open(link);
 		except urllib2.HTTPError as e:
-			print e.getcode(), e.read()
+			print(e.getcode(), e.read())
 			raise e
 
 		fileNamePattern = r'[\w\-.\[\]\(\)]+\.?\w+$'
@@ -151,8 +155,8 @@ class BrowserTest:
 		res.close()
 
 	def openHomePage(self):
-		print self.browser.open('http://chonso.vinaphone.com.vn/numstore/index.htm')
-		print '*' * 20
+		print(self.browser.open('http://chonso.vinaphone.com.vn/numstore/index.htm'))
+		print('*' * 20)
 		self.getCapchaIMG()
 		capcha = raw_input('Capcha:')
 
@@ -160,19 +164,19 @@ class BrowserTest:
 			'j_captcha_response': capcha,
 		}
 
-		print self.browser.open('http://chonso.vinaphone.com.vn/numstore/jcaptchaValid', data)
-		print '*' * 20
+		print(self.browser.open('http://chonso.vinaphone.com.vn/numstore/jcaptchaValid', data))
+		print('*' * 20)
 
-		print self.browser.open('http://chonso.vinaphone.com.vn/numstore/check.jsp')
-		print '*' * 20
+		print(self.browser.open('http://chonso.vinaphone.com.vn/numstore/check.jsp'))
+		print('*' * 20)
 
 		data = {
 			'j_username': 'neo',
 			'j_password': 'neo',
 		}
 
-		print self.browser.open('http://chonso.vinaphone.com.vn/numstore/j_security_check', data)
-		print '*' * 20
+		print(self.browser.open('http://chonso.vinaphone.com.vn/numstore/j_security_check', data))
+		print('*' * 20)
 
 		pass
 

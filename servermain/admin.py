@@ -2,9 +2,9 @@ from django.contrib import admin
 from storagon.enum import *
 # Register your models here.
 from storagon.tool import *
-from models import User, UserProfile, UserFile, Folder, RealFile, ServerFile, Bill, AccountBalance, TransactionLog, Banlist, PremiumKey, UserApply, WebsiteAgency
-from mongo_models import UserStorage, ServerFileStorage, Session
-from controllers import UserController, ServerFileController, SessionController, FileController, BalanceController
+from .models import User, UserProfile, UserFile, Folder, RealFile, ServerFile, Bill, AccountBalance, TransactionLog, Banlist, PremiumKey, UserApply, WebsiteAgency
+from .mongo_models import UserStorage, ServerFileStorage, Session
+from .controllers import UserController, ServerFileController, SessionController, FileController, BalanceController
 
 
 

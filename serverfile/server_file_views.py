@@ -11,13 +11,16 @@
 # -*- coding: utf-8 -*-
 import datetime,time
 import os
-import StringIO
+try:
+    from StringIO import StringIO ## for Python 2
+except ImportError:
+    from io import StringIO ## for Python 3
 import jwt
 
 from django.http import *
 from django.utils import timezone
 from django.core.cache import cache
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from storagon.PrivateAPI_SDK import SessionSDK, FileSDK
 from storagon.tool import *
@@ -204,8 +207,8 @@ def downloadView(request, downloadSessionID, token, fileName):
 				except Exception as e:
 					return errorResponse(u"Invalid Range Header", code=0)
 			# django serve file
-			print request.META
-			print u"Warning: File serve direcly from django not nginx with offset=%s, block=%s" % (offset, block)
+			print(request.META)
+			print(u"Warning: File serve direcly from django not nginx with offset=%s, block=%s" % (offset, block))
 			fsock = open(settings.MEDIA_ROOT + '/' + file_location, 'rb')
 
 			fsock.seek(offset, 0)

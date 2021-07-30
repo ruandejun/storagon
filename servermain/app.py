@@ -24,7 +24,7 @@ class MyAppConfig(AppConfig):
 
         if settings.IS_RUNNING_UNIT_TEST:
             settings.MONGODB['NAME']='storagon_test';
-            print "Change MONGODB to test DB:%s"%(settings.MONGODB['NAME'])
+            print ("Change MONGODB to test DB:%s"%(settings.MONGODB['NAME']))
 
             settings.CACHES = {
                 'default': { #Simple Local MemCache (not work well with django-cache-machine)
@@ -36,14 +36,14 @@ class MyAppConfig(AppConfig):
                     'MAX_ENTRIES': 2000 #max number of row cached
                 }
             }}
-            print "Change Cache BACKEND to LocMemCache"
+            print ("Change Cache BACKEND to LocMemCache")
 
         db_connection = connect(db=settings.MONGODB['NAME'], host=settings.MONGODB['HOST'], port=settings.MONGODB['PORT'], alias='default', tz_aware=settings.USE_TZ)
         #"Create connection to mongoDB"
 
         if settings.IS_RUNNING_UNIT_TEST:
             db_connection.drop_database(settings.MONGODB['NAME'])
-            print "Clear MONGODB on launch"
+            print ("Clear MONGODB on launch")
 
         redis_password = None
         if settings.REDISDB['PASSWORD']: redis_password=settings.REDISDB['PASSWORD'];

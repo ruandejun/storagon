@@ -10,13 +10,13 @@
 
 import re
 import os
-import urlparse
+import urllib.parse as urlparse
 
 from django import shortcuts
 from django.http import *
 
 from servermain.controllers import UserController
-from models import UserFile
+from .models import UserFile
 from storagon.tool import *
 from system_configure.controllers import SystemConfigureController
 

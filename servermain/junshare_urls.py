@@ -8,19 +8,19 @@
 #  Copyright (c) 2014 storagon. All rights reserved.
 #
 
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 from django.views.generic import RedirectView, TemplateView
 
 
-urlpatterns = patterns('servermain',
+urlpatterns = ['servermain',
 
 	# url(r'^/?$', TemplateView.as_view(template_name="storagon_main/index.html"), name='home'),
 	# url(r'^/?$', 'main_views.home', name='home'),
 	# url(r'^dl/(\d+)/(.+)$', 'main_views.download', name='download'),
-)
+]
 
 from rest_framework.urlpatterns import format_suffix_patterns
-from junshare_views import HomeView, DownloadView, DownloadView2, DownloadToolView, AffiliateToolView, PaymentSuccessView, PaymentFailView, activateAccount
+from .junshare_views import HomeView, DownloadView, DownloadView2, DownloadToolView, AffiliateToolView, PaymentSuccessView, PaymentFailView, activateAccount
 from django.views.decorators.cache import cache_page
 
 urlpatterns += format_suffix_patterns([

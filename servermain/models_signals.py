@@ -26,7 +26,7 @@ from storagon.PrivateAPI_SDK import SignalSDK
 from system_configure.controllers import SystemConfigureController
 from system_configure.models import SystemConfig
 from system_configure.signals import post_verify_code
-from bunch import Bunch
+from munch import Munch
 
 @receiver(post_verify_code, sender=SystemConfig)
 def postVerifyCode(sender, **kwargs):
@@ -231,7 +231,7 @@ def postSaveUserApply(sender, **kwargs):
 
 		# ApplyType.payAffiliate
 		if userApply.apply_type == ApplyType.payAffiliate:
-			data = Bunch(json.loads(userApply.data))
+			data = Munch(json.loads(userApply.data))
 			if BalanceController.transferBalance(data.withdraw_balance_id,data.deposit_balance_id,data.withdraw_amount,data.deposit_amount):
 				TransactionLog(transaction_type=TransactionType.transfer,
 							balance_id=data.withdraw_balance_id,

@@ -8,13 +8,13 @@
 #  Copyright (c) 2014 __MyCompanyName__. All rights reserved.
 #
 
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 from django.views.generic import RedirectView, TemplateView
-
-urlpatterns = patterns('servermain.api.Session_ClientAPI',
-	url(r'^createUploadSession/', 'createUploadSession', name='createUploadSession'),
-	url(r'^createDownloadSession/', 'createDownloadSession', name='createDownloadSession'),
-	url(r'^createReport/', 'createReport', name='createReport'),
-	url(r'^sendInboxMessage/', 'sendInboxMessage', name='sendInboxMessage'),
-	url(r'^getListSession/', 'getListSession', name='getListSession'),
-)
+from .Session_ClientAPI import *
+urlpatterns = [
+	url(r'^createUploadSession/', createUploadSession, name='createUploadSession'),
+	url(r'^createDownloadSession/', createDownloadSession, name='createDownloadSession'),
+	url(r'^createReport/', createReport, name='createReport'),
+	url(r'^sendInboxMessage/', sendInboxMessage, name='sendInboxMessage'),
+	url(r'^getListSession/', getListSession, name='getListSession'),
+]

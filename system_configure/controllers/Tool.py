@@ -15,13 +15,13 @@ from django.conf import settings  # site setting
 from django.core.cache import cache
 from django import shortcuts
 # add logging
-import logging, json, os, urllib, urllib2, sys
+import logging, json, os, urllib, urllib3, sys
 from django.core.exceptions import PermissionDenied as Http403
 from django.core.exceptions import SuspiciousOperation as Http400
 from django.core.files.storage import FileSystemStorage
 import tempfile
-from django.core.urlresolvers import NoReverseMatch
-from django.core.urlresolvers import reverse
+from django.urls.resolvers import NoReverseMatch
+from django.urls import reverse
 
 from rest_framework import serializers,exceptions,status,permissions
 from rest_framework.throttling import ScopedRateThrottle
@@ -99,26 +99,26 @@ def custom_400(request):
 
 def checkRecaptcha(request):
 	data = {
-		'response' : getParamsOr400(request, 'g-recaptcha-response'),
-		'remoteip' : request.META['REMOTE_ADDR'],
-		'secret' : settings.RECAPTCHA_SECRET
+		'response': getParamsOr400(request, 'g-recaptcha-response'),
+		'remoteip': request.META['REMOTE_ADDR'],
+		'secret': settings.RECAPTCHA_SECRET
 	}
-	request = urllib2.Request('https://www.google.com/recaptcha/api/siteverify',data=urllib.urlencode(data));
+	request = urllib3.HTTPConnectionPool('https://www.google.com/recaptcha/api/siteverify', data=urlencode(data))
 	try:
-		response = urllib2.urlopen(request)
+		response = urllib3.HTTPConnectionPool(request)
 		response_body = response.read()
 		status = response.getcode()
-	except urllib2.HTTPError, e:
-		response_body = e.read()
-		status = e.code
-		logging.error(u"Unable to connect to google to verify captcha, error:"%(response_body))
+	except urllib3.exceptions.HTTPError as e:
+		response_body = e
+		status = 400
+		logging.error(u"Unable to connect to google to verify captcha, error:" % response_body)
 		return None
 
-	result = json.loads(response_body);
+	result = json.loads(response_body)
 	if result['success'] is False:
-		logging.error(u"Unable verify captcha with error-codes:%s"%(result.get('error-codes')));
+		logging.error(u"Unable verify captcha with error-codes:%s" % (result['error-codes']))
 
-	return result['success'];
+	return result['success']
 
 
 def get_media_storage():
@@ -197,7 +197,7 @@ class ScopedRateThrottleBanIP(ScopedRateThrottle):
 
 from rest_framework.routers import DefaultRouter
 from rest_framework.views import APIView
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 
 
 class FullRouter(DefaultRouter):
@@ -370,7 +370,7 @@ def getParamsOrRaise400(paramDict, *paramNameAndDefaultValueList, **kwargs):
 		if isinstance(pd, str):  # no default value, only one string
 			paramName = pd
 			if paramName not in paramDict:  # raise 400 here
-				print u"Invalid Param:%s" % (paramName)
+				print(u"Invalid Param:%s" % (paramName))
 				raise BadRequestException(paramName)
 			else:
 				resultSet += [paramDict.get(paramName)]

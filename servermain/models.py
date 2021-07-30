@@ -19,9 +19,9 @@ from django.conf import settings  # site setting
 from storagon.PrivateAPI_SDK import SignalSDK
 from storagon.enum import *
 from storagon.tool import *
-from mongo_models import UserStorage, ServerFileStorage, Session
+from .mongo_models import UserStorage, ServerFileStorage, Session
 from django.utils import timezone
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.utils.html import format_html
 import base64
 import hashlib
@@ -32,7 +32,7 @@ from Crypto.Cipher import AES
 # Create your models here.
 
 class UserProfile(models.Model):
-	user = models.OneToOneField(User, related_name='profile')
+	user = models.OneToOneField(User, related_name='profile', on_delete=models.DO_NOTHING)
 	modified_date = models.DateTimeField(auto_now=True, db_index=True)
 	full_name = models.CharField(max_length=255, db_index=True)
 	email = models.CharField(blank=True, null=True, max_length=255, db_index=True)
@@ -69,12 +69,12 @@ def generateID():
 
 
 class UserFile(models.Model):
-	user = models.ForeignKey(User)
+	user = models.ForeignKey(User,on_delete=models.DO_NOTHING)
 	created_date = models.DateTimeField(auto_now_add=True, db_index=True)
 	modified_date = models.DateTimeField(auto_now=True, db_index=True)
 	file_name = models.CharField(max_length=255, db_index=True)
-	realFile = models.ForeignKey('RealFile')
-	folder = models.ForeignKey('Folder', related_name='fileList', blank=True, null=True)
+	realFile = models.ForeignKey('RealFile',on_delete=models.DO_NOTHING)
+	folder = models.ForeignKey('Folder', related_name='fileList', on_delete=models.DO_NOTHING, blank=True, null=True)
 
 	erfk = models.CharField(blank=True, null=True, max_length=1024)
 
@@ -124,11 +124,11 @@ class UserFile(models.Model):
 
 
 class Folder(models.Model):
-	user = models.ForeignKey(User)
+	user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
 	created_date = models.DateTimeField(auto_now_add=True, db_index=True)
 	modified_date = models.DateTimeField(auto_now=True, db_index=True)
 	name = models.CharField(max_length=255, db_index=True)
-	parent_folder = models.ForeignKey('Folder', related_name='subFolderList', blank=True, null=True)
+	parent_folder = models.ForeignKey('Folder', related_name='subFolderList', on_delete=models.DO_NOTHING, blank=True, null=True)
 	folder_type = models.PositiveSmallIntegerField(choices=FolderType.ChoiceList(), default=FolderType.normal, db_index=True)
 
 	def __unicode__(self):
@@ -244,7 +244,7 @@ class PremiumKey(models.Model):
 
 
 class UserApply(models.Model):
-	user = models.ForeignKey(User, related_name='application')
+	user = models.ForeignKey(User, related_name='application', on_delete=models.DO_NOTHING)
 	created_date = models.DateTimeField(auto_now_add=True, db_index=True)
 	modified_date = models.DateTimeField(auto_now=True, db_index=True)
 
@@ -260,7 +260,7 @@ class UserApply(models.Model):
 
 
 class WebsiteAgency(models.Model):
-	user = models.ForeignKey(User)
+	user = models.ForeignKey(User,on_delete=models.DO_NOTHING)
 	website_domain = models.CharField(max_length=255, blank=True, unique=True, db_index=True)  # domain of website agency, host
 	created_date = models.DateTimeField(auto_now_add=True, db_index=True)
 	modified_date = models.DateTimeField(auto_now=True, db_index=True)

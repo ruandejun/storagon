@@ -11,14 +11,14 @@
 from django import shortcuts
 from django.template import RequestContext
 from django.http import *
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 import json, pytz
 from django.conf import settings;
 from django.views.decorators.csrf import csrf_exempt,csrf_protect
 from django.contrib.auth.decorators import login_required, permission_required
-from models import AttendanceLog
+from .models import AttendanceLog
 from django.utils import timezone
-from models import AttendanceLog
+from .models import AttendanceLog
 import calendar
 
 @permission_required(['attendance_tracking.submit_attendancelog'])
@@ -43,7 +43,7 @@ def submitAttendance(request):
 
 		lastAttLog=request.user.attendancelog_set.all().reverse().first();
 		if lastAttLog and lastAttLog.created_date + timezone.timedelta(seconds=settings.ATTENDANCE_TRACK_TIME_BETWEEN_SUBMIT) > timezone.now():
-			print "Dont save due to lastAttLog.created_date = %s"%(lastAttLog.created_date)
+			print("Dont save due to lastAttLog.created_date = %s"%(lastAttLog.created_date))
 		else:
 			attLog.save(); #dont saved multiple attendance during ATTENDANCE_TRACK_TIME_BETWEEN_SUBMIT
 

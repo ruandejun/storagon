@@ -16,7 +16,7 @@ import calendar
 from django import shortcuts
 from django.template import RequestContext
 from django.http import *
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.contrib.auth.decorators import permission_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import PermissionDenied
@@ -30,8 +30,8 @@ from rest_framework import serializers
 
 from servermain.controllers import PaymentController
 from storagon.PrivateAPI_SDK import SignalSDK
-from models import User, ServerFile
-from mongo_models import Session
+from .models import User, ServerFile
+from .mongo_models import Session
 from storagon.enum import *
 from storagon.tool import *
 from system_configure.controllers import SystemConfigureController
@@ -378,7 +378,7 @@ def sendServerFileSignal(request):
 		if form.is_valid():
 			fd = form.cleaned_data
 			serverFile = fd['serverFile']
-			print u"Send signal to %s =" % serverFile.server_address,
+			print (u"Send signal to %s =" % serverFile.server_address,)
 			signalSDK = SignalSDK(serverFile.server_address)
 			if fd['signal'] == 'initiateDeleteSessionProcess':
 				# print u'initiateDeleteSessionProcess'

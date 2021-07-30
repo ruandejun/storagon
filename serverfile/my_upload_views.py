@@ -42,7 +42,7 @@ def upload_to_path(fileName, fileSize):
 
 
 def handleCompleted(request, actual_filepath, session_id, resumableFile):
-	print u"Session %s is completing..." % (session_id)
+	print(u"Session %s is completing..." % (session_id))
 	try:
 		file_name = resumableFile.filename
 	except UnicodeDecodeError:
@@ -53,14 +53,14 @@ def handleCompleted(request, actual_filepath, session_id, resumableFile):
 	fileSDK = FileSDK(settings.SERVER_MAIN_URL)
 	userFile_id = fileSDK.addFile(session_id, actual_filepath, file_name, file_size)
 	if not userFile_id:
-		print u"Sesssion %s failed, delete file at:%s" % (session_id, actual_filepath)
+		print(u"Sesssion %s failed, delete file at:%s" % (session_id, actual_filepath))
 		# remove file
 		try:
 			os.remove(settings.MEDIA_ROOT + '/' + actual_filepath)
 		except OSError:
 			pass
 		return None
-	print u"Session %s completed with userFile_id=%s, save file to:%s" % (session_id, userFile_id, actual_filepath)
+	print(u"Session %s completed with userFile_id=%s, save file to:%s" % (session_id, userFile_id, actual_filepath))
 	return userFile_id
 
 

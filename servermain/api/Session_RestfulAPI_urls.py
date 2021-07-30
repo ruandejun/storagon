@@ -8,7 +8,7 @@
 #  Copyright (c) 2015 storagon. All rights reserved.
 #
 
-from Session_RestfulAPI import SessionClientAPI, SessionClientAPIView
+from .Session_RestfulAPI import SessionClientAPI, SessionClientAPIView
 from system_configure.controllers.Tool import FullRouter
 
 router = FullRouter('mongo');

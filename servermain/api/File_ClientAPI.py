@@ -11,7 +11,7 @@
 from django import shortcuts
 from django.template import RequestContext
 from django.http import *
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.utils import timezone
 from django.conf import settings  # site setting
 from django.views.decorators.csrf import csrf_exempt, csrf_protect

@@ -11,14 +11,17 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 import sys
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+from pathlib import Path
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '7yn^8pwp+yzd2l4ki6+v9kp(h)rzs$9gxu4ao^_p+9x_5+1*6o'
+SECRET_KEY = 'django-insecure-se9b9@7e-!*7z!fyyud&r8et5d%(b-cgctf=+6u53)#y%5u)6r'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -38,11 +41,11 @@ ALLOWED_HOSTS = [
 
 INSTALLED_APPS = (
 	'system_configure', #need to be at top for first priority
-
-	'suit', 'suit_redactor',	# better admin interface
+	#'suit',
+    #'suit_redactor',	# better admin interface
 	'admin_resumable',	# support resumable file upload in admin
 	'corsheaders',	# CORS support
-	'memcache_admin',	# memcache viewer
+	#'memcache_admin',	# memcache viewer
 	'django.contrib.admin',
 	'django.contrib.auth',
 	'django.contrib.contenttypes',
@@ -50,7 +53,6 @@ INSTALLED_APPS = (
 	'django.contrib.messages',
 	'django.contrib.staticfiles',
 	'django.contrib.admindocs',	# doc
-
 	'rest_framework', # Restful API
 	'rest_framework_mongoengine', # Restful for mongoengine
 	'admin_file_manager',
@@ -89,7 +91,6 @@ DATABASES = {
 	'default': {
 
 		'ENGINE': 'django.db.backends.postgresql_psycopg2',
-
 		'NAME': 'storagon',
 		'USER': 'root',	  # Not used with sqlite3.
 		'PASSWORD': '123',  # Not used with sqlite3.
@@ -122,10 +123,10 @@ if 'test' in sys.argv:
 
 
 
-MEMCACHE_ADMIN = {
-	'REFRESH_RATE': 1000,	# auto refresh webpage display server status every 1 seconds
-	'CACHE': 'default',	# use caches definition = default
-}
+# MEMCACHE_ADMIN = {
+# 	'REFRESH_RATE': 1000,	# auto refresh webpage display server status every 1 seconds
+# 	'CACHE': 'default',	# use caches definition = default
+# }
 
 # Caching
 CACHES = {
@@ -151,7 +152,7 @@ CACHES = {
 }
 
 if IS_RUNNING_UNIT_TEST:
-	print "Change Cache BACKEND to LocMemCache"
+	print ("Change Cache BACKEND to LocMemCache")
 	CACHES = {
 		'default': { #Simple Local MemCache (not work well with django-cache-machine)
 		'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
@@ -210,7 +211,7 @@ SUIT_CONFIG = {
 
 		{'label': 'Tool', 'icon': 'icon-wrench', 'models': [
 			'admin_file_manager.file',
-			{'label': 'Memcache Cluster', 'permissions': ('servermain.add_serverfile'), 'url': '/adl/memcache_admin/dashboard/'},
+			#{'label': 'Memcache Cluster', 'permissions': ('servermain.add_serverfile'), 'url': '/adl/memcache_admin/dashboard/'},
 			{'label': 'Send Signal', 'permissions': ('servermain.add_serverfile'), 'url': 'CustomAdmin:sendServerFileSignal'},
 			{'label': 'Test Upload', 'permissions': ('servermain.add_serverfile'), 'url': 'CustomAdmin:userFileUpload'},
 			{'label': 'Verify Bill', 'permissions': ('servermain.add_bill'), 'url': 'CustomAdmin:verifyBillManual'},
@@ -252,11 +253,11 @@ LOGIN_URL = '/adl/login/'
 LOGIN_REDIRECT_URL = '/adl/'
 LOGOUT_URL = '/adl/logout/'
 
-from django.conf.global_settings import TEMPLATE_CONTEXT_PROCESSORS
-
-TEMPLATE_CONTEXT_PROCESSORS += (
-	'django.core.context_processors.request',	# suit admin interface
-)
+# from django.conf.global_settings import TEMPLATE_CONTEXT_PROCESSORS
+#
+# TEMPLATE_CONTEXT_PROCESSORS += (
+# 	'django.core.context_processors.request',	# suit admin interface
+# )
 
 #Email
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -427,3 +428,4 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 SERVER_MAIN_URL = 'http://127.0.0.1:8000'
 SERVER_FILE_ID = 1
 # ROOT_URLCONF = 'storagon.urls_serverFile'
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

@@ -14,7 +14,7 @@ from servermain.models import AccountBalance
 from servermain.controllers import StatisticsController, AffiliateController, RestfulController
 from storagon.enum import *
 from django.utils import timezone
-from bunch import Bunch
+from munch import Munch
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -39,7 +39,7 @@ class AffiliateStatisticsAPI(viewsets.GenericViewSet):
 		if not formPOST.is_valid():
 			return errorResponseRestful(formPOST.errors,code=status.HTTP_400_BAD_REQUEST);
 		#::type: TransactionStatisticsFilterForm
-		data=Bunch(formPOST.data)
+		data=Munch(formPOST.data)
 
 		from_date = timezone.datetime.strptime(data.from_date, "%Y-%m-%d")
 		to_date = timezone.datetime.strptime(data.to_date, "%Y-%m-%d")

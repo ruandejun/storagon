@@ -11,7 +11,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from models import AttendanceLog
+from .models import AttendanceLog
 
 @admin.register(AttendanceLog)
 class AttendanceLogAdmin(admin.ModelAdmin):

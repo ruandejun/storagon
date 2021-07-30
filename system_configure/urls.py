@@ -8,10 +8,9 @@
 #  Copyright (c) 2015 storagon. All rights reserved.
 #
 
-from django.conf.urls import patterns, include, url
+from django.conf.urls import  include, url
 from django.views.generic import RedirectView, TemplateView
-
-urlpatterns = patterns('system_configure',
-
-	url(r'^verifyCode/?$', 'views.verifyCode', name='verifyCode'),
-)
+from .views import *
+urlpatterns = [
+	url(r'^verifyCode/?$', verifyCode, name='verifyCode'),
+]

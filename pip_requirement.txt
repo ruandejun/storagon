@@ -5,6 +5,7 @@ django-cors-headers
 djangorestframework
 djangorestframework-msgpack
 django-rest-framework-mongoengine
+django-filter
 mongoengine
 maxminddb
 geoip2

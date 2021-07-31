@@ -30,7 +30,7 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 
 from rest_framework import serializers, generics, mixins, permissions, exceptions, viewsets, status
-from rest_framework.decorators import list_route,detail_route
+from rest_framework.decorators import action
 from servermain.controllers.RestfulController import IsAffiliateProfile,IsOwnerOrNotAllow,IsOwnerOrReadOnly,ServerError,IsSignatureVerified
 
 
@@ -67,7 +67,7 @@ class CurrentUserProfileView(viewsets.GenericViewSet):
 
 	permission_classes = (permissions.IsAuthenticated,IsSignatureVerified)
 
-	@list_route(methods=['get'],permission_classes=[permissions.IsAuthenticated, IsSignatureVerified])
+	@action(detail=False,methods=['get'],permission_classes=[permissions.IsAuthenticated, IsSignatureVerified])
 	def show(self, request, *args, **kwargs):
 		slz1 = UserSerializer(instance=request.user)
 		slz2 = UserProfileSerializer(instance=request.user.profile)
@@ -76,7 +76,7 @@ class CurrentUserProfileView(viewsets.GenericViewSet):
 		merged_data.update(slz2.data);
 		return Response(merged_data);
 
-	@list_route(methods=['patch'],permission_classes=[permissions.IsAuthenticated, IsSignatureVerified], serializer_class=UserProfileSerializer)
+	@action(detail=False,methods=['patch'],permission_classes=[permissions.IsAuthenticated, IsSignatureVerified], serializer_class=UserProfileSerializer)
 	def edit(self, request, *args, **kwargs):
 		serializer = UserProfileSerializer(instance=request.user.profile, data=request.data, partial=True); #partial=True is for PATCH
 		if serializer.is_valid():
@@ -110,7 +110,7 @@ class CurrentUserAccountBalanceView(viewsets.GenericViewSet, generics.ListCreate
 
 		serializer.save(user=self.request.user) #set user = currentUser
 
-	@detail_route(methods=['get'], permission_classes=[permissions.IsAuthenticated, IsAffiliateProfile, IsOwnerOrNotAllow])
+	@action(detail=True,methods=['get'], permission_classes=[permissions.IsAuthenticated, IsAffiliateProfile, IsOwnerOrNotAllow])
 	def getNonAvaiableTransaction(self, request, *args, **kwargs):
 		balance = self.get_object();
 		result = AffiliateController.countNotAvailableTransactionOfBalance(balance.id);
@@ -171,7 +171,7 @@ class RequestPayForm(serializers.Serializer):
 class CurrentUserUserApplyView(viewsets.GenericViewSet):
 	permission_classes = [permissions.IsAuthenticated, IsSignatureVerified]
 
-	@list_route(methods=['post'], serializer_class=RequestPayForm)
+	@action(detail=False,methods=['post'], serializer_class=RequestPayForm)
 	def requestPay(self, request, *args, **kwargs):
 		""" requestPay \n\n
 		withdraw_balance_id : serializers.IntegerField(min_value=0)
@@ -245,7 +245,7 @@ class InvokeDesktopClientForm(serializers.Serializer):
 class CurrentUserView(viewsets.GenericViewSet):
 	permission_classes = [permissions.IsAuthenticated, IsSignatureVerified]
 
-	@list_route(methods=['post'], serializer_class=InvokeDesktopClientForm)
+	@action(detail=False, methods=['post'], serializer_class=InvokeDesktopClientForm)
 	def invokeDesktopClient(self, request, *args, **kwargs):
 		formPOST=InvokeDesktopClientForm(data=request.data);
 		if not formPOST.is_valid():

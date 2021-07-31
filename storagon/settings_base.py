@@ -43,6 +43,7 @@ ALLOWED_HOSTS = [
 
 INSTALLED_APPS = (
 	'system_configure', #need to be at top for first priority
+	'jet_django',
 	'suit',
     'suit_redactor',	# better admin interface
 	'admin_resumable',	# support resumable file upload in admin

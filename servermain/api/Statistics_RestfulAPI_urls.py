@@ -7,10 +7,10 @@
 #  Created by TVA on 6/9/15.
 #  Copyright (c) 2015 storagon. All rights reserved.
 #
-from Statistics_RestfulAPI import AffiliateStatisticsAPI
+from .Statistics_RestfulAPI import AffiliateStatisticsAPI
 from system_configure.controllers.Tool import FullRouter
 
 router = FullRouter('statistics');
-router.register(r'aff', AffiliateStatisticsAPI, base_name='Aff')
+router.register(r'aff', AffiliateStatisticsAPI, basename='Aff')
 
 urlpatterns = router.urls

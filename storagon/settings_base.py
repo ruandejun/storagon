@@ -32,27 +32,7 @@ TEMPLATE_DIRS = (
 	os.path.join(BASE_DIR, 'storagon_templates'),
 )
 
-TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-            os.path.join(BASE_DIR, 'storagon_templates'),
-                 ],
-        'APP_DIRS': True,
-        'OPTIONS': {
-			'context_processors': [
-				'django.contrib.auth.context_processors.auth',
-				'django.template.context_processors.request',
-				'django.template.context_processors.debug',
-				'django.template.context_processors.i18n',
-				'django.template.context_processors.media',
-				'django.template.context_processors.static',
-				'django.template.context_processors.tz',
-				'django.contrib.messages.context_processors.messages',
-			],
-        },
-    },
-]
+
 
 ALLOWED_HOSTS = [
 	'127.0.0.1', # Allow local host connect to server.
@@ -95,7 +75,27 @@ MIDDLEWARE_CLASSES = (
 	'system_configure.controllers.Tool.DisableCSRF',
 )
 
-
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+            os.path.join(BASE_DIR, 'storagon_templates'),
+                 ],
+        'APP_DIRS': True,
+        'OPTIONS': {
+			'context_processors': [
+				'django.contrib.auth.context_processors.auth',
+				'django.template.context_processors.request',
+				'django.template.context_processors.debug',
+				'django.template.context_processors.i18n',
+				'django.template.context_processors.media',
+				'django.template.context_processors.static',
+				'django.template.context_processors.tz',
+				'django.contrib.messages.context_processors.messages',
+			],
+        },
+    },
+]
 ROOT_URLCONF = 'storagon.urls'
 
 WSGI_APPLICATION = 'storagon.wsgi.application'

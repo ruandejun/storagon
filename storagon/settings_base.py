@@ -66,13 +66,13 @@ INSTALLED_APPS = (
 )
 
 MIDDLEWARE = (
-	'django.contrib.auth.middleware.AuthenticationMiddleware'
+	'corsheaders.middleware.CorsMiddleware',  # CORS must put before CommonMiddleware
+	'system_configure.controllers.Tool.DisableCSRF',
 	'django.contrib.sessions.middleware.SessionMiddleware',
+	'django.contrib.auth.middleware.AuthenticationMiddleware'
 	'django.middleware.common.CommonMiddleware',
 	'django.contrib.messages.middleware.MessageMiddleware',
 	'django.middleware.clickjacking.XFrameOptionsMiddleware',
-	'corsheaders.middleware.CorsMiddleware',  # CORS must put before CommonMiddleware
-	'system_configure.controllers.Tool.DisableCSRF',
 )
 
 TEMPLATES = [

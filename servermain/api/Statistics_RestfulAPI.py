@@ -19,7 +19,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from rest_framework import serializers, generics, mixins, permissions, exceptions, viewsets
-from rest_framework.decorators import detail_route,list_route
+from rest_framework.decorators import action
 
 
 class BlankForm(serializers.Serializer):pass;
@@ -33,7 +33,7 @@ class TransactionStatisticsFilterForm(serializers.Serializer):
 
 class AffiliateStatisticsAPI(viewsets.GenericViewSet):
 
-	@list_route(methods=['get'], serializer_class=TransactionStatisticsFilterForm, permission_classes=[permissions.IsAuthenticated, RestfulController.IsSignatureVerified])
+	@action(detail=False,methods=['get'], serializer_class=TransactionStatisticsFilterForm, permission_classes=[permissions.IsAuthenticated, RestfulController.IsSignatureVerified])
 	def transactionStatistics(self, request, *args, **kwargs):
 		formPOST=TransactionStatisticsFilterForm(data=request.QUERY_PARAMS);
 		if not formPOST.is_valid():

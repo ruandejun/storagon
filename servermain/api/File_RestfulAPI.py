@@ -27,7 +27,7 @@ from rest_framework import status
 import base64
 from rest_framework import serializers,generics,mixins,permissions,exceptions,viewsets
 from rest_framework import routers,views,response
-from rest_framework.decorators import detail_route,list_route
+from rest_framework.decorators import action
 import rest_framework_bulk as restbulk
 
 
@@ -220,7 +220,7 @@ class CurrentUserFolderView(viewsets.GenericViewSet,mixins.RetrieveModelMixin,mi
 	#
 	# 	return Response(data, status=status.HTTP_200_OK)
 
-	@detail_route(methods=['get'],permission_classes=[permissions.IsAuthenticated])
+	@action(detail=True,methods=['get'],permission_classes=[permissions.IsAuthenticated])
 	def backTrace(self,request,pk=None):
 		folder=getObjectOr404(Folder,id=pk);
 
@@ -255,7 +255,7 @@ class FolderAPI(viewsets.ViewSet):
 	permission_classes=(permissions.IsAuthenticated)
 	serializer_class=BackTraceFolderSerializer
 
-	@list_route(methods=['post'],permission_classes=[permissions.IsAuthenticated])
+	@action(detail=False,methods=['post'],permission_classes=[permissions.IsAuthenticated])
 	def backTrace(self,request,*args,**kwargs):
 		# folder_id = getParamsOrRaise400(request.data, 'folder_id');
 

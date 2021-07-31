@@ -10,8 +10,8 @@
 
 from django.conf.urls import url
 from django.views.generic import RedirectView, TemplateView
+from .UserStatistics_ClientAPI import *
 from .User_ClientAPI import *
-
 urlpatterns = [
 	#url(r'^home/$', TemplateView.as_view(template_name='example/home.html'), name="home"),
 	#url(r'^/?$', RedirectView.as_view(pattern_name="home")),

@@ -30,7 +30,7 @@ admin.site.unregister(User)
 class CustomUserAdmin(UserAdmin):
 	# list view
 	search_fields = ['username', 'email']
-	list_display = ('__unicode__', 'email', 'date_joined', 'last_login', 'is_active', 'is_staff')
+	list_display = ('email', 'date_joined', 'last_login', 'is_active', 'is_staff')
 	list_filter = ('date_joined', 'last_login', 'is_active', 'is_staff')
 	ordering = ('date_joined', 'last_login', 'username')
 
@@ -91,7 +91,7 @@ class CustomUserProfileAdmin(admin.ModelAdmin):
 
 	# list view
 	search_fields = ['user__username', 'full_name']
-	list_display = ('__unicode__', 'signup_ip_country', 'referer2', 'plan_expired', 'storage_used', 'upload_bandwidth', 'download_bandwidth', 'file_count', 'folder_count', 'referer')
+	list_display = ('signup_ip_country', 'referer2', 'plan_expired', 'storage_used', 'upload_bandwidth', 'download_bandwidth', 'file_count', 'folder_count', 'referer')
 	list_filter = ('plan_id', 'plan_expired', 'referer2', 'referer')
 	actions = ['recalculate_storage']
 
@@ -112,7 +112,7 @@ class CustomUserProfileAdmin(admin.ModelAdmin):
 class CustomUserFileAdmin(admin.ModelAdmin):
 	# list view
 	search_fields = ['id', 'user__username', 'file_name']
-	list_display = ('__unicode__', 'created_date', 'modified_date', 'user', 'folder', 'download_tag')
+	list_display = ('created_date', 'modified_date', 'user', 'folder', 'download_tag')
 	list_filter = ('created_date', 'modified_date')
 	# form view
 	readonly_fields = ('user',)
@@ -150,7 +150,7 @@ class CustomUserFileAdmin(admin.ModelAdmin):
 class CustomFolderAdmin(admin.ModelAdmin):
 	# list view
 	search_fields = ['id', 'user__username', 'name']
-	list_display = ('__unicode__', 'created_date', 'user', 'parent_folder')
+	list_display = ('created_date', 'user', 'parent_folder')
 	# list_filter = ('dt','platform','account_type','status')
 	# form view
 	# readonly_fields = ('user',)
@@ -170,7 +170,7 @@ class CustomRealFileAdmin(admin.ModelAdmin):
 
 	# list view
 	search_fields = ['id', 'file_location', 'file_hash', 'file_size']
-	list_display = ('__unicode__', 'file_size', 'created_date', 'userfile_count')
+	list_display = ('file_size', 'created_date', 'userfile_count')
 	list_filter = ('created_date', 'serverFile') #
 	actions = ['make_move_session', 'delete_useless'] #, 'change_server_file',
 	# form view
@@ -239,7 +239,7 @@ class CustomBillAdmin(admin.ModelAdmin):
 
 	# list view
 	search_fields = ['user__username', 'detail']
-	list_display = ('__unicode__','bill_status', 'money_charged', 'money_gain', 'user', 'plan_id', 'paygate_id','created_date', 'billSession_id', 'premiumkey')
+	list_display = ('bill_status', 'money_charged', 'money_gain', 'user', 'plan_id', 'paygate_id','created_date', 'billSession_id', 'premiumkey')
 	list_filter = ('plan_id', 'paygate_id','bill_status', 'money_charged', 'created_date')
 	actions = ['mark_bill_as_fraud']
 	# form view
@@ -263,7 +263,7 @@ class CustomBillAdmin(admin.ModelAdmin):
 class CustomAccountBalanceAdmin(admin.ModelAdmin):
 	# list view
 	search_fields = ['user__username','account_id']
-	list_display = ('__unicode__', 'amount','account_id')
+	list_display = ('amount','account_id')
 	list_filter = ('balance_type',)
 	# form view
 	readonly_fields = ('user','amount')
@@ -274,7 +274,7 @@ class CustomAccountBalanceAdmin(admin.ModelAdmin):
 class CustomPremiumKeyAdmin(admin.ModelAdmin):
 	# list view
 	search_fields = ['reseller__username', 'activated_user__username', 'code']
-	list_display = ('__unicode__', 'plan_id', 'reseller', 'created_date', 'activated_date')
+	list_display = ('plan_id', 'reseller', 'created_date', 'activated_date')
 	list_filter = ('created_date', 'activated_date')
 	# form view
 	readonly_fields = ('activated_user', 'activated_date', 'bill')
@@ -293,7 +293,7 @@ class CustomTransactionLogAdmin(admin.ModelAdmin):
 
 	# list view
 	search_fields = ['balance__user__username']
-	list_display = ('__unicode__', 'transaction_type', 'transaction_status', 'amount', 'created_date', 'balance', 'billSession_id', 'data')
+	list_display = ('transaction_type', 'transaction_status', 'amount', 'created_date', 'balance', 'billSession_id', 'data')
 	list_filter = ('transaction_type','transaction_status', 'amount', 'created_date')
 	actions = ['initiate_manual_transaction']
 	# form view
@@ -341,7 +341,7 @@ class CustomServerFileAdmin(admin.ModelAdmin):
 
 	# list view
 	search_fields = ['name', 'ip_address']
-	list_display = ('__unicode__', 'storage_used', 'total_storage', 'server_status', 'file_count', 'download_bandwidth', 'upload_bandwidth')
+	list_display = ('storage_used', 'total_storage', 'server_status', 'file_count', 'download_bandwidth', 'upload_bandwidth')
 	list_filter = ('server_status',)
 	actions = ['recalculate_storage']
 
@@ -360,7 +360,7 @@ class CustomServerFileAdmin(admin.ModelAdmin):
 class CustomUserApplyAdmin(admin.ModelAdmin):
 	# list view
 	search_fields = ['user__username', 'website_address']
-	list_display = ('__unicode__', 'created_date', 'apply_status', 'data')
+	list_display = ('created_date', 'apply_status', 'data')
 	list_filter = ('apply_type', 'apply_status', 'created_date')
 	actions = ['accept_application', 'reject_application']
 

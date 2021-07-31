@@ -11,17 +11,17 @@
 from django import shortcuts
 from django.template import RequestContext
 from django.http import *
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from django.conf import settings
-from django.views.decorators.csrf import csrf_exempt, csrf_protect
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import REDIRECT_FIELD_NAME
-
-from functools import wraps
-from django.core.exceptions import PermissionDenied
-from django.utils.decorators import available_attrs
-from django.utils.encoding import force_str
+# from django.views.decorators.csrf import csrf_exempt, csrf_protect
+# from django.contrib.auth.decorators import login_required
+# from django.contrib.auth import REDIRECT_FIELD_NAME
+#
+# from functools import wraps
+# from django.core.exceptions import PermissionDenied
+# from django.utils.decorators import available_attrs
+# from django.utils.encoding import force_str
 import hashlib
 import urllib
 

@@ -32,6 +32,33 @@ TEMPLATE_DIRS = (
 	os.path.join(BASE_DIR, 'storagon_templates'),
 )
 
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+
+            os.path.join(BASE_DIR, 'storagon_templates'),
+                 ],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'loaders': [
+                'django.template.loaders.app_directories.Loader',
+                'django.template.loaders.filesystem.Loader',
+            ],
+            'context_processors': [
+                'django.contrib.auth.context_processors.auth',
+                'django.template.context_processors.request',
+                'django.template.context_processors.debug',
+                'django.template.context_processors.i18n',
+                'django.template.context_processors.media',
+                'django.template.context_processors.static',
+                'django.template.context_processors.tz',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+
 ALLOWED_HOSTS = [
 	'127.0.0.1', # Allow local host connect to server.
 ]

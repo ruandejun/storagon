@@ -13,7 +13,6 @@ urlpatterns = [
 	url(r'^clapi/file/', include(File_ClientAPI_urls, namespace='File_ClientAPI')),
 	url(r'^clapi/userstats/', include(UserStatistics_ClientAPI_urls, namespace='UserStatistics_ClientAPI')),
 	url(r'^clapi/premium/', include(Premium_ClientAPI_urls, namespace='Premium_ClientAPI')),
-
 	url(r'^prapi/file/', include(File_PrivateAPI_urls, namespace='File_PrivateAPI')),
 	url(r'^prapi/session/', include(Session_PrivateAPI_urls, namespace='Session_PrivateAPI')),
 

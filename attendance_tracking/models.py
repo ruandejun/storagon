@@ -26,7 +26,7 @@ class AttendanceLog(models.Model):
 	def __unicode__(self): return "%s : %s" % (self.user, timezone.template_localtime(self.created_date).strftime('%Y-%m-%d    %H:%M')) #self.created_date.strftime('%Y-%m-%d    %H:%M'))
 
 	class Meta:
-		permissions = (
+		default_permissions = (
 			("submit_attendancelog", "Can submit attendancelog"),
 			("view_attendancelog", "Can view attendancelog"),
 		)

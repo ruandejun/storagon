@@ -28,7 +28,7 @@ from .User_RestfulAPI import CurrentUserProfileView,CurrentUserAccountBalanceVie
 # ])
 
 from system_configure.controllers.Tool import FullRouter
-urlpatterns = []
+
 router = FullRouter('user');
 router.register(r'profile', CurrentUserProfileView, basename='Profile')
 router.register(r'accountBalance', CurrentUserAccountBalanceView, basename='AccountBalance')
@@ -37,6 +37,6 @@ router.register(r'userApplyList', CurrentUserUserApplyList, basename='UserApplyL
 router.register(r'userApplyView', CurrentUserUserApplyView, basename='UserApplyView')
 router.register(r'auth', CurrentUserView, basename='UserView')
 
-urlpatterns += router.urls
+urlpatterns = router.urls
 
 

@@ -214,7 +214,7 @@ class FullRouter(DefaultRouter):
 		self.includeRouterList = []
 		self.root_view_name=root_view_name
 
-	def get_api_root_view(self):
+	def get_api_root_view(self,api_urls=None):
 		"""
 		Return a view to use as the API root.
 		"""

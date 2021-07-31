@@ -35,7 +35,7 @@ TEMPLATE_DIRS = (
 
 
 ALLOWED_HOSTS = [
-	'127.0.0.1', # Allow local host connect to server.
+	'*', # Allow local host connect to server.
 ]
 
 

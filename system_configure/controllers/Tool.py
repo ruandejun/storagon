@@ -418,7 +418,7 @@ def getParamsOrRaise400(paramDict, *paramNameAndDefaultValueList, **kwargs):
 
 def errorResponse(error, code=0, response=None):
 	if response:
-		HttpResponseServerError(json.dumps({"error": error, 'code': code, "response": str(response)}))
+		HttpResponseServerError(json.dumps({"error": error, 'status_code': code, "response": str(response)}))
 	return HttpResponseServerError(json.dumps({"error": error, 'status_code': code}))
 
 

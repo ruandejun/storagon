@@ -62,7 +62,7 @@ def signature_test():
 			else:
 				return HttpResponseForbidden(u"Invalid Method")
 
-			correct_signature = hashlib.md5(settings.SECRET_KEY + params).hexdigest()
+			correct_signature = hashlib.md5(settings.SECRET_KEY + params.encode('utf-8')).hexdigest()
 			if correct_signature != signature:
 				# print params,'\n',params2
 				print(params2)

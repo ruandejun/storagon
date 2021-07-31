@@ -25,7 +25,7 @@ from servermain.mongo_models import Session
 from system_configure.controllers import Tool
 from munch import Munch
 from rest_framework import serializers, mixins, permissions, exceptions, filters, status, generics, viewsets
-from rest_framework.decorators import detail_route,list_route
+from rest_framework.decorators import action
 from servermain.controllers import RestfulController
 
 from rest_framework_mongoengine import generics as mongo_generics
@@ -129,7 +129,7 @@ class SessionClientAPI(mongo_viewsets.MongoGenericViewSet, mongo_generics.ListAP
 
 class SessionClientAPIView(viewsets.GenericViewSet):
 
-	@list_route(methods=['post'], serializer_class=CreateReportForm, permission_classes=[])
+	@action(detail=False,methods=['post'], serializer_class=CreateReportForm, permission_classes=[])
 	def createReport(self, request, *args, **kwargs):
 		formPOST=CreateReportForm(data=request.data);
 		if not formPOST.is_valid():

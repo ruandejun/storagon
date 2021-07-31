@@ -14,7 +14,7 @@ import re
 from django.http import *
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import check_password
+from django.contrib.auth.hashers import check_password
 from django.core import serializers
 from django.forms import *
 from django.utils import timezone

@@ -18,9 +18,11 @@ django-cache-machine
 blinker
 PyCrypto
 pyyaml
-bunch
 python-memcached
 mysqlclient
 PyMySQL
 psycopg2-binary
 munch==2.5.0
+bencode-python3==1.0.2
+PyJWT==2.1.0
+https://github.com/darklow/django-suit/tarball/v2

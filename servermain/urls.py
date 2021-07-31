@@ -2,7 +2,7 @@ from django.conf import settings;
 from django.conf.urls import include, url
 from django.views.generic import RedirectView, TemplateView
 from .api import Session_ClientAPI_urls, User_ClientAPI_urls, File_ClientAPI_urls, UserStatistics_ClientAPI_urls, Premium_ClientAPI_urls, File_PrivateAPI_urls, Session_PrivateAPI_urls
-from .api import User_RestfulAPI_urls, File_RestfulAPI_urls
+# from .api import User_RestfulAPI_urls, File_RestfulAPI_urls
 import system_configure.urls
 from . import restful_urls, storagon_urls, junshare_urls
 from .payment_views import *

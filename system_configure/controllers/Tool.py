@@ -94,8 +94,9 @@ def reverseBase(request,view_name,absolute=False,urlconf=None,args=None,kwargs=N
 
 def custom_400(request):
 	type, value, traceback = sys.exc_info();
-	print(errorResponse(value.message, code=400))
-	return errorResponse(value.message, code=400);
+	respose = errorResponse(value.message, code=400)
+	respose.satus_code = 400
+	return respose;
 
 
 def checkRecaptcha(request):

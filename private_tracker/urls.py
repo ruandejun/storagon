@@ -12,7 +12,7 @@ from django.conf.urls import include, url
 #from django.contrib import admin
 #from django.contrib.auth.views import login, logout, logout_then_login
 from .views import *
-urlpatterns = ['private_tracker',
+urlpatterns = [
 	url(r'^announce$', announce, name='PT_announce'),
 	url(r'^scrape$', scrape, name='PT_scrape'),
 ]

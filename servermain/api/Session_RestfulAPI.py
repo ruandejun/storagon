@@ -56,7 +56,7 @@ class CreateReportForm(serializers.Serializer):
 	detail = serializers.CharField();
 
 
-class SessionClientAPI(mongo_viewsets.MongoGenericViewSet, mongo_generics.ListAPIView):
+class SessionClientAPI(mongo_viewsets.ModelViewSet, mongo_generics.ListAPIView):
 	""" GET \n\n
 	type = serializers.IntegerField(min_value=0,default=SessionType.download);
 	status = serializers.IntegerField(min_value=-1,default=-1);

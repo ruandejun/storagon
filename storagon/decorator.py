@@ -23,7 +23,8 @@ from django.conf import settings
 # from django.utils.decorators import available_attrs
 # from django.utils.encoding import force_str
 import hashlib
-import urllib
+# import urllib
+from urllib.parse import urlencode, quote_plus
 
 
 from storagon.enum import *
@@ -56,7 +57,7 @@ def signature_test():
 				dataItems = request.POST.items()
 				dataItems.sort()
 				#convert unicode to fix urlencode error
-				params = urllib.urlencode([(k.encode('utf-8'), v.encode('utf-8')) for k, v in dataItems]);
+				params = urlencode([(k.encode('utf-8'), v.encode('utf-8')) for k, v in dataItems]);
 				# params = urllib.urlencode(dataItems)  # case 1
 			else:
 				return HttpResponseForbidden(u"Invalid Method")

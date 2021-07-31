@@ -57,7 +57,7 @@ def signature_test():
 				dataItems = request.POST.items()
 				dataItems.sort()
 				#convert unicode to fix urlencode error
-				params = urlencode([(k.encode('utf-8'), v.encode('utf-8')) for k, v in dataItems]);
+				params = urlencode([(k, v) for k, v in dataItems]);
 				# params = urllib.urlencode(dataItems)  # case 1
 			else:
 				return HttpResponseForbidden(u"Invalid Method")

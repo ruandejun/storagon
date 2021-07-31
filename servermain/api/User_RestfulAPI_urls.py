@@ -13,7 +13,7 @@
 #
 # from rest_framework.urlpatterns import format_suffix_patterns
 
-from servermain.api.User_RestfulAPI import CurrentUserProfileView,CurrentUserAccountBalanceView,CurrentUserWebsiteAgencyView,CurrentUserUserApplyList,CurrentUserUserApplyView,CurrentUserView
+from .User_RestfulAPI import CurrentUserProfileView,CurrentUserAccountBalanceView,CurrentUserWebsiteAgencyView,CurrentUserUserApplyList,CurrentUserUserApplyView,CurrentUserView
 
 # urlpatterns = format_suffix_patterns([
 #

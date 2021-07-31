@@ -94,6 +94,7 @@ def reverseBase(request,view_name,absolute=False,urlconf=None,args=None,kwargs=N
 
 def custom_400(request):
 	type, value, traceback = sys.exc_info();
+	print(errorResponse(value.message, code=400))
 	return errorResponse(value.message, code=400);
 
 
@@ -418,8 +419,8 @@ def getParamsOrRaise400(paramDict, *paramNameAndDefaultValueList, **kwargs):
 
 def errorResponse(error, code=0, response=None):
 	if response:
-		HttpResponseServerError(json.dumps({"error": error, 'status_code': code, "response": str(response)}))
-	return HttpResponseServerError(json.dumps({"error": error, 'status_code': code}))
+		HttpResponseServerError(json.dumps({"error": error, 'code': code, "response": str(response)}))
+	return HttpResponseServerError(json.dumps({"error": error, 'code': code}))
 
 
 def successResponse(data=None, encode=True):

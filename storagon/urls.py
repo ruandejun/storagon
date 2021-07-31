@@ -6,7 +6,7 @@ from django.contrib import admin
 urlpatterns = [
 
 	url(r'^adl/track/', include('attendance_tracking.urls')),
-	url(r'^adl/custom/', include('servermain.CustomAdmin_urls', namespace='CustomAdmin')),
+	url(r'^adl/custom/', include('servermain.CustomAdmin_urls')),
 	url(r'^adl/doc/', include('django.contrib.admindocs.urls')),
 	url(r'^adl/', include(admin.site.urls)),
 	url(r'^sf/', include('serverfile.urls')),

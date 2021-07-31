@@ -57,7 +57,7 @@ def signature_test():
 				dataItems = request.POST.items()
 				dataItems.sort()
 				#convert unicode to fix urlencode error
-				params = urlencode([(k, v) for k, v in dataItems]);
+				params = urlencode([(k.encode('utf-8'), v.encode('utf-8')) for k, v in dataItems]);
 				# params = urllib.urlencode(dataItems)  # case 1
 			else:
 				return HttpResponseForbidden(u"Invalid Method")
@@ -65,7 +65,7 @@ def signature_test():
 			correct_signature = hashlib.md5(settings.SECRET_KEY + params).hexdigest()
 			if correct_signature != signature:
 				# print params,'\n',params2
-				correct_signature2 = hashlib.md5(settings.SECRET_KEY + params2).hexdigest()
+				correct_signature2 = hashlib.md5(settings.SECRET_KEY + params2.encode('utf-8')).hexdigest()
 				if correct_signature2 != signature:
 					return HttpResponseForbidden(u"correct_signature=%s or %s, but signature=%s" % (correct_signature, correct_signature2, signature))
 					# return HttpResponseForbidden("Invalid Signature");

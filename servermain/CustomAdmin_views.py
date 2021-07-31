@@ -21,7 +21,7 @@ from django.contrib.auth.decorators import permission_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import PermissionDenied
 from django import forms
-from suit.widgets import SuitSplitDateTimeWidget
+#from suit.widgets import SuitSplitDateTimeWidget
 from django.utils import timezone
 from django.utils.html import escape
 from django.db import connection
@@ -56,8 +56,8 @@ class SessionFilterForm(forms.Form):
 	session_id = forms.CharField(required=False, max_length=24, min_length=24)  # 24 is fixed length of MongoDB ObjectID
 	type = forms.TypedChoiceField(required=True, coerce=int, choices=SessionType.ChoiceList(), initial=SessionType.upload)
 	status = forms.TypedChoiceField(required=False, coerce=int, choices=[(None, '---')] + SessionStatus.ChoiceList())
-	from_date = forms.SplitDateTimeField(required=False, widget=SuitSplitDateTimeWidget, initial=datetime.datetime.today() - datetime.timedelta(days=30))
-	to_date = forms.SplitDateTimeField(required=False, widget=SuitSplitDateTimeWidget)
+	from_date = forms.SplitDateTimeField(required=False, initial=datetime.datetime.today() - datetime.timedelta(days=30))
+	to_date = forms.SplitDateTimeField(required=False)
 	offset = forms.IntegerField(required=True, initial=0)
 	limit = forms.IntegerField(required=True, min_value=1, initial=25)
 
@@ -252,7 +252,7 @@ class SessionEditForm(forms.Form):
 
 	data = forms.CharField(required=True, initial='{}', widget=forms.Textarea)
 	text = forms.CharField(required=False)  # text for query on string
-	created = forms.SplitDateTimeField(required=True, initial=timezone.now, widget=SuitSplitDateTimeWidget)
+	created = forms.SplitDateTimeField(required=True, initial=timezone.now)
 
 
 @permission_required(['sessions.change_session'])

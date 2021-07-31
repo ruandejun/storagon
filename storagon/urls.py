@@ -8,7 +8,7 @@ urlpatterns = [
 	url(r'^adl/track/', include('attendance_tracking.urls')),
 	url(r'^adl/custom/', include('servermain.CustomAdmin_urls')),
 	url(r'^adl/doc/', include('django.contrib.admindocs.urls')),
-	url(r'^adl/', include(admin.site.urls)),
+	url(r'^adl/', admin.site.urls),
 	url(r'^sf/', include('serverfile.urls')),
 
 	url(r'^tracker/', include('private_tracker.urls')),

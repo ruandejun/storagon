@@ -10,7 +10,6 @@
 
 import random
 import re
-
 from django.http import *
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import authenticate, login, logout

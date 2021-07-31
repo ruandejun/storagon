@@ -167,7 +167,7 @@ class ScopedRateThrottleBanIP(ScopedRateThrottle):
 		Otherwise generate the unique cache key by concatenating the user id
 		with the '.throttle_scope` property of the view.
 		"""
-		if request.user.is_authenticated():
+		if request.user.is_authenticated:
 			ident = request.user.id
 		else:
 			ident = self.get_ident(request)

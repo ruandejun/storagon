@@ -67,7 +67,7 @@ INSTALLED_APPS = (
 
 MIDDLEWARE = (
 	'corsheaders.middleware.CorsMiddleware',  # CORS must put before CommonMiddleware
-	'system_configure.controllers.Tool.DisableCSRF',
+	#'system_configure.controllers.Tool.DisableCSRF',
 	'django.contrib.sessions.middleware.SessionMiddleware',
 	'django.contrib.auth.middleware.AuthenticationMiddleware',
 	'django.middleware.common.CommonMiddleware',

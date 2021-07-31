@@ -160,12 +160,12 @@ CACHES = {
 
 	'default': {	# Cluster MemCache (recommend for django-cache-machine)
 		'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-		'LOCATION': ['127.0.0.1:11211'],
+		'LOCATION': ['memcached:11211'],
 		'PREFIX': 'storagon_',
 		'TIMEOUT': None,	# Keep cache forever, or for seconds
-		'OPTIONS': {
-			'MAX_ENTRIES': 2000	# max number of row cached
-		}
+		# 'OPTIONS': {
+		# 	'MAX_ENTRIES': 2000	# max number of row cached
+		# }
 	}
 }
 

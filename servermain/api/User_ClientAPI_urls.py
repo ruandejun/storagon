@@ -10,14 +10,14 @@
 
 from django.conf.urls import url
 from django.views.generic import RedirectView, TemplateView
-from .User_ClientAPI import custom_login
+from . import User_ClientAPI
 
 urlpatterns = [
 	#url(r'^home/$', TemplateView.as_view(template_name='example/home.html'), name="home"),
 	#url(r'^/?$', RedirectView.as_view(pattern_name="home")),
 
-	url(r'^login/', custom_login, name='custom_login'),
-	url(r'^logout/', custom_logout, name='custom_logout'),
+	url(r'^login/', User_ClientAPI.custom_login, name='custom_login'),
+	url(r'^logout/', User_ClientAPI.custom_logout, name='custom_logout'),
 	url(r'^getUserInfo/', getUserInfo, name='getUserInfo'),
 	url(r'^updateUserInfo/', updateUserInfo, name='updateUserInfo'),
 	url(r'^getUserBalance/', getUserBalance, name='getUserBalance'),

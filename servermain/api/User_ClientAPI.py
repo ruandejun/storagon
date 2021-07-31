@@ -359,7 +359,7 @@ def sendResetPasswordEmail(request):
 	if request.method == 'GET':
 		raise Http404()
 	elif request.method == 'POST':
-		if request.user and request.user.is_authenticated():
+		if request.user and request.user.is_authenticated:
 			return errorResponse(u"You must logout before reset password.");
 		else:
 			email = getParamsOr400(request, 'email');

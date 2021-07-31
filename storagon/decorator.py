@@ -83,7 +83,7 @@ def login_required_ajax():
 	"""
 	def decorator(view_func):
 		def _wrapped_view(request, *args, **kwargs):
-			if request.user and request.user.is_authenticated():
+			if request.user and request.user.is_authenticated:
 				return view_func(request, *args, **kwargs)
 			else:
 				return HttpResponse(status=401)
@@ -92,7 +92,7 @@ def login_required_ajax():
 
 
 def banned_check(user):
-	if not user or not user.is_authenticated():
+	if not user or not user.is_authenticated:
 		return False  # guest users are not allowed
 	if user.profile.account_status == AccountStatus.banned:
 		return False

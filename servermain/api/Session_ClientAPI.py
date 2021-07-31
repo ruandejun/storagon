@@ -187,7 +187,7 @@ def createDownloadSession(request):
 
 		userFile = shortcuts.get_object_or_404(UserFile, pk=userFile_id)
 
-		if request.user and request.user.is_authenticated():
+		if request.user and request.user.is_authenticated:
 			resultCheck = UserController.checkUserCanDownloadFile(request.user, userFile, request.META['REMOTE_ADDR']);
 			if resultCheck is not True:
 				return errorResponse(u"You're not allowed to download due to: %s"%(resultCheck), code=0);
@@ -199,7 +199,7 @@ def createDownloadSession(request):
 
 		# increase download_count (not atomicaly, and not accurate, should not use this property for bonus money)
 
-		if request.user and request.user.is_authenticated():
+		if request.user and request.user.is_authenticated:
 			downloadSession, created = Session.objects.get_or_create(
 				type=SessionType.download,
 				status=SessionStatus.waiting,
@@ -237,7 +237,7 @@ def createDownloadSession(request):
 		downloadSession.data['website_url'] = request.COOKIES.get('website_url', '');
 		downloadSession.data['website_origin'] = request.COOKIES.get('website_origin', '');
 
-		if request.user and request.user.is_authenticated():
+		if request.user and request.user.is_authenticated:
 			downloadSession.uid = request.user.id
 			#::type: UserProfile
 			profile = request.user.profile;

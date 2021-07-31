@@ -92,7 +92,7 @@ def reverseBase(request,view_name,absolute=False,urlconf=None,args=None,kwargs=N
 	return url;
 
 
-def custom_400(request):
+def custom_400(request,exception):
 	type, value, traceback = sys.exc_info();
 	# respose = errorResponse(value.message, code=400)
 	context = {

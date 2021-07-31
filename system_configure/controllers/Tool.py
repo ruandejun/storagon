@@ -295,8 +295,13 @@ class FullRouter(DefaultRouter):
 
 
 class DisableCSRF(object):
-	def process_request(self, request):
+	def __init__(self, get_response):
+		self.get_response = get_response
+
+	def __call__(self, request):
 		setattr(request, '_dont_enforce_csrf_checks', True)
+		response = self.get_response(request)
+		return response
 
 
 # Wrap it in a function that gives me more context:

@@ -8,15 +8,15 @@
 #  Copyright (c) 2015 storagon. All rights reserved.
 #
 
-from django import shortcuts
-from django.template import RequestContext
-from django.http import *
-from django.urls import reverse
-
-from django.conf import settings;
-from django.views.decorators.csrf import csrf_exempt, csrf_protect
-from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
+# from django import shortcuts
+# from django.template import RequestContext
+# from django.http import *
+# from django.urls import reverse
+#
+# from django.conf import settings;
+# from django.views.decorators.csrf import csrf_exempt, csrf_protect
+# from django.contrib.auth.decorators import login_required
+# from django.utils.decorators import method_decorator
 
 from servermain.controllers import AffiliateController, BalanceController
 from servermain.models import User, UserProfile, AccountBalance, WebsiteAgency, UserApply, TransactionLog

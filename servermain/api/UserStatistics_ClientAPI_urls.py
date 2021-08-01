@@ -15,7 +15,6 @@ from .UserStatistics_ClientAPI import *
 urlpatterns = [
 	#url(r'^home/$', TemplateView.as_view(template_name='example/home.html'), name="home"),
 	#url(r'^/?$', RedirectView.as_view(pattern_name="home")),
-
 	url(r'^getUserStorage/', getUserStorage, name='getUserStorage'),
 	url(r'^listBill/', listBill, name='listBill'),
 	url(r'^listTransaction/', listTransaction, name='listTransaction'),

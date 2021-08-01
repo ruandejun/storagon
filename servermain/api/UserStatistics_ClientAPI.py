@@ -31,10 +31,9 @@ def getUserStorage(request):
 	""" Get current user storage
 	"""
 	if request.method == 'GET':
-		try:
-			userStorage = UserStorage.objects.get(user_id=request.user.id)
-		except UserStorage.DoesNotExist:
-			raise Http404()
+		userStorage, created = UserStorage.objects.get_or_create(user_id=request.user.id, defaults={'user_id': request.user.id})
+		# userStorage = UserStorage.objects.get(user_id=request.user.id)
+
 		return successResponse(userStorage.to_json(), encode=False)
 	elif request.method == 'POST':
 		raise Http404()

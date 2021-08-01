@@ -53,7 +53,7 @@ def signature_test():
                 params2 = prefix + request.get_host() + request.get_full_path(); #request.build_absolute_uri(params)
 
             elif request.method == 'POST':
-                params2 = request.body  # case 2
+                params2 = request.body.decode("utf-8")  # case 2
                 dataItems = request.POST.items()
                 # dataItems = sorted(dataItems)
                 # dataItems.sort()
@@ -67,7 +67,7 @@ def signature_test():
             correct_signature = hashlib.md5(str(settings.SECRET_KEY + str(params)).encode('utf-8')).hexdigest()
             if correct_signature != signature:
                 # print params,'\n',params2
-                correct_signature2 = hashlib.md5(str(settings.SECRET_KEY + str(params2.decode("utf-8"))).encode('utf-8')).hexdigest()
+                correct_signature2 = hashlib.md5(str(settings.SECRET_KEY + str(params2)).encode('utf-8')).hexdigest()
                 if correct_signature2 != signature:
                     return HttpResponseForbidden(u"correct_signature=%s or %s, but signature=%s" % (correct_signature, correct_signature2, signature))
                     # return HttpResponseForbidden("Invalid Signature");

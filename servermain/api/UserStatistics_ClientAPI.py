@@ -31,8 +31,8 @@ def getUserStorage(request):
 	""" Get current user storage
 	"""
 	if request.method == 'GET':
-		userStorage = UserStorage(user_id=request.user.id).modify(upsert=True,
-                                      set__user_id=request.user.id)
+		userStorage = UserStorage(user_id=int(request.user.pk)).modify(upsert=True,
+                                      set__user_id=int(request.user.pk))
 
 		return successResponse(userStorage.to_json(), encode=False)
 	elif request.method == 'POST':

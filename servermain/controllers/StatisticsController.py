@@ -41,9 +41,9 @@ def countSessionByDayOfFileOwnerUser(user_id, session_type,session_status,from_d
 		]
 	);
 
-	countSessionResult = list(countSessionResult)
-	print('countSessionResult===',countSessionResult)
-	return countSessionResult['result'];
+	# countSessionResult =
+	# print('countSessionResult===',countSessionResult)
+	return list(countSessionResult);
 
 
 def countAndSumTransactionByDayOfUser(user_id, transaction_type, from_date,to_date):

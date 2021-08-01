@@ -69,7 +69,7 @@ class SessionClientAPI(mongo_viewsets.ModelViewSet, mongo_generics.ListAPIView):
 	# permission_classes = [permissions.IsAuthenticated, RestfulController.IsSignatureVerified]
 	serializer_class = SessionSerializer
 
-	filter_backends = (filters.BaseFilterBackend, filters.SearchFilter, filters.OrderingFilter)
+	filter_backends = (filters.SearchFilter, filters.OrderingFilter)
 	# filter_class = SesssionFilter
 	# filter_fields = ('type', 'status', 'created', 'uid', 'fid', 'sid', 'oid')
 	# search_fields = ('text', )

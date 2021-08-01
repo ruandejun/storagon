@@ -267,7 +267,7 @@ def downloadCountSessionStatistic(request):
 			]
 		);
 
-		return successResponse(downloadSessionResult.next());
+		return successResponse(downloadSessionResult.get('result', []));
 	else:
 		raise Http404()
 

@@ -55,7 +55,7 @@ def signature_test():
 			elif request.method == 'POST':
 				params2 = request.body  # case 2
 				dataItems = request.POST.items()
-				dataItems.sort()
+				# dataItems
 				#convert unicode to fix urlencode error
 				params = urlencode([(k.encode('utf-8'), v.encode('utf-8')) for k, v in dataItems]);
 				# params = urllib.urlencode(dataItems)  # case 1

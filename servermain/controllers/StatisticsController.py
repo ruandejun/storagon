@@ -40,6 +40,8 @@ def countSessionByDayOfFileOwnerUser(user_id, session_type,session_status,from_d
 			{ '$sort' : {"_id": 1}},
 		]
 	);
+
+	countSessionResult = list(countSessionResult)
 	print('countSessionResult===',countSessionResult)
 	return countSessionResult['result'];
 

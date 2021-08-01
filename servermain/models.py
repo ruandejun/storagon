@@ -43,7 +43,7 @@ class UserProfile(models.Model):
 	storage_space = models.BigIntegerField(default=0, db_index=True)
 
 	plan_id = models.PositiveIntegerField(default=0, db_index=True)
-	plan_expired = models.DateTimeField(default=timezone.now(),blank=True, db_index=True)
+	plan_expired = models.DateTimeField(blank=True, db_index=True)
 
 	referer = models.ForeignKey(User, related_name='refererList', blank=True, null=True, on_delete=models.SET_NULL)  # referer level 1
 	referer2 = models.ForeignKey(User, related_name='referer2List', blank=True, null=True, on_delete=models.SET_NULL)  # referer level 2

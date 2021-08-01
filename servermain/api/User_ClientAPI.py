@@ -90,7 +90,7 @@ def getUserInfo(request):
 	}
 	"""
 	if request.method == 'GET':
-		profile = UserProfile.objects.get_or_create(user=request.user)
+		profile, created = UserProfile.objects.get_or_create(user=request.user)
 
 		data = serializers.serialize('json', [profile], fields=('full_name', 'email', 'address', 'account_type', 'account_status',
 		'storage_space', 'plan_id', 'plan_expired'))

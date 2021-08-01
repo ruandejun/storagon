@@ -28,7 +28,11 @@ def calculateUserStorage(user_id):
 	:param user_id:
 	:return:
 	"""
-	userStorage, created = UserStorage.objects.get_or_create(user_id=user_id, defaults={'user_id':user_id})
+	try:
+		userStorage, created = UserStorage.objects.get(user_id=user_id)
+	except UserStorage.DoesNotExist:
+		userStorage = UserStorage(user_id=user_id)
+		userStorage.save()
 
 	try:
 		user = User.objects.get(id=user_id)

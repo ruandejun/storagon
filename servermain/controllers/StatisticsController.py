@@ -40,7 +40,7 @@ def countSessionByDayOfFileOwnerUser(user_id, session_type,session_status,from_d
 			{ '$sort' : {"_id": 1}},
 		]
 	);
-	return countSessionResult.get('result', []);
+	return countSessionResult.next();
 
 
 def countAndSumTransactionByDayOfUser(user_id, transaction_type, from_date,to_date):

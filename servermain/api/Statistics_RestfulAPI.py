@@ -35,7 +35,7 @@ class AffiliateStatisticsAPI(viewsets.GenericViewSet):
 
 	@action(detail=False,methods=['get'], serializer_class=TransactionStatisticsFilterForm, permission_classes=[permissions.IsAuthenticated, RestfulController.IsSignatureVerified])
 	def transactionStatistics(self, request, *args, **kwargs):
-		formPOST=TransactionStatisticsFilterForm(data=request.QUERY_PARAMS);
+		formPOST=TransactionStatisticsFilterForm(data=request.query_params);
 		if not formPOST.is_valid():
 			return errorResponseRestful(formPOST.errors,code=status.HTTP_400_BAD_REQUEST);
 		#::type: TransactionStatisticsFilterForm

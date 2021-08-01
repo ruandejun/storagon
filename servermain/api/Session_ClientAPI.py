@@ -83,19 +83,26 @@ def createUploadSession(request):
         resultCheck=UserController.checkUserCanUploadFile(request.user.id, file_size);
         if resultCheck is not True:
             return errorResponse(u"You're not allowed to upload due to: %s"%(resultCheck), code=0);
-
-        uploadSession, created = Session.objects.get_or_create(
-            type=SessionType.upload,
-            status=SessionStatus.waiting,
-            uid=request.user.id,
-            data__file_hash=file_hash,
-            # text=file_hash,
-            created__gt=timezone.now() - timezone.timedelta(seconds=settings.MONGO_SESSION_EXPIRES),
+        created=False
+        try:
+            uploadSession = Session.objects.get(
+                type=SessionType.upload,
+                status=SessionStatus.waiting,
+                uid=request.user.id,
+                data__file_hash=file_hash,
+                # text=file_hash,
+                created__gt=timezone.now() - timezone.timedelta(seconds=settings.MONGO_SESSION_EXPIRES)
+            )
+        except Session.DoesNotExist:
             defaults={
                 'uid': request.user.id, 'type': SessionType.upload,
                 # 'text': file_hash,
             }
-        );
+            uploadSession = Session(uid=request.user.id,type=SessionType.upload)
+            uploadSession.save()
+            created=True
+
+
 
         # uploadSession = Session(uid=request.user.id, type=SessionType.upload)
         if created:

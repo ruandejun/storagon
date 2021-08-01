@@ -77,7 +77,7 @@ class SessionClientAPI(mongo_viewsets.ModelViewSet, mongo_generics.ListAPIView):
 	pagination_class = Tool.StandardResultsSetPagination
 
 	def get_queryset(self): #getter for queryset, overide queryset
-		form=SessionFilterForm(data=self.request.QUERY_PARAMS);
+		form=SessionFilterForm(data=self.request.data);
 		if not form.is_valid():
 			raise Tool.BadRequest(form.errors);
 		#::type: SessionFilterForm

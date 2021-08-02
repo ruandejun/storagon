@@ -48,7 +48,7 @@ def addFile(request):
 	elif request.method == 'POST':
 
 		upload_session_id, file_location, file_name, file_size = getParamsOr400(request, 'upload_session_id', 'file_location', 'file_name', ('file_size', int))
-
+		print('____upload_session_id',upload_session_id, file_location, file_name, file_size)
 		try:
 			uploadSession = Session.objects.get(id=upload_session_id, type=SessionType.upload)
 		except Session.DoesNotExist:
@@ -88,7 +88,7 @@ def addFile(request):
 		# add new UserFile
 		userFile = UserFile(realFile=realFile)
 		if uploadSession.data.get('file_name'):
-			print('___file_name',uploadSession.data.get('file_name'))
+			print('___file_name',uploadSession.data)
 			userFile.file_name = uploadSession.data['file_name'].strip()
 		else:
 			userFile.file_name = file_name.strip()

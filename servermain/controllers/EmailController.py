@@ -50,14 +50,14 @@ def sendAccountActivationMail(request, toAddress, user_id):
 				u'<a href="{{tos_link}}">Click this to read Term Of Service</a>',
 		tos_link=request.build_absolute_uri('/#/tos'),
 		);
-
-	try:
-		send_mail(header, html_body, senderAddress, [toAddress], html_message=html_body);
-	except Exception as e:
-		logging.error("send email from %s to %s error=%s"%(senderAddress, toAddress, e));
-		return False;
-	else:
-		logging.info("send email success to: %s"%(toAddress));
+	##send email need to fix to send by redis
+	# try:
+	# 	send_mail(header, html_body, senderAddress, [toAddress], html_message=html_body);
+	# except Exception as e:
+	# 	logging.error("send email from %s to %s error=%s"%(senderAddress, toAddress, e));
+	# 	return False;
+	# else:
+	# 	logging.info("send email success to: %s"%(toAddress));
 	return True;
 
 

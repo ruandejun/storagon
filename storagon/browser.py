@@ -20,7 +20,7 @@ from urllib.parse import urlencode
 import re
 import time
 from . import header
-
+from urllib.parse import urljoin
 
 class Browser:
 
@@ -93,11 +93,11 @@ class Browser:
 			print("___response: ", html[:self.showResponseMax])
 
 		if folowRedirect > 0:
-			redirectLink = response.headers.getheader('location')
+			redirectLink = response.headers.get_content_charset('location')
 
 			m = re.search(r'<META HTTP-EQUIV="Refresh" CONTENT="0;URL=(\S+?)">', html, re.I)
 			if(m and m.group(1).strip()):
-				redirectLink = urllib.basejoin(url, m.group(1).strip())
+				redirectLink = urljoin(url, m.group(1).strip())
 			if redirectLink:
 				if not self.quite:
 					print("redirect left=%d" % (folowRedirect))

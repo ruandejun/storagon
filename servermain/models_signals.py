@@ -67,7 +67,7 @@ def postSaveUser(sender, **kwargs):
 		newProfile.account_status = AccountStatus.emailNotActivated
 		newProfile.storage_space = settings.INITIAL_USER_STORAGE_SPACE
 		newProfile.plan_expired=timezone.now();
-		newProfile.eumk = base64.b64encode(hashlib.sha1('eumk_%s' % (random.randint(0, 10**9))).hexdigest()[:32])  # random genereated eumk
+		newProfile.eumk = base64.b64encode(hashlib.sha1('eumk_%s'.encode('utf-8') % (random.randint(0, 10**9))).hexdigest()[:32])  # random genereated eumk
 		newProfile.save()
 		# automaticaly create all type of balance for this user
 		for balanceType in [BalanceType.credit,BalanceType.point,BalanceType.ppd]:

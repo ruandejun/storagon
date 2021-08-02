@@ -196,7 +196,7 @@ def checkGuestCanDownloadFile(userFile, REMOTE_ADDR=None):
 
 
 def generateAccountActivationCode(user_id, email):
-	activation_code = hashlib.sha1('storagon_activation_code_%s'%(random.randint(0, 1000000))).hexdigest()[:8].upper()
+	activation_code = hashlib.sha1(('storagon_activation_code_%s'%(random.randint(0, 1000000))).encode('utf-8')).hexdigest()[:8].upper()
 	timeout = settings.ACCOUNT_ACTIVATION_EXPIRES;
 	cache.set(activation_code, (user_id, email), timeout);
 	return activation_code;

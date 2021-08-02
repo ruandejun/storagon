@@ -14,17 +14,17 @@ import hashlib
 import urllib
 from storagon.browser import Browser
 from servermain.mongo_models import Session
-
+from urllib.parse import urlencode
 #remember to set the head in correct format or apache won't allow it.
 SIGNATURE_HEADER = 'Signature-Authorization'
 SECRET_KEY = '7yn^8pwp+yzd2l4ki6+v9kp(h)rzs$9gxu4ao^_p+9x_5+1*6o'
 
 
 def generateAuthorizationHeader(params):
-	if isinstance(params, str) or isinstance(params, unicode):
-		signature = hashlib.md5(SECRET_KEY + params).hexdigest()
+	if isinstance(params, str) or isinstance(params, bytes):
+		signature = hashlib.md5(str(SECRET_KEY + str(params)).encode('utf-8')).hexdigest()
 	else:
-		signature = hashlib.md5(SECRET_KEY + urllib.urlencode(params)).hexdigest()
+		signature = hashlib.md5(str((SECRET_KEY) + str(urlencode(params))).encode('utf-8')).hexdigest()
 
 	return {SIGNATURE_HEADER: signature}
 

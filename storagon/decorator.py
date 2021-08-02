@@ -62,8 +62,8 @@ def signature_test():
                 # params = urllib.urlencode(dataItems)  # case 1
             else:
                 return HttpResponseForbidden(u"Invalid Method")
-            print('params==',params)
-            print('params2==',params2)
+            # print('params==',params)
+            # print('params2==',params2)
             correct_signature = hashlib.md5(str(settings.SECRET_KEY + str(params)).encode('utf-8')).hexdigest()
             if correct_signature != signature:
                 # print params,'\n',params2

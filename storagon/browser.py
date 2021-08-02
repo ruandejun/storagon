@@ -16,6 +16,7 @@ try:
 except:
     import http.cookiejar
     cookielib = http.cookiejar
+from urllib.parse import urlencode
 import re
 import time
 from . import header
@@ -48,11 +49,11 @@ class Browser:
 		"""
 		if data is not None:
 			if isinstance(data, str) == False:
-				data = urllib.urlencode(data)
+				data = urlencode(data)
 			if not self.quite:
 				print("___payload: " + data)
 
-		if isinstance(url, str) or isinstance(url, unicode):
+		if isinstance(url, str) or isinstance(url, bytes):
 			if extraHeader:
 				req = urllib2.Request(url, data, extraHeader)
 			else:
@@ -89,7 +90,7 @@ class Browser:
 		html = response.read()
 		response.close()
 		if not self.quite:
-			print("___response: " + html[:self.showResponseMax])
+			print("___response: ", html[:self.showResponseMax])
 
 		if folowRedirect > 0:
 			redirectLink = response.headers.getheader('location')
@@ -106,7 +107,7 @@ class Browser:
 
 	def download(self, link, pathToSave):
 		if not self.quite:
-			print("___download: " + str(link))
+			print("___download: ", str(link))
 
 		try:
 			response = self.br.open(link);

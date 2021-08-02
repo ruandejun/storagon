@@ -85,9 +85,9 @@ def deleteFile(request):
 		try:
 			result = UserFile.objects.filter(id__in=fileIDList, user=request.user).delete()
 		except Exception as e:
-			logging.error(u"File_ClientAPI.deleteFile: Bulk update failed with error=%s" % (e))
+			logging.error(u"File_ClientAPI.deleteFile: Bulk update failed with error={}".format(e))
 		else:
-			logging.info(u"File_ClientAPI.deleteFile: Bulk update success with result=%s" % (result))
+			logging.info(u"File_ClientAPI.deleteFile: Bulk update success with result={}".format(result))
 		return successResponse()
 	else:
 		raise Http404()

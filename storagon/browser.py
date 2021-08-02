@@ -18,7 +18,7 @@ except:
     cookielib = http.cookiejar
 import re
 import time
-#import header
+from . import header
 
 
 class Browser:
@@ -28,7 +28,7 @@ class Browser:
 
 	def __init__(self, cookieJar=None):
 #		print "Browser Init!"
-		#header.initBrowser(self, cookieJar)
+		header.initBrowser(self, cookieJar)
 		self.br = self.browser
 		# browser setup
 		self.quite = False

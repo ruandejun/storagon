@@ -207,7 +207,7 @@ def deleteFolder(request):
 		except Exception as e:
 			logging.error(u"File_ClientAPI.deleteFolder: Bulk update failed with error=%s" % (e))
 		else:
-			logging.info(u"File_ClientAPI.deleteFolder: Bulk update success with result=" +result)
+			logging.info(u"File_ClientAPI.deleteFolder: Bulk update success with result=" % (result))
 		return successResponse()
 	else:
 		raise Http404()

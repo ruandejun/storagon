@@ -16,8 +16,12 @@ standard = [('User-Agent', user_agents[-1]),
 ('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,/;q=0.8'),
 ]
 
-import urllib2
-import cookielib
+import urllib.request as urllib2
+try:
+    import cookielib
+except:
+    import http.cookiejar
+    cookielib = http.cookiejar
 
 
 def initBrowser(self, cookieJar=None):

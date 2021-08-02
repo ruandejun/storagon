@@ -95,7 +95,7 @@ class Browser:
 		if folowRedirect > 0:
 			redirectLink = response.headers.get_content_charset('location')
 
-			m = re.search(r'<META HTTP-EQUIV="Refresh" CONTENT="0;URL=(\S+?)">', html.encode('utf-8'), re.I)
+			m = re.search(r'<META HTTP-EQUIV="Refresh" CONTENT="0;URL=(\S+?)">', html.decode('utf-8'), re.I)
 			if(m and m.group(1).strip()):
 				redirectLink = urljoin(url, m.group(1).strip())
 			if redirectLink:

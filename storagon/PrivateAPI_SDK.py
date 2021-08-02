@@ -104,7 +104,8 @@ class SessionSDK():
 		dataGET = '?session_id=%s' % (session_id)
 		url = str(self.serverMainURL + '/prapi/session/getSession/' + dataGET)
 		html = self.browser.open(url, extraHeader=generateAuthorizationHeader(url))
-
+		print('session_url==',url)
+		print('html==',html)
 		session = Session.from_json(html)
 		return session
 

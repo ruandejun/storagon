@@ -12,7 +12,7 @@
 import json
 import hashlib
 import urllib
-from storagon.browser import Browser
+from storagon.browser import Rqbrowser
 from servermain.mongo_models import Session
 from urllib.parse import urlencode
 #remember to set the head in correct format or apache won't allow it.
@@ -32,7 +32,7 @@ def generateAuthorizationHeader(params):
 class FileSDK():
 
 	def __init__(self, serverMainURL):
-		self.browser = Browser()
+		self.browser = Rqbrowser()
 		self.serverMainURL = serverMainURL
 
 	def addFile(self, upload_session_id, file_location, file_name, file_size):
@@ -45,7 +45,6 @@ class FileSDK():
 			'file_size': file_size,
 		}
 		html = self.browser.open(self.serverMainURL + '/prapi/file/addFile/', dataPOST, extraHeader=generateAuthorizationHeader(dataPOST))
-
 		result = json.loads(html)
 		return result['userFile_id']
 
@@ -91,7 +90,7 @@ class FileSDK():
 class SessionSDK():
 
 	def __init__(self, serverMainURL):
-		self.browser = Browser()
+		self.browser = Rqbrowser()
 		self.serverMainURL = serverMainURL
 
 	def getSession(self, session_id):
@@ -169,7 +168,7 @@ class SessionSDK():
 class SignalSDK():
 
 	def __init__(self, serverFileURL):
-		self.browser = Browser()
+		self.browser = Rqbrowser()
 		self.serverFileURL = serverFileURL
 
 	def initiateDeleteSessionProcess(self, maxFileDelete, retry=None):

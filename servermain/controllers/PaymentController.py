@@ -22,7 +22,7 @@ from servermain.mongo_models import Session
 from . import PremiumController, AffiliateController, BalanceController
 from storagon.tool import *
 from storagon.enum import *
-from storagon.browser import Browser
+from storagon.browser import Browser, Rqbrowser
 from system_configure.controllers import SystemConfigureController
 from django.template import Context, Template
 
@@ -341,7 +341,7 @@ def ekaepayChinaPayGateInitiator(request, billSession):
 	billSession.data['currencyStr'] = currencyStr;
 	billSession.save();
 
-	br = Browser();
+	br = Rqbrowser();
 	br.quite = True;
 	# html=None;
 	html = br.open('https://security.dollarcollect.com/pay/DirectProcess', {'TradeInfo': TradeInfo}, forceReferer='http://storagon.com');
@@ -442,7 +442,7 @@ def paypalPaygateInitiator(request, billSession):
 
 	amount = str(price / 100.);  # amount is USD
 
-	br = Browser();
+	br = Rqbrowser();
 	br.quite = True;
 	param = {
 		'USER' : PP_USER,
@@ -507,7 +507,7 @@ def paypalPayGateCallbackHandler(request):
 		'METHOD' : 'GetExpressCheckoutDetails',
 		'TOKEN' : token,
 	}
-	br = Browser();
+	br = Rqbrowser();
 	br.quite = True;
 	html = br.open(PP_NVP_ENDPOINT+'?'+urllib.urlencode(param));
 	result={};
@@ -545,7 +545,7 @@ def paypalPayGateCallbackHandler(request):
 		'PAYMENTREQUEST_0_PAYMENTACTION': paymentAction,
 		'PAYMENTREQUEST_0_CURRENCYCODE' : currencyCode, # payment currency code
 	}
-	br = Browser();
+	br = Rqbrowser();
 	br.quite = True;
 	html = br.open(PP_NVP_ENDPOINT+'?'+urllib.urlencode(param));
 	result={};
@@ -731,7 +731,7 @@ def payzaCallbackHandler(request):
 
 	IPN_V2_Handler_URL = 'https://sandbox.Payza.com/sandbox/IPN2.ashx'
 
-	br = Browser();
+	br = Rqbrowser();
 	br.quite = True;
 	if 'token=' in request.body: #send confirmation
 		html = br.open(IPN_V2_Handler_URL,data=request.body);

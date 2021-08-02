@@ -17,7 +17,7 @@ from servermain.mongo_models import Session
 from servermain.models import AccountBalance, TransactionLog, UserProfile, UserFile, WebsiteAgency
 from storagon.tool import *
 from storagon.enum import *
-from storagon.browser import Browser
+from storagon.browser import Browser, Rqbrowser
 from servermain.controllers import TransactionController
 from system_configure.controllers import SystemConfigureController
 from django.db import connection
@@ -287,7 +287,7 @@ def verifyWebsiteOwner(affiliate_user, website_address):
 	if settings.IS_RUNNING_UNIT_TEST:
 		return domain;
 
-	br=Browser();
+	br=Rqbrowser();
 
 	for ti in range(3):
 		try: text = br.open(url);

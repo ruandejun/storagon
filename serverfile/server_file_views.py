@@ -127,7 +127,7 @@ def downloadTorrentView(request, downloadSessionID, token, fileName):
 		# These lines let nginx handle download file
 		logging.debug(u"download_file_path=%s"%download_file_path);
 		response = HttpResponse()
-		response["Content-Disposition"] = 'attachment; filename="%s"' % (unicode(torrent_file_name).encode('utf-8'))
+		response["Content-Disposition"] = 'attachment; filename="%s"' % (torrent_file_name)
 		response['X-Accel-Redirect'] = download_file_path
 		return response;
 
@@ -218,10 +218,10 @@ def downloadView(request, downloadSessionID, token, fileName):
 				data = fsock.read()
 			fsock.close()
 			response = HttpResponse(data)
-			response["Content-Disposition"] = 'attachment; filename="%s"' % (unicode(file_name).encode('utf-8'))
+			response["Content-Disposition"] = 'attachment; filename="%s"' % (file_name)
 		else:
 			response = HttpResponse()
-			response["Content-Disposition"] = 'attachment; filename="%s"' % (unicode(file_name).encode('utf-8'))
+			response["Content-Disposition"] = 'attachment; filename="%s"' % (file_name)
 			file_path = '/media/' + file_location
 			# print file_path;
 			# These lines let nginx handle download file

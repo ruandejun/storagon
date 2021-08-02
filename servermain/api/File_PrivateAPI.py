@@ -48,7 +48,7 @@ def addFile(request):
 	elif request.method == 'POST':
 
 		upload_session_id, file_location, file_name, file_size = getParamsOr400(request, 'upload_session_id', 'file_location', 'file_name', ('file_size', int))
-		print('____upload_session_id',upload_session_id, file_location, file_name, file_size)
+		print('____upload_session_id',file_name, file_size)
 		try:
 			uploadSession = Session.objects.get(id=upload_session_id, type=SessionType.upload)
 		except Session.DoesNotExist:

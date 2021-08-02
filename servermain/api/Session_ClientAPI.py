@@ -105,6 +105,7 @@ def createUploadSession(request):
 
 
         # uploadSession = Session(uid=request.user.id, type=SessionType.upload)
+        print('___create_uploadSession',file_name.encode('utf-8'))
         if created:
             uploadSession.data['file_hash'] = file_hash
             uploadSession.data['file_size'] = file_size

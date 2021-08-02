@@ -114,7 +114,7 @@ def addFile(request):
 		uploadSession.status = SessionStatus.completed
 		uploadSession.text = str(realFile.id)  # save realFile.id in this field for later use
 		uploadSession.save()
-		logging.info("addFile: success with file_location=%s" % (file_location))
+		logging.info("addFile: success with file_location={}".format(file_location))
 		return successResponse({
 			'userFile_id': userFile.id,
 		})
@@ -209,11 +209,11 @@ def addDuplicateFile(request):
 
 		if userFile is None:#realFile dont have userfile anymore and this add a new userFile to it. remove marked delete session
 			result = Session.objects.filter(status=SessionStatus.waiting, type=SessionType.delete, fid=duplicateFile.id, sid=duplicateFile.serverFile.id, text=duplicateFile.file_location).delete();
-			logging.info(u"Remove marked delete session of realFile_id=%s with result=%s"%(duplicateFile.id, result));
+			logging.info(u"Remove marked delete session of realFile_id={} with result={}".format(duplicateFile.id, result));
 
 		uploadSession.status = SessionStatus.completed
 		uploadSession.save()
-		logging.info(u"success with realFile_id=%s and userFile_id=%s" % (duplicateFile.id, newFile.id))
+		logging.info(u"success with realFile_id={} and userFile_id={}".format(duplicateFile.id, newFile.id))
 		return successResponse({
 			'userFile_id': newFile.id,
 		})
@@ -244,10 +244,10 @@ def moveFile(request):
 		try:
 			result = RealFile.objects.filter(file_location__in=fileLocationList, serverFile_id=old_server_id).update(serverFile_id=new_server_id)
 		except Exception as e:
-			logging.error(u"Bulk update failed with error=%s" % (e))
+			logging.error(u"Bulk update failed with error={}".format(e))
 			# return errorResponse(u"Unable to change realFile.serverFile from old_server_id=%s to new_server_id=%s"%(old_server_id,new_server_id));
 		else:
-			logging.info(u"Bulk update success with result=%s" % (result))
+			logging.info(u"Bulk update success with result={}".format(result))
 		return successResponse()
 	else:
 		raise Http404()
@@ -275,9 +275,9 @@ def deleteFile(request):
 		try:
 			result = RealFile.objects.filter(file_location__in=fileLocationList, serverFile_id=server_id).delete()
 		except Exception as e:
-			logging.error(u"Bulk delete failed with error=%s" % (e))
+			logging.error(u"Bulk delete failed with error={}".format(e))
 		else:
-			logging.info(u"Bulk delete success with result=%s" % (result))
+			logging.info(u"Bulk delete success with result={}".format(result))
 		return successResponse()
 	else:
 		raise Http404()

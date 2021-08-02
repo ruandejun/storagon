@@ -52,10 +52,9 @@ def moveFile(request):
 		try:
 			result = UserFile.objects.filter(id__in=fileIDList, user=request.user).update(folder_id=folder_id, modified_date=timezone.now())
 		except Exception as e:
-			logging.error(u"File_ClientAPI.moveFile: Bulk update failed with error=%s" % (e))
+			logging.error(u"File_ClientAPI.deleteFile: Bulk update failed with error={}".format(e))
 		else:
-			logging.info(u"File_ClientAPI.moveFile: Bulk update success with result=%s" % (result))
-
+			logging.info(u"File_ClientAPI.deleteFile: Bulk update success with result={}".format(result))
 		for userFile in UserFile.objects.filter(id__in=fileIDList, user=request.user):
 			FileController.autoReplaceUserFileWithSameNameInSameFolder(userFile);
 
@@ -170,9 +169,9 @@ def moveFolder(request):
 					parent_folder_id=to_folder_id,
 					modified_date=timezone.now())
 		except Exception as e:
-			logging.error(u"File_ClientAPI.moveFolder: Bulk update failed with error=%s" % (e))
+			logging.error(u"File_ClientAPI.deleteFile: Bulk update failed with error={}".format(e))
 		else:
-			logging.info(u"File_ClientAPI.moveFolder: Bulk update success with result=%s" % (result))
+			logging.info(u"File_ClientAPI.deleteFile: Bulk update success with result={}".format(result))
 
 		for folder in Folder.objects.filter(id__in=folderIDList, user=request.user):
 			FileController.autoMergeFolderWithSameNameInSameFolder(folder);
@@ -205,9 +204,9 @@ def deleteFolder(request):
 				folder_type=FolderType.normal, #allow only folder_type=normal to be deleted
 				user=request.user).delete()
 		except Exception as e:
-			logging.error(u"File_ClientAPI.deleteFolder: Bulk update failed with error=%s" % (e))
+			logging.error(u"File_ClientAPI.deleteFile: Bulk update failed with error={}".format(e))
 		else:
-			logging.info(u"File_ClientAPI.deleteFolder: Bulk update success with result=" % (result))
+			logging.info(u"File_ClientAPI.deleteFile: Bulk update success with result={}".format(result))
 		return successResponse()
 	else:
 		raise Http404()

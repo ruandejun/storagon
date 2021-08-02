@@ -36,7 +36,7 @@ def upload_to_path(fileName, fileSize):
 	# doesn't need anymore, now we use linux scp to move file between server
 #	if '.' not in fileName and (len(fileName) == 32 or len(fileName) == 12):fileName=fileName;
 #	else:
-	fileName = hashlib.md5(str(str(datetime.datetime.now()) + fileName + str(fileSize)).encode('utf8')).hexdigest()
+	fileName = hashlib.md5((str(datetime.datetime.now()) + fileName + str(fileSize)).encode()).hexdigest()
 
 	return prePath + fileName
 

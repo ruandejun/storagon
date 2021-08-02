@@ -28,3 +28,6 @@ bencode-python3==1.0.2
 PyJWT==2.1.0
 https://github.com/darklow/django-suit/tarball/v2
 djangorestframework-bulk
+requests==2.26.0
+bs4
+dnspython==1.15.0

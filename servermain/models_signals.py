@@ -102,15 +102,22 @@ def postDeleteUserFile(sender, **kwargs):
 
 		# check whether a session has been created to delete this realFile exist or not, if not create one
 		try:
-			session, created = Session.objects.get_or_create(
-				status=SessionStatus.waiting, type=SessionType.delete, fid=userFile.realFile.id, sid=userFile.realFile.serverFile.id, text=userFile.realFile.file_location, defaults={
-				'status': SessionStatus.waiting, 'type': SessionType.delete, 'fid': userFile.realFile.id, 'sid': userFile.realFile.serverFile.id, 'text': userFile.realFile.file_location})
+			session = Session.objects.get(
+				status=SessionStatus.waiting, type=SessionType.delete, fid=userFile.realFile.id, sid=userFile.realFile.serverFile.id, text=userFile.realFile.file_location)
+			created = False
+		except Session.DoesNotExist:
+			defaults = {
+				'status': SessionStatus.waiting, 'type': SessionType.delete, 'fid': userFile.realFile.id,
+				'sid': userFile.realFile.serverFile.id, 'text': userFile.realFile.file_location}
+			session = Session.from_json(json.dumps(defaults))
+			session.save()
+			created = True
 		except Session.MultipleObjectsReturned:
 			created = False
 
 		if created:  # a new delete sesion is created
 			serverFile = userFile.realFile.serverFile
-			storage, created = ServerFileStorage.objects.get_or_create(pk=serverFile.id, defaults={'pk': serverFile.id})
+			storage = ServerFileStorage.objects.get(pk=serverFile.id)
 			from system_configure.controllers.SystemConfigureController import getConfigure
 			initiateDeleteSessionProcessNumber = getConfigure('initiateDeleteSessionProcessNumber', 200)
 			if storage.waiting_delete_session_count + 1 >= initiateDeleteSessionProcessNumber:
@@ -164,10 +171,19 @@ def postDeleteRealFile(sender, **kwargs):
 	ServerFileStorage.objects(pk=realFile.serverFile.id).update_one(dec__file_count=1, dec__storage_used=realFile.file_size)
 	###
 	# check whether a session has been created to delete this realFile exist or not, if not create one
+
+
 	try:
-		session, created = Session.objects.get_or_create(
-	type=SessionType.delete, fid=realFile.id, sid=realFile.serverFile.id, text=realFile.file_location		, defaults={
-		'status': SessionStatus.waiting, 'type': SessionType.delete, 'fid': realFile.id, 'sid': realFile.serverFile.id, 'text': realFile.file_location})
+		session = Session.objects.get(
+	type=SessionType.delete, fid=realFile.id, sid=realFile.serverFile.id, text=realFile.file_location)
+		created = False
+	except Session.DoesNotExist:
+		defaults = {
+			'status': SessionStatus.waiting, 'type': SessionType.delete, 'fid': realFile.id,
+			'sid': realFile.serverFile.id, 'text': realFile.file_location}
+		session = Session.from_json(json.dumps(defaults))
+		session.save()
+		created = True
 	except Session.MultipleObjectsReturned:
 		pass
 	else:

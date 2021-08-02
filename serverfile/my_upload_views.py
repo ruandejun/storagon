@@ -112,13 +112,14 @@ def my_resumable(request, upload_session_id=None, token=None):
 		session = cache.get(settings.CACHE_MONGO_SESSION_PREFIX + upload_session_id, None)
 
 	if not session and token:
-		try:
-			decodedSessionData = jwt.decode(token, settings.SECRET_KEY);
-		except jwt.DecodeError as e:
-			logging.error(u"Failed to decode JWT token");
-		else:
-			session = Session.from_json(json.dumps(decodedSessionData));
-			logging.debug(u"Success decode JWT token");
+		decodedSessionData = jwt.decode(token, settings.SECRET_KEY);
+		# try:
+		#
+		# except jwt.DecodeError as e:
+		# 	logging.error(u"Failed to decode JWT token");
+		# else:
+		session = Session.from_json(json.dumps(decodedSessionData));
+		logging.debug(u"Success decode JWT token");
 
 	# check session before upload here
 	if session is None:  # cache miss

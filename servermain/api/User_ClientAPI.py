@@ -201,10 +201,10 @@ def signup(request):
 			return errorResponse(u"Username must be 6-30 char and not contain invalid char.")
 
 		#comment this, to disable check captcha
-		if settings.IS_RUNNING_UNIT_TEST is False:
-			result=checkRecaptcha(request);
-			if result is not True:
-				return errorResponse(u"Unable to verify recaptcha!"); # errorResponse
+		# if settings.IS_RUNNING_UNIT_TEST is False:
+		# 	result=checkRecaptcha(request);
+		# 	if result is not True:
+		# 		return errorResponse(u"Unable to verify recaptcha!"); # errorResponse
 
 		#save user
 		user = User(username=username, email=email);

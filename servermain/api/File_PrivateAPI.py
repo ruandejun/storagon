@@ -88,6 +88,7 @@ def addFile(request):
 		# add new UserFile
 		userFile = UserFile(realFile=realFile)
 		if uploadSession.data.get('file_name'):
+			print('___file_name',uploadSession.data.get('file_name'))
 			userFile.file_name = uploadSession.data['file_name'].strip()
 		else:
 			userFile.file_name = file_name.strip()

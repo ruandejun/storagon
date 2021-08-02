@@ -45,6 +45,7 @@ class FileSDK():
 			'file_size': file_size,
 		}
 		html = self.browser.open(self.serverMainURL + '/prapi/file/addFile/', dataPOST, extraHeader=generateAuthorizationHeader(dataPOST))
+		print('___addFile:',html)
 		result = json.loads(html)
 		return result['userFile_id']
 
@@ -103,8 +104,8 @@ class SessionSDK():
 		dataGET = '?session_id=%s' % (session_id)
 		url = str(self.serverMainURL + '/prapi/session/getSession/' + dataGET)
 		html = self.browser.open(url, extraHeader=generateAuthorizationHeader(url))
-		print('session_url==',url)
-		print('html==',html)
+		# print('session_url==',url)
+		# print('html==',html)
 		session = Session.from_json(html)
 		return session
 

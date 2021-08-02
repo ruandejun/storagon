@@ -45,7 +45,7 @@ class FileSDK():
 			'file_size': file_size,
 		}
 		html = self.browser.open(self.serverMainURL + '/prapi/file/addFile/', dataPOST, extraHeader=generateAuthorizationHeader(dataPOST))
-		print('___addFile:',html)
+		# print('___addFile:',html)
 		result = json.loads(html)
 		return result['userFile_id']
 

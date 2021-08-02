@@ -101,7 +101,8 @@ class Browser:
 			if redirectLink:
 				if not self.quite:
 					print("redirect left=%d" % (folowRedirect))
-				return self.open(redirectLink, folowRedirect=folowRedirect - 1)
+					print("redirect link=",redirectLink)
+				return self.open(redirectLink.decode('utf-8'), folowRedirect=folowRedirect - 1)
 
 		return html
 

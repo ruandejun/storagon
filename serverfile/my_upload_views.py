@@ -123,11 +123,12 @@ def my_resumable(request, upload_session_id=None, token=None):
 	# check session before upload here
 	if session is None:  # cache miss
 		sessionSDK = SessionSDK(settings.SERVER_MAIN_URL)
-		try:
-			session = sessionSDK.getSession(upload_session_id)
-		except Exception as e:
-			session = None
-			logging.error(u"my_resumable: Unable to getSession, error=%s" % (e))
+		session = sessionSDK.getSession(upload_session_id)
+		# try:
+
+		# except Exception as e:
+		# 	session = None
+		# 	logging.error(u"my_resumable: Unable to getSession, error=%s" % (e))
 
 	if not session:
 		checkAndBanIPOfClientMakingTooManyFailureRequest(request)

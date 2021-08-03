@@ -26,14 +26,14 @@ from storagon.tool import *
 from storagon.enum import *
 from storagon.decorator import banned_check, login_required_ajax, signature_test
 from system_configure.controllers import SystemConfigureController
-
+from rest_framework.decorators import api_view
 
 def reverseString(s):
     d = [c for c in s]
     d.reverse();
     return ''.join(d);
 
-
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 @user_passes_test(banned_check)
@@ -354,7 +354,7 @@ def createReport(request):
     else:
         raise Http404()
 
-
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 def sendInboxMessage(request):
@@ -395,7 +395,7 @@ def sendInboxMessage(request):
     else:
         raise Http404()
 
-
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 def getListSession(request):

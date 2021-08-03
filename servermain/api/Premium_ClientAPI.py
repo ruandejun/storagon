@@ -16,8 +16,9 @@ from storagon.decorator import login_required_ajax, signature_test
 from storagon.tool import *
 from storagon.enum import *
 from system_configure.controllers import SystemConfigureController
+from rest_framework.decorators import api_view
 
-
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 def getListPremiumKey(request):
@@ -41,7 +42,7 @@ def getListPremiumKey(request):
 	elif request.method == 'POST':
 		raise Http404();
 	pass;
-
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 def buyPremiumKeyUsingCredit(request):
@@ -79,7 +80,7 @@ def buyPremiumKeyUsingCredit(request):
 			return successResponse(data, encode=False);
 
 		return errorResponse(u"Failed to buy PremiumKey due to transaction error.");
-
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 def exchangePremiumKey(request):

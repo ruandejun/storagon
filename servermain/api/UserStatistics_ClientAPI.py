@@ -23,8 +23,9 @@ from storagon.decorator import login_required_ajax, signature_test
 from servermain.controllers import PaymentController
 from system_configure.controllers import SystemConfigureController
 from django.db import connection
+from rest_framework.decorators import api_view
 
-
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 def getUserStorage(request):
@@ -42,7 +43,7 @@ def getUserStorage(request):
 	else:
 		raise Http404()
 
-
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 def listBill(request):
@@ -89,7 +90,7 @@ def listBill(request):
 	else:
 		raise Http404()
 
-
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 def listTransaction(request):
@@ -223,7 +224,7 @@ def exchangePoint(request):
 	else:
 		raise Http404()
 
-
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 def downloadCountSessionStatistic(request):
@@ -271,7 +272,7 @@ def downloadCountSessionStatistic(request):
 	else:
 		raise Http404()
 
-
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 def newUserOriginFromDownloadLinkStatistic(request):

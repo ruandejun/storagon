@@ -25,7 +25,7 @@ from servermain.controllers import EmailController,AffiliateController
 from storagon.decorator import banned_check, login_required_ajax, signature_test
 from system_configure.controllers import SystemConfigureController
 from rest_framework.authtoken.models import Token
-
+from rest_framework.decorators import api_view
 @signature_test()
 def custom_login(request):
     """ Login an user to Storagon using ajax POST
@@ -78,6 +78,7 @@ def custom_logout(request):
         raise Http404()
 
 
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 def getUserInfo(request):
@@ -123,6 +124,7 @@ class UpdateProfileForm(ModelForm):
     old_password = CharField(widget=PasswordInput, label="Old password", required=False)
     password = CharField(widget=PasswordInput, label="Change password", required=False)
 
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 @user_passes_test(banned_check)
@@ -149,6 +151,9 @@ def updateUserInfo(request):
                 if check_password(old_password, request.user.password):
                     request.user.set_password(password)
                     request.user.save()
+                    token, created = Token.objects.get_or_create(user=request.user)
+                    token.delete()
+                    # token, created = Token.objects.get_or_create(user=request.user)
                 else:
                     return errorResponse("Old password doesn't match", code=18)
             if request.user.email != profile.email:
@@ -160,7 +165,7 @@ def updateUserInfo(request):
     else:
         raise Http404()
 
-
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 @user_passes_test(banned_check)
@@ -326,7 +331,7 @@ def signupTemporaryUserAccount(request):
         return successResponse()
     else:
         raise Http404()
-
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 def resendActivationEmail(request):
@@ -378,7 +383,7 @@ def sendResetPasswordEmail(request):
             return successResponse()
     else:
         raise Http404()
-
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 def applyToBecomeAffiliate(request):
@@ -423,7 +428,7 @@ def applyToBecomeAffiliate(request):
     else:
         raise Http404()
 
-
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 def applyToChangeAffiliateMode(request):
@@ -471,7 +476,7 @@ def applyToChangeAffiliateMode(request):
         return successResponse()
     else:
         raise Http404()
-
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 @user_passes_test(banned_check)
@@ -502,7 +507,7 @@ def addWebsiteAgencyDomain(request):
     else:
         raise Http404()
 
-
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 @user_passes_test(banned_check)

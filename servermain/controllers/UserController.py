@@ -29,7 +29,7 @@ def calculateUserStorage(user_id):
 	:return:
 	"""
 	try:
-		userStorage, created = UserStorage.objects.get(user_id=user_id)
+		userStorage = UserStorage.objects.get(user_id=user_id)
 	except UserStorage.DoesNotExist:
 		userStorage = UserStorage(user_id=user_id)
 		userStorage.save()

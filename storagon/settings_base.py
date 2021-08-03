@@ -56,6 +56,7 @@ INSTALLED_APPS = (
 	'django.contrib.staticfiles',
 	'django.contrib.admindocs',	# doc
 	'rest_framework', # Restful API
+	'rest_framework.authtoken',
 	'rest_framework_mongoengine', # Restful for mongoengine
 	'admin_file_manager',
 	'attendance_tracking',

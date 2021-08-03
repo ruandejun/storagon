@@ -24,7 +24,7 @@ from servermain.models import User, UserProfile, UserApply, AccountBalance
 from servermain.controllers import EmailController,AffiliateController
 from storagon.decorator import banned_check, login_required_ajax, signature_test
 from system_configure.controllers import SystemConfigureController
-
+from rest_framework.authtoken.models import Token
 
 @signature_test()
 def custom_login(request):
@@ -46,14 +46,17 @@ def custom_login(request):
 
         if user is None:
             return errorResponse("Username or password is not valid", code=0)
-
+        #
         user.backend = 'django.contrib.auth.backends.ModelBackend'
         login(request, user)
+        token, created = Token.objects.get_or_create(user=request.user)
+
         # automaticaly create all type of balance for this user
         for balanceType in [BalanceType.credit,BalanceType.point,BalanceType.ppd]:
             balance, created = AccountBalance.objects.get_or_create(user=user, balance_type=balanceType)
 
-        return successResponse()
+        status = {'success': True, 'token': token.key}
+        return successResponse(status)
     else:
         raise Http404()
 

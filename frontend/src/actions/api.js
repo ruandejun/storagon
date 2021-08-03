@@ -1,0 +1,163 @@
+import { Token } from './token'
+import CryptoJS from 'crypto-js'
+const apiUrl = 'http://localhost:8000'
+const SRK = '7yn^8pwp+yzd2l4ki6+v9kp(h)rzs$9gxu4ao^_p+9x_5+1*6o'
+
+const fetchApi = async(method, path, params={}, token) => {
+  let finalPath = path
+  let options = {
+    method: method.toUpperCase(),
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Token ${token || Token.getToken()}`
+    }
+  }
+
+  if (method.toUpperCase() === 'GET') {
+    finalPath += '?' + Object.entries(params).map((v) => {
+        if (Array.isArray(v[1])){
+        return `${v[0]}=${v[1].join(',')}`
+      } else {
+        return `${v[0]}=${v[1]}`
+      }
+    }).join('&')
+  } else {
+    options['body'] = JSON.stringify(params)
+  }
+
+  console.log({url: apiUrl + `/${finalPath}`, options})
+  
+  return await fetch (apiUrl + `/${finalPath}`, options).then(res => {
+    if(res.status >= 400){
+      return false
+    }
+
+    return res.json()
+  }).then(response => {
+    return response
+  }).catch(err => {
+    console.info("__err__", err)
+  })
+}
+
+const fetchGetApi = async(method, path, params={}, token) => {
+  let finalPath = path
+  let options = {
+    method: method.toUpperCase(),
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Token ${token || Token.getToken()}`
+    }
+  }
+
+  options['body'] = JSON.stringify(params)
+
+  // console.log({url: apiUrl + `/${finalPath}`, options})
+  
+  return await fetch (apiUrl + `/${finalPath}`, options).then(res => {
+    if(res.status >= 400){
+      return false
+    }
+
+    return res.json()
+  }).then(response => {
+    return response
+  }).catch(err => {
+    console.info("__err__", err)
+  })
+}
+
+const fetchApiSignUp = async(method, path, params={}) => {
+    let finalPath = path
+    let options = {
+        method: method.toUpperCase(),
+        headers: {
+            'Content-Type': 'application/json',
+            /*'Authorization': `Token ${Token.getToken()}`*/
+        }
+    }
+
+    if (method.toUpperCase() === 'GET') {
+        finalPath += '?' + Object.entries(params).map((v) => {
+            if (Array.isArray(v[1])){
+                return `${v[0]}=${v[1].join(',')}`
+            } else {
+                return `${v[0]}=${v[1]}`
+            }
+        }).join('&')
+    } else {
+        options['body'] = JSON.stringify(params)
+    }
+
+    return await fetch (apiUrl + `/${finalPath}`, options).then(res => {
+        return res.json()
+    }).then(response => {
+        return response
+    }).catch(err => {
+        console.info("__err__", err)
+    })
+}
+
+
+const fetchApiLogin = async(method, path, params={}) => {
+    var md5 = CryptoJS.algo.MD5.create()
+    md5.update(SRK)
+    
+
+    let finalPath = path
+    let options = {
+        method: method.toUpperCase(),
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        },
+        credentials: 'same-origin'
+    }
+
+    const data = Object.entries(params).map((v) => {
+        if (Array.isArray(v[1])){
+            return `${v[0]}=${v[1].join(',')}`
+        } else {
+            return `${v[0]}=${v[1]}`
+        }
+    }).join('&')
+
+    if (method.toUpperCase() === 'GET') {
+        finalPath += '?' + data
+
+        md5.update(finalPath)
+    } else {
+        options['body'] = data
+
+        md5.update(data)
+    }
+
+    const signalture = md5.finalize().toString(CryptoJS.enc.Hex)
+    console.log({signalture})
+
+    options['headers']['Signature-Authorization'] = signalture
+
+    return await fetch (apiUrl + `/${finalPath}`, options).then(res => {
+        return res.text()
+    }).then(response => {
+        return response
+    }).catch(err => {
+        console.info("__err__", err)
+    })
+}
+
+const setToken = (token) => {
+  localStorage.setItem('dt_token', token)
+}
+
+const isLoggedIn = () => {
+    return !!localStorage.getItem('dt_token')
+}
+
+export {
+  fetchApi,
+  fetchApiLogin,
+  setToken,
+  isLoggedIn,
+  fetchApiSignUp,
+  fetchGetApi,
+}

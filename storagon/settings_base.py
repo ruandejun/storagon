@@ -106,27 +106,20 @@ WSGI_APPLICATION = 'storagon.wsgi.application'
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 
 DATABASES = {
-
 	'default': {
-
 		'ENGINE': 'django.db.backends.postgresql_psycopg2',
 		'NAME': 'storagon',
 		'USER': 'root',	  # Not used with sqlite3.
 		'PASSWORD': '123',  # Not used with sqlite3.
 		'HOST': 'postgredb',  # Set to empty string for localhost. Not used with sqlite3.
 		'PORT': 5432,  # Set to empty string for default. Not used with sqlite3.
-
-	},
-
+	}
 }
-
-
 MONGODB = {
 	'NAME': 'storagon',
 	'HOST': 'mongodb',
 	'PORT': 27017,
 }
-
 REDISDB = {
 	'DB': 0,
 	'HOST': 'rediscache',

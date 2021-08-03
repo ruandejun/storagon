@@ -26,25 +26,7 @@
     <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css" />
     <link rel="stylesheet" href="/static/assets/frontend/css/style.css" />
     <link rel="shortcut icon" href="/static/assets/frontend/images/icons/favicon.png" />
-    <script type="text/javascript">
-        {% load cache %}
-        {% cache 600 CURRENT_USER request.user.username %}
-        {% if user.is_authenticated %}
-            var CURRENT_USER = {
-                username: '{{user.username}}',
-                id: {{user.id}},
-                email: '{{user.email}}',
-                is_active: '{{user.is_active}}',
-                is_staff: '{{user.is_staff}}',
-                last_login: '{{user.last_login}}',
-                first_name: '{{user.first_name}}',
-                last_name: '{{user.last_name}}'
-            };
-            {% else %}
-            CURRENT_USER = null;
-        {% endif %}
-        {% endcache %}
-    </script>
+
     <script>
       (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
       (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),

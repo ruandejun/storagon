@@ -30,10 +30,12 @@ RUN apt-get update -y --force-yes && apt-get install -y --force-yes --no-install
     && rm -rf /tmp/* /var/tmp/* /var/cache/apt/* /var/lib/apt/lists/*
 
 RUN mkdir -p /opt/project/
+RUN mkdir -p /opt/project/log
 
 WORKDIR /opt/project/
 
 ADD ./pip_requirement.txt /opt/project/pip_requirement.txt
+RUN /usr/local/bin/python -m pip install --upgrade pip
 RUN pip3 install -r pip_requirement.txt
 
 CMD ["python"]

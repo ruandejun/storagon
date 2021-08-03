@@ -116,7 +116,7 @@ def listTransaction(request):
 			try: from_date = datetime.datetime.strptime(from_date_string, "%Y-%m-%d")
 			except ValueError: pass;
 
-		transactionQuery = TransactionLog.objects.all().filter(balance__user=request.user, created_date__gt=from_date).select_related('invoice_bill__money_charged')
+		transactionQuery = TransactionLog.objects.all().filter(balance__user=request.user, created_date__gt=from_date).select_related('invoice_bill')
 		if to_date_string:
 			today = timezone.now()
 			try: to_date = datetime.datetime.strptime(to_date_string, "%Y-%m-%d")

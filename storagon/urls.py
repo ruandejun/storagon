@@ -4,8 +4,6 @@ from django.contrib import admin
 # from jet_django.urls import jet_urls
 
 urlpatterns = [
-
-	url(r'^adl/track/', include('attendance_tracking.urls')),
 	url(r'^adl/custom/', include('servermain.CustomAdmin_urls')),
 	url(r'^adl/doc/', include('django.contrib.admindocs.urls')),
 	url(r'^adl/', admin.site.urls),

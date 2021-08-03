@@ -40,29 +40,29 @@ def urlopen(client, url, data=None, content_type=None, add_security_header=True)
 			else:
 				response = client.post(url, data)
 		else:
-			# print urllib.urlencode(data);
+			# print urllib.parse.urlencode(data);
 
 			if content_type:
-				authorizationHeader = hashlib.md5(settings.SECRET_KEY + data).hexdigest()
+				authorizationHeader = hashlib.md5(str(settings.SECRET_KEY + data).encode('utf-8')).hexdigest()
 				# print 'data=',data;
 				response = client.post(url, data, content_type, HTTP_SIGNATURE_AUTHORIZATION=authorizationHeader)
 			else:
 				dataItems = data.items()
-				dataItems.sort()
-				authorizationHeader = hashlib.md5(settings.SECRET_KEY + urllib.urlencode(dataItems)).hexdigest()
-				# print 'urlencode(data)=',urllib.urlencode(dataItems);
+				dataItems = sorted(dataItems)
+				authorizationHeader = hashlib.md5(str(settings.SECRET_KEY + urllib.parse.urlencode(dataItems)).encode('utf-8')).hexdigest()
+				# print 'urlencode(data)=',urllib.parse.urlencode(dataItems);
 				response = client.post(url, data, HTTP_SIGNATURE_AUTHORIZATION=authorizationHeader)
 
 	else:
 		if not add_security_header:
 			response = client.get(url)
 		else:
-			authorizationHeader = hashlib.md5(settings.SECRET_KEY + url).hexdigest()
+			authorizationHeader = hashlib.md5(str(settings.SECRET_KEY + url).encode('utf-8')).hexdigest()
 			response = client.get(url, HTTP_SIGNATURE_AUTHORIZATION=authorizationHeader)
 
 	print("___response %s: %s" % (response.status_code, response.content[:200]))
 	if response.status_code != 200:
-		raise Exception(response.status_code, response.content)
+		raise Exception(str(response.status_code), response.content)
 	return response.content
 
 serverMain = 'http://127.0.0.1:8080'
@@ -82,7 +82,7 @@ class TestSession(TestCase):
 		self.serverFile2.save()
 
 		self.realFile = realFile = RealFile(serverFile=serverFile, file_location='/2015/1/1/abczyx', file_size=file_size,
-										file_hash=hashlib.md5(str(datetime.datetime.now())).hexdigest())
+										file_hash=hashlib.md5(str(datetime.datetime.now()).encode('utf-8')).hexdigest())
 		self.realFile.save()
 
 		serverStorage = ServerFileStorage.objects.get(serverFile_id=serverFile.id)
@@ -100,7 +100,7 @@ class TestSession(TestCase):
 
 		uploadSession = Session(type=SessionType.upload, status=SessionStatus.completed, uid=self.user.id, sid=self.serverFile.id,
 								data={'file_hash': self.realFile.file_hash, 'file_size': self.realFile.file_size,
-									  'file_name': self.userFile.file_name, 'erfk': base64.b64encode(hashlib.sha1('erfk_%s' % (random.randint(0, 1000000))).hexdigest()[:32]),
+									  'file_name': self.userFile.file_name, 'erfk': ''.join(random.choices(string.ascii_uppercase + string.digits, k=32)),
 								}, text=str(self.realFile.id))
 		uploadSession.save()
 
@@ -111,20 +111,20 @@ class TestSession(TestCase):
 			print(u"\n test_createUploadSession:")
 		url = reverse('Session_ClientAPI:createUploadSession')
 		data = {
-			'file_hash': hashlib.md5(str(datetime.datetime.now())).hexdigest(),
+			'file_hash': hashlib.md5(str(datetime.datetime.now()).encode('utf-8')).hexdigest(),
 			'file_size': random.randint(10**4, 10**6),
 			'file_name': ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(20)),
 			'folder': 0,
-			'erfk': reverseString(base64.b64encode(hashlib.sha1('erfk_%s' % (random.randint(0, 1000000))).hexdigest()[:32])),
+			'erfk': reverseString(''.join(random.choices(string.ascii_uppercase + string.digits, k=32))),
 		}
-		# folder_id wrong check
-		try:
-			html = urlopen(self.client, url, data)
-		except Exception as e:
-			self.assertEqual(e[0], 500)
+		# # folder_id wrong check
+		# with self.assertRaisesMessage(Exception, '500'):
+		# 	html = urlopen(self.client, url, data)
+		# # except Exception as e:
+		# # 	self.assertEqual(e[0], 500)
 
 		# normal
-		data['folder'] = None
+		data['folder'] = ''
 		html = urlopen(self.client, url, data)
 		result = json.loads(html)
 
@@ -265,7 +265,7 @@ class TestSession(TestCase):
 
 		sessionList = self.test_listSession(False)
 
-		data = urllib.urlencode(
+		data = urllib.parse.urlencode(
 			[('session_id', session.id) for session in sessionList]
 			+ [('status', SessionStatus.completed)]
 		)
@@ -296,7 +296,7 @@ class TestSession(TestCase):
 		# }
 
 		fileLocationList = [self.realFile.file_location]
-		data = urllib.urlencode(
+		data = urllib.parse.urlencode(
 			[('file_location', file_location) for file_location in fileLocationList]
 			+ [('old_server_id', self.realFile.serverFile.id), ('new_server_id', self.serverFile2.id), ]
 		)
@@ -339,7 +339,7 @@ class TestSession(TestCase):
 	def test_banFileHash(self, show_test=True):
 		if show_test:
 			print(u"\n test_banFileHash:")
-		file_hash = hashlib.md5(str(datetime.datetime.now())).hexdigest()
+		file_hash = hashlib.md5(str(datetime.datetime.now()).encode('utf-8')).hexdigest()
 
 		banHash = Banlist(pk=file_hash)
 		banHash.save()
@@ -349,15 +349,15 @@ class TestSession(TestCase):
 			'file_hash': file_hash,
 			'file_size': random.randint(10**4, 10**6),
 			'file_name': ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(20)),
-			'erfk': reverseString(base64.b64encode(hashlib.sha1('erfk_%s' % (random.randint(0, 1000000))).hexdigest()[:32])),
+			'erfk': reverseString(''.join(random.choices(string.ascii_uppercase + string.digits, k=32))),
 		}
 
-		try:
+		with self.assertRaisesMessage(Exception, '500'):
 			html = urlopen(self.client, url, data)
 			result = json.loads(html)
-		except Exception as e:
-			self.assertEqual(e[0], 500)  # status_code
-			self.assertIn(u"banned", e[1])  # error message
+		# except Exception as e:
+		# 	self.assertEqual(e[0], 500)  # status_code
+		# 	self.assertIn(u"banned", e[1])  # error message
 
 
 # Create your tests here.
@@ -391,7 +391,7 @@ class TestUserGuest(TestCase):
 			'username': 'testUserGuest_newuser',
 			'password': '123456',
 			'email': 'testUserGuest_newuser@email.com',
-			'eumk': hashlib.md5(str(datetime.datetime.now())).hexdigest(),
+			'eumk': hashlib.md5(str(datetime.datetime.now()).encode('utf-8')).hexdigest(),
 		}
 
 		html = urlopen(self.client, url, data)
@@ -536,10 +536,10 @@ class TestUserLogedIn(TestCase):
 		self.user.profile.account_status = AccountStatus.banned
 		self.user.profile.save()
 
-		try:
+		with self.assertRaisesMessage(Exception, '302'):
 			self.test_getUserBalance(False)
-		except Exception as e:
-			self.assertEqual(e[0], 302)  # 302 redirect to login page, because user not pass test decorator
+		# except Exception as e:
+		# 	self.assertEqual(e[0], 302)  # 302 redirect to login page, because user not pass test decorator
 
 	def test_sendInboxMessage(self, show_test=True):
 		if show_test:
@@ -663,11 +663,12 @@ class TestUserLogedIn(TestCase):
 		if show_test: print(u"\n test_logout:")
 		url = reverse('User_ClientAPI:custom_logout')
 		html = urlopen(self.client, url, {})
-		try:self.test_getUserInfo(show_test=False);
-		except Exception as e:
-			self.assertEqual(e[0],401);
-		else:
-			raise Exception(u"User it still logged in");
+		with self.assertRaisesMessage(Exception, '401'):
+			self.test_getUserInfo(show_test=False);
+		# except Exception as e:
+		# 	self.assertEqual(e[0],401);
+		# else:
+		# 	raise Exception(u"User it still logged in");
 
 	def test_sendResetPasswordEmail(self, show_test=True):
 		if show_test: print(u"\n test_sendResetPasswordEmail:")
@@ -690,9 +691,10 @@ class TestUserLogedIn(TestCase):
 		resetLink = self.test_sendResetPasswordEmail(False);
 		self.assertEqual(len(mail.outbox),1);
 
-		try: html = urlopen(self.client, resetLink);
-		except Exception as e:
-			self.assertEqual(e[0], 302);
+		with self.assertRaisesMessage(Exception, '302'):
+			html = urlopen(self.client, resetLink);
+		# except Exception as e:
+		# 	self.assertEqual(e[0], 302);
 
 		self.assertEqual(len(mail.outbox),2);
 		self.assertEqual(mail.outbox[1].subject, "Your Storagon Account Password Has Been Reset")
@@ -794,7 +796,7 @@ class TestUserFile(TestCase):
 		userFile = UserFile(realFile=self.realFile, file_name='xyzcba4.mp4', user=self.user)
 		userFile.save()
 
-		data = urllib.urlencode([
+		data = urllib.parse.urlencode([
 			('file_id', self.userFile.id),
 			('file_id', userFile.id),
 			('folder_id', newFolder4.id),
@@ -846,7 +848,7 @@ class TestUserFile(TestCase):
 
 		# delete file
 
-		data = urllib.urlencode([
+		data = urllib.parse.urlencode([
 			('file_id', userFile.id),
 			('file_id', userFile2.id),
 		])
@@ -906,7 +908,7 @@ class TestUserFile(TestCase):
 		userFile = UserFile(realFile=self.realFile, file_name='xyzcba.mp4', user=self.user, folder=newFolder6)
 		userFile.save()
 
-		data = urllib.urlencode([
+		data = urllib.parse.urlencode([
 			('folder_id', newFolder6.id),
 			('folder_id', newFolder7.id),
 		])
@@ -921,7 +923,7 @@ class TestUserFile(TestCase):
 		except UserFile.DoesNotExist:
 			pass
 		else:
-			raise "File in deleted folder is still exists"
+			raise Exception("File in deleted folder is still exists")
 
 		# check delete folder
 
@@ -947,7 +949,7 @@ class TestUserFile(TestCase):
 		userFile = UserFile(realFile=self.realFile, file_name='xyzcba.mp4', user=self.user, folder=newFolder8)
 		userFile.save()
 
-		data = urllib.urlencode([
+		data = urllib.parse.urlencode([
 			('folder_id', newFolder8.id),
 			('folder_id', newFolder9.id),
 			('to_folder_id', self.folder2.id),
@@ -1036,7 +1038,7 @@ class TestUserFile(TestCase):
 		userFile = UserFile(realFile=self.realFile, file_name='BBBB.mp4', user=self.user, folder=folderB)
 		userFile.save()
 
-		data = urllib.urlencode([
+		data = urllib.parse.urlencode([
 			('folder_id', folderA.id),
 			('to_folder_id', self.folder2.id),
 		])

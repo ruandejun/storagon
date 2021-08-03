@@ -196,7 +196,7 @@ def ekaepayChinaPayGateInitiator(request, billSession):
 	plan_price = str(price / 100.); #plan_price is USD
 	amount = str(price / 100.);  # amount is USD
 
-	md5Info = hashlib.md5(merNo + billNo + amount + currencyCode + currencyStr + returnURL + email + md5Key).hexdigest().upper();
+	md5Info = hashlib.md5(str(merNo + billNo + amount + currencyCode + currencyStr + returnURL + email + md5Key).encode('utf-8')).hexdigest().upper();
 
 	#pre check card info
 	card_number = card_number.replace(' ', '');

@@ -43,8 +43,8 @@ ALLOWED_HOSTS = [
 
 INSTALLED_APPS = (
 	'system_configure', #need to be at top for first priority
-	'suit',
-    'suit_redactor',	# better admin interface
+	# 'suit',
+    # 'suit_redactor',	# better admin interface
 	'admin_resumable',	# support resumable file upload in admin
 	'corsheaders',	# CORS support
 	#'memcache_admin',	# memcache viewer
@@ -59,7 +59,6 @@ INSTALLED_APPS = (
 	'rest_framework.authtoken',
 	'rest_framework_mongoengine', # Restful for mongoengine
 	'admin_file_manager',
-	'attendance_tracking',
 	'private_tracker',
 	'servermain',
 	'serverfile',

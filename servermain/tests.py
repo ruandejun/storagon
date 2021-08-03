@@ -13,7 +13,7 @@ from django.conf import settings  # site setting
 from django.core import mail
 
 # from Crypto.Cipher import AES
-from bunch import Bunch
+from munch import Munch
 
 from servermain.models import User, ServerFile, RealFile, UserFile, Folder, Banlist, UserApply, WebsiteAgency, AccountBalance
 from servermain.mongo_models import Session, UserStorage, ServerFileStorage
@@ -1441,7 +1441,7 @@ class TestPaymentFlow(TestCase):
 
 		url = reverse('Premium_ClientAPI:getListPremiumKey')
 		html = urlopen(self.client, url);
-		data = Bunch.fromDict(json.loads(html));
+		data = Munch.fromDict(json.loads(html));
 
 		self.assertEqual(len(data), 10);
 

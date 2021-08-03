@@ -12,7 +12,7 @@ from django.conf.urls import include, url
 from django.views.generic import RedirectView, TemplateView
 
 
-urlpatterns = ['servermain',
+urlpatterns = [
 
 	# url(r'^/?$', TemplateView.as_view(template_name="storagon_main/index.html"), name='home'),
 	# url(r'^/?$', 'main_views.home', name='home'),

@@ -88,7 +88,7 @@ def setHTML(key, body):
 
 
 def generateTemporaryCode(**kwargs):
-	temp_code = hashlib.sha1('temporary_code_%s'%(random.randint(0, 10**9))).hexdigest()[:10].upper()
+	temp_code = hashlib.sha1(('temporary_code_%s'%(random.randint(0, 10**9))).encode()).hexdigest()[:10].upper()
 	timeout = settings.TEMPORARY_CODE_EXPIRES;
 	cache.set(temp_code, kwargs, timeout);
 	return temp_code;

@@ -208,17 +208,23 @@ def createDownloadSession(request):
         # increase download_count (not atomicaly, and not accurate, should not use this property for bonus money)
 
         if request.user and request.user.is_authenticated:
-            downloadSession, created = Session.objects.get_or_create(
-                type=SessionType.download,
-                status=SessionStatus.waiting,
-                fid=userFile.id,
-                uid=request.user.id,
-                data__ip_address=request.META['REMOTE_ADDR'],
-                created__gt=timezone.now() - timezone.timedelta(seconds=settings.MONGO_SESSION_EXPIRES),
-                defaults={
-                'fid': userFile.id, 'type': SessionType.download,
+            try:
+                downloadSession = Session.objects.get(
+                    type=SessionType.download,
+                    status=SessionStatus.waiting,
+                    fid=userFile.id,
+                    uid=request.user.id,
+                    data__ip_address=request.META['REMOTE_ADDR'],
+                    created__gt=timezone.now() - timezone.timedelta(seconds=settings.MONGO_SESSION_EXPIRES)
+                )
+                created = False
+            except Session.DoesNotExist:
+                defaults = {
+                    'fid': userFile.id, 'type': SessionType.download,
                 }
-            );
+                downloadSession = Session.from_json(json.dumps(defaults))
+                downloadSession.save()
+                created = True
         else:
             created = True;
             downloadSession = Session(fid=userFile.id, type=SessionType.download)

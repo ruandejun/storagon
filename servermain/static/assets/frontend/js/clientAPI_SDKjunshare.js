@@ -1,6 +1,6 @@
 //User_ClientAPI
 var StorageFileKeyPrefix = 'fileKey_';
-//var HEADER_TOKEN='SIGNATURE_AUTHORIZATION';
+// var HEADER_TOKEN='SIGNATURE_AUTHORIZATION';
 var HEADER_TOKEN = 'Signature-Authorization';
 //var serverURL = 'http://test.storagon.com:64000';
 var serverURL = '';

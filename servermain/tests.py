@@ -246,7 +246,7 @@ class TestSession(TestCase):
 
 		url = reverse('Session_PrivateAPI:listSession') + '?type=%s&status=%s' % (SessionType.delete, SessionStatus.waiting)
 		html = urlopen(self.client, url)
-		# print html;
+		print(html);
 		sessionList = [Session.from_json(json.dumps(sessionData)) for sessionData in json.loads(html)]
 		self.assertEqual(len(sessionList), 2)
 

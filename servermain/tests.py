@@ -319,6 +319,7 @@ class TestSession(TestCase):
 	def test_deleteFile(self, show_test=True):
 		if show_test:
 			print(u"\n test_deleteFile:")
+		print('___serverFile.id:',self.serverFile.id)
 		storage0 = ServerFileStorage.objects.get(pk=self.serverFile.id)
 		self.assertEqual(storage0.storage_used, self.realFile.file_size)
 
@@ -327,6 +328,7 @@ class TestSession(TestCase):
 			'file_location': self.realFile.file_location,
 			'server_id': self.realFile.serverFile.id,
 		}
+		print('___url:',url)
 		html = urlopen(self.client, url, data)
 
 		# check storage of server

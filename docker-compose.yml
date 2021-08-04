@@ -8,9 +8,9 @@ services:
         - build.version=${BUILD_VERSION:-local}
       args:
         - buildflag=clear_sourcecode
-    command: python manage.py runserver 0.0.0.0:8000
+#    command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - .:/opt/project
+      - .:/var/www/storagon/
     ports: [ "8000:8000","80:80" ]
   mongodb:
     image: mongo:3.3.15

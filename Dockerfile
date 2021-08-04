@@ -25,17 +25,20 @@ RUN apt-get update -y --force-yes && apt-get install -y --force-yes --no-install
     postgresql-contrib \
     postgresql-client \
     postgresql \
+    nginx \
     && apt-get upgrade -y --force-yes \
     && apt-get clean \
     && rm -rf /tmp/* /var/tmp/* /var/cache/apt/* /var/lib/apt/lists/*
 
-RUN mkdir -p /opt/project/
-RUN mkdir -p /opt/project/log
+RUN mkdir -p /var/www/storagon
+RUN mkdir -p /var/www/storagon/log
 
-WORKDIR /opt/project/
+WORKDIR /var/www/storagon
 
-ADD ./pip_requirement.txt /opt/project/pip_requirement.txt
+ADD ./pip_requirement.txt /var/www/storagon/pip_requirement.txt
 RUN /usr/local/bin/python -m pip install --upgrade pip
 RUN pip3 install -r pip_requirement.txt
 
-CMD ["python"]
+RUN mkdir -p /var/log/uwsgi/
+
+CMD [ "sh", "-c", "uwsgi --ini storagon/uwsgi_config.ini; nginx -c /var/www/storagon/storagon/nginx.conf"]

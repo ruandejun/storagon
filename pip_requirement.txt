@@ -31,3 +31,4 @@ djangorestframework-bulk
 requests==2.26.0
 bs4
 dnspython==1.15.0
+uwsgi

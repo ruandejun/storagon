@@ -25,7 +25,6 @@ RUN apt-get update -y --force-yes && apt-get install -y --force-yes --no-install
     postgresql-contrib \
     postgresql-client \
     postgresql \
-    nginx \
     && apt-get upgrade -y --force-yes \
     && apt-get clean \
     && rm -rf /tmp/* /var/tmp/* /var/cache/apt/* /var/lib/apt/lists/*
@@ -41,4 +40,6 @@ RUN pip3 install -r pip_requirement.txt
 
 RUN mkdir -p /var/log/uwsgi/
 
-CMD [ "sh", "-c", "uwsgi --ini storagon/uwsgi_config.ini; nginx -c /var/www/storagon/storagon/nginx.conf"]
+EXPOSE 8000 8889
+
+CMD [ "sh", "-c", "uwsgi --ini storagon/uwsgi_config.ini"]

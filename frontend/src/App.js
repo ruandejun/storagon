@@ -1,11 +1,11 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import {
   Switch,
   Route,
   Redirect,
 } from 'react-router-dom'
 import { ConnectedRouter } from 'connected-react-router'
-import {history} from './actions/store'
+import { history } from './actions/store'
 import './App.css'
 import './assets/css/foundation.min.css'
 import './assets/css/app.css'
@@ -38,8 +38,21 @@ import Statistic from './pages/accounts/Statistic'
 import Transaction from './pages/accounts/Transaction'
 
 import FileManager from './pages/files/FileManager'
+import { useDispatch } from 'react-redux'
+
+import actions from 'containers/sessions/redux/action'
+
+const {getProfile} = actions
 
 function App() {
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    dispatch(getProfile())
+
+    return () => { }
+  }, [])
+
   return (
     <ConnectedRouter history={history}>
       <div className="App">

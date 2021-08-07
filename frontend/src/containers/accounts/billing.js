@@ -1,7 +1,22 @@
-import React, { Fragment, useState, useEffect, useCallback, styl } from 'react'
+import React, {useEffect} from 'react'
 import SideBar from 'components/SideBar'
+import { useSelector, useDispatch } from 'react-redux'
 
-const Page = ({ history }) => {
+import actions from './redux/action'
+
+const { getBilling } = actions
+
+const Page = ({ }) => {
+    const dispatch = useDispatch()
+
+    useEffect(() => {
+        dispatch(getBilling())
+
+        return () => { }
+    }, [])
+
+    const userBilling = useSelector((state) => state.account.billing)
+    const bills = userBilling ? userBilling : []
 
     return (
         <div className="padding-top-30 padding-bottom-30">
@@ -19,13 +34,17 @@ const Page = ({ history }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr ng-repeat="bill in bills">
-                                <td>bill.pk</td>
-                                <td>bill.fields.plan_id</td>
-                                <td className="success">bill.fields.money_charged | amount</td>
-                                <td>bill.fields.created_date | date</td>
-                                <td>bill.fields.detail._id.$oid</td>
-                            </tr>
+                            {bills.map(bill => {
+                                return (
+                                    <tr>
+                                        <td>{bill.pk}</td>
+                                        <td>{bill.fields.plan_id}</td>
+                                        <td className="success">{bill.fields.money_charged}</td>
+                                        <td>{bill.fields.created_date}</td>
+                                        <td>{bill.fields.detail._id}</td>
+                                    </tr>
+                                )
+                            })}
                         </tbody>
                     </table>
                 </div>

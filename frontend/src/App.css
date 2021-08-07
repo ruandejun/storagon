@@ -20,7 +20,7 @@ body.login-page {
   justify-content: center;
 }
 .row {
-  max-width: 1170px;
+  max-width: 1170px !important;
   flex: 1;
   display: flex;
   flex-direction: row;

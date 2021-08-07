@@ -13,11 +13,11 @@ import { combineReducers } from 'redux'
 export const history = createBrowserHistory()
 
 let sagaMiddleware = createSagaMiddleware();
-const middleware = [...getDefaultMiddleware({ thunk: false }), sagaMiddleware, routerMiddleware(history)];
+const middleware = [...getDefaultMiddleware({ thunk: false, serializableCheck: { ignoredActions: ['UPLOADING_FILE']} }), sagaMiddleware, routerMiddleware(history)];
 
 const createRootReducer = combineReducers({
   router: connectRouter(history),
-  app: reducers
+  ...reducers
 })
 
 const store = configureStore({

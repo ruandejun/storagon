@@ -342,6 +342,7 @@ CORS_ALLOW_HEADERS = (
 	'x-csrftoken',
 	'range',
 	'signature_authorization',
+	'Signature-Authorization'
 )
 
 # CSRF_COOKIE_DOMAIN = '.storagon.com'

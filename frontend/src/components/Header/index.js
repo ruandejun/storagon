@@ -1,12 +1,17 @@
+import moment from 'moment'
 import React, { Fragment, useEffect, useRef, useState } from 'react'
 import Token from '../../actions/token'
 import logo_icon from '../../assets/images/logo.png'
 
 const Header = ({history}) => {
     const user = Token.getUser()
-    let is_authenticated = true
-    if(user){
-        is_authenticated = user.is_authenticated
+    
+    let is_authenticated = false
+    if(user && user.profile && user.profile.fields && user.profile.fields.plan_expired){
+        console.log({user})
+        // if(moment(user.profile.fields.plan_expired).isAfter(moment())){
+            is_authenticated = true
+        // }
     }
 
     return (

@@ -1,13 +1,37 @@
-import React, { Fragment, useState, useEffect, useCallback, styl } from 'react'
+import React, { useEffect } from 'react'
 import SideBar from 'components/SideBar'
+import { useSelector, useDispatch } from 'react-redux'
 
-const Page = ({ history }) => {
+import actions from './redux/action'
+
+const { getPremiumKey } = actions
+
+const Page = ({ }) => {
+    const dispatch = useDispatch()
+    const userPremium = useSelector(state => state.account.premiumKeys)
+    const userBalance = useSelector(state => state.account.balance)
+
+    useEffect(() => {
+        dispatch(getPremiumKey())
+
+        return () => { }
+    }, [])
+
+    console.log({userPremium, userBalance})
+    let creditBalance = 0
+    if(userBalance && userBalance.length > 0){
+        userBalance.map((item) => {
+            creditBalance += item.fields.amount
+        })
+    }
+
+    const credits = userPremium && userPremium.length > 0 ? userPremium : []
 
     return (
         <div className="padding-top-30 padding-bottom-30">
             <div className="row padding-bottom-100">
                 <div className="large-10 push-2 columns">
-                    <h4 className="left">Your Current Credit Balance creditBalance | currency</h4>
+                    <h4 className="left">Your Current Credit Balance {creditBalance}</h4>
                     <span className="right"><a data-reveal-id="planModal" className="button tiny">Purchase Premium Key</a></span>
                     <hr />
                     <div className="row">
@@ -25,12 +49,17 @@ const Page = ({ history }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr ng-repeat="credit in credits">
-                                <td>credit.fields.code</td>
-                                <td>credit.fields.created_date | date</td>
-                                <td>credit.fields.activated_user</td>
-                                <td>credit.fields.activated_date | date</td>
-                            </tr>
+                            {credits.map((credit) => {
+                                return (
+                                    <tr>
+                                        <td>{credit.fields.code}</td>
+                                        <td>{credit.fields.created_date}</td>
+                                        <td>{credit.fields.activated_user}</td>
+                                        <td>{credit.fields.activated_date}</td>
+                                    </tr>
+                                )
+                            })}
+
                         </tbody>
                     </table>
                 </div>

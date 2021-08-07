@@ -1,4 +1,4 @@
-import React, { Fragment, useState, useEffect, useCallback, styl } from 'react'
+import React from 'react'
 import loading from '../../assets/images/ajax-spinner.gif'
 
 const Page = ({ history }) => {

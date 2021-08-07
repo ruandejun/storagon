@@ -3,71 +3,82 @@ import CryptoJS from 'crypto-js'
 const apiUrl = 'http://localhost:8000'
 const SRK = '7yn^8pwp+yzd2l4ki6+v9kp(h)rzs$9gxu4ao^_p+9x_5+1*6o'
 
-const fetchApi = async(method, path, params={}, token) => {
-  let finalPath = path
-  let options = {
-    method: method.toUpperCase(),
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Token ${token || Token.getToken()}`
-    }
-  }
+const fetchApi = async (method, path, params = {}, token) => {
+    var md5 = CryptoJS.algo.MD5.create()
+    md5.update(SRK)
 
-  if (method.toUpperCase() === 'GET') {
-    finalPath += '?' + Object.entries(params).map((v) => {
-        if (Array.isArray(v[1])){
-        return `${v[0]}=${v[1].join(',')}`
-      } else {
-        return `${v[0]}=${v[1]}`
-      }
+    let finalPath = path
+    let options = {
+        method: method.toUpperCase(),
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            'Authorization': `Token ${token || Token.getToken()}`
+        },
+        credentials: 'same-origin'
+    }
+
+    console.log({params})
+    const data = Object.entries(params).map((v) => {
+        if (v[1] != null && Array.isArray(v[1])) {
+            return `${v[0]}=${v[1].join(',')}`
+        } else if(v[1] != null) {
+            return `${v[0]}=${v[1]}`
+        }
     }).join('&')
-  } else {
+
+    if (method.toUpperCase() === 'GET') {
+        if (data && data.length > 0) {
+            finalPath += '?' + data
+        }
+        md5.update(apiUrl + `/${finalPath}`)
+    } else {
+        options['body'] = data
+
+        md5.update(data)
+    }
+
+    const signalture = md5.finalize().toString(CryptoJS.enc.Hex)
+    console.log({ signalture, data, url: apiUrl + `/${finalPath}` })
+
+    options['headers']['Signature-Authorization'] = signalture
+
+    return await fetch(apiUrl + `/${finalPath}`, options).then(res => {
+        return res.json()
+    }).then(response => {
+        return response
+    }).catch(err => {
+        console.info("__err__", err)
+    })
+}
+
+const fetchGetApi = async (method, path, params = {}, token) => {
+    let finalPath = path
+    let options = {
+        method: method.toUpperCase(),
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${token || Token.getToken()}`
+        }
+    }
+
     options['body'] = JSON.stringify(params)
-  }
 
-  console.log({url: apiUrl + `/${finalPath}`, options})
-  
-  return await fetch (apiUrl + `/${finalPath}`, options).then(res => {
-    if(res.status >= 400){
-      return false
-    }
+    // console.log({url: apiUrl + `/${finalPath}`, options})
 
-    return res.json()
-  }).then(response => {
-    return response
-  }).catch(err => {
-    console.info("__err__", err)
-  })
+    return await fetch(apiUrl + `/${finalPath}`, options).then(res => {
+        if (res.status >= 400) {
+            return false
+        }
+
+        return res.json()
+    }).then(response => {
+        return response
+    }).catch(err => {
+        console.info("__err__", err)
+    })
 }
 
-const fetchGetApi = async(method, path, params={}, token) => {
-  let finalPath = path
-  let options = {
-    method: method.toUpperCase(),
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Token ${token || Token.getToken()}`
-    }
-  }
-
-  options['body'] = JSON.stringify(params)
-
-  // console.log({url: apiUrl + `/${finalPath}`, options})
-  
-  return await fetch (apiUrl + `/${finalPath}`, options).then(res => {
-    if(res.status >= 400){
-      return false
-    }
-
-    return res.json()
-  }).then(response => {
-    return response
-  }).catch(err => {
-    console.info("__err__", err)
-  })
-}
-
-const fetchApiSignUp = async(method, path, params={}) => {
+const fetchApiSignUp = async (method, path, params = {}) => {
     let finalPath = path
     let options = {
         method: method.toUpperCase(),
@@ -79,9 +90,9 @@ const fetchApiSignUp = async(method, path, params={}) => {
 
     if (method.toUpperCase() === 'GET') {
         finalPath += '?' + Object.entries(params).map((v) => {
-            if (Array.isArray(v[1])){
+            if (v[1] != null && Array.isArray(v[1])) {
                 return `${v[0]}=${v[1].join(',')}`
-            } else {
+            } else if(v[1] != null) {
                 return `${v[0]}=${v[1]}`
             }
         }).join('&')
@@ -89,7 +100,7 @@ const fetchApiSignUp = async(method, path, params={}) => {
         options['body'] = JSON.stringify(params)
     }
 
-    return await fetch (apiUrl + `/${finalPath}`, options).then(res => {
+    return await fetch(apiUrl + `/${finalPath}`, options).then(res => {
         return res.json()
     }).then(response => {
         return response
@@ -99,10 +110,10 @@ const fetchApiSignUp = async(method, path, params={}) => {
 }
 
 
-const fetchApiLogin = async(method, path, params={}) => {
+const fetchApiLogin = async (method, path, params = {}) => {
     var md5 = CryptoJS.algo.MD5.create()
     md5.update(SRK)
-    
+
 
     let finalPath = path
     let options = {
@@ -114,7 +125,7 @@ const fetchApiLogin = async(method, path, params={}) => {
     }
 
     const data = Object.entries(params).map((v) => {
-        if (Array.isArray(v[1])){
+        if (Array.isArray(v[1])) {
             return `${v[0]}=${v[1].join(',')}`
         } else {
             return `${v[0]}=${v[1]}`
@@ -122,9 +133,11 @@ const fetchApiLogin = async(method, path, params={}) => {
     }).join('&')
 
     if (method.toUpperCase() === 'GET') {
-        finalPath += '?' + data
+        if (data && data.length > 0) {
+            finalPath += '?' + data
+        }
 
-        md5.update(finalPath)
+        md5.update(apiUrl + `/${finalPath}`)
     } else {
         options['body'] = data
 
@@ -132,12 +145,12 @@ const fetchApiLogin = async(method, path, params={}) => {
     }
 
     const signalture = md5.finalize().toString(CryptoJS.enc.Hex)
-    console.log({signalture})
+    console.log({ signalture })
 
     options['headers']['Signature-Authorization'] = signalture
 
-    return await fetch (apiUrl + `/${finalPath}`, options).then(res => {
-        return res.text()
+    return await fetch(apiUrl + `/${finalPath}`, options).then(res => {
+        return res.json()
     }).then(response => {
         return response
     }).catch(err => {
@@ -146,7 +159,7 @@ const fetchApiLogin = async(method, path, params={}) => {
 }
 
 const setToken = (token) => {
-  localStorage.setItem('dt_token', token)
+    localStorage.setItem('dt_token', token)
 }
 
 const isLoggedIn = () => {
@@ -154,10 +167,10 @@ const isLoggedIn = () => {
 }
 
 export {
-  fetchApi,
-  fetchApiLogin,
-  setToken,
-  isLoggedIn,
-  fetchApiSignUp,
-  fetchGetApi,
+    fetchApi,
+    fetchApiLogin,
+    setToken,
+    isLoggedIn,
+    fetchApiSignUp,
+    fetchGetApi,
 }

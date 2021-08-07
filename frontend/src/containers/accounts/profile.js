@@ -1,7 +1,19 @@
-import React, { Fragment, useState, useEffect, useCallback, styl } from 'react'
+import React, {useEffect} from 'react'
 import SideBar from 'components/SideBar'
+import { useSelector, useDispatch } from 'react-redux'
 
-const Page = ({ history }) => {
+import actions from './redux/action'
+
+const { getBilling } = actions
+
+const Page = ({ }) => {
+    const dispatch = useDispatch()
+
+    useEffect(() => {
+        dispatch(getBilling())
+
+        return () => { }
+    }, [])
 
     return (
         <div className="padding-top-30 padding-bottom-30">

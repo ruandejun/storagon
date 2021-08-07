@@ -1,7 +1,7 @@
 import React, { Fragment, useState, useEffect } from 'react'
 import Footer from 'components/Footer'
 import Header from 'components/Header'
-import FileManager from 'containers/files/file_manager'
+import DownloadFile from 'containers/files/download_file'
 
 const Page = ({ history }) => {
 
@@ -11,7 +11,7 @@ const Page = ({ history }) => {
             <div className="content">
                 <div id="main">
                     <div autoscroll="">
-                        <FileManager />
+                        <DownloadFile />
                     </div>
                 </div>
             </div>

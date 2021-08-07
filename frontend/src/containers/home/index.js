@@ -1,7 +1,8 @@
-import React, { Fragment, useState, useEffect, useCallback, styl } from 'react'
+import React, {useEffect, useState} from 'react'
 import { bounceInLeft, fadeInLeft, fadeInRight } from 'react-animations'
 import styled, { keyframes } from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCloud, faLock, faSync } from '@fortawesome/free-solid-svg-icons'
 
 const bounceAnimation = keyframes`${bounceInLeft}`;
 const fadeLeftAnimation = keyframes`${fadeInLeft}`;
@@ -68,19 +69,19 @@ const Page = ({ history }) => {
                         <h2>OUR FEATURES ARE UNBEATABLE</h2>
                         <ul className="small-block-grid-1 large-block-grid-3 medium-block-grid-3">
                             <FadeInLeft>
-                                <i><FontAwesomeIcon icon="cloud" /></i>
+                                <i><FontAwesomeIcon icon={faCloud} /></i>
                                 <h3>All your media, anywhere you go</h3>
                                 <p>Storagon stores all your media and makes it available to you anytime you want it, anywhere you go, on any device you have. With Storagon your files are always with you.</p>
                             </FadeInLeft>
 
                             <FadeInLeft>
-                            <i><FontAwesomeIcon icon="refresh" /></i>
+                            <i><FontAwesomeIcon icon={faSync} /></i>
                                 <h3>Synchonize Your Files</h3>
                                 <p>Quickly and easily drag individual files to your folder app on your computer. It's a simple way to sync files straight to all your devices.</p>
                             </FadeInLeft>
 
                             <FadeInRight>
-                            <i><FontAwesomeIcon icon="lock" /></i>
+                            <i><FontAwesomeIcon icon={faLock} /></i>
                                 <h3>Complete Data Security</h3>
                                 <p>Unlike with other cloud storage providers, your data is encrypted & decrypted during transfer by your client devices only and never by us.</p>
                             </FadeInRight>

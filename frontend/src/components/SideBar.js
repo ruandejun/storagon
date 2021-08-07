@@ -5,7 +5,7 @@ const Footer = ({ }) => {
     const [showReseller, setShowReseller] = useState(true)
 
     return (
-        <div class="large-2 pull-10 columns">
+        <div className="large-2 pull-10 columns">
             <p><img className="th" src='http://placehold.it/128x128' /></p>
             <ul className="side-nav">
                 <li><a href="account">Overview</a></li>

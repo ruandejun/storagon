@@ -1,7 +1,23 @@
-import React, { Fragment, useState, useEffect, useCallback, styl } from 'react'
+import React, { useEffect } from 'react'
 import SideBar from 'components/SideBar'
+import { useSelector, useDispatch } from 'react-redux'
 
-const Page = ({ history }) => {
+import actions from './redux/action'
+import moment from 'moment'
+
+const { getInbox } = actions
+
+const Page = ({ }) => {
+    const dispatch = useDispatch()
+
+    useEffect(() => {
+        dispatch(getInbox('2014-01-01'))
+
+        return () => { }
+    }, [])
+
+    const userInbox = useSelector(state => state.account.inbox)
+    const inboxs = userInbox && userInbox.results ? userInbox.results : []
 
     return (
         <div className="padding-top-30 padding-bottom-30">
@@ -28,12 +44,16 @@ const Page = ({ history }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr ng-repeat="message in inboxMessages">
-                                <td>message.sid</td>
-                                <td>message.data.sender_username</td>
-                                <td>message.text</td>
-                                <td>message.created.$date | date</td>
-                            </tr>
+                            {inboxs.map((message) => {
+                                return (
+                                    <tr >
+                                        <td>{message.sid}</td>
+                                        <td>{message.data.sender_username}</td>
+                                        <td>{message.text}</td>
+                                        <td>{moment(message.created).format('hh:mm YYYY-MM-DD')}</td>
+                                    </tr>
+                                )
+                            })}
                         </tbody>
                     </table>
                 </div>

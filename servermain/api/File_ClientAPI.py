@@ -499,3 +499,41 @@ def getLink(request):
 		raise Http404()
 	else:
 		raise Http404()
+
+@api_view(['GET','POST','PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
+def getFile(request):
+	""" Get download page url of file in fileIDList
+
+	request.GET = {
+			file_id: one or List of id
+	}
+
+	response = {
+			
+	}
+
+	"""
+	if request.method == 'GET':
+
+		fileID = getParamsOr400(request, ('file_id', int))
+		fileHash = getParamsOr400(request, ('file_hash', str))
+
+		userFile = shortcuts.get_object_or_404(
+			UserFile,
+				id=fileID,
+				string_id=fileHash)
+
+		fileInfoDict = {
+			'file_size': userFile.realFile.file_size,
+			'file_hash': userFile.realFile.file_hash,
+			'file_name': userFile.file_name,
+		}
+
+		return successResponse(fileInfoDict)
+	elif request.method == 'POST':
+		raise Http404()
+	else:
+		raise Http404()

@@ -25,4 +25,5 @@ urlpatterns = [
 	url(r'^editFolder/', editFolder, name='editFolder'),
 	url(r'^editFile/', editFile, name='editFile'),
 	url(r'^getLink/', getLink, name='getLink'),
+	url(r'^getFile/', getFile, name='getFile'),
 ]

@@ -1810,3 +1810,61 @@
   }
 
   .btn-default{color:#333;background-color:#fff;border-color:#ccc}.btn-default:hover,.btn-default:focus,.btn-default:active,.btn-default.active,.open>.dropdown-toggle.btn-default{color:#333;background-color:#e6e6e6;border-color:#adadad}.btn-default:active,.btn-default.active,.open>.dropdown-toggle.btn-default{background-image:none}.btn-default.disabled,.btn-default[disabled],fieldset[disabled] .btn-default,.btn-default.disabled:hover,.btn-default[disabled]:hover,fieldset[disabled] .btn-default:hover,.btn-default.disabled:focus,.btn-default[disabled]:focus,fieldset[disabled] .btn-default:focus,.btn-default.disabled:active,.btn-default[disabled]:active,fieldset[disabled] .btn-default:active,.btn-default.disabled.active,.btn-default[disabled].active,fieldset[disabled] .btn-default.active{background-color:#fff;border-color:#ccc}.btn-default .badge{color:#fff;background-color:#333}
+
+
+  .download-container {
+    width: 100%;
+    max-width: 1170px;
+    margin-right: auto;
+    margin-left: auto;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 48px;
+  }
+
+  .download-content {
+    width: 66.66666667%;
+    margin-left: 16.66666667%;
+    float: left;
+    padding-left: 15px;
+    padding-right: 15px;
+    position: relative;
+  }
+
+  .text-center{
+    text-align: center;
+  }
+
+  .btn-download{
+    background-color: #27aa41;
+    color: white;
+    border-color: #4cae4c;
+    display: inline-block;
+    display: inline-block;
+    border-radius: 5px;
+  }
+
+  .btn-torrent{
+    color: #fff;
+    background-color: #337ab7;
+    border-color: #2e6da4;
+    border-radius: 5px;
+  }
+
+  .btnd {
+    display: inline-block;
+    margin-bottom: 0;
+    margin: 5px;
+    font-weight: normal;
+    text-align: center;
+    vertical-align: middle;
+    touch-action: manipulation;
+    cursor: pointer;
+    background-image: none;
+    border: 1px solid transparent;
+    white-space: nowrap;
+    padding: 6px 12px;
+    font-size: 14px;
+    line-height: 1.42857143;
+    border-radius: 5px;
+  }

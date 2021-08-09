@@ -30,3 +30,27 @@ export const SessionStatusFilter = ['waiting', 'working', 'completed', 'failed']
 export const SessionStatus = CreateEnum(SessionStatusFilter);
 export const OrderNumberFilter = ['first', 'second', 'third', 'fourth'];
 export const OrderNumber = CreateEnum(OrderNumberFilter);
+export const DowloadTypeFilter = ['none', 'torrent', 'browser', 'direct'];
+export const DownloadType = CreateEnum(DowloadTypeFilter);
+
+export function convertFilesize(bytes) {
+    var units = [
+        'bytes',
+        'KB',
+        'MB',
+        'GB',
+        'TB',
+        'PB'
+    ];
+    if (isNaN(parseFloat(bytes)) || !isFinite(bytes)) {
+        return '?';
+    }
+    if (bytes === 0)
+        return 'Unlimited';
+    var unit = 0;
+    while (bytes >= 1024) {
+        bytes /= 1024;
+        unit++;
+    }
+    return bytes.toFixed(2) + ' ' + units[unit];
+}

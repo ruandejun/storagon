@@ -38,6 +38,7 @@ import Statistic from './pages/accounts/Statistic'
 import Transaction from './pages/accounts/Transaction'
 
 import FileManager from './pages/files/FileManager'
+import DownloadFile from './pages/files/DownloadFile'
 import { useDispatch } from 'react-redux'
 
 import actions from 'containers/sessions/redux/action'
@@ -84,7 +85,8 @@ function App() {
           <Route exact path="/redeem" component={Redeem} />
 
           <Route exact path="/fm2" component={FileManager} />
-
+          <Route exact path="/dl/:file_id?j:file_hash?" component={DownloadFile} />
+          
           <Redirect to="/" />
         </Switch>
       </div>

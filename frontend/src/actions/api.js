@@ -17,12 +17,16 @@ const fetchApi = async (method, path, params = {}, token) => {
         credentials: 'same-origin'
     }
 
-    console.log({params})
+    console.log({ params })
     const data = Object.entries(params).map((v) => {
         if (v[1] != null && Array.isArray(v[1])) {
-            return `${v[0]}=${v[1].join(',')}`
-        } else if(v[1] != null) {
-            return `${v[0]}=${v[1]}`
+            return `${v[0]}=${v[1].join('&' + v[0] + '=')}`
+        } else if (v[1] != null) {
+            if (typeof v[1] === 'string') {
+                return `${v[0]}=${v[1].replaceAll("'", '%27')}`
+            } else {
+                return `${v[0]}=${v[1]}`
+            }
         }
     }).join('&')
 
@@ -38,15 +42,21 @@ const fetchApi = async (method, path, params = {}, token) => {
     }
 
     const signalture = md5.finalize().toString(CryptoJS.enc.Hex)
-    console.log({ signalture, data, url: apiUrl + `/${finalPath}` })
+    console.log({ signalture, options, url: apiUrl + `/${finalPath}` })
 
     options['headers']['Signature-Authorization'] = signalture
 
     return await fetch(apiUrl + `/${finalPath}`, options).then(res => {
+
         return res.json()
     }).then(response => {
+        console.log({ response })
+        if(response && response.error){
+            alert(response.error)
+        }
         return response
     }).catch(err => {
+        console.log({ err })
         console.info("__err__", err)
     })
 }
@@ -66,14 +76,16 @@ const fetchGetApi = async (method, path, params = {}, token) => {
     // console.log({url: apiUrl + `/${finalPath}`, options})
 
     return await fetch(apiUrl + `/${finalPath}`, options).then(res => {
-        if (res.status >= 400) {
-            return false
+        console.log({ res })
+        if (res.ok) {
+            return res.json()
         }
-
-        return res.json()
+        return res.text()
     }).then(response => {
+        console.log({ response })
         return response
     }).catch(err => {
+        console.log({ err })
         console.info("__err__", err)
     })
 }
@@ -91,9 +103,13 @@ const fetchApiSignUp = async (method, path, params = {}) => {
     if (method.toUpperCase() === 'GET') {
         finalPath += '?' + Object.entries(params).map((v) => {
             if (v[1] != null && Array.isArray(v[1])) {
-                return `${v[0]}=${v[1].join(',')}`
-            } else if(v[1] != null) {
-                return `${v[0]}=${v[1]}`
+                return `${v[0]}=${v[1].join('&' + v[0] + '=')}`
+            } else if (v[1] != null) {
+                if (typeof v[1] === 'string') {
+                    return `${v[0]}=${v[1].replaceAll("'", '%27')}`
+                } else {
+                    return `${v[0]}=${v[1]}`
+                }
             }
         }).join('&')
     } else {

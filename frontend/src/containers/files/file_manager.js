@@ -39,9 +39,10 @@ const Page = ({ }) => {
     console.log({ currentFolder, current_files, current_folders })
     current_folders.map((item) => {
         if (item.fields && item.fields.folder_type == 1) {
-            allFiles.push({ id: item.pk, name: item.fields.name, isDir: true, icon: ChonkyIconName.trash })
+            allFiles.push({ id: item.pk.toString(), name: item.fields.name, isDir: true, icon: ChonkyIconName.trash })
+        } else {
+            allFiles.push({ id: item.pk.toString(), name: item.fields.name, isDir: true })
         }
-        allFiles.push({ id: item.pk, name: item.fields.name, isDir: true })
     })
     current_files.map((item) => {
         allFiles.push({ id: 'file-' + item.pk, name: item.fields.file_name })
@@ -52,7 +53,6 @@ const Page = ({ }) => {
 
         return () => { }
     }, [])
-
     const changeCurrentFolder = (folder_id) => {
         dispatch(updateFolder(folder_id))
     }
@@ -184,16 +184,44 @@ const Page = ({ }) => {
     }
 
     const createFolder = () => {
-        if(createFolderName.length > 0){
+        if (createFolderName.length > 0) {
             dispatch(newFolder(createFolderName, currentFolder))
             setCreateFolderName('')
             closeModal()
         }
     }
 
+    const openDownloadFile = (file) => {
+        const file_id = file.id.replace('file-', '')
+        fetchApi('get', 'clapi/file/getLink/', {file_id})
+        .then((data) => {
+            console.log(data)
+            if(data.download_url_no_filename_list && data.download_url_no_filename_list.length > 0){
+                window.open(data.download_url_no_filename_list[0], '_blank')
+            }
+        })
+        .catch((error) => {
+            console.log({error})
+            alert('Cannot get download link')
+        })
+    }
+
     const handleFileAction = data => {
         console.log({ data })
         if (data) {
+            let folders = []
+            let files = []
+            if (data.state && data.state.selectedFiles) {
+                data.state.selectedFiles.map((item) => {
+                    if (item.isDir) {
+                        folders.push(item.id)
+                    } else {
+                        files.push(item.id.replace('file-', ''))
+                    }
+                })
+            }
+
+
             switch (data.id) {
                 case 'upload_files':
                     fileUploader.current.click()
@@ -205,22 +233,26 @@ const Page = ({ }) => {
                     if (data.payload && data.payload.targetFile && data.payload.targetFile.isDir) {
                         changeCurrentFolder(data.payload.targetFile.id)
                     }
+                    if (data.payload && data.payload.targetFile && !data.payload.targetFile.isDir) {
+                        openDownloadFile(data.payload.targetFile)
+                    }
                     break
                 case 'move_files':
                     try {
-                        let files = data.payload.selectedFiles.map((item) => {
-                            return item.id.replace('file-', '')
-                        })
-                        if (files.length == 0) {
-                            files = data.payload.files.map((item) => {
-                                return item.id.replace('file-', '')
-                            })
-                        }
                         let folder_id = data.payload.destination.id
-                        dispatch(moveFile(files, folder_id))
+                        if (files.length > 0)
+                            dispatch(moveFile(files, folder_id))
+                        if (folders.length > 0)
+                            dispatch(moveFolder(folders, folder_id))
                     } catch (error) {
                         console.log({ error })
                     }
+                    break
+                case 'delete_files':
+                    if (files.length > 0)
+                        dispatch(deleteFile(files))
+                    if (folders.length > 0)
+                        dispatch(deleteFolder(folders))
                     break
                 default:
             }
@@ -282,7 +314,7 @@ const Page = ({ }) => {
 
                                     <div className="form-group">
                                         <label>Folder name
-                                            <input id="dirName" className="form-control" autofocus="autofocus" value={createFolderName} onChange={(event) => setCreateFolderName(event.target.value)}/>
+                                            <input id="dirName" className="form-control" autofocus="autofocus" value={createFolderName} onChange={(event) => setCreateFolderName(event.target.value)} />
                                         </label>
                                     </div>
                                     <div className='form-btn-group'>

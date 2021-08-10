@@ -1,0 +1,30 @@
+{
+    "icons":{
+        ".png": "/img/png.svg",
+        ".jpg": "/img/jpg.svg",
+        ".jpeg": "/img/jpeg.svg",
+        ".doc": "/img/doc.svg",
+        ".docx": "/img/doc.svg",
+        ".xls": "/img/xls.svg",
+        ".pdf": "/img/pdf.svg",
+        ".ppt": "/img/ppt.svg",
+        ".svg": "/img/svg.svg",
+        ".xml": "/img/xml.svg",
+        ".psd": "/img/psd.svg",
+        ".ai": "/img/ai.svg",
+        ".mp4": "/img/mp4.svg",
+        ".txt": "/img/txt.svg",
+        ".csv": "/img/csv.svg",
+        ".zip": "/img/zip.svg",
+        ".gif": "/img/gif.svg",
+        ".rar": "/img/zip-1.svg",
+        ".tar.gz": "/img/zip-1.svg",
+        "broken": "/img/search.svg",
+        "folder": "/img/folder.svg",
+        "folderopen": "/img/folderopen.svg",
+        "folderfull": "/img/folderfull.svg"
+    },
+    "textFiles":[".txt"],
+    "imageFiles":[".jpg", ".jpeg",".png",".svg",".gif" ],
+    "archiveFiles":[".zip", ".tar.gz"]
+}

@@ -3,28 +3,35 @@ import { TransactionTypeFilter } from 'actions/constants'
 
 const initState = {
     currentFolder: '',
-    currentFile: null,
+    currentFilesAndFolders: null,
+    foldersList: {},
     uploadProgress: 0,
     currentUpload: null,
     uploadSpeed: "0 KB/s (0%)",
-    fetching: false
+    fetching: false,
+    selectedFiles: [],
+    bufferedItems: null
 };
 
 export default function appReducer(state = initState, action) {
-    console.log({ action })
+    console.log( action )
     switch (action.type) {
+        case actions.SET_SELECTED_FILES:
+            return { ...state, selectedFiles: action.files};
         case actions.UPDATE_FOLDER:
             return { ...state, currentFolder: action.folder_id, fetching: false };
         case actions.GET_FILE:
-            return { ...state, currentFile: null, fetching: false };
+            return { ...state, currentFilesAndFolders: null, fetching: false };
         case actions.GET_FILE_SUCCESS:
-            return { ...state, currentFile: action.data, fetching: false };
+            return { ...state, currentFilesAndFolders: action.data, fetching: false };
         case actions.CLEAR_UPLOAD:
             return { ...state, uploadProgress: 0, currentUpload: null, uploadSpeed: 0, fetching: false }
         case actions.UPDATE_PROGRESS:
             return { ...state, uploadProgress: action.progress, fetching: false }
         case actions.UPLOAD_SPEED:
             return { ...state, uploadSpeed: action.speed, fetching: false }
+        case actions.GET_FOLDER_LIST_SUCCESS:
+            return { ...state, foldersList: action.data, fetching: false }
         case actions.UPLOADING_FILE:
         case actions.MOVE_FILE:
         case actions.DELETE_FILE:

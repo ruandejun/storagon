@@ -12,7 +12,8 @@
 }
 
 input[type="text"], select{
-  border: 1px solid #d4d4d4;
+  /* border: 1px solid #d4d4d4; */
+  border: none;
 }
 
 .modal .label.error-msg {

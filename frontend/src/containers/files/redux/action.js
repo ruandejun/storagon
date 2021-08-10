@@ -30,6 +30,24 @@ const actions = {
     EDIT_FOLDER: 'EDIT_FOLDER',
     EDIT_FOLDER_SUCCESS: 'EDIT_FOLDER_SUCCESS',
     EDIT_FOLDER_FAIL: 'EDIT_FOLDER_FAIL',
+    GET_FOLDER_LIST: 'GET_FOLDER_LIST',
+    GET_FOLDER_LIST_SUCCESS: 'GET_FOLDER_LIST_SUCCESS',
+    GET_FOLDER_LIST_FAIL: 'GET_FOLDER_LIST_FAIL',
+    SET_SELECTED_FILES: 'SET_SELECTED_FILES',
+    SET_FILE_PREMIUM: 'SET_FILE_PREMIUM',
+    SET_FILE_PREMIUM_SUCCESS: 'SET_FILE_PREMIUM_SUCCESS',
+    SET_FILE_PREMIUM_FAIL: 'SET_FILE_PREMIUM_FAIL',
+    getFolderList: () => {
+        return {
+            type: actions.GET_FOLDER_LIST,
+        }
+    },
+    setSelectedFiles: (files) => {
+        return{
+            type: actions.SET_SELECTED_FILES,
+            files
+        }
+    },
     updateFolder: (folder_id) => {
         return {
             type: actions.UPDATE_FOLDER,
@@ -94,6 +112,12 @@ const actions = {
         return {
             type: actions.EDIT_FOLDER,
             folder_id, name
+        }
+    },
+    setFilePremium: (file_id, file_mode) =>{
+        return {
+            type: actions.SET_FILE_PREMIUM,
+            file_id, file_mode
         }
     }
 };

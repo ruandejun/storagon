@@ -1868,3 +1868,52 @@
     line-height: 1.42857143;
     border-radius: 5px;
   }
+
+  [class*=" cronus-"], [class^=cronus-]  {
+    font-family: 'cronus' !important;
+    speak: none;
+    font-style: normal;
+    font-weight: 400;
+    font-variant: normal;
+    line-height: 1;
+    text-transform: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale
+}
+
+.cronus-headlg {
+  width: 40px !important;
+}
+.cronus-headlg span {
+  font-size: 40px !important;
+}
+
+  .cronusButton {
+    border-radius: 4px !important;
+    margin:10px 0px 10px 10px !important;
+    padding: 0px !important;
+    overflow: hidden;
+}
+.cronusButton .title {
+    text-transform: capitalize !important;
+    padding: 8px 20px;
+    font-weight: bold;
+}
+.cronusButton .MuiButton-startIcon {
+    border-right: 1px solid #DBE0E4;
+    background: #f7f7f7;
+    padding: 9px 10px;
+    margin:0px;
+    font-size: 20px;
+}
+.MuiTableRow-head th:first-child{
+  -webkit-border-top-left-radius: 5px;
+  -moz-border-radius-topleft: 5px;
+  border-top-left-radius: 5px;
+}
+
+.MuiTableRow-head th:last-child{
+  -webkit-border-top-right-radius: 5px;
+  -moz-border-radius-topright: 5px;
+  border-top-right-radius: 5px;
+}

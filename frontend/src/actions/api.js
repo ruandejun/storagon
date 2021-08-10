@@ -61,6 +61,64 @@ const fetchApi = async (method, path, params = {}, token) => {
     })
 }
 
+const fetchApiJson = async (method, path, params = {}, token) => {
+    var md5 = CryptoJS.algo.MD5.create()
+    md5.update(SRK)
+
+    let finalPath = path
+    let options = {
+        method: method.toUpperCase(),
+        headers: {
+            'Content-Type': 'application/json; charset=UTF-8',
+            'Authorization': `Token ${token || Token.getToken()}`
+        },
+        credentials: 'same-origin'
+    }
+
+    console.log({ params })
+    const data = Object.entries(params).map((v) => {
+        if (v[1] != null && Array.isArray(v[1])) {
+            return `${v[0]}=${v[1].join('&' + v[0] + '=')}`
+        } else if (v[1] != null) {
+            if (typeof v[1] === 'string') {
+                return `${v[0]}=${v[1].replaceAll("'", '%27')}`
+            } else {
+                return `${v[0]}=${v[1]}`
+            }
+        }
+    }).join('&')
+
+    if (method.toUpperCase() === 'GET') {
+        if (data && data.length > 0) {
+            finalPath += '?' + data
+        }
+        md5.update(apiUrl + `/${finalPath}`)
+    } else {
+        options['body'] =  JSON.stringify(params)
+
+        md5.update(JSON.stringify(params))
+    }
+
+    const signalture = md5.finalize().toString(CryptoJS.enc.Hex)
+    console.log({ signalture, options, url: apiUrl + `/${finalPath}` })
+
+    options['headers']['Signature-Authorization'] = signalture
+
+    return await fetch(apiUrl + `/${finalPath}`, options).then(res => {
+
+        return res.json()
+    }).then(response => {
+        console.log({ response })
+        if(response && response.error){
+            alert(response.error)
+        }
+        return response
+    }).catch(err => {
+        console.log({ err })
+        console.info("__err__", err)
+    })
+}
+
 const fetchGetApi = async (method, path, params = {}, token) => {
     let finalPath = path
     let options = {
@@ -189,4 +247,5 @@ export {
     isLoggedIn,
     fetchApiSignUp,
     fetchGetApi,
+    fetchApiJson
 }

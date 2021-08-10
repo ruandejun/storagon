@@ -1,8 +1,31 @@
 import { takeEvery, put, call, select } from 'redux-saga/effects'
 import actions from './action'
-import { fetchApi, fetchApiLogin } from 'actions/api'
+import { fetchApi, fetchApiJson } from 'actions/api'
 
 export const getCurrentFolder = (state) => state.file ? state.file.currentFolder : {}
+
+export function* getFolderList() {
+    let response = yield call(fetchApi, 'get', 'clapi/file/listFileAndFolder/', { folder_id: '' })
+    console.log({ folders: response })
+
+    if (response) {
+        let folders = []
+        const current_folders = response && response.folderList ? JSON.parse(response.folderList) : []
+        current_folders.map((item) => {
+            folders.push({ id: item.pk.toString(), name: item.fields.name, isDir: true, children: [], path: item.pk.toString() })
+        })
+
+        yield put({
+            type: actions.GET_FOLDER_LIST_SUCCESS,
+            data: {name: 'Cloud Storage', children: folders, path: ''}
+        })
+    } else {
+        yield put({
+            type: actions.GET_FOLDER_LIST_FAIL,
+            data: []
+        })
+    }
+}
 
 export function* getFiles({ folder_id, offset, limit }) {
     const folder = folder_id ? folder_id : yield select(getCurrentFolder)
@@ -10,9 +33,22 @@ export function* getFiles({ folder_id, offset, limit }) {
     console.log({ files: response })
 
     if (response) {
+        let allFiles = []
+        const current_files = response && response.fileList ? JSON.parse(response.fileList) : []
+        const current_folders = response && response.folderList ? JSON.parse(response.folderList) : []
+        current_folders.map((item) => {
+            allFiles.push({ id: item.pk.toString(), name: item.fields.name, isDir: true })
+        })
+        current_files.map((item) => {
+            const fileDic = response && response.fileInfoDict && response.fileInfoDict[item.pk] ? response.fileInfoDict[item.pk] : {}
+            allFiles.push({ id: item.pk.toString(), extension: item.fields.file_name.match(/\.[0-9a-z]+$/i)[0], name: item.fields.file_name, ...item.fields, ...fileDic })
+        })
+
+        console.log({allFiles})
+
         yield put({
             type: actions.GET_FILE_SUCCESS,
-            data: response
+            data: allFiles
         })
     } else {
         yield put({
@@ -25,12 +61,12 @@ export function* getFiles({ folder_id, offset, limit }) {
 export function* updateFolder({ folder_id }) {
     yield put({
         type: actions.GET_FILE,
-        folder_id, offset: 0, limit: 15
+        folder_id
     })
 }
 
 export function* moveFile({ file_id, folder_id }) {
-    let response = yield call(fetchApi, 'post', 'clapi/file/moveFile/', {file_id, folder_id})
+    let response = yield call(fetchApi, 'post', 'clapi/file/moveFile/', { file_id, folder_id })
     console.log({ moveFile: response })
 
     if (response) {
@@ -46,12 +82,12 @@ export function* moveFile({ file_id, folder_id }) {
     }
 
     yield put({
-        type: actions.GET_FILE, offset: 0, limit: 15
+        type: actions.GET_FILE
     })
 }
 
 export function* deleteFile({ file_id }) {
-    let response = yield call(fetchApi, 'post', 'clapi/file/deleteFile/', {file_id})
+    let response = yield call(fetchApi, 'post', 'clapi/file/deleteFile/', { file_id })
     console.log({ deleteFile: response })
 
     if (response) {
@@ -67,12 +103,12 @@ export function* deleteFile({ file_id }) {
     }
 
     yield put({
-        type: actions.GET_FILE, offset: 0, limit: 15
+        type: actions.GET_FILE
     })
 }
 
 export function* editFile({ file_id, file_name }) {
-    let response = yield call(fetchApi, 'post', 'clapi/file/editFile/', {file_id, file_name})
+    let response = yield call(fetchApi, 'post', 'clapi/file/editFile/', { file_id, file_name })
     console.log({ editFile: response })
 
     if (response) {
@@ -88,12 +124,12 @@ export function* editFile({ file_id, file_name }) {
     }
 
     yield put({
-        type: actions.GET_FILE, offset: 0, limit: 15
+        type: actions.GET_FILE
     })
 }
 
 export function* newFolder({ folder_name, folder_id }) {
-    let response = yield call(fetchApi, 'post', 'clapi/file/newFolder/', {folder_name, folder_id})
+    let response = yield call(fetchApi, 'post', 'clapi/file/newFolder/', { folder_name, folder_id })
     console.log({ newFolder: response })
 
     if (response) {
@@ -109,12 +145,12 @@ export function* newFolder({ folder_name, folder_id }) {
     }
 
     yield put({
-        type: actions.GET_FILE, offset: 0, limit: 15
+        type: actions.GET_FILE
     })
 }
 
 export function* moveFolder({ folder_id, to_folder_id }) {
-    let response = yield call(fetchApi, 'post', 'clapi/file/moveFolder/', {to_folder_id, folder_id})
+    let response = yield call(fetchApi, 'post', 'clapi/file/moveFolder/', { to_folder_id, folder_id })
     console.log({ moveFolder: response })
 
     if (response) {
@@ -130,12 +166,12 @@ export function* moveFolder({ folder_id, to_folder_id }) {
     }
 
     yield put({
-        type: actions.GET_FILE, offset: 0, limit: 15
+        type: actions.GET_FILE
     })
 }
 
 export function* deleteFolder({ folder_id }) {
-    let response = yield call(fetchApi, 'post', 'clapi/file/deleteFolder/', {folder_id})
+    let response = yield call(fetchApi, 'post', 'clapi/file/deleteFolder/', { folder_id })
     console.log({ deleteFolder: response })
 
     if (response) {
@@ -151,12 +187,12 @@ export function* deleteFolder({ folder_id }) {
     }
 
     yield put({
-        type: actions.GET_FILE, offset: 0, limit: 15
+        type: actions.GET_FILE
     })
 }
 
 export function* editFolder({ folder_id, name }) {
-    let response = yield call(fetchApi, 'post', 'clapi/file/editFolder/', {folder_id, name})
+    let response = yield call(fetchApi, 'post', 'clapi/file/editFolder/', { folder_id, name })
     console.log({ editFolder: response })
 
     if (response) {
@@ -172,7 +208,28 @@ export function* editFolder({ folder_id, name }) {
     }
 
     yield put({
-        type: actions.GET_FILE, offset: 0, limit: 15
+        type: actions.GET_FILE
+    })
+}
+
+export function* setFilePremium({ file_id, file_mode }) {
+    let response = yield call(fetchApiJson, 'put', 'api/file/userfile/', [{ id: parseInt(file_id.toString()), file_mode }])
+    console.log({ setPremium: response })
+
+    if (response) {
+        yield put({
+            type: actions.SET_FILE_PREMIUM_SUCCESS,
+            data: response
+        })
+    } else {
+        yield put({
+            type: actions.SET_FILE_PREMIUM_FAIL,
+            data: []
+        })
+    }
+
+    yield put({
+        type: actions.GET_FILE
     })
 }
 
@@ -187,5 +244,7 @@ export default function* rootSaga() {
         yield takeEvery(actions.MOVE_FOLDER, moveFolder),
         yield takeEvery(actions.DELETE_FOLDER, deleteFolder),
         yield takeEvery(actions.EDIT_FOLDER, editFolder),
+        yield takeEvery(actions.GET_FOLDER_LIST, getFolderList),
+        yield takeEvery(actions.SET_FILE_PREMIUM, setFilePremium),
     ]
 }

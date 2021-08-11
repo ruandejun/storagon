@@ -171,6 +171,7 @@ def createUploadSession(request):
         raise Http404()
 
 
+@api_view(['GET','POST','PUT'])
 @signature_test()
 def createDownloadSession(request):
     """ Create a download session
@@ -308,6 +309,7 @@ def createDownloadSession(request):
 
 
 # @login_required_ajax()
+@api_view(['GET','POST','PUT'])
 @signature_test()
 def createReport(request):
     """ Create a report session

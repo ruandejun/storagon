@@ -2,7 +2,7 @@ from .settings_base import *
 
 DEBUG = True
 LOG_FILE_PATH = os.path.join(BASE_DIR, 'log/junshare.log')
-DOMAIN = 'junshare.com'
+DOMAIN = 'storagon.com'
 ENABLE_ENCRYPTION = False
 # DOMAIN = 'storagon.com'
 # ENABLE_ENCRYPTION = True

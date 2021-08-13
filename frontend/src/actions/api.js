@@ -1,7 +1,5 @@
 import { Token } from './token'
 import CryptoJS from 'crypto-js'
-var ip = require("ip");
-console.log(ip.address());
 const apiUrl = 'http://localhost:8000'
 const SRK = '7yn^8pwp+yzd2l4ki6+v9kp(h)rzs$9gxu4ao^_p+9x_5+1*6o'
 

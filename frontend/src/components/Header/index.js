@@ -2,9 +2,15 @@ import moment from 'moment'
 import React, { Fragment, useEffect, useRef, useState } from 'react'
 import Token from '../../actions/token'
 import logo_icon from '../../assets/images/logo.png'
+import {useDispatch} from 'react-redux'
+
+import actions from 'containers/sessions/redux/action'
+
+const {logOut} = actions
 
 const Header = ({history}) => {
     const user = Token.getUser()
+    const dispatch = useDispatch()
     
     let is_authenticated = false
     if(user && user.profile && user.profile.fields && user.profile.fields.plan_expired){
@@ -12,6 +18,10 @@ const Header = ({history}) => {
         // if(moment(user.profile.fields.plan_expired).isAfter(moment())){
             is_authenticated = true
         // }
+    }
+
+    const logout = () => {
+        dispatch(logOut())
     }
 
     return (
@@ -68,7 +78,7 @@ const Header = ({history}) => {
                                 </li>
                                 {is_authenticated &&
                                     <li>
-                                        <a href="/logout" target="_blank">Logout</a>
+                                        <a onClick={logout} target="_blank">Logout</a>
                                     </li>
                                 }
                             </ul>

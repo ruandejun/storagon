@@ -257,8 +257,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_URL = '/django_static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'django_static')
 
 LOGIN_URL = '/adl/login/'
 LOGIN_REDIRECT_URL = '/adl/'
@@ -342,7 +342,8 @@ CORS_ALLOW_HEADERS = (
 	'x-csrftoken',
 	'range',
 	'signature_authorization',
-	'Signature-Authorization'
+	'Signature-Authorization',
+	'Access-Control-Allow-Origin'
 )
 
 # CSRF_COOKIE_DOMAIN = '.storagon.com'
@@ -439,7 +440,7 @@ FILE_MANAGER_ROOT_FOLDER = 'download' #must be inside MEDIA_ROOT dir
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # serverfile Settings
-SERVER_MAIN_URL = 'http://192.168.0.31:8000'
+SERVER_MAIN_URL = 'http://127.0.0.1/api'
 SERVER_FILE_ID = 1
 # ROOT_URLCONF = 'storagon.urls_serverFile'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

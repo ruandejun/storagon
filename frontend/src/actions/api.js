@@ -1,6 +1,6 @@
 import { Token } from './token'
 import CryptoJS from 'crypto-js'
-const apiUrl = 'http://localhost:8000'
+const apiUrl = window.location.origin + '/api'
 const SRK = '7yn^8pwp+yzd2l4ki6+v9kp(h)rzs$9gxu4ao^_p+9x_5+1*6o'
 
 const fetchApi = async (method, path, params = {}, token) => {
@@ -12,7 +12,8 @@ const fetchApi = async (method, path, params = {}, token) => {
         method: method.toUpperCase(),
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-            'Authorization': `Token ${token || Token.getToken()}`
+            'Authorization': `Token ${token || Token.getToken()}`,
+            'Access-Control-Allow-Origin': '*'
         },
         credentials: 'same-origin'
     }
@@ -70,7 +71,8 @@ const fetchApiJson = async (method, path, params = {}, token) => {
         method: method.toUpperCase(),
         headers: {
             'Content-Type': 'application/json; charset=UTF-8',
-            'Authorization': `Token ${token || Token.getToken()}`
+            'Authorization': `Token ${token || Token.getToken()}`,
+            'Access-Control-Allow-Origin': '*'
         },
         credentials: 'same-origin'
     }
@@ -125,7 +127,8 @@ const fetchGetApi = async (method, path, params = {}, token) => {
         method: method.toUpperCase(),
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Token ${token || Token.getToken()}`
+            'Authorization': `Token ${token || Token.getToken()}`,
+            'Access-Control-Allow-Origin': '*'
         }
     }
 
@@ -154,6 +157,7 @@ const fetchApiSignUp = async (method, path, params = {}) => {
         method: method.toUpperCase(),
         headers: {
             'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
             /*'Authorization': `Token ${Token.getToken()}`*/
         }
     }
@@ -194,6 +198,7 @@ const fetchApiLogin = async (method, path, params = {}) => {
         method: method.toUpperCase(),
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            'Access-Control-Allow-Origin': '*'
         },
         credentials: 'same-origin'
     }

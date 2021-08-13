@@ -4,12 +4,12 @@ from django.contrib import admin
 # from jet_django.urls import jet_urls
 
 urlpatterns = [
-	url(r'^adl/custom/', include('servermain.CustomAdmin_urls')),
-	url(r'^adl/doc/', include('django.contrib.admindocs.urls')),
-	url(r'^adl/', admin.site.urls),
-	url(r'^sf/', include('serverfile.urls')),
-	url(r'^tracker/', include('private_tracker.urls')),
-	url(r'', include('servermain.urls')),  # pass all other url request to servermain
+	url(r'^api/adl/custom/', include('servermain.CustomAdmin_urls')),
+	url(r'^api/adl/doc/', include('django.contrib.admindocs.urls')),
+	url(r'^api/adl/', admin.site.urls),
+	url(r'^api/sf/', include('serverfile.urls')),
+	url(r'^api/tracker/', include('private_tracker.urls')),
+	url(r'api/', include('servermain.urls')),  # pass all other url request to servermain
 ]
 
 

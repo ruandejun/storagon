@@ -4,11 +4,11 @@ WORKDIR /var/www/frontend
  
 COPY ./frontend/package*.json ./
  
-RUN npm install
+RUN yarn
 
 COPY ./frontend/ ./
  
-RUN npm run build
+RUN yarn build
 
 
 FROM nginx:alpine

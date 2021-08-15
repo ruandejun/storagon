@@ -1,6 +1,7 @@
 import { Token } from './token'
 import CryptoJS from 'crypto-js'
 const apiUrl = window.location.origin + '/api'
+// const apiUrl = 'https://storagon.com/api'
 const SRK = '7yn^8pwp+yzd2l4ki6+v9kp(h)rzs$9gxu4ao^_p+9x_5+1*6o'
 
 const fetchApi = async (method, path, params = {}, token) => {

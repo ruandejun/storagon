@@ -251,7 +251,10 @@ def signup(request):
         # login user
         user.backend = 'django.contrib.auth.backends.ModelBackend'
         login(request, user)
-        return successResponse()
+        token, created = Token.objects.get_or_create(user=request.user)
+
+        status = {'success': True, 'token': token.key}
+        return successResponse(status)
 
     else:
         raise Http404()

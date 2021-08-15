@@ -20,10 +20,10 @@ const actions = {
         payload: { username, password }
       }
     },
-    signUp: (email, password, firstName, lastName) => {
+    signUp: (username,password,email,captcha) => {
         return  {
           type: actions.SIGN_UP,
-          payload: {email, password, firstName, lastName}
+          payload: {username,password,email,captcha}
         }
     },
     getUser: (pathname) => {

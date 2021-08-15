@@ -27,7 +27,34 @@ const extractProfile = (uresponse) => {
 }
 
 export function* signUp({ payload }) {
+    let response = yield call(fetchApiLogin, 'post', 'clapi/user/signup/', payload)
+    console.log({ response })
+    if (response && response.token) {
+        Token.setToken(response.token);
 
+        let uresponse = yield call(fetchApi, 'get', 'clapi/user/getUserInfo/')
+        console.log({ uresponse })
+        if (uresponse) {
+            const user = extractProfile(uresponse)
+            Token.setUser(user);
+
+            yield put(push('/fm2'))
+            yield put({
+                type: actions.LOGIN_SUCCESSFULLY,
+                payload: user
+            });
+        } else {
+            yield put({
+                type: actions.LOGIN_FAIL,
+                payload: uresponse
+            })
+        }
+    } else {
+        yield put({
+            type: actions.LOGIN_FAIL,
+            payload: response
+        })
+    }
 }
 
 export function* login({ payload }) {

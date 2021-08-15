@@ -37,6 +37,8 @@ services:
     volumes:
       - ./static/:/var/www/storagon/django_static/
     ports: [ "80:80" ]
+    depends_on:
+      - storagon
 networks:
   default:
     external:

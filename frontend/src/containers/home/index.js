@@ -58,7 +58,7 @@ const Page = ({ history }) => {
                                     </BounceInLeft>
                                 }
                             </span></h1>
-                            <a href="/register" className="small radius button">Get Started</a>
+                            <a href="/signup" className="small radius button">Get Started</a>
                         </div>
                     </div>
                 </div>

@@ -1,10 +1,11 @@
 import React, { Fragment, useState, useEffect, useCallback } from 'react'
-import loading from '../../assets/images/ajax-spinner.gif'
+import loading from '../../assets/images/loading.gif'
 import ReCAPTCHA from 'react-google-recaptcha'
 import { useDispatch, useSelector } from 'react-redux'
 import actions from './redux/action'
+import { Alert } from '@material-ui/lab'
 
-const { signUp } = actions
+const { signUp, clearError } = actions
 
 const Page = ({ history }) => {
     const [error, setError] = useState(false)
@@ -15,6 +16,14 @@ const Page = ({ history }) => {
     const [password, setPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
     const fetching = useSelector(state => state.auth.fetching)
+    const errorString = useSelector(state => state.auth.errorString)
+
+    useEffect(() => {
+        dispatch(clearError())
+
+        return () => {
+        }
+    }, [])
 
     const onSignup = (event) => {
         event.preventDefault()
@@ -38,6 +47,9 @@ const Page = ({ history }) => {
             <div className="row">
                 <div className="small-12 large-7 large-centered medium-7 medium-centered columns">
                     <div className="login-form">
+                        {errorString && errorString.length > 0 &&
+                            <Alert severity="error" style={{ marginBottom: 8 }}>{errorString}</Alert>
+                        }
                         <form id="signup_form" name="signup_form">
                             Username: <input type="text" name="username" size="50" ng-model="username" required value={username} onChange={event => setUsername(event.target.value)} />
                             Password: <input type="password" name="password" id="password" size="20" ng-model="password" required value={password} onChange={event => setPassword(event.target.value)} />

@@ -46,14 +46,21 @@ export function* signUp({ payload }) {
         } else {
             yield put({
                 type: actions.LOGIN_FAIL,
-                payload: uresponse
+                message: 'Username or password is not valid'
             })
         }
     } else {
-        yield put({
-            type: actions.LOGIN_FAIL,
-            payload: response
-        })
+        if(response && response.error){
+            yield put({
+                type: actions.LOGIN_FAIL,
+                message: response.error
+            })
+        } else {
+            yield put({
+                type: actions.LOGIN_FAIL,
+                message: 'Username or password is not valid'
+            })
+        }
     }
 }
 
@@ -77,14 +84,21 @@ export function* login({ payload }) {
         } else {
             yield put({
                 type: actions.LOGIN_FAIL,
-                payload: uresponse
+                message: 'Username or password is not valid'
             })
         }
     } else {
-        yield put({
-            type: actions.LOGIN_FAIL,
-            payload: response
-        })
+        if(response && response.error){
+            yield put({
+                type: actions.LOGIN_FAIL,
+                message: response.error
+            })
+        } else {
+            yield put({
+                type: actions.LOGIN_FAIL,
+                message: 'Username or password is not valid'
+            })
+        }
     }
 }
 
@@ -109,6 +123,23 @@ export function* getProfile() {
     }
 }
 
+export function* forgotPassword({email}) {
+    let response = yield call(fetchApiLogin, 'post', 'clapi/user/sendResetPasswordEmail/', {email})
+    console.log({ forgotPassword: response })
+
+    if (response && response.error) {
+        yield put({
+            type: actions.FORGOT_PASSWORD_FAIL,
+            message: response.error
+        })
+    } else {
+        yield put({
+            type: actions.FORGOT_PASSWORD_SUCCESS,
+            message: 'Reset password link sent successfully. Please check your email'
+        })
+    }
+}
+
 export function* logOut() {
     Token.destroy()
     yield put({
@@ -125,6 +156,7 @@ export default function* rootSaga() {
         yield takeEvery(actions.UPDATE_PROFILE, updateProfile),
         yield takeEvery(actions.GET_PROFILE, getProfile),
         yield takeEvery(actions.LOG_OUT, logOut),
+        yield takeEvery(actions.FORGOT_PASSWORD, forgotPassword),
     ]
 }
 

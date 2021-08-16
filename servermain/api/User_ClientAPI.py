@@ -215,14 +215,14 @@ def signup(request):
         # 		return errorResponse(u"Unable to verify recaptcha!"); # errorResponse
 
         #save user
-        user = User(username=username, email=email);
-        user.set_password(password)
-        user.save()
-        # try:
-
-        # except Exception as e:
-        # 	logging.error(u"Unable to create new user, error=%s"%(e));
-        # 	return errorResponse(u"Username already exist!")
+        
+        try:
+            user = User(username=username, email=email);
+            user.set_password(password)
+            user.save()
+        except Exception as e:
+        	logging.error(u"Unable to create new user, error=%s"%(e));
+        	return errorResponse(u"Username already exist!")
 
         if referer:
             try: refererUser = User.objects.get(username=referer);

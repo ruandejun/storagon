@@ -14,6 +14,15 @@ const actions = {
     GET_PROFILE: 'GET_PROFILE',
     GET_PROFILE_SUCCESS: 'GET_PROFILE_SUCCESS',
     LOG_OUT: 'LOG_OUT',
+    CLEAR_ERROR: 'CLEAR_ERROR',
+    FORGOT_PASSWORD: 'FORGOT_PASSWORD',
+    FORGOT_PASSWORD_SUCCESS: 'FORGOT_PASSWORD_SUCCESS',
+    FORGOT_PASSWORD_FAIL: 'FORGOT_PASSWORD_FAIL',
+    clearError: () => {
+      return {
+        type: actions.CLEAR_ERROR
+      }
+    },
     login: (username, password) => {
       return {
         type: actions.LOGIN,
@@ -25,6 +34,12 @@ const actions = {
           type: actions.SIGN_UP,
           payload: {username,password,email,captcha}
         }
+    },
+    forgotPassword: (email) => {
+      return {
+        type: actions.FORGOT_PASSWORD,
+        email
+      }
     },
     getUser: (pathname) => {
       return {

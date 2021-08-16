@@ -2,7 +2,9 @@ import actions from './action'
 
 const initState = {
     currentUser: null,
-    fetching: false
+    fetching: false,
+    errorString: '',
+    successString: ''
 };
 
 export default function appReducer(state = initState, action) {
@@ -15,10 +17,17 @@ export default function appReducer(state = initState, action) {
 
         case actions.LOGIN:
         case actions.SIGN_UP:
-            return { ...state, fetching: true };
+        case actions.FORGOT_PASSWORD:
+            return { ...state, fetching: true, errorString: '', successString: '' };
 
         case actions.LOGIN_FAIL:
-            return { ...state, fetching: false };
+            return { ...state, fetching: false, errorString: action.message }
+        case actions.FORGOT_PASSWORD_SUCCESS:
+            return { ...state, fetching: false, successString: action.message, errorString: '' }
+        case actions.FORGOT_PASSWORD_FAIL:
+            return { ...state, fetching: false, successString: '', errorString: action.message }
+        case actions.CLEAR_ERROR:
+            return { ...state, errorString: '', fetching: false, successString: '' }
         default:
             return state
     }

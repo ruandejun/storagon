@@ -3,6 +3,8 @@ FROM node:15.0 as build
 WORKDIR /var/www/frontend
  
 COPY ./frontend/package*.json ./
+
+RUN apt-get update && apt-get install -y bash && apt-get install -y yarn
  
 RUN yarn
 

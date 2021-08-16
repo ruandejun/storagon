@@ -8,6 +8,7 @@ const initState = {
     billing: [],
     exchange: null,
     inbox: [],
+    reports: [],
     website: null,
     referer: null,
     agency: null,
@@ -30,6 +31,8 @@ export default function appReducer(state = initState, action) {
             return { ...state, exchange: action.data };
         case actions.GET_INBOX_SUCCESS:
             return { ...state, inbox: action.data };
+        case actions.GET_REPORT_SUCCESS:
+            return { ...state, reports: action.data };
         case actions.GET_TRANSACTION_SUCCESS:
             return { ...state, [TransactionTypeFilter[action.transaction_type]]: action.data };
         case actions.GET_STATISTIC_SUCCESS:

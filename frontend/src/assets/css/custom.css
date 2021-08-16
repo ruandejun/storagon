@@ -560,6 +560,14 @@ ul.jqueryFileTree a:hover {
 	margin: 0px;
 }
 
+.hidden-list{
+  list-style-type: none;
+}
+
+.hidden-list li{
+  margin: 0px;
+}
+
 .f-dropdown.drop-right:before{border:none !important;}
 .f-dropdown.drop-right:after{border:none !important;}
 

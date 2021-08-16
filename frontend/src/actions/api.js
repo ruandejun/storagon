@@ -1,7 +1,7 @@
 import { Token } from './token'
 import CryptoJS from 'crypto-js'
-const apiUrl = window.location.origin + '/api'
-// const apiUrl = 'http://localhost:8000/api'
+// const apiUrl = window.location.origin + '/api'
+const apiUrl = window.location.origin === 'http://localhost:3000' ? 'http://localhost:8000' : `${window.location.origin}/api`
 const SRK = '7yn^8pwp+yzd2l4ki6+v9kp(h)rzs$9gxu4ao^_p+9x_5+1*6o'
 
 const fetchApi = async (method, path, params = {}, token) => {
@@ -53,9 +53,9 @@ const fetchApi = async (method, path, params = {}, token) => {
         return res.json()
     }).then(response => {
         console.log({ response })
-        if(response && response.error){
-            alert(response.error)
-        }
+        // if(response && response.error){
+        //     alert(response.error)
+        // }
         return response
     }).catch(err => {
         console.log({ err })
@@ -178,6 +178,8 @@ const fetchApiSignUp = async (method, path, params = {}) => {
     } else {
         options['body'] = JSON.stringify(params)
     }
+
+    console.log(apiUrl + `/${finalPath}`, options)
 
     return await fetch(apiUrl + `/${finalPath}`, options).then(res => {
         return res.json()

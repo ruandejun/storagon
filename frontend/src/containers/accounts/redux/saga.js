@@ -101,6 +101,22 @@ export function* getInbox({ from_date }) {
     }
 }
 
+export function* getReport({ from_date }) {
+    let response = yield call(fetchApi, 'get', 'api/mongo/session/', { type: SessionType.report, from_date })
+    console.log({ report: response })
+
+    if (response) {
+        yield put({
+            type: actions.GET_REPORT_SUCCESS,
+            data: response
+        })
+    } else {
+        yield put({
+            type: actions.GET_REPORT_FAIL
+        })
+    }
+}
+
 export function* getTransaction({ from_date, to_date, transaction_type }) {
     let response = yield call(fetchApi, 'get', 'clapi/userstats/listTransaction/', { from_date, to_date, transaction_type })
     console.log({ [transaction_type]: response })
@@ -223,6 +239,7 @@ export default function* rootSaga() {
         yield takeEvery(actions.GET_BILLING, getBilling),
         yield takeEvery(actions.GET_EXCHANGE, getExchange),
         yield takeEvery(actions.GET_INBOX, getInbox),
+        yield takeEvery(actions.GET_REPORT, getReport),
         yield takeEvery(actions.GET_TRANSACTION, getTransaction),
         yield takeEvery(actions.GET_STATISTIC, getStatistic),
         yield takeEvery(actions.GET_DOWNLOAD_SESSION, getDownloadSession),

@@ -5933,8 +5933,8 @@ blockquote p {
 }
 
 .f-dropdown {
-    display: none;
-    left: -9999px;
+    display: block;
+    left: 10px;
     list-style: none;
     margin-left: 0;
     position: absolute;
@@ -5947,10 +5947,6 @@ blockquote p {
     z-index: 89;
     margin-top: 2px;
     max-width: 200px
-}
-
-.f-dropdown.open {
-    display: block
 }
 
 .f-dropdown>*:first-child {

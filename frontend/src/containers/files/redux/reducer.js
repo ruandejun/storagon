@@ -2,7 +2,7 @@ import actions from './action'
 import { TransactionTypeFilter } from 'actions/constants'
 
 const initState = {
-    currentFolder: '',
+    currentFolder: [''],
     currentFilesAndFolders: null,
     foldersList: {},
     uploadProgress: 0,
@@ -19,7 +19,7 @@ export default function appReducer(state = initState, action) {
         case actions.SET_SELECTED_FILES:
             return { ...state, selectedFiles: action.files};
         case actions.UPDATE_FOLDER:
-            return { ...state, currentFolder: action.folder_id, fetching: false };
+            return { ...state, currentFolder: action.folders, fetching: false };
         case actions.GET_FILE:
             return { ...state, currentFilesAndFolders: null, fetching: false };
         case actions.GET_FILE_SUCCESS:

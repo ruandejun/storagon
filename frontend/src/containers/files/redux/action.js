@@ -48,10 +48,10 @@ const actions = {
             files
         }
     },
-    updateFolder: (folder_id) => {
+    updateFolder: (folders) => {
         return {
             type: actions.UPDATE_FOLDER,
-            folder_id
+            folders
         }
     },
     getFiles: (folder_id, offset, limit) => {

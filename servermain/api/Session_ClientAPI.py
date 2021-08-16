@@ -381,7 +381,7 @@ def sendInboxMessage(request):
                 to_user = User.objects.get(username=to_username)
             except User.DoesNotExist:
                 print(u"user:%s does not exist!" % (to_username))
-                raise Http400(u"user:%s does not exist!" % (to_username))
+                return errorResponse(u"user:%s does not exist!" % (to_username))
             else:
                 to_user_id = to_user.id
         if to_user_id <= 0:

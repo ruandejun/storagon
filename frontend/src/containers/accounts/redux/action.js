@@ -17,6 +17,9 @@ const actions = {
     GET_INBOX: 'GET_INBOX',
     GET_INBOX_SUCCESS: 'GET_INBOX_SUCCESS',
     GET_INBOX_FAIL: 'GET_INBOX_FAIL',
+    GET_REPORT: 'GET_REPORT',
+    GET_REPORT_SUCCESS: 'GET_REPORT_SUCCESS',
+    GET_REPORT_FAIL: 'GET_REPORT_FAIL',
     GET_TRANSACTION: 'GET_TRANSACTION',
     GET_TRANSACTION_SUCCESS: 'GET_TRANSACTION_SUCCESS',
     GET_TRANSACTION_FAIL: 'GET_STATISTIC',
@@ -29,6 +32,15 @@ const actions = {
     GET_PREMIUM: 'GET_PREMIUM',
     GET_PREMIUM_SUCCESS: 'GET_PREMIUM_SUCCESS',
     GET_PREMIUM_FAIL: 'GET_PREMIUM_FAIL',
+    INBOX_MESSAGE: 'INBOX_MESSAGE',
+    INBOX_MESSAGE_SUCCESS: 'INBOX_MESSAGE_SUCCESS',
+    INBOX_MESSAGE_FAIL: 'INBOX_MESSAGE_FAIL',
+    inboMessage: (message, to_username) => {
+      return {
+        type: actions.INBOX_MESSAGE,
+        message, to_username
+      }
+    },
     getPlan: () => {
       return {
         type: actions.GET_PLAN,
@@ -58,6 +70,12 @@ const actions = {
     getInbox: (from_date) => {
       return {
         type: actions.GET_INBOX,
+        from_date
+      }
+    },
+    getReport: (from_date) => {
+      return {
+        type: actions.GET_REPORT,
         from_date
       }
     },

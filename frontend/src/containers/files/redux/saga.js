@@ -2,29 +2,39 @@ import { takeEvery, put, call, select } from 'redux-saga/effects'
 import actions from './action'
 import { fetchApi, fetchApiJson } from 'actions/api'
 
-export const getCurrentFolder = (state) => state.file ? state.file.currentFolder : {}
+export const getCurrentFolder = (state) => state.file ? (state.file.currentFolder ? state.file.currentFolder[state.file.currentFolder.length - 1] : '') : ''
+export const getFolderTree = (state) => state.file ? state.file.currentFolder : []
 
 export function* getFolderList() {
-    let response = yield call(fetchApi, 'get', 'clapi/file/listFileAndFolder/', { folder_id: '' })
-    console.log({ folders: response })
+    const folderTree = yield select(getFolderTree)
+    let folders = []
 
-    if (response) {
-        let folders = []
-        const current_folders = response && response.folderList ? JSON.parse(response.folderList) : []
-        current_folders.map((item) => {
-            folders.push({ id: item.pk.toString(), name: item.fields.name, isDir: true, children: [], path: item.pk.toString() })
-        })
+    let lastChilds = []
+    let lastChildParent = ''
+    for (var i = folderTree.length - 1; i >= 0; i--) {
+        const folder = folderTree[i]
+        let response = yield call(fetchApi, 'get', 'clapi/file/listFileAndFolder/', { folder_id: folder })
+        console.log({ folders: response })
+        let childrens = []
 
-        yield put({
-            type: actions.GET_FOLDER_LIST_SUCCESS,
-            data: {name: 'Cloud Storage', children: folders, path: ''}
-        })
-    } else {
-        yield put({
-            type: actions.GET_FOLDER_LIST_FAIL,
-            data: []
-        })
+        if (response) {
+            const current_folders = response && response.folderList ? JSON.parse(response.folderList) : []
+            current_folders.map((item) => {
+                childrens.push({ id: item.pk.toString(), name: item.fields.name, isDir: true, children: lastChildParent == item.pk.toString() ? lastChilds : [], path: item.pk.toString() })
+                if (folder === '') {
+                    folders.push({ id: item.pk.toString(), name: item.fields.name, isDir: true, children: lastChildParent == item.pk.toString() ? lastChilds : [], path: item.pk.toString() })
+                }
+            })
+        }
+
+        lastChilds = childrens
+        lastChildParent = folder.toString()
     }
+
+    yield put({
+        type: actions.GET_FOLDER_LIST_SUCCESS,
+        data: { name: 'Cloud Storage', children: folders, path: '' }
+    })
 }
 
 export function* getFiles({ folder_id, offset, limit }) {
@@ -44,7 +54,7 @@ export function* getFiles({ folder_id, offset, limit }) {
             allFiles.push({ id: item.pk.toString(), extension: item.fields.file_name.match(/\.[0-9a-z]+$/i)[0], name: item.fields.file_name, ...item.fields, ...fileDic })
         })
 
-        console.log({allFiles})
+        console.log({ allFiles })
 
         yield put({
             type: actions.GET_FILE_SUCCESS,
@@ -62,6 +72,9 @@ export function* updateFolder({ folder_id }) {
     yield put({
         type: actions.GET_FILE,
         folder_id
+    })
+    yield put({
+        type: actions.GET_FOLDER_LIST
     })
 }
 

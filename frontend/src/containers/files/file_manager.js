@@ -74,7 +74,7 @@ const Page = ({ }) => {
     const [messagesList, setMessages] = useState([])
     const [uploadBox, setuploadBox] = React.useState(false)
     const fileUploader = useRef()
-    const currentFolder = folder ? folder : ''
+    const currentFolder = folder ? folder[folder.length - 1] : ''
     const classes = useStyles()
     const selecMessages = selectedFiles.length > 0
 
@@ -102,6 +102,132 @@ const Page = ({ }) => {
         });
     }
 
+    const onSelectedFileToUpload = (event) => {
+        if (event && event.target && event.target.files) {
+            var upload_file = event.target.files[0]
+
+            try {
+                var r = new Resumable({
+                  target: '/sf/upload/34124124124/',
+                  chunkSize: 1 * 1024 * 1024,
+                  simultaneousUploads: 1,
+                  maxFiles: 1
+                })
+          
+                r.on('fileAdded', (file) => {
+                  console.log({ fileAdd: file })
+                  var reader = new FileReader();
+                  var md5 = CryptoJS.algo.MD5.create();
+                  reader.onload = (fileEvent) => {
+                    md5.update(CryptoJS.lib.WordArray.create(fileEvent.target.result))
+                    md5.update(file.size.toString())
+                    var file_hash = md5.finalize().toString(CryptoJS.enc.Hex)
+          
+                    r.key = generateEncryptionKey()
+          
+                    fetchApi('post', 'clapi/session/createUploadSession/', {
+                      file_hash: file_hash,
+                      file_size: file.size,
+                      file_name: file.fileName,
+                      folder_id: currentFolder,
+                      erfk: reverse(Base64.encode(r.key))
+                    })
+                      .then((data) => {
+                        console.log(data)
+          
+                        r.opts.target = data.upload_link;
+                        r.duplicated = data.duplicated;
+                        r.uniqueIdentifier = data.session_id;
+          
+                        if (data.encryptResumeFileKey) {
+                          r.key = Base64.decode(data.encryptResumeFileKey);
+                        }
+          
+                        console.log({ key: r.key })
+          
+                        file.initEncryptor(r.key)
+                        r.readyToUpload = true
+                        r.upload()
+                      })
+                      .catch((error) => {
+                        console.log(error)
+                      })
+                  }
+          
+                  reader.readAsArrayBuffer(new Blob([file.file.slice(0, 1024 * 1024), file.file.slice(-1024 * 1024)]))
+          
+                  r.opts.target = '/sf/upload/123123/'
+          
+                  if (file.size > 50 * 1024 * 1024) {
+                    r.opts.chunkSize = 10 * 1024 * 1024;
+          
+                    r.opts.forceChunkSize = true;
+                    console.log("Set chunk size to 10MB = " + r.getOpt('chunkSize'));
+                    file.bootstrap();
+                  }
+          
+                  if (r.readyToUpload) {
+                    r.upload();
+                    r.startDate = new Date();
+                    r.lastDate = new Date();
+                    r.lastProgress = 0.0;
+                  }
+                })
+          
+                r.on('fileError', (file, message) => {
+                  console.log({ error: file })
+                  alert(message)
+                  r = null
+                })
+          
+                r.on('fileSuccess', (file, message) => {
+                  console.log({ success: file })
+                  r = null;
+                  dispatch(getFiles(currentFolder, 0, 50))
+                })
+          
+                var progress = 0
+                r.on('progress', (file, message) => {
+                  if (r.progress() < progress)
+                    return
+          
+                  progress = r.progress();
+                  dispatch(updateProgress(progress))
+          
+                  var curDate = new Date();
+                  var curDuration = curDate - r.lastDate;
+                  var incProgress = progress - r.lastProgress;
+                  //update ui
+                  var fileSize = r.getSize();
+                  var curSpeed = (fileSize * incProgress) / curDuration;
+                  var avgSpeed = (fileSize * progress) / (curDate - r.startDate);
+          
+                  if (curSpeed > 0 && curDuration > 1000) {
+                    //change last progress
+                    r.lastDate = curDate;
+                    r.lastProgress = progress;
+                  }
+          
+                  var correctSpeed = avgSpeed;
+                  if (curSpeed < avgSpeed * 1.2 && curSpeed > avgSpeed * 0.3)
+                    correctSpeed = curSpeed;
+                  if (curSpeed >= 0 && curSpeed <= avgSpeed * 0.3)
+                    correctSpeed = (avgSpeed + curSpeed) / 2;
+          
+                  dispatch(updateSpeed(correctSpeed.toFixed(2) + " KB/s (" + (progress * 100).toFixed(1) + "%)"))
+                })
+          
+                r.on('cancel', () => {
+                  console.log('upload cancel')
+                  r = null
+                })
+          
+                r.addFile(upload_file)
+              } catch (error) {
+                console.log({ error })
+              }
+        }
+    }
     const operations = {
 
         handleAddSelected: (path) => {
@@ -131,11 +257,14 @@ const Page = ({ }) => {
         },
 
         handleGotoParent: () => {
+            let newFolders = [...folder]
+            newFolders.pop()
+            dispatch(updateFolder(newFolders))
         },
 
         handleSetMainFolder: (value, history = false) => {
             console.log({ value, history })
-            dispatch(updateFolder(value))
+            dispatch(updateFolder([...folder, value]))
         },
 
         handleDelete: () => {
@@ -245,8 +374,7 @@ const Page = ({ }) => {
         },
 
         handleUpload: () => {
-            setuploadBox(!uploadBox);
-            setLoading(!isloading);
+            fileUploader.current.click()
         },
 
         handleDownload: () => {
@@ -349,7 +477,7 @@ const Page = ({ }) => {
             title: 'Go to parent folder',
             icon: 'level-up-alt',
             onClick: operations.handleGotoParent,
-            // disable: props.selectedFolder === props.foldersList.path
+            disable: folder && folder.length == 1
         },
         selectAll: {
             title: 'Select all',
@@ -468,6 +596,7 @@ const Page = ({ }) => {
                     </Grid>
                 </Paper>
             </div>
+            <input type="file" id="file" ref={fileUploader} style={{ display: "none" }} onChange={onSelectedFileToUpload} />
         </div>
     )
 }

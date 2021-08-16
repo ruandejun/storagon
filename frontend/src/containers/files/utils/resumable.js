@@ -251,7 +251,7 @@ var Resumable = function (opts) {
         $.relativePath = file.webkitRelativePath || $.fileName;
         $.uniqueIdentifier = $h.generateUniqueIdentifier(file);
 
-        $.cypherWorker = new Worker('/static/assets/frontend/js/worker.js');
+        $.cypherWorker = new Worker('/js/worker.js');
 
         var _error = false;
 

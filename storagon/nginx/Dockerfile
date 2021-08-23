@@ -1,8 +1,7 @@
 FROM nginx:alpine
 RUN apk add --update curl && \
     rm -rf /var/cache/apk/*
-RUN mkdir -p /var/www/storagon/media && \
-    mkdir -p /var/www/storagon/static && \
+RUN mkdir -p /var/www/storagon/static && \
     mkdir -p /var/www/conf/ && \
     mkdir -p /var/log/nginx/
 WORKDIR /var/www/storagon

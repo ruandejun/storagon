@@ -11,6 +11,7 @@ services:
     # command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/var/www/storagon/
+      - media_volume:/var/www/storagon/media
     ports: [ "8000:8000" ]
   mongodb:
     image: mongo:3.3.15
@@ -24,6 +25,8 @@ services:
     image: redis:alpine
   postgredb:
     image: postgres:12-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
     environment:
       POSTGRES_DB: storagon
       POSTGRES_USER: root
@@ -35,10 +38,15 @@ services:
       context: .
       dockerfile: ./storagon/nginx/Dockerfile
     volumes:
-      - ./static/:/var/www/storagon/static/
+      - ./static:/var/www/storagon/static
+      - media_volume:/var/www/storagon/media
     ports: [ "80:80" ]
     depends_on:
       - storagon
+
+volumes:
+  postgres_data:
+  media_volume:
 networks:
   default:
     external:

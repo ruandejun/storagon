@@ -35,7 +35,7 @@ services:
       context: .
       dockerfile: ./storagon/nginx/Dockerfile
     volumes:
-      - ./static/:/var/www/storagon/django_static/
+      - ./static/:/var/www/storagon/static/
     ports: [ "80:80" ]
     depends_on:
       - storagon

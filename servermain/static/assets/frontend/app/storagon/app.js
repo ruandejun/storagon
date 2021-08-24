@@ -3,7 +3,7 @@
  */
 
 'use strict';
-
+var CURRENT_USER = null;
 var app = angular.module('Storagon', ['ngRoute'
   ,'blockUI'
   ,'App_filter'

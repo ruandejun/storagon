@@ -8,7 +8,7 @@
  */
 'use strict';
 var app = angular.module('Storagon.user.authenticateView', ['vcRecaptcha']);
-
+var CURRENT_USER = null;
 app.controller('signupController', ['$scope', 'User_ClientAPI', 'User_RESTFullAPI', '$location', 'vcRecaptchaService', function($scope, $sdk, $sdkREST, $location, vcRecaptchaService){
 	$scope.response = null;
     $scope.widgetId = null;

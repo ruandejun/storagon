@@ -326,6 +326,7 @@ ADMIN_RESUMABLE_SHOW_THUMB = True
 
 
 CORS_ORIGIN_ALLOW_ALL = True	# allow all domain
+CORS_ALLOW_CREDENTIALS = False
 # CORS_ORIGIN_WHITELIST = (
 #	 'storagon.com',
 #	 'test.storagon.com',

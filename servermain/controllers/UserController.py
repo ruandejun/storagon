@@ -9,13 +9,14 @@
 #
 import random
 import hashlib
+from typing import NamedTuple
 
 from django.utils import timezone
 from django.db.models import Sum
 from django.core.cache import cache
 from django.conf import settings;
 
-from servermain.models import User, UserProfile
+from servermain.models import RealFile, User, UserFile, UserProfile
 from servermain.mongo_models import UserStorage, Session
 from storagon.tool import *
 from storagon.enum import *
@@ -61,6 +62,7 @@ def calculateUserStorage(user_id):
 	userStorage.calculated_date = timezone.now()
 
 	userStorage.save()
+
 
 	return userStorage
 

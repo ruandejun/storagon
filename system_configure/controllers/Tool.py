@@ -438,12 +438,16 @@ def errorResponse(error, code=0, response=None):
 
 
 def successResponse(data=None, encode=True):
+	status = {'success': True, 'msg': 'success'}
 	if data is not None:
 		if encode:
-			return HttpResponse(json.dumps(data))
+			newStatus = status.update(data)
+
+			return HttpResponse(json.dumps(newStatus))
 		else:
 			return HttpResponse(data)
-	return HttpResponse('success')
+
+	return HttpResponse(status)
 
 
 def successResponseRestful(data=None):

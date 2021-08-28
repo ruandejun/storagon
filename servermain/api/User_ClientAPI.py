@@ -95,7 +95,7 @@ def getUserInfo(request):
     """
     if request.method == 'GET':
         profile, created = UserProfile.objects.get_or_create(user=request.user)
-
+        
         data = serializers.serialize('json', [profile], fields=('full_name', 'email', 'address', 'account_type', 'account_status',
         'storage_space', 'plan_id', 'plan_expired'))
 
@@ -159,6 +159,7 @@ def updateUserInfo(request):
             if request.user.email != profile.email:
                 profile.account_status = AccountStatus.emailNotActivated  # set AccountStatus to emailNotActivated when user change email.
             profile.save()  # actually save
+            #status = {'success': True, 'msg': 'success'}
             return successResponse()
         else:
             return HttpResponseBadRequest(form.errors)

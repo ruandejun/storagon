@@ -447,7 +447,7 @@ def successResponse(data=None, encode=True):
 		else:
 			return HttpResponse(data)
 
-	return HttpResponse(status)
+	return HttpResponse(json.dumps(status))
 
 
 def successResponseRestful(data=None):

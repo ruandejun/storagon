@@ -333,18 +333,19 @@ CORS_ORIGIN_ALLOW_ALL = True	# allow all domain
 #	 'localhost',
 #	 'localhost:8000',
 # )
-# CORS_ALLOW_HEADERS = (
-# 	'x-requested-with',
-# 	'content-type',
-# 	'accept',
-# 	'origin',
-# 	'authorization',
-# 	'x-csrftoken',
-# 	'range',
-# 	'signature_authorization',
-# 	'Signature-Authorization',
-# 	'Access-Control-Allow-Origin'
-# )
+CORS_ALLOW_HEADERS = (
+	'x-requested-with',
+	'content-type',
+	'accept',
+	'origin',
+	'authorization',
+	'x-csrftoken',
+	'range',
+	'signature_authorization',
+	'Signature-Authorization',
+	'Access-Control-Allow-Origin',
+	'access-control-allow-origin'
+)
 
 # CSRF_COOKIE_DOMAIN = '.storagon.com'
 # SESSION_COOKIE_DOMAIN = '.storagon.com'
@@ -440,7 +441,7 @@ FILE_MANAGER_ROOT_FOLDER = 'download' #must be inside MEDIA_ROOT dir
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # serverfile Settings
-SERVER_MAIN_URL = 'https://storagon.com'
+SERVER_MAIN_URL = 'https://api.storagon.com'
 SERVER_FILE_ID = 1
 # ROOT_URLCONF = 'storagon.urls_serverFile'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

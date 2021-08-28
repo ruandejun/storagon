@@ -12,7 +12,7 @@ services:
     volumes:
       - .:/var/www/storagon/
       - media_volume:/var/www/storagon/media
-    ports: [ "8000:8000" ]
+    ports: [ "8000:8000" , "8889:8889"]
   mongodb:
     image: mongo:3.3.15
     ports:

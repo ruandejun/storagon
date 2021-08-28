@@ -441,9 +441,9 @@ def successResponse(data=None, encode=True):
 	status = {'success': True, 'msg': 'success'}
 	if data is not None:
 		if encode:
-			newStatus = status.update(data)
-			print(newStatus)
-			return HttpResponse(json.dumps(newStatus))
+			status.update(dict(data))
+			print('dict==',status)
+			return HttpResponse(json.dumps(status))
 		else:
 			return HttpResponse(data)
 

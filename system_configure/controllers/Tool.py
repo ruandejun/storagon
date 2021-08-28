@@ -442,7 +442,7 @@ def successResponse(data=None, encode=True):
 	if data is not None:
 		if encode:
 			newStatus = status.update(data)
-
+			print(newStatus)
 			return HttpResponse(json.dumps(newStatus))
 		else:
 			return HttpResponse(data)

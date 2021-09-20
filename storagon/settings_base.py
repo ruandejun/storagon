@@ -326,12 +326,7 @@ ADMIN_RESUMABLE_SHOW_THUMB = True
 
 
 # CORS_ORIGIN_ALLOW_ALL = True	# allow all domain
-# CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOWED_ORIGINS = [
-	"https://storagon.com",
-	"http://storagon.com",
-	"http://localhost:3000"
-]
+CORS_ALLOW_ALL_ORIGINS = True
 # CORS_ORIGIN_WHITELIST = (
 #	 'storagon.com',
 #	 'test.storagon.com',

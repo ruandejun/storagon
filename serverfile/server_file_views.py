@@ -39,7 +39,7 @@ def downloadTorrentView(request, downloadSessionID, token, fileName):
 		data must include: file_path , file_name, limit_rate
 		@return
 	"""
-	if request.method == 'GET':
+	if request.method == 'POST':
 
 		sessionSDK = SessionSDK(settings.SERVER_MAIN_URL)
 

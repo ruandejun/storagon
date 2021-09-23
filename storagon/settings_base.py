@@ -443,7 +443,7 @@ FILE_MANAGER_ROOT_FOLDER = 'download' #must be inside MEDIA_ROOT dir
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # serverfile Settings
-SERVER_MAIN_URL = 'https://storagon.com'
+SERVER_MAIN_URL = 'https://api.storagon.com'
 SERVER_FILE_ID = 1
 # ROOT_URLCONF = 'storagon.urls_serverFile'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

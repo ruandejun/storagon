@@ -192,50 +192,51 @@ def downloadView(request, downloadSessionID, token, fileName):
 		# print u"Range header=%s"%(rangeHeader);
 		# print u"RealIP=%s" % (nginxRealIP)
 
-		if interface == 'CGI/1.1':  # request not come from nginx
-			offset = block = 0
-			if rangeHeader:
-				try:
-					offset, end = rangeHeader[6:].split('-')
-					# print offset,end;
-					offset = int(offset)
-					if end:
-						end = int(end)
-						block = end - offset
-					else:
-						end = file_size
-				except Exception as e:
-					return errorResponse(u"Invalid Range Header", code=0)
-			# django serve file
-			print(request.META)
-			print(u"Warning: File serve direcly from django not nginx with offset=%s, block=%s" % (offset, block))
-			fsock = open(settings.MEDIA_ROOT + '/' + file_location, 'rb')
-
-			fsock.seek(offset, 0)
-			if block:
-				data = fsock.read(block)
-			else:
-				data = fsock.read()
-			fsock.close()
-			response = HttpResponse(data)
-			response["Content-Disposition"] = 'attachment; filename="%s"' % (file_name)
-		else:
-			response = HttpResponse()
-			response["Content-Disposition"] = 'attachment; filename="%s"' % (file_name)
-			file_path = '/media/' + file_location
-			# print file_path;
-			# These lines let nginx handle download file
-			response['X-Accel-Redirect'] = file_path
-			# Set speed limit
-			if speed_limit <= 0: #unlimited
-				response['X-Accel-Limit-Rate'] = 'off' #unlimited
-			else:
-				response['X-Accel-Limit-Rate'] = speed_limit;
-
-			if connection_limit>2:
-				response['X-Accel-Redirect'] = '/nolimit'+file_path
-
-		return response
+		# if interface == 'CGI/1.1':  # request not come from nginx
+		# 	offset = block = 0
+		# 	if rangeHeader:
+		# 		try:
+		# 			offset, end = rangeHeader[6:].split('-')
+		# 			# print offset,end;
+		# 			offset = int(offset)
+		# 			if end:
+		# 				end = int(end)
+		# 				block = end - offset
+		# 			else:
+		# 				end = file_size
+		# 		except Exception as e:
+		# 			return errorResponse(u"Invalid Range Header", code=0)
+		# 	# django serve file
+		# 	print(request.META)
+		# 	print(u"Warning: File serve direcly from django not nginx with offset=%s, block=%s" % (offset, block))
+		# 	fsock = open(settings.MEDIA_ROOT + '/' + file_location, 'rb')
+		#
+		# 	fsock.seek(offset, 0)
+		# 	if block:
+		# 		data = fsock.read(block)
+		# 	else:
+		# 		data = fsock.read()
+		# 	fsock.close()
+		# 	response = HttpResponse(data)
+		# 	response["Content-Disposition"] = 'attachment; filename="%s"' % (file_name)
+		# else:
+		# 	response = HttpResponse()
+		# 	response["Content-Disposition"] = 'attachment; filename="%s"' % (file_name)
+		# 	file_path = '/media/' + file_location
+		# 	# print file_path;
+		# 	# These lines let nginx handle download file
+		# 	response['X-Accel-Redirect'] = file_path
+		# 	# Set speed limit
+		# 	if speed_limit <= 0: #unlimited
+		# 		response['X-Accel-Limit-Rate'] = 'off' #unlimited
+		# 	else:
+		# 		response['X-Accel-Limit-Rate'] = speed_limit;
+		#
+		# 	if connection_limit>2:
+		# 		response['X-Accel-Redirect'] = '/nolimit'+file_path
+		#
+		# return response
+		return successResponse()
 	else:
 		return Http404()
 

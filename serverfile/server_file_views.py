@@ -222,11 +222,11 @@ def downloadView(request, downloadSessionID, token, fileName):
 		else:
 			file_path = '/media/' + file_location
 			response = HttpResponse()
-			response["Content-Disposition"] = 'attachment; filename="%s"' % (file_path)
+			response["Content-Disposition"] = 'attachment; filename="%s"' % (file_name)
 
 			# print file_path;
 			# These lines let nginx handle download file
-			# response['X-Accel-Redirect'] = file_path
+			response['X-Accel-Redirect'] = file_path
 			# Set speed limit
 			if speed_limit <= 0: #unlimited
 				response['X-Accel-Limit-Rate'] = 'off' #unlimited

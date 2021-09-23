@@ -219,6 +219,7 @@ def downloadView(request, downloadSessionID, token, fileName):
 			fsock.close()
 			response = HttpResponse(data)
 			response["Content-Disposition"] = 'attachment; filename="%s"' % (file_name)
+			response['Access-Control-Allow-Origin'] = '*'
 		else:
 			file_path = '/media/' + file_location
 			response = HttpResponse()

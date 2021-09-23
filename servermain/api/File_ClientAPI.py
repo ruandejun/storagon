@@ -482,14 +482,12 @@ def getLink(request):
 		download_url_list = []
 		for file_id in fileIDList:
 			download_url_list += [
-				request.build_absolute_uri(
-					fileDict[file_id].get_absolute_url(usingDownloadViewNumber=1))]
+					fileDict[file_id].get_absolute_url(usingDownloadViewNumber=1)]
 
 		download_url_no_filename_list = []
 		for file_id in fileIDList:
 			download_url_no_filename_list += [
-				request.build_absolute_uri(
-					fileDict[file_id].get_absolute_url(usingDownloadViewNumber=2))]
+					fileDict[file_id].get_absolute_url(usingDownloadViewNumber=2)]
 
 		return successResponse({
 			'download_url_list': download_url_list,

@@ -70,7 +70,7 @@ def downloadTorrentView(request, downloadSessionID, token, fileName):
 		if session.type != SessionType.download or session.status == SessionStatus.failed or timezone.now() > session.created + datetime.timedelta(seconds=settings.MONGO_SESSION_EXPIRES):
 			return errorResponse(u"Invalid download session, cancel download!", code=0)
 
-		if session.data['ip_address'] in ['10.0.0.1','10.0.2.2','127.0.0.1'] or '192.168.1.' in session.data['ip_address']:
+		if session.data['ip_address'] in ['10.0.0.1','10.0.2.2','127.0.0.1'] or '192.168.1.' or '192.168.31.' in session.data['ip_address']:
 			logging.info(u"Allow session IP=%s to download without checking REMOTE_ADDR=%s"%(session.data['ip_address'] , request.META['REMOTE_ADDR']));
 		elif session.data['ip_address'] != request.META['REMOTE_ADDR']:
 			return errorResponse(u"Invalid user IP address=%s, cancel download!"%(request.META['REMOTE_ADDR']), code=0)
@@ -169,7 +169,7 @@ def downloadView(request, downloadSessionID, token, fileName):
 		if session.type != SessionType.download or session.status == SessionStatus.failed or timezone.now() > session.created + datetime.timedelta(seconds=settings.MONGO_SESSION_EXPIRES):
 			return errorResponse(u"Invalid download session, cancel download!", code=0)
 
-		if session.data['ip_address'] in ['192.168.1.1','10.0.0.1','10.0.2.2','127.0.0.1']:
+		if session.data['ip_address'] in ['192.168.1.1', '192.168.31.1','10.0.0.1','10.0.2.2','127.0.0.1']:
 			logging.info(u"Allow session IP=%s to download without checking REMOTE_ADDR=%s"%(session.data['ip_address'] , request.META['REMOTE_ADDR']));
 		# elif session.data.get('tracker_url',None) is not None:
 		# 	logging.info(u"Allow torrent session IP=%s to download without checking REMOTE_ADDR=%s"%(session.data['ip_address'] , request.META['REMOTE_ADDR']));
@@ -226,6 +226,7 @@ def downloadView(request, downloadSessionID, token, fileName):
 			# print file_path;
 			# These lines let nginx handle download file
 			response['X-Accel-Redirect'] = file_path
+			response['Access-Control-Allow-Origin'] = '*'
 			# Set speed limit
 			if speed_limit <= 0: #unlimited
 				response['X-Accel-Limit-Rate'] = 'off' #unlimited

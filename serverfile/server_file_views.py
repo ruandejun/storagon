@@ -188,9 +188,9 @@ def downloadView(request, downloadSessionID, token, fileName):
 
 		interface = request.META.get('GATEWAY_INTERFACE')
 		rangeHeader = request.META.get('HTTP_RANGE')
-		# nginxRealIP = request.META.get('X_REAL_IP')
-		# print u"Range header=%s"%(rangeHeader);
-		# print u"RealIP=%s" % (nginxRealIP)
+		nginxRealIP = request.META.get('X_REAL_IP')
+		print("Range header=" + rangeHeader)
+		print("RealIP=" + nginxRealIP)
 
 		if interface == 'CGI/1.1':  # request not come from nginx
 			offset = block = 0

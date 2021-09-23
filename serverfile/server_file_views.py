@@ -224,16 +224,16 @@ def downloadView(request, downloadSessionID, token, fileName):
 			response["Content-Disposition"] = 'inline; filename="%s"' % (file_name)
 			file_path = '/media/' + file_location
 			# print file_path;
-			# # These lines let nginx handle download file
-			# response['X-Accel-Redirect'] = file_path
-			# # Set speed limit
-			# if speed_limit <= 0: #unlimited
-			# 	response['X-Accel-Limit-Rate'] = 'off' #unlimited
-			# else:
-			# 	response['X-Accel-Limit-Rate'] = speed_limit;
-			#
-			# if connection_limit>2:
-			# 	response['X-Accel-Redirect'] = '/nolimit'+file_path
+			# These lines let nginx handle download file
+			response['X-Accel-Redirect'] = file_path
+			# Set speed limit
+			if speed_limit <= 0: #unlimited
+				response['X-Accel-Limit-Rate'] = 'off' #unlimited
+			else:
+				response['X-Accel-Limit-Rate'] = speed_limit;
+
+			if connection_limit>2:
+				response['X-Accel-Redirect'] = '/nolimit'+file_path
 
 		return response
 	else:

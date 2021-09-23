@@ -218,14 +218,15 @@ def downloadView(request, downloadSessionID, token, fileName):
 				data = fsock.read()
 			fsock.close()
 			response = HttpResponse(data)
-			response["Content-Disposition"] = 'inline; filename="%s"' % (file_name)
+			response["Content-Disposition"] = 'attachment; filename="%s"' % (file_name)
 		else:
-			response = HttpResponse()
-			response["Content-Disposition"] = 'inline; filename="%s"' % (file_name)
 			file_path = '/media/' + file_location
+			response = HttpResponse()
+			response["Content-Disposition"] = 'attachment; filename="%s"' % (file_path)
+
 			# print file_path;
 			# These lines let nginx handle download file
-			response['X-Accel-Redirect'] = file_path
+			# response['X-Accel-Redirect'] = file_path
 			# Set speed limit
 			if speed_limit <= 0: #unlimited
 				response['X-Accel-Limit-Rate'] = 'off' #unlimited

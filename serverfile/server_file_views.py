@@ -220,9 +220,10 @@ def downloadView(request, downloadSessionID, token, fileName):
 			response = HttpResponse(data)
 			response["Content-Disposition"] = 'attachment; filename="%s"' % (file_name)
 		else:
+			file_path = '/media/' + file_location
 			response = HttpResponse()
 			response["Content-Disposition"] = 'attachment; filename="%s"' % (file_name)
-			file_path = '/media/' + file_location
+
 			# print file_path;
 			# These lines let nginx handle download file
 			response['X-Accel-Redirect'] = file_path

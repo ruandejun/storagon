@@ -325,8 +325,9 @@ ADMIN_RESUMABLE_SUBDIR = 'realfile/'
 ADMIN_RESUMABLE_SHOW_THUMB = True
 
 
+CORS_ALLOW_ALL_ORIGINS = True # If this is used then CORS_ALLOWED_ORIGINS will not have any effect
+CORS_ALLOW_CREDENTIALS = True
 # CORS_ORIGIN_ALLOW_ALL = True	# allow all domain
-CORS_ALLOW_ALL_ORIGINS = True
 # CORS_ORIGIN_WHITELIST = (
 #	 'storagon.com',
 #	 'test.storagon.com',
@@ -442,7 +443,7 @@ FILE_MANAGER_ROOT_FOLDER = 'download' #must be inside MEDIA_ROOT dir
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # serverfile Settings
-SERVER_MAIN_URL = 'https://storagon.com'
+SERVER_MAIN_URL = 'https://api.storagon.com'
 SERVER_FILE_ID = 1
 # ROOT_URLCONF = 'storagon.urls_serverFile'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

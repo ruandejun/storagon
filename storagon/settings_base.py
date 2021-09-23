@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 import os
 import sys
 from pathlib import Path
+from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -335,19 +336,11 @@ CORS_ALLOW_ALL_ORIGINS = True	# allow all domain
 #	 'localhost',
 #	 'localhost:8000',
 # )
-CORS_ALLOW_HEADERS = (
-	'x-requested-with',
-	'content-type',
-	'accept',
-	'origin',
-	'authorization',
-	'x-csrftoken',
+CORS_ALLOW_HEADERS = list(default_headers) + [
 	'range',
 	'signature_authorization',
-	'Signature-Authorization',
-	'Access-Control-Allow-Origin',
-	'access-control-allow-origin'
-)
+	'Signature-Authorization'
+]
 
 # CSRF_COOKIE_DOMAIN = '.storagon.com'
 # SESSION_COOKIE_DOMAIN = '.storagon.com'

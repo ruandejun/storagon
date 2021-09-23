@@ -235,8 +235,6 @@ def downloadView(request, downloadSessionID, token, fileName):
 			if connection_limit>2:
 				response['X-Accel-Redirect'] = '/nolimit'+file_path
 		response['Access-Control-Allow-Origin'] = '*'
-		print(response.headers)
-		print(response)
 		return response
 	else:
 		return Http404()

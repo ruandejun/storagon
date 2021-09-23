@@ -188,9 +188,9 @@ def downloadView(request, downloadSessionID, token, fileName):
 
 		interface = request.META.get('GATEWAY_INTERFACE')
 		rangeHeader = request.META.get('HTTP_RANGE')
-		nginxRealIP = request.META.get('X_REAL_IP')
-		print("Range header=" + rangeHeader)
-		print("RealIP=" + nginxRealIP)
+		# nginxRealIP = request.META.get('X_REAL_IP')
+		# print("Range header=" + rangeHeader)
+		# print("RealIP=" + nginxRealIP)
 
 		if interface == 'CGI/1.1':  # request not come from nginx
 			offset = block = 0
@@ -235,6 +235,8 @@ def downloadView(request, downloadSessionID, token, fileName):
 			if connection_limit>2:
 				response['X-Accel-Redirect'] = '/nolimit'+file_path
 		response['Access-Control-Allow-Origin'] = '*'
+		print('download response')
+		print(response)
 		return response
 	else:
 		return Http404()

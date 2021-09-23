@@ -47,7 +47,7 @@ INSTALLED_APPS = (
 	# 'suit',
     # 'suit_redactor',	# better admin interface
 	'admin_resumable',	# support resumable file upload in admin
-	'corsheaders',	# CORS support
+	# 'corsheaders',	# CORS support
 	#'memcache_admin',	# memcache viewer
 	'django.contrib.admin',
 	'django.contrib.auth',
@@ -67,7 +67,7 @@ INSTALLED_APPS = (
 )
 
 MIDDLEWARE = (
-	'corsheaders.middleware.CorsMiddleware',  # CORS must put before CommonMiddleware
+	# 'corsheaders.middleware.CorsMiddleware',  # CORS must put before CommonMiddleware
 	'system_configure.controllers.Tool.DisableCSRF',
 	'django.contrib.sessions.middleware.SessionMiddleware',
 	'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -328,7 +328,7 @@ ADMIN_RESUMABLE_SHOW_THUMB = True
 
 # CORS_ALLOW_ALL_ORIGINS = True # If this is used then CORS_ALLOWED_ORIGINS will not have any effect
 # CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = True	# allow all domain
+# CORS_ALLOW_ALL_ORIGINS = True	# allow all domain
 # CORS_ORIGIN_WHITELIST = (
 #	 'storagon.com',
 #	 'test.storagon.com',
@@ -336,11 +336,11 @@ CORS_ALLOW_ALL_ORIGINS = True	# allow all domain
 #	 'localhost',
 #	 'localhost:8000',
 # )
-CORS_ALLOW_HEADERS = list(default_headers) + [
-	'range',
-	'signature_authorization',
-	'Signature-Authorization'
-]
+# CORS_ALLOW_HEADERS = list(default_headers) + [
+# 	'range',
+# 	'signature_authorization',
+# 	'Signature-Authorization'
+# ]
 
 # CSRF_COOKIE_DOMAIN = '.storagon.com'
 # SESSION_COOKIE_DOMAIN = '.storagon.com'

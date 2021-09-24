@@ -70,10 +70,10 @@ def downloadTorrentView(request, downloadSessionID, token, fileName):
 		if session.type != SessionType.download or session.status == SessionStatus.failed or timezone.now() > session.created + datetime.timedelta(seconds=settings.MONGO_SESSION_EXPIRES):
 			return errorResponse(u"Invalid download session, cancel download!", code=0)
 
-		if session.data['ip_address'] in ['10.0.0.1','10.0.2.2','127.0.0.1'] or '192.168.1.' or '192.168.31.' in session.data['ip_address']:
-			logging.info(u"Allow session IP=%s to download without checking REMOTE_ADDR=%s"%(session.data['ip_address'] , request.META['REMOTE_ADDR']));
-		elif session.data['ip_address'] != request.META['REMOTE_ADDR']:
-			return errorResponse(u"Invalid user IP address=%s, cancel download!"%(request.META['REMOTE_ADDR']), code=0)
+		# if session.data['ip_address'] in ['10.0.0.1','10.0.2.2','127.0.0.1'] or '192.168.1.' or '192.168.31.' in session.data['ip_address']:
+		# 	logging.info(u"Allow session IP=%s to download without checking REMOTE_ADDR=%s"%(session.data['ip_address'] , request.META['REMOTE_ADDR']));
+		# elif session.data['ip_address'] != request.META['REMOTE_ADDR']:
+		# 	return errorResponse(u"Invalid user IP address=%s, cancel download!"%(request.META['REMOTE_ADDR']), code=0)
 
 		file_name = session.data['file_name']
 		file_location = session.data['file_location']
@@ -173,8 +173,8 @@ def downloadView(request, downloadSessionID, token, fileName):
 			logging.info(u"Allow session IP=%s to download without checking REMOTE_ADDR=%s"%(session.data['ip_address'] , request.META['REMOTE_ADDR']));
 		# elif session.data.get('tracker_url',None) is not None:
 		# 	logging.info(u"Allow torrent session IP=%s to download without checking REMOTE_ADDR=%s"%(session.data['ip_address'] , request.META['REMOTE_ADDR']));
-		elif session.data['ip_address'] != request.META['REMOTE_ADDR']:
-			return errorResponse(u"Invalid user IP address=%s, cancel download!"%(request.META['REMOTE_ADDR']), code=0)
+		# elif session.data['ip_address'] != request.META['REMOTE_ADDR']:
+		# 	return errorResponse(u"Invalid user IP address=%s, cancel download!"%(request.META['REMOTE_ADDR']), code=0)
 
 		if fileName:
 			file_name = fileName;

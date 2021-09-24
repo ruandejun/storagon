@@ -8,7 +8,7 @@ services:
         - build.version=${BUILD_VERSION:-local}
       args:
         - buildflag=clear_sourcecode
-    command: python manage.py runserver 0.0.0.0:8000
+    # command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/var/www/storagon/
       - media_volume:/var/www/storagon/media
@@ -41,7 +41,6 @@ services:
       dockerfile: ./storagon/nginx/Dockerfile
     volumes:
       - ./static:/var/www/storagon/staticfiles
-      - ./frontend:/var/www/storagon/frontend
       - media_volume:/var/www/storagon/media
     ports: [ "80:80" ]
     depends_on:

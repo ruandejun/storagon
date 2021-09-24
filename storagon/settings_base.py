@@ -350,7 +350,9 @@ CORS_ALLOW_ALL_ORIGINS = True	# allow all domain
 CORS_ALLOW_HEADERS = list(default_headers) + [
 	'range',
 	'signature_authorization',
-	'Signature-Authorization'
+	'Signature-Authorization',
+	'Access-Control-Allow-Headers',
+	'access-control-allow-origin'
 ]
 
 # CSRF_COOKIE_DOMAIN = '.storagon.com'

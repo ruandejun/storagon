@@ -47,7 +47,7 @@ INSTALLED_APPS = (
 	# 'suit',
     # 'suit_redactor',	# better admin interface
 	'admin_resumable',	# support resumable file upload in admin
-	# 'corsheaders',	# CORS support
+	'corsheaders',	# CORS support
 	#'memcache_admin',	# memcache viewer
 	'django.contrib.admin',
 	'django.contrib.auth',
@@ -67,7 +67,7 @@ INSTALLED_APPS = (
 )
 
 MIDDLEWARE = (
-	# 'corsheaders.middleware.CorsMiddleware',  # CORS must put before CommonMiddleware
+	'corsheaders.middleware.CorsMiddleware',  # CORS must put before CommonMiddleware
 	'system_configure.controllers.Tool.DisableCSRF',
 	'django.contrib.sessions.middleware.SessionMiddleware',
 	'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -258,8 +258,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_URL = '/staticfiles/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 LOGIN_URL = '/adl/login/'
 LOGIN_REDIRECT_URL = '/adl/'
@@ -328,7 +328,7 @@ ADMIN_RESUMABLE_SHOW_THUMB = True
 
 # CORS_ALLOW_ALL_ORIGINS = True # If this is used then CORS_ALLOWED_ORIGINS will not have any effect
 # CORS_ALLOW_CREDENTIALS = True
-# CORS_ALLOW_ALL_ORIGINS = True	# allow all domain
+CORS_ALLOW_ALL_ORIGINS = True	# allow all domain
 # CORS_ORIGIN_WHITELIST = (
 #	 'storagon.com',
 #	 'test.storagon.com',
@@ -336,11 +336,11 @@ ADMIN_RESUMABLE_SHOW_THUMB = True
 #	 'localhost',
 #	 'localhost:8000',
 # )
-# CORS_ALLOW_HEADERS = list(default_headers) + [
-# 	'range',
-# 	'signature_authorization',
-# 	'Signature-Authorization'
-# ]
+CORS_ALLOW_HEADERS = list(default_headers) + [
+	'range',
+	'signature_authorization',
+	'Signature-Authorization'
+]
 
 # CSRF_COOKIE_DOMAIN = '.storagon.com'
 # SESSION_COOKIE_DOMAIN = '.storagon.com'
@@ -436,7 +436,7 @@ FILE_MANAGER_ROOT_FOLDER = 'download' #must be inside MEDIA_ROOT dir
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # serverfile Settings
-SERVER_MAIN_URL = 'https://api.storagon.com'
+SERVER_MAIN_URL = 'https://storagon.com/api'
 SERVER_FILE_ID = 1
 # ROOT_URLCONF = 'storagon.urls_serverFile'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

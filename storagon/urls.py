@@ -9,7 +9,7 @@ urlpatterns = [
 	url(r'^adl/', admin.site.urls),
 	url(r'^sf/', include('serverfile.urls')),
 	url(r'^tracker/', include('private_tracker.urls')),
-	url(r'', include('servermain.urls')),  # pass all other url request to servermain
+	url(r'api/', include('servermain.urls')),  # pass all other url request to servermain
 ]
 
 

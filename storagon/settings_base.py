@@ -30,7 +30,8 @@ DEBUG = True
 TEMPLATE_DEBUG = True
 
 TEMPLATE_DIRS = (
-	os.path.join(BASE_DIR, 'storagon_templates'),
+	os.path.join(BASE_DIR, "frontend"),
+	# os.path.join(BASE_DIR, 'storagon_templates'),
 )
 
 
@@ -68,6 +69,7 @@ INSTALLED_APPS = (
 
 MIDDLEWARE = (
 	'corsheaders.middleware.CorsMiddleware',  # CORS must put before CommonMiddleware
+	"whitenoise.middleware.WhiteNoiseMiddleware",
 	'system_configure.controllers.Tool.DisableCSRF',
 	'django.contrib.sessions.middleware.SessionMiddleware',
 	'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -80,7 +82,8 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            os.path.join(BASE_DIR, 'storagon_templates'),
+			os.path.join(BASE_DIR, "frontend"),
+            # os.path.join(BASE_DIR, 'storagon_templates'),
                  ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -258,8 +261,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
-STATIC_URL = '/staticfiles/'
+STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [
+  # Tell Django where to look for React's static files (css, js)
+  os.path.join(BASE_DIR, "frontend/static"),
+]
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 LOGIN_URL = '/adl/login/'
 LOGIN_REDIRECT_URL = '/adl/'
@@ -270,6 +279,8 @@ LOGOUT_URL = '/adl/logout/'
 # TEMPLATE_CONTEXT_PROCESSORS += (
 # 	'django.core.context_processors.request',	# suit admin interface
 # )
+
+
 
 #Email
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

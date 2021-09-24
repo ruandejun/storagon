@@ -29,7 +29,7 @@ urlpatterns = [
 
 ]
 
-if settings.DOMAIN == 'storagon.com':
-	urlpatterns += [url(r'', include(storagon_urls)),]
-elif settings.DOMAIN == 'junshare.com':
-	urlpatterns += [url(r'', include(junshare_urls)),]
+# if settings.DOMAIN == 'storagon.com':
+# 	urlpatterns += [url(r'', include(storagon_urls)),]
+# elif settings.DOMAIN == 'junshare.com':
+# 	urlpatterns += [url(r'', include(junshare_urls)),]

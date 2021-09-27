@@ -27,15 +27,6 @@ SECRET_KEY = '7yn^8pwp+yzd2l4ki6+v9kp(h)rzs$9gxu4ao^_p+9x_5+1*6o'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-TEMPLATE_DEBUG = True
-
-TEMPLATE_DIRS = (
-	os.path.join(BASE_DIR, "frontend"),
-	# os.path.join(BASE_DIR, 'storagon_templates'),
-)
-
-
-
 ALLOWED_HOSTS = [
 	'*', # Allow local host connect to server.
 ]
@@ -69,7 +60,6 @@ INSTALLED_APPS = (
 
 MIDDLEWARE = (
 	'corsheaders.middleware.CorsMiddleware',  # CORS must put before CommonMiddleware
-	"whitenoise.middleware.WhiteNoiseMiddleware",
 	'system_configure.controllers.Tool.DisableCSRF',
 	'django.contrib.sessions.middleware.SessionMiddleware',
 	'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -81,10 +71,6 @@ MIDDLEWARE = (
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-			os.path.join(BASE_DIR, "frontend"),
-            # os.path.join(BASE_DIR, 'storagon_templates'),
-                 ],
         'APP_DIRS': True,
         'OPTIONS': {
 			'context_processors': [
@@ -262,13 +248,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_DIRS = [
-  # Tell Django where to look for React's static files (css, js)
-  os.path.join(BASE_DIR, "frontend/static"),
-]
-
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 LOGIN_URL = '/adl/login/'
 LOGIN_REDIRECT_URL = '/adl/'
@@ -349,6 +329,7 @@ CORS_ALLOW_ALL_ORIGINS = True	# allow all domain
 # )
 CORS_ALLOW_HEADERS = list(default_headers) + [
 	'range',
+	'Range',
 	'signature_authorization',
 	'Signature-Authorization',
 	'Access-Control-Allow-Headers',
@@ -449,7 +430,7 @@ FILE_MANAGER_ROOT_FOLDER = 'download' #must be inside MEDIA_ROOT dir
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # serverfile Settings
-SERVER_MAIN_URL = 'https://storagon.com/api'
+SERVER_MAIN_URL = 'https://api.storagon.com'
 SERVER_FILE_ID = 1
 # ROOT_URLCONF = 'storagon.urls_serverFile'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

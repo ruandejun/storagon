@@ -5,7 +5,7 @@ from django.views.generic import RedirectView, TemplateView
 # from .api import Session_ClientAPI_urls, User_ClientAPI_urls, File_ClientAPI_urls, UserStatistics_ClientAPI_urls, Premium_ClientAPI_urls, File_PrivateAPI_urls, Session_PrivateAPI_urls
 # # from .api import User_RestfulAPI_urls, File_RestfulAPI_urls
 # import system_configure.urls
-from . import restful_urls, storagon_urls, junshare_urls
+from . import restful_urls
 from .payment_views import *
 
 urlpatterns = [
@@ -19,7 +19,7 @@ urlpatterns = [
 
 	# url(r'^restful/user/', include(User_RestfulAPI_urls, namespace='User_RestfulAPI')),
 	# url(r'^restful/file/', include(File_RestfulAPI_urls, namespace='File_RestfulAPI')),
-	url(r'^api/', include((restful_urls, 'MainAPI'), namespace='API') ),
+	url(r'^/', include((restful_urls, 'MainAPI'), namespace='API') ),
 
 	url(r'^buypremium/(\d+)/(\d+)/', buyPremium, name='buyPremium'),
 	url(r'^paygatecallback/(\w+)/', paygateCallBack, name='paygateCallBack'),
@@ -28,8 +28,3 @@ urlpatterns = [
 
 
 ]
-
-# if settings.DOMAIN == 'storagon.com':
-# 	urlpatterns += [url(r'', include(storagon_urls)),]
-# elif settings.DOMAIN == 'junshare.com':
-# 	urlpatterns += [url(r'', include(junshare_urls)),]

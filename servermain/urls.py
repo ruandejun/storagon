@@ -8,6 +8,8 @@ from django.views.generic import RedirectView, TemplateView
 from . import restful_urls
 from .payment_views import *
 
+from .download_views import DownloadView, DownloadView2, activateAccount
+
 urlpatterns = [
 	url(r'^clapi/session/', include(('servermain.api.Session_ClientAPI_urls', 'Session_ClientAPI'), namespace='Session_ClientAPI')),
 	url(r'^clapi/user/', include(('servermain.api.User_ClientAPI_urls', 'User_ClientAPI'), namespace='User_ClientAPI')),
@@ -26,5 +28,7 @@ urlpatterns = [
 
 	url(r'^sys/', include('system_configure.urls')),
 
-
+	url(r'^dl/(\d+)/(.+)$', DownloadView.as_view(), name='download'),
+	url(r'^dl/(\d+)s(.+)$', DownloadView2.as_view(), name='download2'),
+	url(r'^activateAccount/$', activateAccount, name='activateAccount'),
 ]

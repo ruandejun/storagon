@@ -479,10 +479,10 @@ def getLink(request):
 		for userFile in resultList:
 			fileDict[userFile.id] = userFile
 
-		# download_url_list = []
-		# for file_id in fileIDList:
-		# 	download_url_list += [
-		# 			fileDict[file_id].get_absolute_url(usingDownloadViewNumber=1)]
+		download_url_list = []
+		for file_id in fileIDList:
+			download_url_list += [
+					fileDict[file_id].get_absolute_url(usingDownloadViewNumber=1)]
 
 		download_url_no_filename_list = []
 		for file_id in fileIDList:
@@ -490,7 +490,7 @@ def getLink(request):
 					fileDict[file_id].get_absolute_url(usingDownloadViewNumber=2)]
 
 		return successResponse({
-			# 'download_url_list': download_url_list,
+			'download_url_list': download_url_list,
 			'download_url_no_filename_list':download_url_no_filename_list,
 		})
 	elif request.method == 'POST':

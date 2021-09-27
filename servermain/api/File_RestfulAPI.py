@@ -69,11 +69,11 @@ class UserFileWithDownloadLinkSerialier(UserFileSerializer):
 		)
 		read_only_fields=('id','user','realFile','last_download_date','download_count','file_size','file_hash')
 
-	# download_url=serializers.SerializerMethodField();
+	download_url=serializers.SerializerMethodField();
 	download_url2=serializers.SerializerMethodField();
 
-	# def get_download_url(self,obj):
-	# 	return obj.get_absolute_url(withFileKey=True,usingDownloadViewNumber=1)
+	def get_download_url(self,obj):
+		return obj.get_absolute_url(withFileKey=True,usingDownloadViewNumber=1)
 
 	def get_download_url2(self,obj):
 		return obj.get_absolute_url(withFileKey=True,usingDownloadViewNumber=2)

@@ -61,7 +61,7 @@ class UserProfile(models.Model):
 	def isAffiliate(self):
 		return self.account_type == AccountType.affiliate or self.account_type == AccountType.affiliatePPD
 
-	def __unicode__(self): return unicode(self.user)
+	def __unicode__(self): return self.user
 
 
 def generateID():

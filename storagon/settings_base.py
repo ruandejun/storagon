@@ -97,9 +97,9 @@ WSGI_APPLICATION = 'storagon.wsgi.application'
 DATABASES = {
 	'default': {
 		'ENGINE': 'django.db.backends.postgresql_psycopg2',
-		'NAME': 'storagon',
+		'NAME': 'storagon_post',
 		'USER': 'root',	  # Not used with sqlite3.
-		'PASSWORD': '123',  # Not used with sqlite3.
+		'PASSWORD': '2Lj2UkqXymn6',  # Not used with sqlite3.
 		'HOST': 'postgredb',  # Set to empty string for localhost. Not used with sqlite3.
 		'PORT': 5432,  # Set to empty string for default. Not used with sqlite3.
 	}

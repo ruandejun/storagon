@@ -18,8 +18,8 @@ services:
     ports:
       - 27017:27017
     environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: password
+      ME_CONFIG_MONGODB_ADMINUSERNAME: storagon_mg
+      ME_CONFIG_MONGODB_ADMINPASSWORD: 2Lj2UkqXymn6
       ME_CONFIG_MONGO_INITDB_DATABASE: storagon
     volumes:
       - mongo_data:/data/db
@@ -31,8 +31,10 @@ services:
       - postgres_data:/var/lib/postgresql/data/
     environment:
       POSTGRES_DB: storagon
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: 123
+      POSTGRES_USER: storagon_post
+      POSTGRES_PASSWORD: 2Lj2UkqXymn6
+      PG_SYSTEM_SHARED_BUFFERS: 256MB
+      PG_SYSTEM_MAX_CONNECTIONS: 512
     ports: [ "5432:5432" ]
     command: "-c 'shared_buffers=256MB' -c 'max_connections=512'"
   nginx:

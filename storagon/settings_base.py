@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 import os
 import sys
 from pathlib import Path
+from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,14 +26,6 @@ SECRET_KEY = '7yn^8pwp+yzd2l4ki6+v9kp(h)rzs$9gxu4ao^_p+9x_5+1*6o'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
-TEMPLATE_DEBUG = True
-
-TEMPLATE_DIRS = (
-	os.path.join(BASE_DIR, 'storagon_templates'),
-)
-
-
 
 ALLOWED_HOSTS = [
 	'*', # Allow local host connect to server.
@@ -78,9 +71,6 @@ MIDDLEWARE = (
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-            os.path.join(BASE_DIR, 'storagon_templates'),
-                 ],
         'APP_DIRS': True,
         'OPTIONS': {
 			'context_processors': [
@@ -270,6 +260,8 @@ LOGOUT_URL = '/adl/logout/'
 # 	'django.core.context_processors.request',	# suit admin interface
 # )
 
+
+
 #Email
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'email-smtp.us-west-2.amazonaws.com'
@@ -325,9 +317,9 @@ ADMIN_RESUMABLE_SUBDIR = 'realfile/'
 ADMIN_RESUMABLE_SHOW_THUMB = True
 
 
-CORS_ALLOW_ALL_ORIGINS = True # If this is used then CORS_ALLOWED_ORIGINS will not have any effect
-CORS_ALLOW_CREDENTIALS = True
-# CORS_ORIGIN_ALLOW_ALL = True	# allow all domain
+# CORS_ALLOW_ALL_ORIGINS = True # If this is used then CORS_ALLOWED_ORIGINS will not have any effect
+# CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True	# allow all domain
 # CORS_ORIGIN_WHITELIST = (
 #	 'storagon.com',
 #	 'test.storagon.com',
@@ -335,19 +327,14 @@ CORS_ALLOW_CREDENTIALS = True
 #	 'localhost',
 #	 'localhost:8000',
 # )
-CORS_ALLOW_HEADERS = (
-	'x-requested-with',
-	'content-type',
-	'accept',
-	'origin',
-	'authorization',
-	'x-csrftoken',
+CORS_ALLOW_HEADERS = list(default_headers) + [
 	'range',
+	'Range',
 	'signature_authorization',
 	'Signature-Authorization',
-	'Access-Control-Allow-Origin',
+	'Access-Control-Allow-Headers',
 	'access-control-allow-origin'
-)
+]
 
 # CSRF_COOKIE_DOMAIN = '.storagon.com'
 # SESSION_COOKIE_DOMAIN = '.storagon.com'

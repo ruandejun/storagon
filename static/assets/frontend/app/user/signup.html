@@ -1,0 +1,28 @@
+<div class="login-container">
+  <div class="row">
+    <div class="small-12 large-7 large-centered medium-7 medium-centered columns">
+      <div class="login-form">
+        <!--ng-submit="signup_form.$valid && processForm()"-->
+        <form id="signup_form" name="signup_form" ng-submit="submitSignupForm()">
+          Username: <input type="text" name="username" size="50" ng-model="username" required />
+          Password: <input type="password" name="password" id="password" size="20" ng-model="password" required />
+          Retype Password: <input type="password" name="retype_password" id="retype_password" size="20" ng-model="retype_password" required pw-check="password"/>
+          <div class="msg-block" ng-show="signup_form.$error">
+            <small class="error" ng-show="signup_form.retype_password.$error.pwmatch">Password don't match</small>
+          </div>
+          Email: <input type="text" name="email" size="50" ng-model="email" required />
+          <input type="checkbox" id="agree" name="agree" required>
+          <label for="agree">I have read and agree to the <a href="/#/tos" target="_blank">Terms & Conditions</a></label>
+          <!-- <div vc-recaptcha theme="'light'" key="'6LfV8dYbAAAAAD49nR2NQWUEhkmu4xI1cZhwpYKj'" on-create="setWidgetId(widgetId)" on-success="setResponse(response)"></div> -->
+          <!--<br/>-->          
+          <input type="submit" value="Sign up" ng-disabled="isProcessing"/>
+        </form>                
+        <!-- Loader begin -->
+        <div class="loader">
+          <img id="loading-image" src="/static/assets/frontend/images/ajax-spinner.gif" alt="Loading..." />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div ng-include src="'/static/assets/frontend/app/layout/modals.html'"></div>
+</div>

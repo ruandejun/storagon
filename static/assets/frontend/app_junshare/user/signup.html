@@ -1,0 +1,50 @@
+<div class="container">
+  <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <!--ng-submit="signup_form.$valid && processForm()"-->
+            <div class="text-center login-form">
+                <img src="/static/assets/frontend/images/img-login.png">
+                <h3>Register</h3>
+            </div>
+            <form id="signup_form" name="signup_form" ng-submit="submitSignupForm()">
+	            <div class="form-group">
+				    <label>Username:</label>
+				    <input type="text" class="form-control" name="username" size="50" ng-model="username" required />
+			    </div>
+	            <div class="form-group">
+			        <label>Password:</label>
+	                <input type="password" class="form-control" name="password" id="password" size="20" ng-model="password" required />
+	            </div>
+	            <div class="form-group">
+			        <label>Retype Password:</label>
+	                <input type="password" class="form-control" name="retype_password" id="retype_password" size="20" ng-model="retype_password" required pw-check="password"/>
+                    <div class="msg-block" ng-show="signup_form.$error">
+		                <small class="error" ng-show="signup_form.retype_password.$error.pwmatch">Password don't match</small>
+		            </div>
+	            </div>
+
+	            <div class="form-group">
+			        <label>Email:</label>
+	                <input type="text" class="form-control" name="email" size="50" ng-model="email" required />
+	            </div>
+	            <div class="checkbox">
+                    <label>
+                        <input type="checkbox" id="agree" name="agree" required>
+                        I have read and agree to the <a href="/#/tos" target="_blank">Terms & Conditions</a>
+                    </label>
+	            </div>
+	            <!-- <div vc-recaptcha theme="'light'" key="'6LeAKwQTAAAAADQGSxeqaWehXOFJwuVIgWPEiQrX'"
+                     on-create="setWidgetId(widgetId)" on-success="setResponse(response)" class="form-group"> -->
+
+                </div>
+	            <input type="submit" class="btn btn-success" value="Sign up" ng-disabled="isProcessing"/>
+            </form>
+        <!-- Loader begin -->
+            <div class="loader">
+                <img id="loading-image" src="/static/assets/frontend/images/loading.gif" alt="Loading..." />
+            </div>
+
+      </div>
+  </div>
+  <div ng-include src="'/static/assets/frontend/app_junshare/layout/modals.html'"></div>
+</div>

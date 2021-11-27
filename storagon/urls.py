@@ -1,5 +1,7 @@
 from django.conf.urls import include, url
 from django.contrib import admin
+
+from django.shortcuts import render
 #from django.contrib.auth.views import login, logout, logout_then_login
 # from jet_django.urls import jet_urls
 

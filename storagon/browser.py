@@ -78,6 +78,7 @@ class Rqbrowser:
 				   'Connection': 'keep-alive',
 				   'Accept-Language': 'en-US',
 				   'Cache-Control': 'no-cache',
+				   'Access-Control-Allow-Origin': '*',
 				   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.5,/;q=0.5'};
 
 	# self.cookie = cookielib.MozillaCookieJar()
@@ -105,7 +106,7 @@ class Rqbrowser:
 		# if self.link_host:
 		#     self.header.update({'Host':self.link_host})
 		# if self.link_origin:
-		#     self.header.update({'Origin': self.link_origin})
+		self.header.update({'Access-Control-Allow-Origin': '*'})
 		if extraHeader:
 			self.header.update(extraHeader)
 		if XMLHttpRequest:

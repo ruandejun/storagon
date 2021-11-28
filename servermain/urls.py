@@ -21,7 +21,7 @@ urlpatterns = [
 
 	# url(r'^restful/user/', include(User_RestfulAPI_urls, namespace='User_RestfulAPI')),
 	# url(r'^restful/file/', include(File_RestfulAPI_urls, namespace='File_RestfulAPI')),
-	url(r'^/', include((restful_urls, 'MainAPI'), namespace='API') ),
+	url(r'^api/', include((restful_urls, 'MainAPI'), namespace='API') ),
 
 	url(r'^buypremium/(\d+)/(\d+)/', buyPremium, name='buyPremium'),
 	url(r'^paygatecallback/(\w+)/', paygateCallBack, name='paygateCallBack'),

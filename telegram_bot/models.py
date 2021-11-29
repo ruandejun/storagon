@@ -51,9 +51,9 @@ class AccountsSelling(models.Model):
 	created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True, db_index=True)
 	modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True, db_index=True)
 	created_by = CreatingUserField(verbose_name=_("created by"), limit_choices_to={'is_staff': True},
-								   related_name="created_%(app_label)s_%(class)s_set", on_delete=models.PROTECT)
+								   related_name="created_%(app_label)s_%(class)s_set", on_delete=models.PROTECT, null=True)
 	modified_by = LastUserField(verbose_name=_("modified by"), limit_choices_to={'is_staff': True},
-								related_name="modified_%(app_label)s_%(class)s_set", on_delete=models.PROTECT)
+								related_name="modified_%(app_label)s_%(class)s_set", on_delete=models.PROTECT, null=True)
 
 	warranty_date = models.DateTimeField(verbose_name=_("warranty_date"), null=True, blank=True)
 

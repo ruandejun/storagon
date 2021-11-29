@@ -67,7 +67,7 @@ MIDDLEWARE = (
 	'django.middleware.common.CommonMiddleware',
 	'django.contrib.messages.middleware.MessageMiddleware',
 	'django.middleware.clickjacking.XFrameOptionsMiddleware',
-	'audit_log.middleware.UserLoggingMiddleware',
+	'storagon.middleware.CurrentUserMiddleware',
 )
 
 TEMPLATES = [

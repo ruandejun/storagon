@@ -1,10 +1,10 @@
 from django.db import models
-from audit_log.models.fields import CreatingUserField, LastUserField
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.utils.translation import ugettext_lazy as _
 from storagon.enum import *
+from storagon.utils import get_current_user
 import decimal
 MONEY_MAX_DIGITS = getattr(settings, 'MONEY_MAX_DIGITS', 24)
 MONEY_DECIMAL_PLACES = getattr(settings, 'MONEY_DECIMAL_PLACES', 2)
@@ -48,12 +48,12 @@ class AccountsSelling(models.Model):
 	class Meta:
 		verbose_name = _("AccountsSelling")
 		verbose_name_plural = _("AccountsSelling")
+		abstract = True
 	created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True, db_index=True)
 	modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True, db_index=True)
-	created_by = CreatingUserField(verbose_name=_("created by"), limit_choices_to={'is_staff': True},
-								   related_name="created_%(app_label)s_%(class)s_set", on_delete=models.PROTECT, null=True)
-	modified_by = LastUserField(verbose_name=_("modified by"), limit_choices_to={'is_staff': True},
-								related_name="modified_%(app_label)s_%(class)s_set", on_delete=models.PROTECT, null=True)
+
+	created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
+	modified_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_modified', on_delete=models.PROTECT)
 
 	warranty_date = models.DateTimeField(verbose_name=_("warranty_date"), null=True, blank=True)
 
@@ -85,7 +85,14 @@ class AccountsSelling(models.Model):
 	status = models.ForeignKey(Status, verbose_name=_("status"),
 							   on_delete=models.PROTECT, null=True, blank=True)
 
+	def save(self, *args, **kwargs):
+		user = get_current_user()
+		if user and user.is_authenticated():
+			self.modified_by = user
+			if self._state.adding:
+				self.created_by = user
 
+		super(AccountsSelling, self).save(*args, **kwargs)
 
 	def __unicode__(self):
 		return self.details

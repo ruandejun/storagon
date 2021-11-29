@@ -15,6 +15,13 @@ class AccountType(EnumBase):
 	reseller = 2
 	affiliatePPD = 3
 
+class LogicStep(EnumBase):
+	pending = 0
+	approved = 1
+	processing = 2
+	completed = 3
+	failed = 4
+	checked = 5
 
 class AccountStatus(EnumBase):
 	normal = 0

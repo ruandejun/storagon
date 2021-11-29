@@ -250,8 +250,8 @@ class FullRouter(DefaultRouter):
 
 				for prefix in api_root_dict:
 					basename, viewset = api_root_dict[prefix]
-					print(routerSelf.get_routes(viewset))
-					for url, mapping, name, initkwargs in routerSelf.get_routes(viewset):
+					# print(routerSelf.get_routes(viewset))
+					for url, mapping, name, detail, initkwargs in routerSelf.get_routes(viewset):
 						correctName=name.format(basename=basename);
 
 						reverseKwagrs={};

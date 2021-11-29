@@ -55,6 +55,7 @@ INSTALLED_APPS = (
 	'private_tracker',
 	'servermain',
 	'serverfile',
+	'telegram_bot',
 
 )
 

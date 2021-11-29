@@ -87,7 +87,7 @@ class ServerError(exceptions.APIException):
 def reverseBase(request,view_name,absolute=False,urlconf=None,args=None,kwargs=None,prefix=None,current_app=None):
 	if not request.resolver_match.namespace: namespace=''
 	else: namespace=request.resolver_match.namespace+':'
-	url = reverse(namespace+view_name,urlconf,args,kwargs,prefix,current_app);
+	url = reverse(namespace+view_name,urlconf,args,kwargs,current_app);
 	if absolute:
 		url = request.build_absolute_uri(url)
 	return url;

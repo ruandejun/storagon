@@ -15,6 +15,11 @@ services:
     volumes:
       - .:/var/www/storagon/
       - media_volume:/var/www/storagon/media
+    depends_on:
+      - mongodb
+      - postgredb
+      - memcache
+      - redis
     links:
       - mongodb:mongodb
       - postgredb:postgredb
@@ -69,6 +74,7 @@ services:
     volumes:
       - .:/var/www/storagon
     depends_on:
+      - mongodb
       - postgredb
       - memcache
       - redis
@@ -83,18 +89,15 @@ services:
     volumes:
       - .:/var/www/storagon
     depends_on:
-      - postgredb:postgredb
-      - memcache:memcached
-      - redis:redis
+      - mongodb
+      - postgredb
+      - memcache
+      - redis
     links:
       - postgredb:postgredb
       - memcache:memcached
       - redis:redis
     restart: always
-volumes:
-  postgres_data:
-  media_volume:
-  mongo_data:
 networks:
   default:
     external:

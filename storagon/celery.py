@@ -20,11 +20,11 @@ from django.conf import settings
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'storagon.settings')
 
 app = Celery('storagon')
-
+# app.conf.broker_url = 'redis://default:hanoi123@redis:6379/0'
 # Using a string here means the worker will not have to
 # pickle the object when using Windows.
-app.config_from_object('django.conf:settings')
-app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
+app.config_from_object('django.conf:settings', namespace='CELERY')
+app.autodiscover_tasks()
 
 
 @app.task(bind=True)

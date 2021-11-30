@@ -56,6 +56,7 @@ INSTALLED_APPS = (
 	'servermain',
 	'serverfile',
 	'telegram_bot',
+	'django_celery_beat',
 
 )
 

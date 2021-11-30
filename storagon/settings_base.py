@@ -110,6 +110,8 @@ DATABASES = {
 
 MONGODB = {
 	'NAME': 'storagon',
+	'USER': 'storagon_mg',
+	'PASSWORD': '2Lj2UkqXymn6',
 	'HOST': 'mongodb',
 	'PORT': 27017,
 }
@@ -156,8 +158,6 @@ CELERY_BROKER_TRANSPORT_OPTIONS = {
 IS_RUNNING_UNIT_TEST = False
 if 'test' in sys.argv:
 	IS_RUNNING_UNIT_TEST = True
-
-
 
 
 

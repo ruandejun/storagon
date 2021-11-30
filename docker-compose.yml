@@ -70,9 +70,9 @@ services:
     restart: always
   celery-beat:
     build: .
-    command: ["celery", "-A", "storagon", "beat", "-l", "info", "--pidfile="]
+    command: celery -A storagon beat -l info --pidfile=
     volumes:
-      - .:/var/www/orderus
+      - .:/var/www/storagon
     depends_on:
       - postgredb
       - memcache

@@ -84,7 +84,6 @@ services:
     volumes:
       - .:/var/www/storagon
     depends_on:
-      - mongodb:mongodb
       - postgredb:postgredb
       - memcache:memcached
       - redis:redis

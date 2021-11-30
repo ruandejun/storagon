@@ -110,6 +110,8 @@ DATABASES = {
 
 MONGODB = {
 	'NAME': 'storagon',
+	'USER': 'storagon_mg',
+	'PASSWORD': '2Lj2UkqXymn6',
 	'HOST': 'mongodb',
 	'PORT': 27017,
 }

@@ -30,6 +30,8 @@ services:
     restart: always
     image: "redis:alpine"
     command: redis-server --requirepass hanoi123
+    expose:
+      - '6379'
     ports:
       - "6379:6379"
   postgredb:

@@ -27,6 +27,8 @@ REDISDB = {
 BROKER_URL = 'redis://rediscache:6379/0'	# using resdis
 CELERY_RESULT_BACKEND = 'redis://rediscache:6379/0'	# using resdis
 
+TELEGRAM_TOKEN = '2115090413:AAElpJP8QbX6ueHEDBlBZMLh2Fu8Zk5aIkQ'
+
 from datetime import timedelta
 
 TRAFFIC_LOG_PATH = '/var/log/nginx/traffic.log'

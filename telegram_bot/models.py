@@ -12,6 +12,22 @@ XRATE_MAX_DIGITS = getattr(settings, 'XRATE_MAX_DIGITS', 15)
 XRATE_DECIMAL_PLACES = getattr(settings, 'XRATE_DECIMAL_PLACES', 0)
 # Create your models here.
 
+class UserTelegram(models.Model):
+    class Meta:
+        verbose_name = _("User Telegram")
+        verbose_name_plural = _("User Telegram")
+    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
+
+    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
+
+    user = models.ForeignKey(User, verbose_name=_("User"), related_name='telegram', on_delete=models.PROTECT)
+
+    telegram_id = models.CharField(verbose_name=_("telegram_id"), blank=True, max_length=255, db_index=True)
+
+    def __str__(self):
+        return str(self.telegram_id)
+
+
 class Status(models.Model):
     class Meta:
         verbose_name = _("Status")

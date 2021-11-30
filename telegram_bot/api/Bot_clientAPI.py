@@ -14,6 +14,8 @@ from telegram_bot.task import check_cmd_telegram
 
 @api_view(['GET', 'POST', 'PUT'])
 def telegram_bot(request):
+    if request.method == 'GET':
+        return successResponse({"ok": "Get request processed"})
     t_data = json.loads(request.body)
     print(t_data)
     if 'message' in t_data:

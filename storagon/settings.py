@@ -34,7 +34,8 @@ REDISDB = {
 	'PASSWORD': 'hanoi123'
 }
 # CELERY settings with password AUTH
-CELERY_RESULT_BACKEND = "redis://redis:6379/0"
+
+CELERY_RESULT_BACKEND = "redis://default:hanoi123@redis:6379/0"
 CELERY_REDIS_HOST = "redis"
 CELERY_REDIS_PORT = 6379
 CELERY_REDIS_PASSWORD = 'hanoi123'

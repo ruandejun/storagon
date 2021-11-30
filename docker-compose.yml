@@ -58,7 +58,7 @@ services:
       - storagon
   celery:
     build: .
-    command: celery -A storagon worker -l info --pidfile=
+    command: celery -A storagon -b redis://default:hanoi123@redis:6379/0 worker -l info --pidfile=
     volumes:
       - .:/var/www/storagon
     depends_on:
@@ -72,7 +72,7 @@ services:
     restart: always
   celery-beat:
     build: .
-    command: celery -A storagon beat -l info --pidfile=
+    command: celery -A storagon -b redis://default:hanoi123@redis:6379/0 beat -l info --pidfile=
     volumes:
       - .:/var/www/storagon
     depends_on:

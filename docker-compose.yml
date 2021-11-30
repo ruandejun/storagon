@@ -23,8 +23,12 @@ services:
       ME_CONFIG_MONGO_INITDB_DATABASE: storagon
     volumes:
       - mongo_data:/data/db
-  rediscache:
-    image: redis:alpine
+  redis:
+    restart: always
+    image: "redis:alpine"
+    command: redis-server --requirepass hanoi123
+    ports:
+      - "6379:6379"
   postgredb:
     image: postgres:12-alpine
     volumes:
@@ -47,7 +51,34 @@ services:
     ports: [ "80:80" ]
     depends_on:
       - storagon
-
+  celery:
+    build: .
+    command: celery -A storagon worker -l info --pidfile=
+    volumes:
+      - .:/var/www/storagon
+    depends_on:
+      - postgredb
+      - memcache
+      - redis
+    links:
+      - mypostgres:postgredb
+      - memcache:memcached
+      - redis:redis
+    restart: always
+  celery-beat:
+    build: .
+    command: ["celery", "-A", "storagon", "beat", "-l", "info", "--pidfile="]
+    volumes:
+      - .:/var/www/orderus
+    depends_on:
+      - postgredb
+      - memcache
+      - redis
+    links:
+      - mypostgres:postgredb
+      - memcache:memcached
+      - redis:redis
+    restart: always
 volumes:
   postgres_data:
   media_volume:

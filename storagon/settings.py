@@ -18,20 +18,20 @@ REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = (
 
 REDISDB = {
 	'DB': 0,
-	'HOST': 'rediscache',
+	'HOST': 'redis',
 	'PORT': 6379,
-	'PASSWORD': ''
+	'PASSWORD': 'hanoi123'
 }
 
 # CELERY settings with password AUTH
 CELERY_RESULT_BACKEND = "redis"
-CELERY_REDIS_HOST = "rediscache"
+CELERY_REDIS_HOST = "redis"
 CELERY_REDIS_PORT = 6379
-CELERY_REDIS_PASSWORD = ''
+CELERY_REDIS_PASSWORD = 'hanoi123'
 CELERY_REDIS_DB = 0
 # CELERY_TIMEZONE = TIME_ZONE
 # CELERY_ENABLE_UTC = False
-CELERY_BROKER_URL = 'redis://rediscache:6379/0'
+CELERY_BROKER_URL = 'redis://default:hanoi123@redis:6379/0'
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 CELERY_BROKER_CONNECTION_TIMEOUT = 10
 CELERY_ALWAYS_EAGER = False

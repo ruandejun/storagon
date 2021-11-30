@@ -64,6 +64,7 @@ TELEGRAM_TOKEN = '2115090413:AAElpJP8QbX6ueHEDBlBZMLh2Fu8Zk5aIkQ'
 from datetime import timedelta
 
 TRAFFIC_LOG_PATH = '/var/log/nginx/traffic.log'
+
 CELERYBEAT_SCHEDULE = {
 	'execute-every-12-hours': {
 		'task': 'serverfile.tasks.processClearTemporaryFolder',

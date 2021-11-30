@@ -15,7 +15,7 @@ from storagon.enum import *
 from storagon.tool import *
 from storagon.PrivateAPI_SDK import SessionSDK, FileSDK
 from servermain.mongo_models import Session
-
+from pathlib import Path
 
 
 
@@ -224,6 +224,9 @@ def scanTrafficLogForCompletedSession(traffic_log_path, clear_log=True):
 
 	:return:
 	"""
+	p = Path(traffic_log_path)
+	if not p.exists():
+		return
 	completedSessionIDList=[];
 	with open(traffic_log_path) as f:
 		line = True;

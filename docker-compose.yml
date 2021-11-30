@@ -98,6 +98,10 @@ services:
       - memcache:memcached
       - redis:redis
     restart: always
+volumes:
+  postgres_data:
+  media_volume:
+  mongo_data:
 networks:
   default:
     external:

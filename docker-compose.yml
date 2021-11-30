@@ -64,7 +64,7 @@ services:
       - memcache
       - redis
     links:
-      - mypostgres:postgredb
+      - postgredb:postgredb
       - memcache:memcached
       - redis:redis
     restart: always
@@ -78,7 +78,7 @@ services:
       - memcache
       - redis
     links:
-      - mypostgres:postgredb
+      - postgredb:postgredb
       - memcache:memcached
       - redis:redis
     restart: always

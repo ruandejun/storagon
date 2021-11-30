@@ -15,6 +15,11 @@ services:
     volumes:
       - .:/var/www/storagon/
       - media_volume:/var/www/storagon/media
+    links:
+      - mongodb:mongodb
+      - postgredb:postgredb
+      - memcache:memcached
+      - redis:redis
     ports: [ "8000:8000" , "8889:8889"]
   mongodb:
     image: mongo
@@ -54,6 +59,8 @@ services:
       - ./static:/var/www/storagon/static
       - media_volume:/var/www/storagon/media
     ports: [ "80:80" ]
+    links:
+      - storagon:storagon
     depends_on:
       - storagon
   celery:
@@ -66,6 +73,7 @@ services:
       - memcache
       - redis
     links:
+      - mongodb:mongodb
       - postgredb:postgredb
       - memcache:memcached
       - redis:redis
@@ -76,10 +84,12 @@ services:
     volumes:
       - .:/var/www/storagon
     depends_on:
-      - postgredb
-      - memcache
-      - redis
+      - mongodb:mongodb
+      - postgredb:postgredb
+      - memcache:memcached
+      - redis:redis
     links:
+      - mongodb:mongodb
       - postgredb:postgredb
       - memcache:memcached
       - redis:redis

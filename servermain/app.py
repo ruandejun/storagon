@@ -15,6 +15,7 @@ from mongoengine import connect
 import os, geoip2.database
 import redis
 
+
 class MyAppConfig(AppConfig):
     name = 'servermain'
     # verbose_name = u'Server chủ'
@@ -38,7 +39,7 @@ class MyAppConfig(AppConfig):
             }}
             print ("Change Cache BACKEND to LocMemCache")
 
-        db_connection = connect(db=settings.MONGODB['NAME'], host=settings.MONGODB['HOST'], username=settings.MONGODB['USER'], password=settings.MONGODB['PASSWORD'], port=settings.MONGODB['PORT'], alias='default', tz_aware=settings.USE_TZ)
+        db_connection = connect(db=settings.MONGODB['NAME'], host=settings.MONGODB['HOST'], username=settings.MONGODB['USER'], password=settings.MONGODB['PASSWORD'], port=settings.MONGODB['PORT'], alias='default', tz_aware=settings.USE_TZ, connect=False)
         #"Create connection to mongoDB"
 
         if settings.IS_RUNNING_UNIT_TEST:

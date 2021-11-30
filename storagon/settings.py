@@ -16,13 +16,23 @@ REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = (
 	'rest_framework.renderers.BrowsableAPIRenderer'
 )
 
+
+# Caching
+CACHES = {  # config for docker container memcached
+    'default': {  # Cluster MemCache (recommend for django-cache-machine)
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': ['memcached:11211'],
+        'PREFIX': 'storagon_',
+        'TIMEOUT': None,  # Keep cache forever, or for seconds
+    }
+}
+
 REDISDB = {
 	'DB': 0,
 	'HOST': 'redis',
 	'PORT': 6379,
 	'PASSWORD': 'hanoi123'
 }
-
 # CELERY settings with password AUTH
 CELERY_RESULT_BACKEND = "redis"
 CELERY_REDIS_HOST = "redis"

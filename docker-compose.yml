@@ -18,10 +18,8 @@ services:
     depends_on:
       - memcache
       - redis
-      - nginx
       - mongodb
       - postgredb
-
     links:
       - mongodb:mongodb
       - postgredb:postgredb
@@ -66,10 +64,10 @@ services:
       - ./static:/var/www/storagon/static
       - media_volume:/var/www/storagon/media
     ports: [ "80:80" ]
-    links:
-      - storagon:storagon
     depends_on:
       - storagon
+    links:
+      - storagon:storagon
   celery:
     build: .
     command: celery -A storagon -b redis://default:hanoi123@redis:6379/0 worker -l info --pidfile=

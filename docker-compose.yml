@@ -15,6 +15,11 @@ services:
     volumes:
       - .:/var/www/storagon/
       - media_volume:/var/www/storagon/media
+    depends_on:
+      - redis
+      - memcache
+      - mongodb
+      - postgredb
     links:
       - mongodb:mongodb
       - postgredb:postgredb

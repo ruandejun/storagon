@@ -128,14 +128,14 @@ CACHES = {  # config for docker container memcached
 
 REDISDB = {
 	'DB': 0,
-	'HOST': 'redis',
+	'HOST': 'redis://default:hanoi123@redis',
 	'PORT': 6379,
 	'PASSWORD': 'hanoi123'
 }
 # CELERY settings with password AUTH
 CELERY_TIMEZONE = 'Asia/Bangkok'
 CELERY_RESULT_BACKEND = "redis://default:hanoi123@redis:6379/0"
-CELERY_REDIS_HOST = "redis"
+CELERY_REDIS_HOST = "redis://default:hanoi123@redis"
 CELERY_REDIS_PORT = 6379
 CELERY_REDIS_PASSWORD = 'hanoi123'
 CELERY_REDIS_DB = 0

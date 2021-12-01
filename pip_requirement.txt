@@ -33,4 +33,4 @@ bs4
 dnspython==1.15.0
 uwsgi
 pyTelegramBotAPI==4.2.0
-pymongo==3.11.3
+pymongo

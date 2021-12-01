@@ -38,7 +38,7 @@ class MyAppConfig(AppConfig):
                 }
             }}
             print ("Change Cache BACKEND to LocMemCache")
-        mongodb_host = 'mongodb://'+settings.MONGODB['USER']+':'+settings.MONGODB['PASSWORD']+'@'+settings.MONGODB['HOST']+':'+settings.MONGODB['PORT']+'/'+settings.MONGODB['NAME']
+        mongodb_host = 'mongodb://'+settings.MONGODB['USER']+':'+settings.MONGODB['PASSWORD']+'@'+settings.MONGODB['HOST']+':'+str(settings.MONGODB['PORT'])+'/'+settings.MONGODB['NAME']
         db_connection = connect(host=mongodb_host)
         # db_connection = connect(db=settings.MONGODB['NAME'], host=settings.MONGODB['HOST'], username=settings.MONGODB['USER'], password=settings.MONGODB['PASSWORD'], port=settings.MONGODB['PORT'], alias='default', tz_aware=settings.USE_TZ, authentication_source="root")
          #"Create connection to mongoDB"

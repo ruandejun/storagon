@@ -77,6 +77,7 @@ services:
       - memcache
       - redis
     links:
+      - mongodb:mongodb
       - postgredb:postgredb
       - memcache:memcached
       - redis:redis
@@ -92,6 +93,7 @@ services:
       - memcache
       - redis
     links:
+      - mongodb:mongodb
       - postgredb:postgredb
       - memcache:memcached
       - redis:redis

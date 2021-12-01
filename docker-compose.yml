@@ -27,7 +27,7 @@ services:
       - redis:redis
     ports: [ "8000:8000" , "8889:8889"]
   mongodb:
-    image: mongo
+    image: mongo:latest
     ports:
       - 27017:27017
     environment:

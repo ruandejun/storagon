@@ -128,31 +128,9 @@ CACHES = {  # config for docker container memcached
 
 REDISDB = {
 	'DB': 0,
-	'HOST': 'redis://default:hanoi123@redis',
+	'HOST': 'redis',
 	'PORT': 6379,
 	'PASSWORD': 'hanoi123'
-}
-# CELERY settings with password AUTH
-CELERY_TIMEZONE = 'Asia/Bangkok'
-CELERY_RESULT_BACKEND = "redis://default:hanoi123@redis:6379/0"
-CELERY_REDIS_HOST = "redis://default:hanoi123@redis"
-CELERY_REDIS_PORT = 6379
-CELERY_REDIS_PASSWORD = 'hanoi123'
-CELERY_REDIS_DB = 0
-# CELERY_TIMEZONE = TIME_ZONE
-# CELERY_ENABLE_UTC = False
-CELERY_BROKER_URL = 'redis://default:hanoi123@redis:6379/0'
-CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
-CELERY_BROKER_CONNECTION_TIMEOUT = 10
-CELERY_ALWAYS_EAGER = False
-CELERY_ACKS_LATE = True
-CELERY_TASK_PUBLISH_RETRY = True
-CELERY_DISABLE_RATE_LIMITS = False
-CELERY_BROKER_TRANSPORT_OPTIONS = {
-    'max_retries': 4,
-    'interval_start': 0,
-    'interval_step': 0.5,
-    'interval_max': 3,
 }
 
 IS_RUNNING_UNIT_TEST = False

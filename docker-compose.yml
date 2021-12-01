@@ -15,11 +15,6 @@ services:
     volumes:
       - .:/var/www/storagon/
       - media_volume:/var/www/storagon/media
-    depends_on:
-      - mongodb
-      - postgredb
-      - memcache
-      - redis
     links:
       - mongodb:mongodb
       - postgredb:postgredb
@@ -31,8 +26,6 @@ services:
     ports:
       - "27017:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: storagon_mg
-      MONGO_INITDB_ROOT_PASSWORD: 2Lj2UkqXymn6
       MONGO_INITDB_DATABASE: storagon
     volumes:
       - mongo_data:/data/db

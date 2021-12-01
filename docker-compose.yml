@@ -31,7 +31,9 @@ services:
     ports:
       - "27017:27017"
     environment:
-      MONGO_INITDB_DATABASE: storagon
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: password
+      ME_CONFIG_MONGO_INITDB_DATABASE: storagon
     volumes:
       - mongo_data:/data/db
   redis:

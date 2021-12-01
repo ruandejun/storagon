@@ -27,12 +27,10 @@ services:
       - redis:redis
     ports: [ "8000:8000" , "8889:8889"]
   mongodb:
-    image: mongo:3.3.15
+    image: mongo
     ports:
       - 27017:27017
     environment:
-      MONGO_INITDB_ROOT_USERNAME: storagon_mg
-      MONGO_INITDB_ROOT_PASSWORD: 2Lj2UkqXymn6
       MONGO_INITDB_DATABASE: storagon
     volumes:
       - mongo_data:/data/db

@@ -91,7 +91,6 @@ services:
       - redis:redis
     networks:
       - frontend
-    command: /bin/sh -c "nginx -g 'daemon off;'"
   celery:
     build: .
     command: celery -A storagon -b redis://default:hanoi123@redis:6379/0 worker -l info --pidfile=

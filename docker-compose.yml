@@ -35,8 +35,8 @@ services:
     ports:
       - "27017:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: storagon_mg
-      MONGO_INITDB_ROOT_PASSWORD: 2Lj2UkqXymn6
+#      MONGO_INITDB_ROOT_USERNAME: storagon_mg
+#      MONGO_INITDB_ROOT_PASSWORD: 2Lj2UkqXymn6
       MONGO_INITDB_DATABASE: storagon
     volumes:
       - mongo_data:/data/db

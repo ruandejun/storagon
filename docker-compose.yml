@@ -78,7 +78,8 @@ services:
       context: .
       dockerfile: ./storagon/nginx/Dockerfile
     volumes:
-      - .:/var/www/storagon
+      - ./static:/var/www/storagon/static
+      - ./media_volume:/var/www/storagon/media
     ports: [ "80:80" ]
     depends_on:
       - storagon

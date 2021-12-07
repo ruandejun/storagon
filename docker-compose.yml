@@ -25,7 +25,11 @@ services:
       - postgredb:postgredb
       - memcache:memcached
       - redis:redis
+    networks:
+      - frontend
+      - backend
     ports: [ "8000:8000" , "8889:8889"]
+
   mongodb:
     image: mongo:3.3.15
     ports:
@@ -36,6 +40,8 @@ services:
       MONGO_INITDB_DATABASE: storagon
     volumes:
       - mongo_data:/data/db
+    networks:
+      - backend
   redis:
     restart: always
     image: "redis:alpine"
@@ -44,6 +50,9 @@ services:
       - '6379'
     ports:
       - "6379:6379"
+    networks:
+      - frontend
+      - backend
   postgredb:
     image: postgres:12-alpine
     volumes:
@@ -68,6 +77,8 @@ services:
       - storagon
     links:
       - storagon:storagon
+    networks:
+      - backend
   celery:
     build: .
     command: celery -A storagon -b redis://default:hanoi123@redis:6379/0 worker -l info --pidfile=
@@ -83,7 +94,10 @@ services:
       - postgredb:postgredb
       - memcache:memcached
       - redis:redis
+    networks:
+      - backend
     restart: always
+
   celery-beat:
     build: .
     command: celery -A storagon -b redis://default:hanoi123@redis:6379/0 beat -l info --pidfile=
@@ -99,12 +113,15 @@ services:
       - postgredb:postgredb
       - memcache:memcached
       - redis:redis
+    networks:
+      - backend
     restart: always
 volumes:
   postgres_data:
   media_volume:
   mongo_data:
 networks:
-  default:
-    external:
-      name: storagon_default
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge

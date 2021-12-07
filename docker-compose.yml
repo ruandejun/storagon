@@ -16,7 +16,7 @@ services:
     # command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/var/www/storagon/
-      - media_volume:/var/www/storagon/media
+      - ./media_volume:/var/www/storagon/media
     depends_on:
       - memcache
       - redis
@@ -44,7 +44,7 @@ services:
 #      MONGO_INITDB_ROOT_PASSWORD: 2Lj2UkqXymn6
       MONGO_INITDB_DATABASE: storagon
     volumes:
-      - mongo_data:/data/db
+      - ./mongo_data:/data/db
     networks:
       - backend
   redis:
@@ -57,10 +57,12 @@ services:
       - "6379:6379"
     networks:
       - backend
+    volumes:
+      - ./storagon/redis/redis.conf:/etc/redis/redis.conf
   postgredb:
     image: postgres:12-alpine
     volumes:
-      - postgres_data:/var/lib/postgresql/data/
+      - ./postgres_data:/var/lib/postgresql/data/
     environment:
       POSTGRES_DB: storagon
       POSTGRES_USER: storagon_post
@@ -76,8 +78,7 @@ services:
       context: .
       dockerfile: ./storagon/nginx/Dockerfile
     volumes:
-      - ./static:/var/www/storagon/static
-      - media_volume:/var/www/storagon/media
+      - .:/var/www/storagon
     ports: [ "80:80" ]
     depends_on:
       - storagon

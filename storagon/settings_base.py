@@ -112,7 +112,7 @@ MONGODB = {
 	'NAME': 'storagon',
 	'USER': 'storagon_mg',
 	'PASSWORD': '2Lj2UkqXymn6',
-	'HOST': 'mongodb://mongodb:27017',
+	'HOST': 'mongodb',
 }
 
 # Caching

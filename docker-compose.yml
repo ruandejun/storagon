@@ -3,6 +3,8 @@ services:
   memcache:
     image: memcached
     command: memcached -m 64
+    networks:
+      - backend
   storagon:
     build:
       context: .
@@ -31,7 +33,10 @@ services:
     ports: [ "8000:8000" , "8889:8889"]
 
   mongodb:
-    image: mongo:3.3.15
+    image: mongo:4.0.8
+    container_name: mongodb
+    restart: unless-stopped
+    command: mongod --auth
     ports:
       - "27017:27017"
     environment:
@@ -78,6 +83,10 @@ services:
       - storagon
     links:
       - storagon:storagon
+      - mongodb:mongodb
+      - postgredb:postgredb
+      - memcache:memcached
+      - redis:redis
     networks:
       - frontend
   celery:

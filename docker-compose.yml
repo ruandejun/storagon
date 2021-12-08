@@ -30,7 +30,7 @@ services:
     networks:
       - frontend
       - backend
-    ports: ["8889:8889"]
+    ports: ["8000:8000", "8889:8889"]
 
   mongodb:
     image: mongo:3.3.15
@@ -80,7 +80,7 @@ services:
     volumes:
       - .:/var/www/storagon
       - ./storagon/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-    ports: [ "80:80", "8000:8000" ]
+    ports: [ "80:80" ]
     depends_on:
       - storagon
       - mongodb

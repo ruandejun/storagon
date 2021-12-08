@@ -107,7 +107,9 @@ DATABASES = {
 		'PORT': 5432,  # Set to empty string for default. Not used with sqlite3.
 	}
 }
-
+IS_RUNNING_UNIT_TEST = False
+if 'test' in sys.argv:
+	IS_RUNNING_UNIT_TEST = True
 MONGODB = {
 	'NAME': 'storagon',
 	'USER': 'storagon_mg',
@@ -119,7 +121,10 @@ MONGODB = {
 
 import mongoengine
 
-mongoengine.connect(db=MONGODB['NAME'], host=MONGODB['HOST'])
+db_connection = mongoengine.connect(db=MONGODB['NAME'], host=MONGODB['HOST'])
+if IS_RUNNING_UNIT_TEST:
+	db_connection.drop_database(MONGODB['NAME'])
+	print("Clear MONGODB on launch")
 # Caching
 CACHES = {  # config for docker container memcached
     'default': {  # Cluster MemCache (recommend for django-cache-machine)
@@ -137,9 +142,7 @@ REDISDB = {
 	'PASSWORD': 'hanoi123'
 }
 
-IS_RUNNING_UNIT_TEST = False
-if 'test' in sys.argv:
-	IS_RUNNING_UNIT_TEST = True
+
 
 
 

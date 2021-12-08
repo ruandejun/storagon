@@ -116,6 +116,10 @@ MONGODB = {
 	'PORT': 27017,
 }
 
+
+import mongoengine
+
+mongoengine.connect(db=MONGODB['NAME'], host=MONGODB['HOST'])
 # Caching
 CACHES = {  # config for docker container memcached
     'default': {  # Cluster MemCache (recommend for django-cache-machine)

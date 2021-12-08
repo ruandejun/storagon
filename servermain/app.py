@@ -41,6 +41,7 @@ class MyAppConfig(AppConfig):
         # mongodb_host = 'mongodb://'+settings.MONGODB['USER']+':'+settings.MONGODB['PASSWORD']+'@'+settings.MONGODB['HOST']+':'+str(settings.MONGODB['PORT'])+'/'+settings.MONGODB['NAME']
         # db_connection = connect(host=mongodb_host, alias='default', tz_aware=settings.USE_TZ)
         db_connection = connect(db=settings.MONGODB['NAME'], host=settings.MONGODB['HOST'], port=settings.MONGODB['PORT'], alias='default', tz_aware=settings.USE_TZ)
+
          # "Create connection to mongoDB"
 
         if settings.IS_RUNNING_UNIT_TEST:

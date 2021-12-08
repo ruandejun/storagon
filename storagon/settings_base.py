@@ -112,8 +112,8 @@ if 'test' in sys.argv:
 	IS_RUNNING_UNIT_TEST = True
 MONGODB = {
 	'NAME': 'storagon',
-	'USER': 'storagon_mg',
-	'PASSWORD': '2Lj2UkqXymn6',
+	'USER': 'myUserAdmin',
+	'PASSWORD': 'abc123',
 	'HOST': 'mongodb',
 	'PORT': 27017,
 }
@@ -121,7 +121,8 @@ MONGODB = {
 
 import mongoengine
 
-db_connection = mongoengine.connect(db=MONGODB['NAME'], host=MONGODB['HOST'], username=MONGODB['USER'], password=MONGODB['PASSWORD'])
+db_connection = mongoengine.connect(db=MONGODB['NAME'], host=MONGODB['HOST'], username=MONGODB['USER'], password=MONGODB['PASSWORD'], authentication_source='admin')
+
 if IS_RUNNING_UNIT_TEST:
 	db_connection.drop_database(MONGODB['NAME'])
 	print("Clear MONGODB on launch")

@@ -92,7 +92,7 @@ services:
       - memcache:memcached
       - redis:redis
     networks:
-      - frontend
+      - backend
   celery:
     build: .
     command: celery -A storagon -b redis://default:hanoi123@redis:6379/0 worker -l info --pidfile=

@@ -28,7 +28,6 @@ services:
       - memcache:memcached
       - redis:redis
     networks:
-      - frontend
       - backend
     ports: ["8889:8889"]
 

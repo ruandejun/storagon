@@ -30,25 +30,32 @@ services:
     networks:
       - backend
     ports: ["8889:8889"]
-
   mongodb:
-    image: mongo:3.3.15
-    container_name: mongodb
-    restart: unless-stopped
-    command: mongod --auth
-    ports:
-      - "27017:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: storagon_mg
-      MONGO_INITDB_ROOT_PASSWORD: 2Lj2UkqXymn6
-      MONGO_INITDB_DATABASE: storagon
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: password
-      ME_CONFIG_MONGO_INITDB_DATABASE: storagon
+    image: mongo
+    restart: always
     volumes:
-      - ./mongo_data:/data/db
+      - ./init-db:/docker-entrypoint-initdb.d
+      - ./data-db:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: mongoadmin
+      MONGO_INITDB_DATABASE: django_mongodb_docker
+    ports:
+      - 27017:27017
     networks:
       - backend
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: mongoadmin
+    networks:
+      - backend
+    depends_on:
+      - mongodb
   redis:
     restart: always
     image: "redis:alpine"

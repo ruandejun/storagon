@@ -112,8 +112,8 @@ if 'test' in sys.argv:
 	IS_RUNNING_UNIT_TEST = True
 MONGODB = {
 	'NAME': 'storagon',
-	'USER': 'myUserAdmin',
-	'PASSWORD': 'abc123',
+	'USER': 'root',
+	'PASSWORD': 'mongoadmin',
 	'HOST': 'mongodb',
 	'PORT': 27017,
 }

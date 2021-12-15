@@ -39,7 +39,7 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: mongoadmin
-      MONGO_INITDB_DATABASE: django_mongodb_docker
+      MONGO_INITDB_DATABASE: storagon
     ports:
       - 27017:27017
     networks:

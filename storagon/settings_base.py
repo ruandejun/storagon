@@ -13,7 +13,7 @@ import os
 import sys
 from pathlib import Path
 from corsheaders.defaults import default_headers
-
+import mongoengine
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -119,7 +119,7 @@ MONGODB = {
 }
 
 
-import mongoengine
+
 
 db_connection = mongoengine.connect(db=MONGODB['NAME'], host=MONGODB['HOST'], username=MONGODB['USER'], password=MONGODB['PASSWORD'], authentication_source='admin')
 

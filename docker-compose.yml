@@ -6,7 +6,7 @@ services:
     networks:
       - backend
   storagon:
-    build: .
+    build:
       context: .
       dockerfile: Dockerfile
       labels:
@@ -83,7 +83,7 @@ services:
     ports: [ "5432:5432" ]
     command: "-c 'shared_buffers=256MB' -c 'max_connections=512'"
   nginx:
-    build: .
+    build:
       context: .
       dockerfile: ./storagon/nginx/Dockerfile
     volumes:

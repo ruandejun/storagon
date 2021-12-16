@@ -120,8 +120,9 @@ MONGODB = {
 
 
 
-
-db_connection = mongoengine.connect(db=MONGODB['NAME'], host=MONGODB['HOST'], username=MONGODB['USER'], password=MONGODB['PASSWORD'])
+MONGODB_HOST = os.environ.get('DB2_PORT_27017_TCP_ADDR', '127.0.0.1')
+print('MONGODB_HOST',MONGODB_HOST)
+db_connection = mongoengine.connect(db=MONGODB['NAME'], host=MONGODB_HOST, username=MONGODB['USER'], password=MONGODB['PASSWORD'])
 
 if IS_RUNNING_UNIT_TEST:
 	db_connection.drop_database(MONGODB['NAME'])

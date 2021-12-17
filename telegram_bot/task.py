@@ -54,20 +54,16 @@ def create_html_show(type,balance,total,page,total_page,updated):
 
 
 
-def test_callback(call): # <- passes a CallbackQuery type object to your function
-    print(call.data)
-    import random
 
-    bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                          text='test %s' % (random.randint(0, 99999999)), reply_markup=markup)
 
 @shared_task
-def check_cmd_telegram(chat_id,t_message_id=None,text=None,callback_query=''):
+def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=''):
     if callback_query:
         callback_split = callback_query.split('|')
         action = callback_split[0].strip()
         value = callback_split[1].strip()
         print(callback_query)
+        edit_telegram_notify_to_group(chat_id,message_id,callback_split,reply_markup=None)
     else:
         cmd = text.lstrip("/")
         if cmd == "listing":
@@ -78,11 +74,11 @@ def check_cmd_telegram(chat_id,t_message_id=None,text=None,callback_query=''):
                        {'id': 12341, 'account': 'c***@gmail.com', 'price': 12.55}]
             markup_button = creat_listing_markup(listing, 'amazon', page=1)
 
-            send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=t_message_id, reply_markup=markup_button)
+            send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
         else:
             msg = "Hệ thống không thể nhận diện được câu lệnh của bạn! vui lòng liên hệ admin: "+cmd
             #send_message(msg, t_chat["id"])
-            send_telegram_notify_to_group(chat_id, msg=str(msg),reply_id=t_message_id)
+            send_telegram_notify_to_group(chat_id, msg=str(msg),reply_id=message_id)
 
 
 if __name__ == '__main__':

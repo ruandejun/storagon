@@ -29,11 +29,13 @@ def telegram_bot(request):
             check_cmd_telegram.delay(chat_id, t_message_id, text)
     elif 'callback_query' in t_data:
         t_message = t_data["callback_query"]
+        t_reply_to_message = t_data["reply_to_message"]
         from_user = t_message['from']
         chat_id = from_user['id']
         data = t_message['data']
+        t_message_id = t_reply_to_message["message_id"]
         print(from_user['id'],data)
-        check_cmd_telegram.delay(chat_id,callback_query=data)
+        check_cmd_telegram.delay(chat_id,message_id=t_message_id,callback_query=data)
 
 
     return successResponse({"ok": "POST request processed"})

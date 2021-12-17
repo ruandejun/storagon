@@ -70,6 +70,7 @@ class BalanceType(EnumBase):
 	paypal = 2
 	webmoney = 3
 	ppd = 4
+	telegram = 5
 
 
 class SessionType(EnumBase):

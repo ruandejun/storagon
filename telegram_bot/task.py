@@ -63,6 +63,12 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=''):
         action = callback_split[0].strip()
         value = callback_split[1].strip()
         print(callback_query)
+        if action == 'buy':
+            print('==buy==', value)
+        elif action == 'view':
+            print('==view==', value)
+        elif action == 'refesh':
+            print('==refesh==', value)
         edit_telegram_notify_to_group(chat_id,message_id,callback_query,reply_markup=None)
     else:
         cmd = text.lstrip("/")

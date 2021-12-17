@@ -63,7 +63,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=''):
         action = callback_split[0].strip()
         value = callback_split[1].strip()
         print(callback_query)
-        edit_telegram_notify_to_group(chat_id,message_id,callback_split,reply_markup=None)
+        edit_telegram_notify_to_group(chat_id,message_id,callback_query,reply_markup=None)
     else:
         cmd = text.lstrip("/")
         if cmd == "listing":

@@ -53,6 +53,14 @@ def create_html_show(type,balance,total,page,total_page,updated):
 
 
 
+
+def test_callback(call): # <- passes a CallbackQuery type object to your function
+    print(call.data)
+    import random
+
+    bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                          text='test %s' % (random.randint(0, 99999999)), reply_markup=markup)
+
 @shared_task
 def check_cmd_telegram(chat_id,t_message_id=None,text=None,callback_query=''):
     if callback_query:
@@ -62,10 +70,15 @@ def check_cmd_telegram(chat_id,t_message_id=None,text=None,callback_query=''):
         print(callback_query)
     else:
         cmd = text.lstrip("/")
-        if cmd == "hello":
-            print('===hello===')
-            msg = 'Chào bạn đến tới bot của công ty vân mã chuyên mua hộ và vận chuyển xuyên quốc tế!'
-            send_telegram_notify_to_group(chat_id, msg=str(msg),reply_id=t_message_id)
+        if cmd == "listing":
+            print('===listing===')
+            html_show = create_html_show('amazon', 0, 127831270, 1, 12783127, '2021-11-25 21:02')
+            listing = [{'id': 12312, 'account': 'a*****@hotmail.com', 'price': 12.43},
+                       {'id': 12341, 'account': 'b****@gmail.com', 'price': 11.55},
+                       {'id': 12341, 'account': 'c***@gmail.com', 'price': 12.55}]
+            markup_button = creat_listing_markup(listing, 'amazon', page=1)
+
+            send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=t_message_id, reply_markup=markup_button)
         else:
             msg = "Hệ thống không thể nhận diện được câu lệnh của bạn! vui lòng liên hệ admin: "+cmd
             #send_message(msg, t_chat["id"])

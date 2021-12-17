@@ -120,9 +120,11 @@ MONGODB = {
 
 
 
-MONGODB_HOST = os.environ.get('mongodb_PORT_27017_TCP_ADDR', 'mongodb')
+MONGODB_HOST = 'mongodb://root:mongoadmin@mongodb:27017/storagon?authSource=admin'
 print('MONGODB_HOST',MONGODB_HOST)
-db_connection = mongoengine.connect(db=MONGODB['NAME'], host=MONGODB_HOST, username=MONGODB['USER'], password=MONGODB['PASSWORD'])
+db_connection = mongoengine.connect(db=MONGODB['NAME'], host=MONGODB_HOST)
+
+# db_connection = mongoengine.connect(db=MONGODB['NAME'], host=MONGODB_HOST, username=MONGODB['USER'], password=MONGODB['PASSWORD'], authentication_source="admin")
 
 if IS_RUNNING_UNIT_TEST:
 	db_connection.drop_database(MONGODB['NAME'])

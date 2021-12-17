@@ -120,7 +120,7 @@ MONGODB = {
 
 
 
-MONGODB_HOST = os.environ.get('DB2_PORT_27017_TCP_ADDR', '127.0.0.1')
+MONGODB_HOST = os.environ.get('mongodb_PORT_27017_TCP_ADDR', '127.0.0.1')
 print('MONGODB_HOST',MONGODB_HOST)
 db_connection = mongoengine.connect(db=MONGODB['NAME'], host=MONGODB_HOST, username=MONGODB['USER'], password=MONGODB['PASSWORD'])
 

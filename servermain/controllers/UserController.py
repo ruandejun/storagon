@@ -16,7 +16,7 @@ from django.db.models import Sum
 from django.core.cache import cache
 from django.conf import settings;
 
-from servermain.models import RealFile, User, UserFile, UserProfile
+from servermain.models import RealFile, User, UserFile, UserProfile, AccountBalance, AccountCurrency, AccountType
 from servermain.mongo_models import UserStorage, Session
 from storagon.tool import *
 from storagon.enum import *
@@ -222,4 +222,15 @@ def verifyAccountActivation(activation_code):
 		user.profile.save();
 	cache.delete(activation_code);
 	return True
+
+def calculateUserBlance(user_id,balance_type=0, currency=None):
+	try:
+		if currency:
+			accountBalance = AccountBalance.objects.get(user__pk=user_id, balance_type=balance_type, currency__code=currency)
+		else:
+			accountBalance = AccountBalance.objects.get(user__pk=user_id,balance_type=balance_type)
+	except AccountBalance.DoesNotExist:
+		logging.error(u"coundn't find accountBalance of user_id=%s"%(user_id));
+		return u"Couldn't find accountBalance for your account";
+
 

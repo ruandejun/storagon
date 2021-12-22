@@ -35,7 +35,7 @@ def getConfigure(key, default='', JSON=False, YAML=False, BUNCH=False):
 	if JSON:
 		result = json.loads(config.value);
 	elif YAML:
-		result = yaml.load(config.value);
+		result = yaml.safe_load(config.value);
 
 	if BUNCH and isinstance(result,dict):
 		result = Munch.fromDict(result)

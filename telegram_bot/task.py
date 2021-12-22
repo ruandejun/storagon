@@ -52,10 +52,6 @@ def create_html_show(type,balance,total,page,total_page,updated):
     return html_show
 
 
-
-
-
-
 @shared_task
 def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=''):
     if callback_query:

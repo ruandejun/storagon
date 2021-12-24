@@ -246,7 +246,6 @@ class TestSession(TestCase):
 
 		url = reverse('Session_PrivateAPI:listSession') + '?type=%s&status=%s' % (SessionType.delete, SessionStatus.waiting)
 		html = urlopen(self.client, url)
-		print(html);
 		sessionList = [Session.from_json(json.dumps(sessionData)) for sessionData in json.loads(html)]
 		self.assertEqual(len(sessionList), 2)
 
@@ -360,7 +359,6 @@ class TestSession(TestCase):
 		# except Exception as e:
 		# 	self.assertEqual(e[0], 500)  # status_code
 		# 	self.assertIn(u"banned", e[1])  # error message
-
 
 # Create your tests here.
 class TestUserGuest(TestCase):
@@ -708,9 +706,6 @@ class TestUserLogedIn(TestCase):
 		self.client.login(username=self.user.username, password=new_password)
 
 		self.test_getUserInfo(False);
-
-
-
 
 class TestUserFile(TestCase):
 

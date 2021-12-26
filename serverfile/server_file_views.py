@@ -144,7 +144,7 @@ def downloadView(request, downloadSessionID, token, fileName):
 
 		# get from cache first
 		session = cache.get(settings.CACHE_MONGO_SESSION_PREFIX + downloadSessionID, None)
-
+		print('==session.data==',session.data)
 		#get from jwt token
 		if not session and token:
 			try:
@@ -223,7 +223,7 @@ def downloadView(request, downloadSessionID, token, fileName):
 			response = HttpResponse()
 			response["Content-Disposition"] = 'attachment; filename="%s"' % (file_name)
 			file_path = '/media/' + file_location
-			# print file_path;
+			print('==file_path==',file_path);
 			# These lines let nginx handle download file
 			response['X-Accel-Redirect'] = file_path
 			# Set speed limit

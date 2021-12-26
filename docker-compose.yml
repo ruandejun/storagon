@@ -16,7 +16,6 @@ services:
     # command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/var/www/storagon/
-      - ./media_volume:/var/www/storagon/media
     depends_on:
       - memcache
       - redis
@@ -128,7 +127,6 @@ services:
     restart: always
 volumes:
   postgres_data:
-  media_volume:
   mongo_data:
 networks:
   frontend:

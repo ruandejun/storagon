@@ -29,10 +29,10 @@ from storagon.decorator import signature_test
 from servermain.mongo_models import Session
 from serverfile.tasks import recursive_mkdir, processMoveFileSessionList, processDeleteFileSessionList, processClearTemporaryFolder
 from celery.exceptions import TimeoutError
-
+from rest_framework.decorators import api_view
 from private_tracker.controllers import TorrentController
 
-
+@api_view(['GET','POST','PUT'])
 def downloadTorrentView(request, downloadSessionID, token, fileName):
 	""" Serve file download with data in downloadSesstionID via torrent downloader
 		@param downloadSessionID , use to retrive info of current download in mainServer (or encrypt data in downloadSessionID)
@@ -131,7 +131,7 @@ def downloadTorrentView(request, downloadSessionID, token, fileName):
 		response['X-Accel-Redirect'] = download_file_path
 		return response;
 
-
+@api_view(['GET','POST','PUT'])
 def downloadView(request, downloadSessionID, token, fileName):
 	""" Serve file download with data in downloadSesstionID
 		@param downloadSessionID , use to retrive info of current download in mainServer (or encrypt data in downloadSessionID)
@@ -238,7 +238,7 @@ def downloadView(request, downloadSessionID, token, fileName):
 	else:
 		return Http404()
 
-
+@api_view(['GET','POST','PUT'])
 @signature_test()
 def initiateDeleteSessionProcess(request):
 	""" Serve file will get DeleteSession from server main. Then delete all these file and send back deleteFile request
@@ -286,7 +286,7 @@ def initiateDeleteSessionProcess(request):
 	else:
 		return Http404()
 
-
+@api_view(['GET','POST','PUT'])
 @signature_test()
 def initiateMoveSessionProcess(request):
 	""" Serve file will get MoveSession from server main. Then delete all these file and send back deleteFile request
@@ -338,7 +338,7 @@ def initiateMoveSessionProcess(request):
 	else:
 		return Http404()
 
-
+@api_view(['GET','POST','PUT'])
 @signature_test()
 def initiateClearTemporaryFolderProcess(request):
 	""" Serve file will remove all chunk in temorary folder that exist more than an amount of time.

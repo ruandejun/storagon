@@ -144,7 +144,7 @@ def downloadView(request, downloadSessionID, token, fileName):
 
 		# get from cache first
 		session = cache.get(settings.CACHE_MONGO_SESSION_PREFIX + downloadSessionID, None)
-		print('==session.data==',session.data)
+
 		#get from jwt token
 		if not session and token:
 			try:
@@ -175,7 +175,7 @@ def downloadView(request, downloadSessionID, token, fileName):
 		# 	logging.info(u"Allow torrent session IP=%s to download without checking REMOTE_ADDR=%s"%(session.data['ip_address'] , request.META['REMOTE_ADDR']));
 		# elif session.data['ip_address'] != request.META['REMOTE_ADDR']:
 		# 	return errorResponse(u"Invalid user IP address=%s, cancel download!"%(request.META['REMOTE_ADDR']), code=0)
-
+		print('==session.data==', session.data)
 		if fileName:
 			file_name = fileName;
 		else:

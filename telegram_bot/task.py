@@ -2,7 +2,7 @@ import re, telebot
 from celery import shared_task
 from storagon import settings
 from telebot import types
-from servermain.models import User
+# from servermain.models import User
 
 
 def send_telegram_notify_to_group(group_id,msg,reply_markup=None,reply_id=None):
@@ -40,7 +40,15 @@ def creat_listing_markup(listing,type,page=0):
     inline_keyboard_deposit = types.InlineKeyboardButton('Deposit \U0001F4B3', callback_data='deposit')
     markup.row(inline_keyboard_menu, inline_keyboard_refesh, inline_keyboard_deposit)
     return markup
+def creat_deposit_markup():
 
+    markup = types.InlineKeyboardMarkup()
+
+    inline_keyboard_btc = types.InlineKeyboardButton('BTC', callback_data='deposit|BTC')
+    inline_keyboard_eth = types.InlineKeyboardButton('ETH', callback_data='deposit|ETH')
+    inline_keyboard_ltc = types.InlineKeyboardButton('LTC', callback_data='deposit|LTC')
+    markup.row(inline_keyboard_btc, inline_keyboard_eth, inline_keyboard_ltc)
+    return markup
 
 def create_html_show(type,balance,total,page,total_page,updated):
     html_show = '''
@@ -51,21 +59,41 @@ def create_html_show(type,balance,total,page,total_page,updated):
     ''' % (type,balance,total,page,total_page,updated)
     return html_show
 
+def create_html_deposit(balance):
+    html_show = '''
+<b>\U0001F47B MunBot automatic buying accounts \U0001F47D</b>
+<b>Balance: </b><code>$%s \U0001F4B3</code>
+Choose your deposit amount and the coin type
+
+Payment modes supported are 
+BTC | ETH | LTC | More being added soon
+
+Funds will be added after 2 confirmations.
+    ''' % (balance)
+    return html_show
+
 
 @shared_task
 def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=''):
     if callback_query:
-        callback_split = callback_query.split('|')
-        action = callback_split[0].strip()
-        value = callback_split[1].strip()
-        print(callback_query)
-        if action == 'buy':
-            print('==buy==', value)
-        elif action == 'view':
-            print('==view==', value)
-        elif action == 'refesh':
-            print('==refesh==', value)
-        edit_telegram_notify_to_group(chat_id,message_id,callback_query,reply_markup=None)
+        if callback_query.find('|') != -1:
+            callback_split = callback_query.split('|')
+            action = callback_split[0].strip()
+            value = callback_split[1].strip()
+            print(callback_query)
+            if action == 'buy':
+                print('==buy==', value)
+            elif action == 'view':
+                print('==view==', value)
+            elif action == 'refesh':
+                print('==refesh==', value)
+            elif action == 'deposit':
+                print('==deposit==', value)
+            edit_telegram_notify_to_group(chat_id,message_id,callback_query,reply_markup=None)
+        elif callback_query == 'deposit':
+            html_show = create_html_deposit(0)
+            markup_button = creat_deposit_markup()
+            edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
     else:
         cmd = text.lstrip("/")
         if cmd == "listing":
@@ -77,12 +105,59 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=''):
             markup_button = creat_listing_markup(listing, 'amazon', page=1)
 
             send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
+        elif cmd == 'deposit':
+            html_show = create_html_deposit(0)
+            markup_button = creat_deposit_markup()
+            send_telegram_notify_to_group(chat_id, msg=html_show, reply_id=message_id, reply_markup=markup_button)
         else:
             msg = "Hệ thống không thể nhận diện được câu lệnh của bạn! vui lòng liên hệ admin: "+cmd
             #send_message(msg, t_chat["id"])
             send_telegram_notify_to_group(chat_id, msg=str(msg),reply_id=message_id)
 
 
+
+def createCoinBase(name="BTC"):
+    print('==Create Coin Base==')
+    from coinbase.wallet.client import Client
+    import json
+    api_key='11MXKS7siI92KbqW'
+    api_secret='bjWdjutsdhUxq7MZPiBHCNO1zCPVqvvp'
+
+    client = Client(api_key, api_secret)
+    if name=='BTC':
+        account_id = '7c85e01f-b6ea-51d6-89b1-708a019257ab'
+    elif name == 'LTC':
+        account_id = '696babe5-d4d4-57df-864e-98b19dc24854'
+    elif name == 'ETH':
+        account_id = '3131d761-0b89-5458-b8ea-e87d5ab2d77b'
+    else:
+        return
+    # user = client.get_current_user()
+    # user_as_json_string = json.dumps(user)
+    # print(user_as_json_string)
+    # accounts = client.get_accounts(limit=200)
+    # cdict for cdict in my_list if cdict["task"] == 'key'
+    # print(accounts.data)
+    # for data in accounts.data:
+    #     if data.currency == 'ETH':
+    #         print(data.id)
+        # print('==',data.currency == 'LTC')
+    # assert isinstance(accounts.data, list)
+    # assert accounts[0] is accounts.data[0]
+    # assert len(accounts[::]) == len(accounts.data)
+    # account = client.get_primary_account()
+    # accountAddress = account.get_addresses()
+    # print(accountAddress.data)
+    # client.create_checkout()
+    # account = client.get_address(account_id,'c25f8b11-31c4-5fd6-9ea0-dde56a0a6595')
+    # print(account)
+    created = client.create_address(account_id)
+    print('created',created)
+    return created
+    # accountAddress = account.get_addresses()
+    # # print(account)
+    # print(len(accountAddress.data))
 if __name__ == '__main__':
     # get_tbk_coupon('python')
     print('===task===')
+    createCoinBase('ETH')

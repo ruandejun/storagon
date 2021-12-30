@@ -206,12 +206,14 @@ class AccountCurrency(models.Model):
     def __unicode__(self):
         return "%s" % (self.code)
 
+
 class AccountBalance(models.Model):
     user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
     balance_type = models.PositiveSmallIntegerField(choices=BalanceType.ChoiceList(), default=BalanceType.credit, db_index=True)
     currency = models.ForeignKey(AccountCurrency,blank=True, null=True, on_delete=models.SET_NULL)
     amount = models.BigIntegerField(default=0, db_index=True)
     account_id = models.CharField(default='', max_length=255, db_index=True)
+    address = models.CharField(default='', verbose_name=_("address"), max_length=255)
 
     def __unicode__(self):
         return "%s %s" % (self.user, BalanceType.AllLabelList()[self.balance_type])
@@ -221,16 +223,18 @@ class TransactionLog(models.Model):
     created_date = models.DateTimeField(auto_now_add=True, db_index=True)
     transaction_type = models.PositiveSmallIntegerField(choices=TransactionType.ChoiceList(), default=TransactionType.agency, db_index=True)
     transaction_status = models.PositiveSmallIntegerField(choices=TransactionStatus.ChoiceList(), default=TransactionStatus.auto, db_index=True)
-
     balance = models.ForeignKey('AccountBalance', null=True, on_delete=models.SET_NULL)
     amount = models.BigIntegerField(default=0, db_index=True)
 
     invoice_bill = models.ForeignKey(Bill, blank=True, null=True, on_delete=models.SET_NULL)
 
+    transaction_id = models.CharField(default='', max_length=255, db_index=True)
+
     data = models.TextField(blank=True)
 
 
     def __unicode__(self): return "%s <= %s" % (self.balance, self.invoice_bill)
+
 
 
 # Extra

@@ -14,7 +14,7 @@ import hashlib
 import os
 import jwt
 import time
-
+from rest_framework.decorators import api_view
 from django.utils import timezone
 
 
@@ -93,7 +93,7 @@ def checkAndBanIPOfClientMakingTooManyFailureRequest(request,key_prefix=settings
 		history_failure.insert(0, now)
 		cache.set(key_failure, history_failure, duration)
 
-
+@api_view(['GET','POST','PUT'])
 def my_resumable(request, upload_session_id=None, token=None):
 	if request.method == 'POST':
 		kwarg = request.POST

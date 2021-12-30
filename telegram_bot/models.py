@@ -27,7 +27,6 @@ class UserTelegram(models.Model):
     def __str__(self):
         return str(self.telegram_id)
 
-
 class Status(models.Model):
     class Meta:
         verbose_name = _("Status")

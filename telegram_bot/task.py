@@ -77,7 +77,7 @@ def create_html_deposit_details(balance, address, account_id):
 <b>\U0001F47B MunBot automatic buying accounts \U0001F47D</b>
 <b>Balance: </b><code>$%s \U0001F4B3</code>
 Here is the details:-
-Send crypto to the address shown below<a href="https://chart.googleapis.com/chart?chs=200x200&chld=%s&cht=qr&%s">.</a>
+<code>Send crypto to the address shown below<a href="https://chart.googleapis.com/chart?chs=200x200&chld=%s&cht=qr&%s">.</a></code>
 
 Address: %s
 Charge ID: %s

@@ -78,14 +78,14 @@ def create_html_deposit_details(balance, address, account_id):
 <b>Balance: </b><code>$%s \U0001F4B3</code>
 Here is the details:-
 Send crypto to the address shown below .
-(https://chart.googleapis.com/chart?chs=200x200&chld=L%7C2&cht=qr&%s)
+(https://chart.googleapis.com/chart?chs=200x200&chld=%s&cht=qr&%s)
 
 Address: %s
 Charge ID: %s
 
 1. Funds will be automatic convert to USD by your balance.
 2. Funds will be added after 2 confirmations.
-    ''' % (balance,address,address, account_id)
+    ''' % (balance,'L%7C2',address,address, account_id)
     return html_show
 
 @shared_task

@@ -72,6 +72,21 @@ Funds will be added after 2 confirmations.
     ''' % (balance)
     return html_show
 
+def create_html_deposit_details(balance, address, account_id):
+    html_show = '''
+<b>\U0001F47B MunBot automatic buying accounts \U0001F47D</b>
+<b>Balance: </b><code>$%s \U0001F4B3</code>
+Here is the details:-
+Send crypto to the address shown below .
+(https://chart.googleapis.com/chart?chs=200x200&chld=L%7C2&cht=qr&%s)
+
+Address: %s
+Charge ID: %s
+
+1. Funds will be automatic convert to USD by your balance.
+2. Funds will be added after 2 confirmations.
+    ''' % (balance,address,address, account_id)
+    return html_show
 
 @shared_task
 def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=''):
@@ -89,7 +104,9 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=''):
                 print('==refesh==', value)
             elif action == 'deposit':
                 print('==deposit==', value)
-            edit_telegram_notify_to_group(chat_id,message_id,callback_query,reply_markup=None)
+                html_show = create_html_deposit_details(0,'0xb83180d174Cde70dd5D9234078475Ba96A144b21','c25f8b11-31c4-5fd6-9ea0-dde56a0a6595')
+                markup_button = creat_deposit_markup()
+                edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
         elif callback_query == 'deposit':
             html_show = create_html_deposit(0)
             markup_button = creat_deposit_markup()

@@ -236,7 +236,6 @@ class TransactionLog(models.Model):
     def __unicode__(self): return "%s <= %s" % (self.balance, self.invoice_bill)
 
 
-
 # Extra
 
 

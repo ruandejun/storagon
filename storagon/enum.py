@@ -56,6 +56,7 @@ class TransactionType(EnumBase):
 	ppd = 5
 	rebill = 6
 	refererPPD = 7
+	deposit = 8
 
 
 class TransactionStatus(EnumBase):

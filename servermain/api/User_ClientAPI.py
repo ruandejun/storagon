@@ -188,7 +188,7 @@ def getUserBalance(request):
     else:
         raise Http404()
 
-
+@api_view(['GET','POST','PUT'])
 @signature_test()
 def signup(request):
     """ Signup a new user and login his account immediately
@@ -260,7 +260,7 @@ def signup(request):
     else:
         raise Http404()
 
-
+@api_view(['GET','POST','PUT'])
 @signature_test()
 def createTemporaryUser(request):
     """ Create a temporary account
@@ -293,7 +293,7 @@ def createTemporaryUser(request):
     else:
         raise Http404()
 
-
+@api_view(['GET','POST','PUT'])
 @signature_test()
 def signupTemporaryUserAccount(request):
     """ Signup for a temporary account
@@ -360,7 +360,7 @@ def resendActivationEmail(request):
         raise Http404()
 
 
-
+@api_view(['GET','POST','PUT'])
 @signature_test()
 def sendResetPasswordEmail(request):
     """ resendActivationEmail to user
@@ -387,6 +387,7 @@ def sendResetPasswordEmail(request):
             return successResponse()
     else:
         raise Http404()
+
 @api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()

@@ -2,8 +2,8 @@ import re, telebot
 from celery import shared_task
 from storagon import settings
 from telebot import types
-# from servermain.models import User
-
+from servermain.models import AccountBalance
+from django.contrib.auth.models import User
 
 def send_telegram_notify_to_group(group_id,msg,reply_markup=None,reply_id=None):
     #token='1235501300:AAEWPcah92B1PvsdvTCSHdT12CCg4gq-qZo'
@@ -72,20 +72,27 @@ Funds will be added after 2 confirmations.
     ''' % (balance)
     return html_show
 
-def create_html_deposit_details(balance, address, account_id):
+def create_html_deposit_details(balance,payment_method, address, account_id):
     html_show = '''
 <b>\U0001F47B MunBot automatic buying accounts \U0001F47D</b>
 <b>Balance: </b><code>$%s \U0001F4B3</code>
 Here is the details:-
 <code>Send crypto to the address shown below<a href="https://chart.googleapis.com/chart?chs=200x200&chld=%s&cht=qr&%s">.</a></code>
-
+Payment: %s
 Address: %s
 Charge ID: %s
 
 1. Funds will be automatic convert to USD by your balance.
 2. Funds will be added after 2 confirmations.
-    ''' % (balance,'L%7C2',address,address, account_id)
+    ''' % (balance,'L%7C2',payment_method,address,address, account_id)
     return html_show
+
+def get_or_create_user(username):
+    User.objects.filter(username=username)
+
+
+def get_deposit_address(name='BTC'):
+    AccountBalance.objects.get()
 
 @shared_task
 def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=''):
@@ -103,7 +110,11 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=''):
                 print('==refesh==', value)
             elif action == 'deposit':
                 print('==deposit==', value)
-                html_show = create_html_deposit_details(0,'0xb83180d174Cde70dd5D9234078475Ba96A144b21','c25f8b11-31c4-5fd6-9ea0-dde56a0a6595')
+                account_balance=0
+                account_address='0xb83180d174Cde70dd5D9234078475Ba96A144b21'
+                account_id='c25f8b11-31c4-5fd6-9ea0-dde56a0a6595'
+                payment_method=value
+                html_show = create_html_deposit_details(account_balance,account_address,payment_method,account_id)
                 markup_button = creat_deposit_markup()
                 edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
         elif callback_query == 'deposit':

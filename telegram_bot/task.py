@@ -106,6 +106,8 @@ def get_deposit_address(user,name='BTC'):
             return (walletAddress['address'],walletAddress['id'])
         else:
             return
+    else:
+        return (account_balance_obj.address, account_balance_obj.account_id)
 
 
 @shared_task
@@ -149,7 +151,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     account_address, account_id = adddress_info
                     print('==create deposit==', account_address, account_id)
                     payment_method=value
-                    html_show = create_html_deposit_details(current_banlance,account_address,payment_method,account_id)
+                    html_show = create_html_deposit_details(current_banlance,payment_method,account_address,account_id)
                     markup_button = creat_deposit_markup()
                     edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
         elif callback_query == 'deposit':

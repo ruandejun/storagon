@@ -16,8 +16,8 @@ XRATE_DECIMAL_PLACES = getattr(settings, 'XRATE_DECIMAL_PLACES', 0)
 
 class UserTelegram(models.Model):
     class Meta:
-        verbose_name = _("User Telegram")
-        verbose_name_plural = _("User Telegram")
+        verbose_name = _("User_Telegram")
+        verbose_name_plural = _("User_Telegram")
     modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
 
     created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
@@ -71,7 +71,7 @@ class AccountsSelling(models.Model):
     class Meta:
         verbose_name = _("AccountsSelling")
         verbose_name_plural = _("AccountsSelling")
-        abstract = True
+        # abstract = True
     created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True, db_index=True)
     modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True, db_index=True)
 

@@ -162,19 +162,36 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
         cmd = text.lstrip("/")
         if cmd == "listing":
             print('===listing===')
-            AccountsSelling.objects.filter(type__value='amazon')
-            html_show = create_html_show('amazon', current_banlance, 127831270, 1, 12783127, '2021-11-25 21:02')
-            listing = [{'id': 12312, 'account': 'a*****@hotmail.com', 'price': 12.43},
-                       {'id': 12341, 'account': 'b****@gmail.com', 'price': 11.55},
-                       {'id': 12341, 'account': 'c***@gmail.com', 'price': 12.55}]
-            markup_button = creat_listing_markup(listing, 'amazon', page=1)
+            list_account_objs = AccountsSelling.objects.filter(type__value='amazon', selling_status=SellingStatus.listed)
+            if list_account_objs.exists():
 
-            send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
+                limit = 10
+                account_page = 1
+                account_total = list_account_objs.count()
+                import math
+                page_total = math.ceil(float(list_account_objs.count()) / 10)
+                print(page_total)
+                list_accounta_show = list_account_objs[(account_page-1)*limit:account_page*limit]
+                html_show = create_html_show('amazon', current_banlance, account_total, account_page, page_total, '2021-11-25 21:02')
+
+                listing = [{'id': 12312, 'account': 'a*****@hotmail.com', 'price': 12.43},
+                           {'id': 12341, 'account': 'b****@gmail.com', 'price': 11.55},
+                           {'id': 12341, 'account': 'c***@gmail.com', 'price': 12.55}]
+                markup_button = creat_listing_markup(listing, 'amazon', page=1)
+
+                send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
+            else:
+                msg = "The all of account sold out."
+                # send_message(msg, t_chat["id"])
+                send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
         elif cmd == 'deposit':
             html_show = create_html_deposit(0)
             markup_button = creat_deposit_markup()
             send_telegram_notify_to_group(chat_id, msg=html_show, reply_id=message_id, reply_markup=markup_button)
         else:
+            import math
+            page_total = math.ceil(float(123) / 10)
+            print('test page==',page_total)
             msg = "The system cannot recognize your command! please contact admin: "+cmd
             #send_message(msg, t_chat["id"])
             send_telegram_notify_to_group(chat_id, msg=str(msg),reply_id=message_id)

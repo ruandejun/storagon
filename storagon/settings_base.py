@@ -121,7 +121,7 @@ MONGODB = {
 
 
 MONGODB_HOST = 'mongodb://root:mongoadmin@mongodb:27017/storagon?authSource=admin'
-print('MONGODB_HOST',MONGODB_HOST)
+
 db_connection = mongoengine.connect(db=MONGODB['NAME'], host=MONGODB_HOST)
 
 # db_connection = mongoengine.connect(db=MONGODB['NAME'], host=MONGODB_HOST, username=MONGODB['USER'], password=MONGODB['PASSWORD'], authentication_source="admin")

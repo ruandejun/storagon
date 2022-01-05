@@ -86,7 +86,7 @@ Charge ID: %s
 
 1. Funds will be automatic convert to USD by your balance.
 2. Funds will be added after 2 confirmations.
-    ''' % (balance,'L%7C2',payment_method,address,address, account_id)
+    ''' % (balance,'L%7C2',address,payment_method,address, account_id)
     return html_show
 
 def get_or_create_user(username):
@@ -143,10 +143,11 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
             elif action == 'refesh':
                 print('==refesh==', value)
             elif action == 'deposit':
-                print('==create deposit==', value)
+                # print('==create deposit==', value)
                 adddress_info = get_deposit_address(user, value)
                 if adddress_info:
                     account_address, account_id = adddress_info
+                    print('==create deposit==', account_address, account_id)
                     payment_method=value
                     html_show = create_html_deposit_details(current_banlance,account_address,payment_method,account_id)
                     markup_button = creat_deposit_markup()

@@ -28,7 +28,7 @@ class UserTelegram(models.Model):
 
     last_name = models.CharField(verbose_name=_("last_name"), blank=True, max_length=255)
 
-    username = models.CharField(verbose_name=_("username"), related_name='username_telegram', blank=True, max_length=255)
+    username = models.CharField(verbose_name=_("username"), blank=True, max_length=255)
 
     def __str__(self):
         return str(self.telegram_id)

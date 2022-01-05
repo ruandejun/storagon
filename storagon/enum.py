@@ -57,12 +57,16 @@ class TransactionType(EnumBase):
 	rebill = 6
 	refererPPD = 7
 	deposit = 8
+	withdrawn = 9
 
 
 class TransactionStatus(EnumBase):
 	auto = 0
 	manual = 1
 	revert = 2
+	success = 3
+	pending = 4
+	canceled = 5
 
 
 class BalanceType(EnumBase):
@@ -71,7 +75,6 @@ class BalanceType(EnumBase):
 	paypal = 2
 	webmoney = 3
 	ppd = 4
-	telegram = 5
 
 
 class SessionType(EnumBase):

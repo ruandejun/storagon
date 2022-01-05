@@ -2,9 +2,11 @@ import re, telebot
 from celery import shared_task
 from storagon import settings
 from telebot import types
-from servermain.models import AccountBalance
+from servermain.models import AccountBalance, AccountCurrency
 from django.contrib.auth.models import User
-
+from telegram_bot.models import UserTelegram
+from storagon.enum import *
+from servermain.controllers import UserController
 def send_telegram_notify_to_group(group_id,msg,reply_markup=None,reply_id=None):
     #token='1235501300:AAEWPcah92B1PvsdvTCSHdT12CCg4gq-qZo'
     token = settings.TELEGRAM_TOKEN
@@ -91,11 +93,43 @@ def get_or_create_user(username):
     User.objects.filter(username=username)
 
 
-def get_deposit_address(name='BTC'):
-    AccountBalance.objects.get()
+def get_deposit_address(user,name='BTC'):
+    currency_obj, created = AccountCurrency.objects.get_or_create(code=name, label=name)
+    account_balance_obj, created = AccountBalance.objects.get_or_create(user=user,balance_type=BalanceType.credit,currency=currency_obj)
+    # current_banlance = UserController.calculateUserBlance(account_balance_obj)
+    if created or len(account_balance_obj.address) < 3:
+        walletAddress = createCoinBaseAddress(name)
+        if walletAddress:
+            account_balance_obj.address = walletAddress['address']
+            account_balance_obj.account_id = walletAddress['id']
+            account_balance_obj.save()
+            return (walletAddress['address'],walletAddress['id'])
+        else:
+            return
+
 
 @shared_task
-def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=''):
+def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, chat=None):
+
+    userTelegram_objs = UserTelegram.objects.filter(telegram_id=chat_id)
+    if not userTelegram_objs.exits():
+        print('==create new user==')
+        user = User(username=chat_id)
+        user.set_password('telegrambot123')
+        user.save()
+        if chat:
+            user_telegram = UserTelegram(user=user,telegram_id=chat_id,first_name=chat['first_name'],last_name=chat['last_name'],username=chat['username'])
+        else:
+            user_telegram = UserTelegram(user=user, telegram_id=chat_id)
+        user_telegram.save()
+    else:
+        user_telegram = userTelegram_objs.first()
+        user = user_telegram.user
+    currency_obj, created = AccountCurrency.objects.get_or_create(code='USD', label='USD')
+    account_balance_obj, created = AccountBalance.objects.get_or_create(user=user,balance_type=BalanceType.credit,currency=currency_obj)
+    current_banlance = UserController.calculateUserBlance(account_balance_obj)
+
+
     if callback_query:
         if callback_query.find('|') != -1:
             callback_split = callback_query.split('|')
@@ -109,14 +143,14 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=''):
             elif action == 'refesh':
                 print('==refesh==', value)
             elif action == 'deposit':
-                print('==deposit==', value)
-                account_balance=0
-                account_address='0xb83180d174Cde70dd5D9234078475Ba96A144b21'
-                account_id='c25f8b11-31c4-5fd6-9ea0-dde56a0a6595'
-                payment_method=value
-                html_show = create_html_deposit_details(account_balance,account_address,payment_method,account_id)
-                markup_button = creat_deposit_markup()
-                edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
+                print('==create deposit==', value)
+                adddress_info = get_deposit_address(user, value)
+                if adddress_info:
+                    account_address, account_id = adddress_info
+                    payment_method=value
+                    html_show = create_html_deposit_details(current_banlance,account_address,payment_method,account_id)
+                    markup_button = creat_deposit_markup()
+                    edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
         elif callback_query == 'deposit':
             html_show = create_html_deposit(0)
             markup_button = creat_deposit_markup()
@@ -125,7 +159,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=''):
         cmd = text.lstrip("/")
         if cmd == "listing":
             print('===listing===')
-            html_show = create_html_show('amazon', 0, 127831270, 1, 12783127, '2021-11-25 21:02')
+            html_show = create_html_show('amazon', current_banlance, 127831270, 1, 12783127, '2021-11-25 21:02')
             listing = [{'id': 12312, 'account': 'a*****@hotmail.com', 'price': 12.43},
                        {'id': 12341, 'account': 'b****@gmail.com', 'price': 11.55},
                        {'id': 12341, 'account': 'c***@gmail.com', 'price': 12.55}]
@@ -137,19 +171,16 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=''):
             markup_button = creat_deposit_markup()
             send_telegram_notify_to_group(chat_id, msg=html_show, reply_id=message_id, reply_markup=markup_button)
         else:
-            msg = "Hệ thống không thể nhận diện được câu lệnh của bạn! vui lòng liên hệ admin: "+cmd
+            msg = "The system cannot recognize your command! please contact admin: "+cmd
             #send_message(msg, t_chat["id"])
             send_telegram_notify_to_group(chat_id, msg=str(msg),reply_id=message_id)
 
 
-
-def createCoinBase(name="BTC"):
+def createCoinBaseAddress(name="BTC"):
     print('==Create Coin Base==')
     from coinbase.wallet.client import Client
-    import json
     api_key='11MXKS7siI92KbqW'
     api_secret='bjWdjutsdhUxq7MZPiBHCNO1zCPVqvvp'
-
     client = Client(api_key, api_secret)
     if name=='BTC':
         account_id = '7c85e01f-b6ea-51d6-89b1-708a019257ab'
@@ -159,32 +190,12 @@ def createCoinBase(name="BTC"):
         account_id = '3131d761-0b89-5458-b8ea-e87d5ab2d77b'
     else:
         return
-    # user = client.get_current_user()
-    # user_as_json_string = json.dumps(user)
-    # print(user_as_json_string)
-    # accounts = client.get_accounts(limit=200)
-    # cdict for cdict in my_list if cdict["task"] == 'key'
-    # print(accounts.data)
-    # for data in accounts.data:
-    #     if data.currency == 'ETH':
-    #         print(data.id)
-        # print('==',data.currency == 'LTC')
-    # assert isinstance(accounts.data, list)
-    # assert accounts[0] is accounts.data[0]
-    # assert len(accounts[::]) == len(accounts.data)
-    # account = client.get_primary_account()
-    # accountAddress = account.get_addresses()
-    # print(accountAddress.data)
-    # client.create_checkout()
-    # account = client.get_address(account_id,'c25f8b11-31c4-5fd6-9ea0-dde56a0a6595')
-    # print(account)
     created = client.create_address(account_id)
     print('created',created)
+
     return created
-    # accountAddress = account.get_addresses()
-    # # print(account)
-    # print(len(accountAddress.data))
+
 if __name__ == '__main__':
     # get_tbk_coupon('python')
     print('===task===')
-    createCoinBase('ETH')
+    createCoinBaseAddress('ETH')

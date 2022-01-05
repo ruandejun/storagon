@@ -16,12 +16,12 @@ from django.db.models import Sum
 from django.core.cache import cache
 from django.conf import settings;
 
-from servermain.models import RealFile, User, UserFile, UserProfile, AccountBalance, AccountCurrency, AccountType
+from servermain.models import RealFile, User, UserFile, UserProfile, AccountBalance, AccountCurrency, AccountType, TransactionLog
 from servermain.mongo_models import UserStorage, Session
 from storagon.tool import *
 from storagon.enum import *
 from system_configure.controllers import SystemConfigureController
-
+from django.db.models import Sum, F, Count, Q , Case, When, Value
 
 def calculateUserStorage(user_id):
 	"""Recalculate an user storage
@@ -223,14 +223,43 @@ def verifyAccountActivation(activation_code):
 	cache.delete(activation_code);
 	return True
 
-def calculateUserBlance(user_id,balance_type=0, currency=None):
-	try:
-		if currency:
-			accountBalance = AccountBalance.objects.get(user__pk=user_id, balance_type=balance_type, currency__code=currency)
+def calculateUserBlance(accountBalance, realtime=False):
+	if realtime:
+		print('==get deposit==')
+		transaction_deposits = TransactionLog.objects.filter(balance=accountBalance,transaction_type=TransactionType.deposit, transaction_status=TransactionStatus.success).aggregate(
+	            sum_amount=Sum(F('amount')), count=Count(F('id')))
+		print('==get paid==')
+		transaction_paids = TransactionLog.objects.filter(balance=accountBalance,transaction_type=TransactionType.pay, transaction_status=TransactionStatus.success).aggregate(
+	            sum_amount=Sum(F('amount')), count=Count(F('id')))
+		print('==get refund==')
+		transaction_withdrawns = TransactionLog.objects.filter(balance=accountBalance,transaction_type=TransactionType.withdrawn, transaction_status=TransactionStatus.success).aggregate(
+	            sum_amount=Sum(F('amount')), count=Count(F('id')))
+
+		if not transaction_deposits['sum_amount']:
+			sum_deposits_amount = 0
 		else:
-			accountBalance = AccountBalance.objects.get(user__pk=user_id,balance_type=balance_type)
-	except AccountBalance.DoesNotExist:
-		logging.error(u"coundn't find accountBalance of user_id=%s"%(user_id));
-		return u"Couldn't find accountBalance for your account";
+			sum_deposits_amount = transaction_deposits['sum_amount']
+
+		if not transaction_paids['sum_amount']:
+			sum_pays_amount = 0
+		else:
+			sum_pays_amount = transaction_paids['sum_amount']
+		if not transaction_withdrawns['sum_amount']:
+			sum_withdrawns_amount = 0
+		else:
+			sum_withdrawns_amount = transaction_withdrawns['sum_amount']
+		current_banlance = sum_deposits_amount - sum_pays_amount - sum_withdrawns_amount
+		accountBalance.amount = current_banlance
+		accountBalance.save(update_fields=['amount'])
+	else:
+		current_banlance = accountBalance.amount
+	return current_banlance
+
+
+
+
+
+
+
 
 

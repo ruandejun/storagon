@@ -20,9 +20,15 @@ class UserTelegram(models.Model):
 
     created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
 
-    user = models.ForeignKey(User, verbose_name=_("User"), related_name='telegram', on_delete=models.PROTECT)
+    user = models.ForeignKey(User, verbose_name=_("User"), related_name='user_telegram', on_delete=models.PROTECT)
 
-    telegram_id = models.CharField(verbose_name=_("telegram_id"), blank=True, max_length=255, db_index=True)
+    telegram_id = models.CharField(verbose_name=_("telegram_id"), blank=True, max_length=255)
+
+    first_name = models.CharField(verbose_name=_("first_name"), blank=True, max_length=255)
+
+    last_name = models.CharField(verbose_name=_("last_name"), blank=True, max_length=255)
+
+    username = models.CharField(verbose_name=_("username"), related_name='username_telegram', blank=True, max_length=255)
 
     def __str__(self):
         return str(self.telegram_id)

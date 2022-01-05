@@ -26,7 +26,7 @@ def telegram_bot(request):
         if 'text' in t_message:
             text = t_message["text"].strip()
             chat_id = t_chat["id"]
-            check_cmd_telegram.delay(chat_id, t_message_id, text)
+            check_cmd_telegram.delay(chat_id, t_message_id, text, chat=t_chat)
     elif 'callback_query' in t_data:
         t_message = t_data["callback_query"]
         t_reply_to_message = t_message["message"]

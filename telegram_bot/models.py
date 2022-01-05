@@ -103,7 +103,7 @@ class AccountsSelling(models.Model):
 
 	signup_ip = models.CharField(blank=True, null=True, max_length=255, db_index=True)
 
-	status = models.PositiveSmallIntegerField(choices=SellingStatus.ChoiceList(), default=SellingStatus.listed,
+	selling_status = models.PositiveSmallIntegerField(choices=SellingStatus.ChoiceList(), default=SellingStatus.listed,
 	                                               db_index=True)
 	def save(self, *args, **kwargs):
 		user = get_current_user()

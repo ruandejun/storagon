@@ -51,71 +51,71 @@ class Status(models.Model):
         return str(self.label) or ''
 
 class AccountsType(models.Model):
-	class Meta:
-		verbose_name = _("AccountsType")
-		verbose_name_plural = _("AccountsType")
+    class Meta:
+        verbose_name = _("AccountsType")
+        verbose_name_plural = _("AccountsType")
 
-	created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
-	modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
+    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
+    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
 
-	value = models.CharField(verbose_name=_("value"), max_length=255, primary_key=True, unique=True)
-	label = models.CharField(verbose_name=_("label"), max_length=255)
-	default = models.BooleanField(verbose_name=_("default"), default=False, db_index=True)
+    value = models.CharField(verbose_name=_("value"), max_length=255, primary_key=True, unique=True)
+    label = models.CharField(verbose_name=_("label"), max_length=255)
+    default = models.BooleanField(verbose_name=_("default"), default=False, db_index=True)
 
-	def __str__(self):
-		return str(self.label)
+    def __str__(self):
+        return str(self.label)
 
 class AccountsSelling(models.Model):
-	class Meta:
-		verbose_name = _("AccountsSelling")
-		verbose_name_plural = _("AccountsSelling")
-		abstract = True
-	created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True, db_index=True)
-	modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True, db_index=True)
+    class Meta:
+        verbose_name = _("AccountsSelling")
+        verbose_name_plural = _("AccountsSelling")
+        abstract = True
+    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True, db_index=True)
+    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True, db_index=True)
 
-	created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
-	modified_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_modified', on_delete=models.PROTECT)
+    created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
+    modified_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_modified', on_delete=models.PROTECT)
 
-	warranty_date = models.DateTimeField(verbose_name=_("warranty_date"), null=True, blank=True)
+    warranty_date = models.DateTimeField(verbose_name=_("warranty_date"), null=True, blank=True)
 
-	warranty = models.BooleanField(verbose_name=_("warranty"), default=False)
+    warranty = models.BooleanField(verbose_name=_("warranty"), default=False)
 
-	customer = models.ForeignKey(User, verbose_name=_("customer"), related_name="accounts_customer_set", null=True,
-								 blank=True, on_delete=models.PROTECT)
+    customer = models.ForeignKey(User, verbose_name=_("customer"), related_name="accounts_customer_set", null=True,
+                                 blank=True, on_delete=models.PROTECT)
 
-	type = models.ForeignKey(AccountsType, verbose_name=_("type"),
-							 related_name="type_set", null=True,
-							 blank=True, on_delete=models.PROTECT)
+    type = models.ForeignKey(AccountsType, verbose_name=_("type"),
+                             related_name="type_set", null=True,
+                             blank=True, on_delete=models.PROTECT)
 
-	ordered = models.BooleanField(verbose_name=_("ordered"), default=False)
+    ordered = models.BooleanField(verbose_name=_("ordered"), default=False)
 
-	ordered_date = models.DateTimeField(verbose_name=_("ordered_date"), null=True, blank=True)
+    ordered_date = models.DateTimeField(verbose_name=_("ordered_date"), null=True, blank=True)
 
-	owner = models.ForeignKey(User, verbose_name=_("owner"), related_name="accounts_owner_set", null=True,
-								 blank=True, on_delete=models.PROTECT)
+    owner = models.ForeignKey(User, verbose_name=_("owner"), related_name="accounts_owner_set", null=True,
+                                 blank=True, on_delete=models.PROTECT)
 
-	details = models.CharField(max_length=9999, db_index=True)
+    details = models.CharField(max_length=9999, db_index=True)
 
-	note = models.TextField(verbose_name=_("note"), blank=True, null=True)
+    note = models.TextField(verbose_name=_("note"), blank=True, null=True)
 
-	price = models.DecimalField(verbose_name=_("price"), default=decimal.Decimal(0), max_digits=MONEY_MAX_DIGITS,
-								decimal_places=MONEY_DECIMAL_PLACES, validators=[MinValueValidator(0)], db_index=True)
+    price = models.DecimalField(verbose_name=_("price"), default=decimal.Decimal(0), max_digits=MONEY_MAX_DIGITS,
+                                decimal_places=MONEY_DECIMAL_PLACES, validators=[MinValueValidator(0)], db_index=True)
 
-	signup_ip = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    signup_ip = models.CharField(blank=True, null=True, max_length=255, db_index=True)
 
-	selling_status = models.PositiveSmallIntegerField(choices=SellingStatus.ChoiceList(), default=SellingStatus.listed,
-	                                               db_index=True)
-	def save(self, *args, **kwargs):
-		user = get_current_user()
-		if user and user.is_authenticated():
-			self.modified_by = user
-			if self._state.adding:
-				self.created_by = user
+    selling_status = models.PositiveSmallIntegerField(choices=SellingStatus.ChoiceList(), default=SellingStatus.listed,
+                                                   db_index=True)
+    def save(self, *args, **kwargs):
+        user = get_current_user()
+        if user and user.is_authenticated():
+            self.modified_by = user
+            if self._state.adding:
+                self.created_by = user
 
-		super(AccountsSelling, self).save(*args, **kwargs)
+        super(AccountsSelling, self).save(*args, **kwargs)
 
-	def __unicode__(self):
-		return self.details
+    def __unicode__(self):
+        return self.details
 
-	def __str__(self):
-		return self.type
+    def __str__(self):
+        return self.type

@@ -46,6 +46,10 @@ class BillStatus(EnumBase):
 	cancel = 1
 	fraud = 2
 
+class SellingStatus(EnumBase):
+	listed = 0
+	sold = 1
+	block = 2
 
 class TransactionType(EnumBase):
 	agency = 0

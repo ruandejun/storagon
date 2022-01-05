@@ -4,7 +4,7 @@ from storagon import settings
 from telebot import types
 from servermain.models import AccountBalance, AccountCurrency
 from django.contrib.auth.models import User
-from telegram_bot.models import UserTelegram
+from telegram_bot.models import UserTelegram, AccountsSelling
 from storagon.enum import *
 from servermain.controllers import UserController
 def send_telegram_notify_to_group(group_id,msg,reply_markup=None,reply_id=None):
@@ -162,6 +162,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
         cmd = text.lstrip("/")
         if cmd == "listing":
             print('===listing===')
+            AccountsSelling.objects.filter(type__value='amazon')
             html_show = create_html_show('amazon', current_banlance, 127831270, 1, 12783127, '2021-11-25 21:02')
             listing = [{'id': 12312, 'account': 'a*****@hotmail.com', 'price': 12.43},
                        {'id': 12341, 'account': 'b****@gmail.com', 'price': 11.55},

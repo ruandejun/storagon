@@ -326,7 +326,7 @@ REST_FRAMEWORK = {
 		'heavy_api': '20/minute',
 		'light_api': '40/minute'
 	},
-
+	'DATETIME_FORMAT': "%Y-%m-%d %H:%M:%S.%f%z",
 	# 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
 	# 'PAGINATE_BY': 20,                 # Default to 10
 }

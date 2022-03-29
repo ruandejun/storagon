@@ -8,20 +8,22 @@
 #  Copyright (c) 2014 __MyCompanyName__. All rights reserved.
 #
 
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 from django.views.generic import RedirectView, TemplateView
+from .File_ClientAPI import *
 
-urlpatterns = patterns('servermain.api.File_ClientAPI',
+urlpatterns = [
 	#url(r'^home/$', TemplateView.as_view(template_name='example/home.html'), name="home"),
 	#url(r'^/?$', RedirectView.as_view(pattern_name="home")),
 
-	url(r'^moveFile/', 'moveFile', name='moveFile'),
-	url(r'^deleteFile/', 'deleteFile', name='deleteFile'),
-	url(r'^newFolder/', 'newFolder', name='newFolder'),
-	url(r'^moveFolder/', 'moveFolder', name='moveFolder'),
-	url(r'^deleteFolder/', 'deleteFolder', name='deleteFolder'),
-	url(r'^listFileAndFolder/', 'listFileAndFolder', name='listFileAndFolder'),
-	url(r'^editFolder/', 'editFolder', name='editFolder'),
-	url(r'^editFile/', 'editFile', name='editFile'),
-	url(r'^getLink/', 'getLink', name='getLink'),
-)
+	url(r'^moveFile/', moveFile, name='moveFile'),
+	url(r'^deleteFile/', deleteFile, name='deleteFile'),
+	url(r'^newFolder/', newFolder, name='newFolder'),
+	url(r'^moveFolder/', moveFolder, name='moveFolder'),
+	url(r'^deleteFolder/', deleteFolder, name='deleteFolder'),
+	url(r'^listFileAndFolder/', listFileAndFolder, name='listFileAndFolder'),
+	url(r'^editFolder/', editFolder, name='editFolder'),
+	url(r'^editFile/', editFile, name='editFile'),
+	url(r'^getLink/', getLink, name='getLink'),
+	url(r'^getFile/', getFile, name='getFile'),
+]

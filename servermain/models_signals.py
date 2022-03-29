@@ -26,7 +26,7 @@ from storagon.PrivateAPI_SDK import SignalSDK
 from system_configure.controllers import SystemConfigureController
 from system_configure.models import SystemConfig
 from system_configure.signals import post_verify_code
-from bunch import Bunch
+from munch import Munch
 
 @receiver(post_verify_code, sender=SystemConfig)
 def postVerifyCode(sender, **kwargs):
@@ -67,7 +67,7 @@ def postSaveUser(sender, **kwargs):
 		newProfile.account_status = AccountStatus.emailNotActivated
 		newProfile.storage_space = settings.INITIAL_USER_STORAGE_SPACE
 		newProfile.plan_expired=timezone.now();
-		newProfile.eumk = base64.b64encode(hashlib.sha1('eumk_%s' % (random.randint(0, 10**9))).hexdigest()[:32])  # random genereated eumk
+		newProfile.eumk = base64.b64encode(hashlib.sha1(('eumk_%s' % (random.randint(0, 10**9))).encode('utf-8')).hexdigest()[:32].encode("utf-8"))  # random genereated eumk
 		newProfile.save()
 		# automaticaly create all type of balance for this user
 		for balanceType in [BalanceType.credit,BalanceType.point,BalanceType.ppd]:
@@ -102,15 +102,22 @@ def postDeleteUserFile(sender, **kwargs):
 
 		# check whether a session has been created to delete this realFile exist or not, if not create one
 		try:
-			session, created = Session.objects.get_or_create(
-				status=SessionStatus.waiting, type=SessionType.delete, fid=userFile.realFile.id, sid=userFile.realFile.serverFile.id, text=userFile.realFile.file_location, defaults={
-				'status': SessionStatus.waiting, 'type': SessionType.delete, 'fid': userFile.realFile.id, 'sid': userFile.realFile.serverFile.id, 'text': userFile.realFile.file_location})
+			session = Session.objects.get(
+				status=SessionStatus.waiting, type=SessionType.delete, fid=userFile.realFile.id, sid=userFile.realFile.serverFile.id, text=userFile.realFile.file_location)
+			created = False
+		except Session.DoesNotExist:
+			defaults = {
+				'status': SessionStatus.waiting, 'type': SessionType.delete, 'fid': userFile.realFile.id,
+				'sid': userFile.realFile.serverFile.id, 'text': userFile.realFile.file_location}
+			session = Session.from_json(json.dumps(defaults))
+			session.save()
+			created = True
 		except Session.MultipleObjectsReturned:
 			created = False
 
 		if created:  # a new delete sesion is created
 			serverFile = userFile.realFile.serverFile
-			storage, created = ServerFileStorage.objects.get_or_create(pk=serverFile.id, defaults={'pk': serverFile.id})
+			storage = ServerFileStorage.objects.get(pk=serverFile.id)
 			from system_configure.controllers.SystemConfigureController import getConfigure
 			initiateDeleteSessionProcessNumber = getConfigure('initiateDeleteSessionProcessNumber', 200)
 			if storage.waiting_delete_session_count + 1 >= initiateDeleteSessionProcessNumber:
@@ -164,10 +171,19 @@ def postDeleteRealFile(sender, **kwargs):
 	ServerFileStorage.objects(pk=realFile.serverFile.id).update_one(dec__file_count=1, dec__storage_used=realFile.file_size)
 	###
 	# check whether a session has been created to delete this realFile exist or not, if not create one
+
+
 	try:
-		session, created = Session.objects.get_or_create(
-	type=SessionType.delete, fid=realFile.id, sid=realFile.serverFile.id, text=realFile.file_location		, defaults={
-		'status': SessionStatus.waiting, 'type': SessionType.delete, 'fid': realFile.id, 'sid': realFile.serverFile.id, 'text': realFile.file_location})
+		session = Session.objects.get(
+	type=SessionType.delete, fid=realFile.id, sid=realFile.serverFile.id, text=realFile.file_location)
+		created = False
+	except Session.DoesNotExist:
+		defaults = {
+			'status': SessionStatus.waiting, 'type': SessionType.delete, 'fid': realFile.id,
+			'sid': realFile.serverFile.id, 'text': realFile.file_location}
+		session = Session.from_json(json.dumps(defaults))
+		session.save()
+		created = True
 	except Session.MultipleObjectsReturned:
 		pass
 	else:
@@ -231,7 +247,7 @@ def postSaveUserApply(sender, **kwargs):
 
 		# ApplyType.payAffiliate
 		if userApply.apply_type == ApplyType.payAffiliate:
-			data = Bunch(json.loads(userApply.data))
+			data = Munch(json.loads(userApply.data))
 			if BalanceController.transferBalance(data.withdraw_balance_id,data.deposit_balance_id,data.withdraw_amount,data.deposit_amount):
 				TransactionLog(transaction_type=TransactionType.transfer,
 							balance_id=data.withdraw_balance_id,

@@ -8,16 +8,16 @@
 #  Copyright (c) 2014 __MyCompanyName__. All rights reserved.
 #
 
-from urlparse import urlparse
+from urllib.parse import urlparse
 from django.utils import timezone
 import json
-from bunch import Bunch
-import BalanceController
+from munch import Munch
+from . import BalanceController
 from servermain.mongo_models import Session
 from servermain.models import AccountBalance, TransactionLog, UserProfile, UserFile, WebsiteAgency
 from storagon.tool import *
 from storagon.enum import *
-from storagon.browser import Browser
+from storagon.browser import Browser, Rqbrowser
 from servermain.controllers import TransactionController
 from system_configure.controllers import SystemConfigureController
 from django.db import connection
@@ -287,7 +287,7 @@ def verifyWebsiteOwner(affiliate_user, website_address):
 	if settings.IS_RUNNING_UNIT_TEST:
 		return domain;
 
-	br=Browser();
+	br=Rqbrowser();
 
 	for ti in range(3):
 		try: text = br.open(url);
@@ -339,7 +339,7 @@ def countMoneyOnWithdrawingOfBalance(balance):
 	sum_money = 0;
 	count_application = 0;
 	for application in querySet:
-		data = Bunch(json.loads(application.data))
+		data = Munch(json.loads(application.data))
 		if balance.id != data.withdraw_balance_id:continue;
 		sum_money+=data.withdraw_amount
 		count_application+=1

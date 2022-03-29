@@ -14,12 +14,12 @@ from servermain.models import AccountBalance
 from servermain.controllers import StatisticsController, AffiliateController, RestfulController
 from storagon.enum import *
 from django.utils import timezone
-from bunch import Bunch
+from munch import Munch
 from rest_framework.response import Response
 from rest_framework import status
 
 from rest_framework import serializers, generics, mixins, permissions, exceptions, viewsets
-from rest_framework.decorators import detail_route,list_route
+from rest_framework.decorators import action
 
 
 class BlankForm(serializers.Serializer):pass;
@@ -33,13 +33,13 @@ class TransactionStatisticsFilterForm(serializers.Serializer):
 
 class AffiliateStatisticsAPI(viewsets.GenericViewSet):
 
-	@list_route(methods=['get'], serializer_class=TransactionStatisticsFilterForm, permission_classes=[permissions.IsAuthenticated, RestfulController.IsSignatureVerified])
+	@action(detail=False,methods=['get'], serializer_class=TransactionStatisticsFilterForm, permission_classes=[permissions.IsAuthenticated, RestfulController.IsSignatureVerified])
 	def transactionStatistics(self, request, *args, **kwargs):
-		formPOST=TransactionStatisticsFilterForm(data=request.QUERY_PARAMS);
+		formPOST=TransactionStatisticsFilterForm(data=request.query_params);
 		if not formPOST.is_valid():
 			return errorResponseRestful(formPOST.errors,code=status.HTTP_400_BAD_REQUEST);
 		#::type: TransactionStatisticsFilterForm
-		data=Bunch(formPOST.data)
+		data=Munch(formPOST.data)
 
 		from_date = timezone.datetime.strptime(data.from_date, "%Y-%m-%d")
 		to_date = timezone.datetime.strptime(data.to_date, "%Y-%m-%d")

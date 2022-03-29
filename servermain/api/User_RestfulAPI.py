@@ -8,29 +8,29 @@
 #  Copyright (c) 2015 storagon. All rights reserved.
 #
 
-from django import shortcuts
-from django.template import RequestContext
-from django.http import *
-from django.core.urlresolvers import reverse
-
-from django.conf import settings;
-from django.views.decorators.csrf import csrf_exempt, csrf_protect
-from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
+# from django import shortcuts
+# from django.template import RequestContext
+# from django.http import *
+# from django.urls import reverse
+#
+# from django.conf import settings;
+# from django.views.decorators.csrf import csrf_exempt, csrf_protect
+# from django.contrib.auth.decorators import login_required
+# from django.utils.decorators import method_decorator
 
 from servermain.controllers import AffiliateController, BalanceController
 from servermain.models import User, UserProfile, AccountBalance, WebsiteAgency, UserApply, TransactionLog
 from storagon.enum import *
 from storagon.tool import *
 from system_configure.controllers import Tool
-from bunch import Bunch
+from munch import Munch
 import redis
 
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 
 from rest_framework import serializers, generics, mixins, permissions, exceptions, viewsets, status
-from rest_framework.decorators import list_route,detail_route
+from rest_framework.decorators import action
 from servermain.controllers.RestfulController import IsAffiliateProfile,IsOwnerOrNotAllow,IsOwnerOrReadOnly,ServerError,IsSignatureVerified
 
 
@@ -67,7 +67,7 @@ class CurrentUserProfileView(viewsets.GenericViewSet):
 
 	permission_classes = (permissions.IsAuthenticated,IsSignatureVerified)
 
-	@list_route(methods=['get'],permission_classes=[permissions.IsAuthenticated, IsSignatureVerified])
+	@action(detail=False,methods=['get'],permission_classes=[permissions.IsAuthenticated, IsSignatureVerified])
 	def show(self, request, *args, **kwargs):
 		slz1 = UserSerializer(instance=request.user)
 		slz2 = UserProfileSerializer(instance=request.user.profile)
@@ -76,7 +76,7 @@ class CurrentUserProfileView(viewsets.GenericViewSet):
 		merged_data.update(slz2.data);
 		return Response(merged_data);
 
-	@list_route(methods=['patch'],permission_classes=[permissions.IsAuthenticated, IsSignatureVerified], serializer_class=UserProfileSerializer)
+	@action(detail=False,methods=['patch'],permission_classes=[permissions.IsAuthenticated, IsSignatureVerified], serializer_class=UserProfileSerializer)
 	def edit(self, request, *args, **kwargs):
 		serializer = UserProfileSerializer(instance=request.user.profile, data=request.data, partial=True); #partial=True is for PATCH
 		if serializer.is_valid():
@@ -110,7 +110,7 @@ class CurrentUserAccountBalanceView(viewsets.GenericViewSet, generics.ListCreate
 
 		serializer.save(user=self.request.user) #set user = currentUser
 
-	@detail_route(methods=['get'], permission_classes=[permissions.IsAuthenticated, IsAffiliateProfile, IsOwnerOrNotAllow])
+	@action(detail=True,methods=['get'], permission_classes=[permissions.IsAuthenticated, IsAffiliateProfile, IsOwnerOrNotAllow])
 	def getNonAvaiableTransaction(self, request, *args, **kwargs):
 		balance = self.get_object();
 		result = AffiliateController.countNotAvailableTransactionOfBalance(balance.id);
@@ -171,7 +171,7 @@ class RequestPayForm(serializers.Serializer):
 class CurrentUserUserApplyView(viewsets.GenericViewSet):
 	permission_classes = [permissions.IsAuthenticated, IsSignatureVerified]
 
-	@list_route(methods=['post'], serializer_class=RequestPayForm)
+	@action(detail=False,methods=['post'], serializer_class=RequestPayForm)
 	def requestPay(self, request, *args, **kwargs):
 		""" requestPay \n\n
 		withdraw_balance_id : serializers.IntegerField(min_value=0)
@@ -182,7 +182,7 @@ class CurrentUserUserApplyView(viewsets.GenericViewSet):
 		if not formPOST.is_valid():
 			return Tool.errorResponseRestful(formPOST.errors,code=status.HTTP_400_BAD_REQUEST);
 		#::type: RequestPayForm
-		data=Bunch(formPOST.data)
+		data=Munch(formPOST.data)
 
 		try: withdraw_balance = AccountBalance.objects.get(id=data.withdraw_balance_id);
 		except AccountBalance.DoesNotExist:
@@ -245,13 +245,13 @@ class InvokeDesktopClientForm(serializers.Serializer):
 class CurrentUserView(viewsets.GenericViewSet):
 	permission_classes = [permissions.IsAuthenticated, IsSignatureVerified]
 
-	@list_route(methods=['post'], serializer_class=InvokeDesktopClientForm)
+	@action(detail=False, methods=['post'], serializer_class=InvokeDesktopClientForm)
 	def invokeDesktopClient(self, request, *args, **kwargs):
 		formPOST=InvokeDesktopClientForm(data=request.data);
 		if not formPOST.is_valid():
 			return Tool.errorResponseRestful(formPOST.errors,code=status.HTTP_400_BAD_REQUEST);
 		#::type: InvokeDesktopClientForm
-		data=Bunch(formPOST.data)
+		data=Munch(formPOST.data)
 		data.invoke_data.update({'type':data.invoke_type});
 
 		db = redis.StrictRedis(connection_pool=settings.REDIS_POOL);

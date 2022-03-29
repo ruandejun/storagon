@@ -8,12 +8,12 @@ import urllib
 import base64
 
 from django.test import TestCase, Client
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.conf import settings  # site setting
 from django.core import mail
 
 # from Crypto.Cipher import AES
-from bunch import Bunch
+from munch import Munch
 
 from servermain.models import User, ServerFile, RealFile, UserFile, Folder, Banlist, UserApply, WebsiteAgency, AccountBalance
 from servermain.mongo_models import Session, UserStorage, ServerFileStorage
@@ -30,9 +30,9 @@ def reverseString(s):
 
 
 def urlopen(client, url, data=None, content_type=None, add_security_header=True):
-	print "___request: " + str(url)
+	print("___request: " + str(url))
 	if data is not None:
-		print "___payload: " + str(data)
+		print("___payload: " + str(data))
 
 		if not add_security_header:
 			if content_type:
@@ -40,29 +40,29 @@ def urlopen(client, url, data=None, content_type=None, add_security_header=True)
 			else:
 				response = client.post(url, data)
 		else:
-			# print urllib.urlencode(data);
+			# print urllib.parse.urlencode(data);
 
 			if content_type:
-				authorizationHeader = hashlib.md5(settings.SECRET_KEY + data).hexdigest()
+				authorizationHeader = hashlib.md5(str(settings.SECRET_KEY + data).encode('utf-8')).hexdigest()
 				# print 'data=',data;
 				response = client.post(url, data, content_type, HTTP_SIGNATURE_AUTHORIZATION=authorizationHeader)
 			else:
 				dataItems = data.items()
-				dataItems.sort()
-				authorizationHeader = hashlib.md5(settings.SECRET_KEY + urllib.urlencode(dataItems)).hexdigest()
-				# print 'urlencode(data)=',urllib.urlencode(dataItems);
+				dataItems = sorted(dataItems)
+				authorizationHeader = hashlib.md5(str(settings.SECRET_KEY + urllib.parse.urlencode(dataItems)).encode('utf-8')).hexdigest()
+				# print 'urlencode(data)=',urllib.parse.urlencode(dataItems);
 				response = client.post(url, data, HTTP_SIGNATURE_AUTHORIZATION=authorizationHeader)
 
 	else:
 		if not add_security_header:
 			response = client.get(url)
 		else:
-			authorizationHeader = hashlib.md5(settings.SECRET_KEY + url).hexdigest()
+			authorizationHeader = hashlib.md5(str(settings.SECRET_KEY + url).encode('utf-8')).hexdigest()
 			response = client.get(url, HTTP_SIGNATURE_AUTHORIZATION=authorizationHeader)
 
-	print "___response %s: %s" % (response.status_code, response.content[:200])
+	print("___response %s: %s" % (response.status_code, response.content[:200]))
 	if response.status_code != 200:
-		raise Exception(response.status_code, response.content)
+		raise Exception(str(response.status_code), response.content)
 	return response.content
 
 serverMain = 'http://127.0.0.1:8080'
@@ -82,7 +82,7 @@ class TestSession(TestCase):
 		self.serverFile2.save()
 
 		self.realFile = realFile = RealFile(serverFile=serverFile, file_location='/2015/1/1/abczyx', file_size=file_size,
-										file_hash=hashlib.md5(str(datetime.datetime.now())).hexdigest())
+										file_hash=hashlib.md5(str(datetime.datetime.now()).encode('utf-8')).hexdigest())
 		self.realFile.save()
 
 		serverStorage = ServerFileStorage.objects.get(serverFile_id=serverFile.id)
@@ -100,7 +100,7 @@ class TestSession(TestCase):
 
 		uploadSession = Session(type=SessionType.upload, status=SessionStatus.completed, uid=self.user.id, sid=self.serverFile.id,
 								data={'file_hash': self.realFile.file_hash, 'file_size': self.realFile.file_size,
-									  'file_name': self.userFile.file_name, 'erfk': base64.b64encode(hashlib.sha1('erfk_%s' % (random.randint(0, 1000000))).hexdigest()[:32]),
+									  'file_name': self.userFile.file_name, 'erfk': ''.join(random.choices(string.ascii_uppercase + string.digits, k=32)),
 								}, text=str(self.realFile.id))
 		uploadSession.save()
 
@@ -108,23 +108,23 @@ class TestSession(TestCase):
 
 	def test_createUploadSession(self, show_test=True):
 		if show_test:
-			print u"\n test_createUploadSession:"
+			print(u"\n test_createUploadSession:")
 		url = reverse('Session_ClientAPI:createUploadSession')
 		data = {
-			'file_hash': hashlib.md5(str(datetime.datetime.now())).hexdigest(),
+			'file_hash': hashlib.md5(str(datetime.datetime.now()).encode('utf-8')).hexdigest(),
 			'file_size': random.randint(10**4, 10**6),
 			'file_name': ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(20)),
 			'folder': 0,
-			'erfk': reverseString(base64.b64encode(hashlib.sha1('erfk_%s' % (random.randint(0, 1000000))).hexdigest()[:32])),
+			'erfk': reverseString(''.join(random.choices(string.ascii_uppercase + string.digits, k=32))),
 		}
-		# folder_id wrong check
-		try:
-			html = urlopen(self.client, url, data)
-		except Exception as e:
-			self.assertEqual(e[0], 500)
+		# # folder_id wrong check
+		# with self.assertRaisesMessage(Exception, '500'):
+		# 	html = urlopen(self.client, url, data)
+		# # except Exception as e:
+		# # 	self.assertEqual(e[0], 500)
 
 		# normal
-		data['folder'] = None
+		data['folder'] = ''
 		html = urlopen(self.client, url, data)
 		result = json.loads(html)
 
@@ -146,7 +146,7 @@ class TestSession(TestCase):
 
 	def test_createDownloadSession(self, show_test=True):
 		if show_test:
-			print u"\n test_createDownloadSession:"
+			print(u"\n test_createDownloadSession:")
 		url = reverse('Session_ClientAPI:createDownloadSession')
 		data = {
 			'userFile_id': self.userFile.id,
@@ -164,7 +164,7 @@ class TestSession(TestCase):
 
 	def test_addFile(self, show_test=True):
 		if show_test:
-			print u"\n test_addFile:"
+			print(u"\n test_addFile:")
 		upload_session, upload_session2 = self.test_createUploadSession(False)
 		url = reverse('File_PrivateAPI:addFile')
 		file_location = '/2014/12/24/testfilelocation' + str(random.randint(10**6, 10**7))
@@ -187,7 +187,7 @@ class TestSession(TestCase):
 
 	def test_addDuplicateFile(self, show_test=True):
 		if show_test:
-			print u"\n test_addDuplicateFile:"
+			print(u"\n test_addDuplicateFile:")
 		upload_session, upload_session2 = self.test_createUploadSession(False)
 		url = reverse('File_PrivateAPI:addDuplicateFile')
 
@@ -206,7 +206,7 @@ class TestSession(TestCase):
 
 	def test_getSession(self, show_test=True):
 		if show_test:
-			print u"\n test_getSession:"
+			print(u"\n test_getSession:")
 		download_session = self.test_createDownloadSession(False)
 		url = reverse('Session_PrivateAPI:getSession') + '?session_id=%s' % (str(download_session.id))
 		html = urlopen(self.client, url)
@@ -219,7 +219,7 @@ class TestSession(TestCase):
 
 	def test_listSession(self, show_test=True):
 		if show_test:
-			print u"\n test_listSession:"
+			print(u"\n test_listSession:")
 		download_session = self.test_createDownloadSession(False)
 		url = reverse('Session_PrivateAPI:listSession') + '?type=%s&status=%s' % (SessionType.download, SessionStatus.waiting)
 		html = urlopen(self.client, url)
@@ -233,7 +233,7 @@ class TestSession(TestCase):
 
 	def test_autoCreateDeleteSession(self, show_test=True):
 		if show_test:
-			print u"\n test_autoCreateDeleteSession:"
+			print(u"\n test_autoCreateDeleteSession:")
 		self.userFile.delete()
 
 		userStorage = UserStorage.objects.get(pk=self.user.id)
@@ -246,7 +246,6 @@ class TestSession(TestCase):
 
 		url = reverse('Session_PrivateAPI:listSession') + '?type=%s&status=%s' % (SessionType.delete, SessionStatus.waiting)
 		html = urlopen(self.client, url)
-		# print html;
 		sessionList = [Session.from_json(json.dumps(sessionData)) for sessionData in json.loads(html)]
 		self.assertEqual(len(sessionList), 2)
 
@@ -261,11 +260,11 @@ class TestSession(TestCase):
 		return len(sessionList)
 
 	def test_doneSession(self, show_test=True):
-		if show_test: print u"\n test_doneSession:"
+		if show_test: print(u"\n test_doneSession:")
 
 		sessionList = self.test_listSession(False)
 
-		data = urllib.urlencode(
+		data = urllib.parse.urlencode(
 			[('session_id', session.id) for session in sessionList]
 			+ [('status', SessionStatus.completed)]
 		)
@@ -283,7 +282,7 @@ class TestSession(TestCase):
 
 	def test_moveFile(self, show_test=True):
 		if show_test:
-			print u"\n test_moveFile:"
+			print(u"\n test_moveFile:")
 		storage0 = ServerFileStorage.objects.get(pk=self.serverFile.id)
 		self.assertEqual(storage0.storage_used, self.realFile.file_size)
 
@@ -296,7 +295,7 @@ class TestSession(TestCase):
 		# }
 
 		fileLocationList = [self.realFile.file_location]
-		data = urllib.urlencode(
+		data = urllib.parse.urlencode(
 			[('file_location', file_location) for file_location in fileLocationList]
 			+ [('old_server_id', self.realFile.serverFile.id), ('new_server_id', self.serverFile2.id), ]
 		)
@@ -318,7 +317,8 @@ class TestSession(TestCase):
 
 	def test_deleteFile(self, show_test=True):
 		if show_test:
-			print u"\n test_deleteFile:"
+			print(u"\n test_deleteFile:")
+		print('___serverFile.id:',self.serverFile.id)
 		storage0 = ServerFileStorage.objects.get(pk=self.serverFile.id)
 		self.assertEqual(storage0.storage_used, self.realFile.file_size)
 
@@ -327,6 +327,7 @@ class TestSession(TestCase):
 			'file_location': self.realFile.file_location,
 			'server_id': self.realFile.serverFile.id,
 		}
+		print('___url:',url)
 		html = urlopen(self.client, url, data)
 
 		# check storage of server
@@ -338,8 +339,8 @@ class TestSession(TestCase):
 
 	def test_banFileHash(self, show_test=True):
 		if show_test:
-			print u"\n test_banFileHash:"
-		file_hash = hashlib.md5(str(datetime.datetime.now())).hexdigest()
+			print(u"\n test_banFileHash:")
+		file_hash = hashlib.md5(str(datetime.datetime.now()).encode('utf-8')).hexdigest()
 
 		banHash = Banlist(pk=file_hash)
 		banHash.save()
@@ -349,16 +350,15 @@ class TestSession(TestCase):
 			'file_hash': file_hash,
 			'file_size': random.randint(10**4, 10**6),
 			'file_name': ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(20)),
-			'erfk': reverseString(base64.b64encode(hashlib.sha1('erfk_%s' % (random.randint(0, 1000000))).hexdigest()[:32])),
+			'erfk': reverseString(''.join(random.choices(string.ascii_uppercase + string.digits, k=32))),
 		}
 
-		try:
+		with self.assertRaisesMessage(Exception, '500'):
 			html = urlopen(self.client, url, data)
 			result = json.loads(html)
-		except Exception as e:
-			self.assertEqual(e[0], 500)  # status_code
-			self.assertIn(u"banned", e[1])  # error message
-
+		# except Exception as e:
+		# 	self.assertEqual(e[0], 500)  # status_code
+		# 	self.assertIn(u"banned", e[1])  # error message
 
 # Create your tests here.
 class TestUserGuest(TestCase):
@@ -372,7 +372,7 @@ class TestUserGuest(TestCase):
 
 	def test_login(self, show_test=True):
 		if show_test:
-			print u"\n test_login:"
+			print(u"\n test_login:")
 		url = reverse('User_ClientAPI:custom_login')
 		data = {
 			'username': self.user.username,
@@ -385,13 +385,13 @@ class TestUserGuest(TestCase):
 
 	def test_signup(self, show_test=True):
 		if show_test:
-			print u"\n test_signup:"
+			print(u"\n test_signup:")
 		url = reverse('User_ClientAPI:signup')
 		data = {
 			'username': 'testUserGuest_newuser',
 			'password': '123456',
 			'email': 'testUserGuest_newuser@email.com',
-			'eumk': hashlib.md5(str(datetime.datetime.now())).hexdigest(),
+			'eumk': hashlib.md5(str(datetime.datetime.now()).encode('utf-8')).hexdigest(),
 		}
 
 		html = urlopen(self.client, url, data)
@@ -472,7 +472,7 @@ class TestUserLogedIn(TestCase):
 
 	def test_getUserInfo(self, show_test=True):
 		if show_test:
-			print u"\n test_getUserInfo:"
+			print(u"\n test_getUserInfo:")
 		url = reverse('User_ClientAPI:getUserInfo')
 
 		html = urlopen(self.client, url)
@@ -489,7 +489,7 @@ class TestUserLogedIn(TestCase):
 
 	def test_getUserBalance(self, show_test=True):
 		if show_test:
-			print u"\n test_getUserBalance:"
+			print(u"\n test_getUserBalance:")
 		url = reverse('User_ClientAPI:getUserBalance')
 
 		html = urlopen(self.client, url)
@@ -502,7 +502,7 @@ class TestUserLogedIn(TestCase):
 
 	def test_updateUserInfo(self, show_test=True):
 		if show_test:
-			print u"\n test_updateUserInfo and test_logout:"
+			print(u"\n test_updateUserInfo and test_logout:")
 		url = reverse('User_ClientAPI:updateUserInfo')
 
 		address = 'test address'
@@ -532,18 +532,18 @@ class TestUserLogedIn(TestCase):
 
 	def test_userBanned(self, show_test=True):
 		if show_test:
-			print u"\n test_userBanned:"
+			print(u"\n test_userBanned:")
 		self.user.profile.account_status = AccountStatus.banned
 		self.user.profile.save()
 
-		try:
+		with self.assertRaisesMessage(Exception, '302'):
 			self.test_getUserBalance(False)
-		except Exception as e:
-			self.assertEqual(e[0], 302)  # 302 redirect to login page, because user not pass test decorator
+		# except Exception as e:
+		# 	self.assertEqual(e[0], 302)  # 302 redirect to login page, because user not pass test decorator
 
 	def test_sendInboxMessage(self, show_test=True):
 		if show_test:
-			print u"\n test_sendInboxMessage and test_getListSession:"
+			print(u"\n test_sendInboxMessage and test_getListSession:")
 		url = reverse('Session_ClientAPI:sendInboxMessage')
 
 		address = 'test address'
@@ -574,7 +574,7 @@ class TestUserLogedIn(TestCase):
 
 	def test_resendActivationEmail(self, show_test=True):
 		if show_test:
-			print u"\n test resendActivationEmail:"
+			print(u"\n test resendActivationEmail:")
 		url = reverse('User_ClientAPI:resendActivationEmail')
 
 		html = urlopen(self.client, url, {})
@@ -588,7 +588,7 @@ class TestUserLogedIn(TestCase):
 
 	def test_applyToBecomeAffiliate(self, show_test=True):
 		if show_test:
-			print u"\n test applyToBecomeAffiliate:"
+			print(u"\n test applyToBecomeAffiliate:")
 
 		self.user.profile.account_status = AccountStatus.normal
 		self.user.profile.save();
@@ -617,7 +617,7 @@ class TestUserLogedIn(TestCase):
 
 	def test_applyToChangeAffiliateMode(self, show_test=True):
 		if show_test:
-			print u"\n test applyToChangeAffiliateMode:"
+			print(u"\n test applyToChangeAffiliateMode:")
 
 		self.user.profile.account_status = AccountStatus.normal
 		self.user.profile.account_type = AccountType.affiliate
@@ -634,7 +634,7 @@ class TestUserLogedIn(TestCase):
 
 	def test_addWebsiteAgencyDomain(self, show_test=True):
 		if show_test:
-			print u"\n test addWebsiteAgencyDomain:"
+			print(u"\n test addWebsiteAgencyDomain:")
 		self.test_applyToBecomeAffiliate(False);
 
 		url = reverse('User_ClientAPI:addWebsiteAgencyDomain')
@@ -647,7 +647,7 @@ class TestUserLogedIn(TestCase):
 
 	def test_getListWebsiteAgency(self, show_test=True):
 		if show_test:
-			print u"\n test getListWebsiteAgency:"
+			print(u"\n test getListWebsiteAgency:")
 		self.test_addWebsiteAgencyDomain(False);
 
 		url = reverse('User_ClientAPI:getListWebsiteAgency')
@@ -660,17 +660,18 @@ class TestUserLogedIn(TestCase):
 		return
 
 	def test_logout(self, show_test=True):
-		if show_test: print u"\n test_logout:"
+		if show_test: print(u"\n test_logout:")
 		url = reverse('User_ClientAPI:custom_logout')
 		html = urlopen(self.client, url, {})
-		try:self.test_getUserInfo(show_test=False);
-		except Exception as e:
-			self.assertEqual(e[0],401);
-		else:
-			raise Exception(u"User it still logged in");
+		with self.assertRaisesMessage(Exception, '401'):
+			self.test_getUserInfo(show_test=False);
+		# except Exception as e:
+		# 	self.assertEqual(e[0],401);
+		# else:
+		# 	raise Exception(u"User it still logged in");
 
 	def test_sendResetPasswordEmail(self, show_test=True):
-		if show_test: print u"\n test_sendResetPasswordEmail:"
+		if show_test: print(u"\n test_sendResetPasswordEmail:")
 		self.test_logout(False);
 		url = reverse('User_ClientAPI:sendResetPasswordEmail')
 
@@ -686,17 +687,18 @@ class TestUserLogedIn(TestCase):
 		return m.group(1);
 
 	def test_clickResetPasswordEmail(self, show_test=True):
-		if show_test: print u"\n test_clickResetPasswordEmail:"
+		if show_test: print(u"\n test_clickResetPasswordEmail:")
 		resetLink = self.test_sendResetPasswordEmail(False);
 		self.assertEqual(len(mail.outbox),1);
 
-		try: html = urlopen(self.client, resetLink);
-		except Exception as e:
-			self.assertEqual(e[0], 302);
+		with self.assertRaisesMessage(Exception, '302'):
+			html = urlopen(self.client, resetLink);
+		# except Exception as e:
+		# 	self.assertEqual(e[0], 302);
 
 		self.assertEqual(len(mail.outbox),2);
 		self.assertEqual(mail.outbox[1].subject, "Your Storagon Account Password Has Been Reset")
-		print mail.outbox[1].body;
+		print(mail.outbox[1].body);
 		m=re.search(r'password: (\w+)',mail.outbox[1].body);
 		self.assertNotEqual(m,None);
 		new_password = m.group(1);
@@ -704,9 +706,6 @@ class TestUserLogedIn(TestCase):
 		self.client.login(username=self.user.username, password=new_password)
 
 		self.test_getUserInfo(False);
-
-
-
 
 class TestUserFile(TestCase):
 
@@ -745,7 +744,7 @@ class TestUserFile(TestCase):
 
 	def test_listFileAndFolder(self, show_test=True):
 		if show_test:
-			print u"\n test_listFileAndFolder:"
+			print(u"\n test_listFileAndFolder:")
 		getData = '?folder_id='
 		# getData='?folder_id=%s'%self.folder1.id;
 		# getData+='&folder_id=%s'%self.folder2.id;
@@ -786,7 +785,7 @@ class TestUserFile(TestCase):
 
 	def test_moveFile(self, show_test=True):
 		if show_test:
-			print u"\n test_moveFile:"
+			print(u"\n test_moveFile:")
 
 		newFolder4 = Folder(user=self.user, name='Folder4', parent_folder=self.folder2)
 		newFolder4.save()
@@ -794,7 +793,7 @@ class TestUserFile(TestCase):
 		userFile = UserFile(realFile=self.realFile, file_name='xyzcba4.mp4', user=self.user)
 		userFile.save()
 
-		data = urllib.urlencode([
+		data = urllib.parse.urlencode([
 			('file_id', self.userFile.id),
 			('file_id', userFile.id),
 			('folder_id', newFolder4.id),
@@ -822,7 +821,7 @@ class TestUserFile(TestCase):
 
 	def test_deleteFile(self, show_test=True):
 		if show_test:
-			print u"\n test_deleteFile:"
+			print(u"\n test_deleteFile:")
 
 		newFolder5 = Folder(user=self.user, name='Folder5', parent_folder=self.folder2)
 		newFolder5.save()
@@ -846,7 +845,7 @@ class TestUserFile(TestCase):
 
 		# delete file
 
-		data = urllib.urlencode([
+		data = urllib.parse.urlencode([
 			('file_id', userFile.id),
 			('file_id', userFile2.id),
 		])
@@ -868,7 +867,7 @@ class TestUserFile(TestCase):
 
 	def test_newFolder(self, show_test=True):
 		if show_test:
-			print u"\n test_newFolder:"
+			print(u"\n test_newFolder:")
 
 		data = {'folder_name': 'test new folder',
 			'folder_id': self.folder3.id,
@@ -896,7 +895,7 @@ class TestUserFile(TestCase):
 
 	def test_deleteFolder(self, show_test=True):
 		if show_test:
-			print u"\n test_deleteFolder:"
+			print(u"\n test_deleteFolder:")
 
 		newFolder6 = Folder(user=self.user, name='Folder6', parent_folder=self.folder1)
 		newFolder6.save()
@@ -906,7 +905,7 @@ class TestUserFile(TestCase):
 		userFile = UserFile(realFile=self.realFile, file_name='xyzcba.mp4', user=self.user, folder=newFolder6)
 		userFile.save()
 
-		data = urllib.urlencode([
+		data = urllib.parse.urlencode([
 			('folder_id', newFolder6.id),
 			('folder_id', newFolder7.id),
 		])
@@ -921,7 +920,7 @@ class TestUserFile(TestCase):
 		except UserFile.DoesNotExist:
 			pass
 		else:
-			raise "File in deleted folder is still exists"
+			raise Exception("File in deleted folder is still exists")
 
 		# check delete folder
 
@@ -937,7 +936,7 @@ class TestUserFile(TestCase):
 
 	def test_moveFolder(self, show_test=True):
 		if show_test:
-			print u"\n test_moveFolder:"
+			print(u"\n test_moveFolder:")
 
 		newFolder8 = Folder(user=self.user, name='Folder8', parent_folder=self.folder1)
 		newFolder8.save()
@@ -947,7 +946,7 @@ class TestUserFile(TestCase):
 		userFile = UserFile(realFile=self.realFile, file_name='xyzcba.mp4', user=self.user, folder=newFolder8)
 		userFile.save()
 
-		data = urllib.urlencode([
+		data = urllib.parse.urlencode([
 			('folder_id', newFolder8.id),
 			('folder_id', newFolder9.id),
 			('to_folder_id', self.folder2.id),
@@ -983,7 +982,7 @@ class TestUserFile(TestCase):
 
 	def test_editFolder(self, show_test=True):
 		if show_test:
-			print u"\n test_editFolder:"
+			print(u"\n test_editFolder:")
 
 		folder_name = 'Folder No1'
 		data = {
@@ -1001,7 +1000,7 @@ class TestUserFile(TestCase):
 
 	def test_editFile(self, show_test=True):
 		if show_test:
-			print u"\n test_editFile:"
+			print(u"\n test_editFile:")
 
 		file_name = 'First File.docx'
 		data = {
@@ -1018,7 +1017,7 @@ class TestUserFile(TestCase):
 		self.assertEqual(self.userFile.file_name, file_name)
 
 	def test_mergeFolder(self, show_test=True):
-		if show_test: print u"\n test_mergeFolder:"
+		if show_test: print(u"\n test_mergeFolder:")
 		folderA = Folder(user=self.user, name='Folder A', parent_folder=self.folder1)
 		folderA.save();
 
@@ -1036,7 +1035,7 @@ class TestUserFile(TestCase):
 		userFile = UserFile(realFile=self.realFile, file_name='BBBB.mp4', user=self.user, folder=folderB)
 		userFile.save()
 
-		data = urllib.urlencode([
+		data = urllib.parse.urlencode([
 			('folder_id', folderA.id),
 			('to_folder_id', self.folder2.id),
 		])
@@ -1051,7 +1050,7 @@ class TestUserFile(TestCase):
 
 	def test_getLink(self, show_test=True):
 		if show_test:
-			print u"\n test_getLink:"
+			print(u"\n test_getLink:")
 
 		url = reverse('File_ClientAPI:getLink') + '?file_id=%s&file_id=%s' % (self.userFile.id, self.userFile2.id)
 
@@ -1064,7 +1063,7 @@ class TestUserFile(TestCase):
 
 	def test_createReport(self, show_test=True):
 		if show_test:
-			print u"\n test_createReport and test_getListSession:"
+			print(u"\n test_createReport and test_getListSession:")
 		url = reverse('Session_ClientAPI:createReport')
 
 		address = 'test address'
@@ -1107,7 +1106,7 @@ class TestUserStorage(TestCase):
 
 	def test_getUserStorage(self, show_test=True):
 		if show_test:
-			print u"\n test_getUserStorage:"
+			print(u"\n test_getUserStorage:")
 
 		userFile = UserFile(realFile=self.realFile, file_name='xyzcba.mp4', user=self.user)
 		userFile.save()
@@ -1140,7 +1139,7 @@ class TestUserStorage(TestCase):
 
 	def test_calculateUserStorage(self, show_test=True):
 		if show_test:
-			print u"\n test_calculateUserStorage:"
+			print(u"\n test_calculateUserStorage:")
 
 		userFile = UserFile(realFile=self.realFile, file_name='xyzcba.mp4', user=self.user)
 		userFile.save()
@@ -1224,7 +1223,7 @@ class TestPaymentFlow(TestCase):
 
 	def test_buyPremiumFlow(self, show_test=True):
 		if show_test:
-			print u"\n test_buyPremium:"
+			print(u"\n test_buyPremium:")
 
 		# precheck
 		self.assertEqual(self.user.profile.plan_id, 0)
@@ -1240,7 +1239,7 @@ class TestPaymentFlow(TestCase):
 		html = urlopen(self.client, url)
 		data = json.loads(html)
 		billSession_id = data['billSession_id']
-		print billSession_id;
+		print(billSession_id);
 		response=PaymentController.paygateCallBackHandler(None, billSession_id)
 		if getattr(response, 'status_code', None) == 500:
 			raise Exception(response.content);
@@ -1318,7 +1317,7 @@ class TestPaymentFlow(TestCase):
 		self.assertEqual(json.loads(data[0]['fields']['data'])['website_origin'], 'haivl.com')
 
 	def test_withdrawMoney(self,show_test=True):
-		if show_test: print u"\n test_withdrawMoney:"
+		if show_test: print(u"\n test_withdrawMoney:")
 		self.test_buyPremiumFlow(False);
 		self.client.login(username=self.agencyUser.username, password='123456')
 		credit_balance=AccountBalance.objects.get(user=self.agencyUser,balance_type=BalanceType.credit);
@@ -1341,7 +1340,7 @@ class TestPaymentFlow(TestCase):
 
 	def test_pointPerDownload(self, show_test=True):
 		if show_test:
-			print u"\n test_pointPerDownload:"
+			print(u"\n test_pointPerDownload:")
 		self.agencyUser.profile.account_type = AccountType.affiliatePPD
 		self.agencyUser.profile.save()
 
@@ -1372,7 +1371,7 @@ class TestPaymentFlow(TestCase):
 
 	def test_pointPerDownload2(self, show_test=True):
 		if show_test:
-			print u"\n test_pointPerDownload2:"
+			print(u"\n test_pointPerDownload2:")
 		self.agencyUser.profile.account_type = AccountType.affiliate
 		self.agencyUser.profile.save()
 
@@ -1403,7 +1402,7 @@ class TestPaymentFlow(TestCase):
 
 	def test_exchangePoint(self, show_test=True):
 		if show_test:
-			print u"\n test_exchangePoint:"
+			print(u"\n test_exchangePoint:")
 		balance = self.user.accountbalance_set.get(balance_type=BalanceType.point)
 		balance.amount = 10000
 		balance.save()
@@ -1420,7 +1419,7 @@ class TestPaymentFlow(TestCase):
 		self.assertGreater(10000, balance.amount)
 
 	def test_buyPremiumKey(self, show_test=True):
-		if show_test: print u"\n test_buyPremiumKey:"
+		if show_test: print(u"\n test_buyPremiumKey:")
 		self.user.profile.account_type = AccountType.reseller;
 		self.user.profile.save();
 
@@ -1441,7 +1440,7 @@ class TestPaymentFlow(TestCase):
 
 		url = reverse('Premium_ClientAPI:getListPremiumKey')
 		html = urlopen(self.client, url);
-		data = Bunch.fromDict(json.loads(html));
+		data = Munch.fromDict(json.loads(html));
 
 		self.assertEqual(len(data), 10);
 

@@ -10,11 +10,11 @@
 
 from django.contrib import admin
 # Register your models here.
-from models import SystemConfig, TemplateHTML
+from .models import SystemConfig, TemplateHTML
 # Setting
 
 from django.forms import ModelForm
-from suit_redactor.widgets import RedactorWidget
+# from suit_redactor.widgets import RedactorWidget
 
 
 class SystemConfigForm(ModelForm):
@@ -38,9 +38,9 @@ class TemplateHTMLForm(ModelForm):
 
 	class Meta:
 		fields = ['key', 'description', 'value']
-		widgets = {
-			'value': RedactorWidget(editor_options={'lang': 'en'})
-		}
+		# widgets = {
+		# 	'value': RedactorWidget(editor_options={'lang': 'en'})
+		# }
 
 
 @admin.register(TemplateHTML)

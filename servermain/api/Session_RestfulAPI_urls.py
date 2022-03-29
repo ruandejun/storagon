@@ -8,11 +8,11 @@
 #  Copyright (c) 2015 storagon. All rights reserved.
 #
 
-from Session_RestfulAPI import SessionClientAPI, SessionClientAPIView
+from .Session_RestfulAPI import SessionClientAPI, SessionClientAPIView
 from system_configure.controllers.Tool import FullRouter
 
 router = FullRouter('mongo');
-router.register(r'session', SessionClientAPI, base_name='session')
-router.register(r'sessionView', SessionClientAPIView, base_name='sessionView')
+router.register(r'session', SessionClientAPI, basename='session')
+router.register(r'sessionView', SessionClientAPIView, basename='sessionView')
 
 urlpatterns = router.urls

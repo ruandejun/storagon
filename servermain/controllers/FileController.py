@@ -161,7 +161,7 @@ def autoMergeFolderWithSameNameInSameFolder(folder):
 
 
 def mergeFolder(originalFolder, mergeFolder):
-	logging.debug("Merge folder %s to original folder %s"%(unicode(mergeFolder), unicode(originalFolder)));
+	logging.debug("Merge folder %s to original folder %s"%(mergeFolder, originalFolder));
 
 	for file in mergeFolder.fileList.all():
 		file.folder_id = originalFolder.id;

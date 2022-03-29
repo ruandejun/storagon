@@ -28,7 +28,7 @@ def generatePremiumKey(reseller_id, plan_id, max_num_key=10):
 		index += 1;
 		if index > max_num_key*10: break;
 		premkey = PremiumKey(reseller_id=reseller_id,plan_id=plan_id);
-		premkey.code = hashlib.sha1('premkey_%s'%(totalExistKey+index)).hexdigest()[:10]
+		premkey.code = hashlib.sha1('premkey_{}'.format(totalExistKey+index).encode('utf-8')).hexdigest()[:10]
 		try:
 			premkey.save()
 		except Exception as e:

@@ -19,12 +19,10 @@ from django.utils import timezone
 
 from servermain.models import Bill, User
 from servermain.mongo_models import Session
-import PremiumController
-import AffiliateController
-import BalanceController
+from . import PremiumController, AffiliateController, BalanceController
 from storagon.tool import *
 from storagon.enum import *
-from storagon.browser import Browser
+from storagon.browser import Browser, Rqbrowser
 from system_configure.controllers import SystemConfigureController
 from django.template import Context, Template
 
@@ -198,7 +196,7 @@ def ekaepayChinaPayGateInitiator(request, billSession):
 	plan_price = str(price / 100.); #plan_price is USD
 	amount = str(price / 100.);  # amount is USD
 
-	md5Info = hashlib.md5(merNo + billNo + amount + currencyCode + currencyStr + returnURL + email + md5Key).hexdigest().upper();
+	md5Info = hashlib.md5(str(merNo + billNo + amount + currencyCode + currencyStr + returnURL + email + md5Key).encode('utf-8')).hexdigest().upper();
 
 	#pre check card info
 	card_number = card_number.replace(' ', '');
@@ -216,7 +214,7 @@ def ekaepayChinaPayGateInitiator(request, billSession):
 	elif re.match(amexPattern, card_number):
 		card_type = 'amex'
 	else:
-		print card_number;
+		print(card_number);
 		raise Http400("card_number is not correct");
 
 
@@ -224,7 +222,7 @@ def ekaepayChinaPayGateInitiator(request, billSession):
 	expirePattern = r'^(\d\d)\s*/\s*(\d\d)$';
 	m = re.match(expirePattern, card_expiry);
 	if not m:
-		print "expire=%s"%(card_expiry);
+		print("expire=%s"%(card_expiry));
 		raise Http400("card_expiry is notcorrect");
 	exireMonth = m.group(1);
 	expireYear = '20' + m.group(2);
@@ -233,7 +231,7 @@ def ekaepayChinaPayGateInitiator(request, billSession):
 	cvcPattern = r'^\d{3,4}$'
 	m = re.match(cvcPattern, card_cvc);
 	if not m:
-		print "CVC=%s"%(card_cvc);
+		print("CVC=%s"%(card_cvc));
 		raise Http400("card_cvc is not correct");
 
 	xmlData = u"""<?xml version="1.0" encoding="UTF-8" ?> <Order>
@@ -343,7 +341,7 @@ def ekaepayChinaPayGateInitiator(request, billSession):
 	billSession.data['currencyStr'] = currencyStr;
 	billSession.save();
 
-	br = Browser();
+	br = Rqbrowser();
 	br.quite = True;
 	# html=None;
 	html = br.open('https://security.dollarcollect.com/pay/DirectProcess', {'TradeInfo': TradeInfo}, forceReferer='http://storagon.com');
@@ -444,7 +442,7 @@ def paypalPaygateInitiator(request, billSession):
 
 	amount = str(price / 100.);  # amount is USD
 
-	br = Browser();
+	br = Rqbrowser();
 	br.quite = True;
 	param = {
 		'USER' : PP_USER,
@@ -509,7 +507,7 @@ def paypalPayGateCallbackHandler(request):
 		'METHOD' : 'GetExpressCheckoutDetails',
 		'TOKEN' : token,
 	}
-	br = Browser();
+	br = Rqbrowser();
 	br.quite = True;
 	html = br.open(PP_NVP_ENDPOINT+'?'+urllib.urlencode(param));
 	result={};
@@ -547,7 +545,7 @@ def paypalPayGateCallbackHandler(request):
 		'PAYMENTREQUEST_0_PAYMENTACTION': paymentAction,
 		'PAYMENTREQUEST_0_CURRENCYCODE' : currencyCode, # payment currency code
 	}
-	br = Browser();
+	br = Rqbrowser();
 	br.quite = True;
 	html = br.open(PP_NVP_ENDPOINT+'?'+urllib.urlencode(param));
 	result={};
@@ -733,7 +731,7 @@ def payzaCallbackHandler(request):
 
 	IPN_V2_Handler_URL = 'https://sandbox.Payza.com/sandbox/IPN2.ashx'
 
-	br = Browser();
+	br = Rqbrowser();
 	br.quite = True;
 	if 'token=' in request.body: #send confirmation
 		html = br.open(IPN_V2_Handler_URL,data=request.body);

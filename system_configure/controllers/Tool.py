@@ -15,13 +15,13 @@ from django.conf import settings  # site setting
 from django.core.cache import cache
 from django import shortcuts
 # add logging
-import logging, json, os, urllib, urllib2, sys
+import logging, json, os, urllib, urllib3, sys
 from django.core.exceptions import PermissionDenied as Http403
 from django.core.exceptions import SuspiciousOperation as Http400
 from django.core.files.storage import FileSystemStorage
 import tempfile
-from django.core.urlresolvers import NoReverseMatch
-from django.core.urlresolvers import reverse
+from django.urls.resolvers import NoReverseMatch
+from django.urls import reverse
 
 from rest_framework import serializers,exceptions,status,permissions
 from rest_framework.throttling import ScopedRateThrottle
@@ -30,6 +30,7 @@ from rest_framework.pagination import PageNumberPagination
 from ..tasks import runCMD
 from celery.exceptions import TimeoutError
 from rest_framework_mongoengine.serializers import DocumentSerializer
+from urllib.parse import urlencode, quote_plus
 
 #/var/log/system.log
 logFilePath = getattr(settings, 'LOG_FILE_PATH', 'logging_local.log')
@@ -86,39 +87,48 @@ class ServerError(exceptions.APIException):
 def reverseBase(request,view_name,absolute=False,urlconf=None,args=None,kwargs=None,prefix=None,current_app=None):
 	if not request.resolver_match.namespace: namespace=''
 	else: namespace=request.resolver_match.namespace+':'
-	url = reverse(namespace+view_name,urlconf,args,kwargs,prefix,current_app);
+	url = reverse(namespace+view_name,urlconf,args,kwargs,current_app);
 	if absolute:
 		url = request.build_absolute_uri(url)
 	return url;
 
 
-def custom_400(request):
+def custom_400(request,exception):
 	type, value, traceback = sys.exc_info();
-	return errorResponse(value.message, code=400);
 
+	return errorResponse(value.message, code=400);
+# def custom_400(request,exception):
+# 	type, value, traceback = sys.exc_info();
+# 	# respose = errorResponse(value.message, code=400)
+# 	context = {
+# 		'status': '400', 'reason': value.message
+# 	}
+# 	response = HttpResponse(json.dumps(context), content_type='application/json')
+# 	response.staus_code = 400
+# 	return response;
 
 def checkRecaptcha(request):
 	data = {
-		'response' : getParamsOr400(request, 'g-recaptcha-response'),
-		'remoteip' : request.META['REMOTE_ADDR'],
-		'secret' : settings.RECAPTCHA_SECRET
+		'response': getParamsOr400(request, 'g-recaptcha-response'),
+		'remoteip': request.META['REMOTE_ADDR'],
+		'secret': settings.RECAPTCHA_SECRET
 	}
-	request = urllib2.Request('https://www.google.com/recaptcha/api/siteverify',data=urllib.urlencode(data));
+	request = urllib3.HTTPConnectionPool('https://www.google.com/recaptcha/api/siteverify', data=urlencode(data))
 	try:
-		response = urllib2.urlopen(request)
+		response = urllib3.HTTPConnectionPool(request)
 		response_body = response.read()
 		status = response.getcode()
-	except urllib2.HTTPError, e:
-		response_body = e.read()
-		status = e.code
-		logging.error(u"Unable to connect to google to verify captcha, error:"%(response_body))
+	except urllib3.exceptions.HTTPError as e:
+		response_body = e
+		status = 400
+		logging.error(u"Unable to connect to google to verify captcha, error:" % response_body)
 		return None
 
-	result = json.loads(response_body);
+	result = json.loads(response_body)
 	if result['success'] is False:
-		logging.error(u"Unable verify captcha with error-codes:%s"%(result.get('error-codes')));
+		logging.error(u"Unable verify captcha with error-codes:%s" % (result['error-codes']))
 
-	return result['success'];
+	return result['success']
 
 
 def get_media_storage():
@@ -158,7 +168,7 @@ class ScopedRateThrottleBanIP(ScopedRateThrottle):
 		Otherwise generate the unique cache key by concatenating the user id
 		with the '.throttle_scope` property of the view.
 		"""
-		if request.user.is_authenticated():
+		if request.user.is_authenticated:
 			ident = request.user.id
 		else:
 			ident = self.get_ident(request)
@@ -197,7 +207,7 @@ class ScopedRateThrottleBanIP(ScopedRateThrottle):
 
 from rest_framework.routers import DefaultRouter
 from rest_framework.views import APIView
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 
 
 class FullRouter(DefaultRouter):
@@ -214,7 +224,7 @@ class FullRouter(DefaultRouter):
 		self.includeRouterList = []
 		self.root_view_name=root_view_name
 
-	def get_api_root_view(self):
+	def get_api_root_view(self,api_urls=None):
 		"""
 		Return a view to use as the API root.
 		"""
@@ -240,7 +250,8 @@ class FullRouter(DefaultRouter):
 
 				for prefix in api_root_dict:
 					basename, viewset = api_root_dict[prefix]
-					for url, mapping, name, initkwargs in routerSelf.get_routes(viewset):
+					# print(routerSelf.get_routes(viewset))
+					for url, mapping, name, detail, initkwargs in routerSelf.get_routes(viewset):
 						correctName=name.format(basename=basename);
 
 						reverseKwagrs={};
@@ -286,8 +297,13 @@ class FullRouter(DefaultRouter):
 
 
 class DisableCSRF(object):
-	def process_request(self, request):
+	def __init__(self, get_response):
+		self.get_response = get_response
+
+	def __call__(self, request):
 		setattr(request, '_dont_enforce_csrf_checks', True)
+		response = self.get_response(request)
+		return response
 
 
 # Wrap it in a function that gives me more context:
@@ -370,7 +386,7 @@ def getParamsOrRaise400(paramDict, *paramNameAndDefaultValueList, **kwargs):
 		if isinstance(pd, str):  # no default value, only one string
 			paramName = pd
 			if paramName not in paramDict:  # raise 400 here
-				print u"Invalid Param:%s" % (paramName)
+				print(u"Invalid Param:%s" % (paramName))
 				raise BadRequestException(paramName)
 			else:
 				resultSet += [paramDict.get(paramName)]
@@ -423,12 +439,15 @@ def errorResponse(error, code=0, response=None):
 
 
 def successResponse(data=None, encode=True):
+	status = {'success': True, 'msg': 'success'}
 	if data is not None:
 		if encode:
-			return HttpResponse(json.dumps(data))
+			status.update(dict(data))
+			return HttpResponse(json.dumps(status))
 		else:
 			return HttpResponse(data)
-	return HttpResponse('success')
+
+	return HttpResponse(json.dumps(status))
 
 
 def successResponseRestful(data=None):

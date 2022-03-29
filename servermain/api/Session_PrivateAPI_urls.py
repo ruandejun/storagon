@@ -8,13 +8,11 @@
 #  Copyright (c) 2014 __MyCompanyName__. All rights reserved.
 #
 
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 from django.views.generic import RedirectView, TemplateView
-
-urlpatterns = patterns('servermain.api.Session_PrivateAPI',
-
-	url(r'^getSession/', 'getSession', name='getSession'),
-	url(r'^doneSession/', 'doneSession', name='doneSession'),
-	url(r'^listSession/', 'listSession', name='listSession'),
-
-)
+from .Session_PrivateAPI import *
+urlpatterns = [
+	url(r'^getSession/', getSession, name='getSession'),
+	url(r'^doneSession/', doneSession, name='doneSession'),
+	url(r'^listSession/', listSession, name='listSession'),
+]

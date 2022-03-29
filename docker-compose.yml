@@ -1,5 +1,10 @@
-version: '3.2'
+version: '3.5'
 services:
+  memcache:
+    image: memcached
+    command: memcached -m 64
+    networks:
+      - backend
   storagon:
     build:
       context: .
@@ -8,25 +13,123 @@ services:
         - build.version=${BUILD_VERSION:-local}
       args:
         - buildflag=clear_sourcecode
-    command: python manage.py runserver 0.0.0.0:8000
+    # command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - .:/opt/project
-    ports: [ "8000:8000" ]
+      - .:/var/www/storagon/
+    depends_on:
+      - memcache
+      - redis
+      - mongodb
+      - postgredb
+    links:
+      - mongodb:mongodb
+      - postgredb:postgredb
+      - memcache:memcached
+      - redis:redis
+    networks:
+      - backend
+    ports: ["8889:8889"]
   mongodb:
-    image: mongo:3.3.15
+    image: mongo
+    restart: always
+    volumes:
+      - ./data-db:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: mongoadmin
+      MONGO_INITDB_DATABASE: storagon
     ports:
       - 27017:27017
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: password
-      ME_CONFIG_MONGO_INITDB_DATABASE: storagon
-  rediscache:
-    image: redis:alpine
+    networks:
+      - backend
+  redis:
+    restart: always
+    image: "redis:alpine"
+    command: redis-server --requirepass hanoi123
+    expose:
+      - '6379'
+    ports:
+      - "6379:6379"
+    networks:
+      - backend
+    volumes:
+      - ./storagon/redis/redis.conf:/etc/redis/redis.conf
   postgredb:
     image: postgres:12-alpine
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data/
     environment:
       POSTGRES_DB: storagon
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: 123
+      POSTGRES_USER: storagon_post
+      POSTGRES_PASSWORD: 2Lj2UkqXymn6
+      PG_SYSTEM_SHARED_BUFFERS: 256MB
+      PG_SYSTEM_MAX_CONNECTIONS: 512
+    networks:
+      - backend
     ports: [ "5432:5432" ]
     command: "-c 'shared_buffers=256MB' -c 'max_connections=512'"
+  nginx:
+    build:
+      context: .
+      dockerfile: ./storagon/nginx/Dockerfile
+    volumes:
+      - .:/var/www/storagon
+      - ./storagon/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports: [ "80:80", "8000:8000" ]
+    depends_on:
+      - storagon
+      - mongodb
+      - postgredb
+    links:
+      - storagon:storagon
+      - mongodb:mongodb
+      - postgredb:postgredb
+      - memcache:memcached
+      - redis:redis
+    networks:
+      - backend
+  celery:
+    build: .
+    command: celery -A storagon -b redis://default:hanoi123@redis:6379/0 worker -l info --pidfile=
+    volumes:
+      - .:/var/www/storagon
+    depends_on:
+      - mongodb
+      - postgredb
+      - memcache
+      - redis
+    links:
+      - mongodb:mongodb
+      - postgredb:postgredb
+      - memcache:memcached
+      - redis:redis
+    networks:
+      - backend
+    restart: always
+
+  celery-beat:
+    build: .
+    command: celery -A storagon -b redis://default:hanoi123@redis:6379/0 beat -l info --pidfile=
+    volumes:
+      - .:/var/www/storagon
+    depends_on:
+      - mongodb
+      - postgredb
+      - memcache
+      - redis
+    links:
+      - mongodb:mongodb
+      - postgredb:postgredb
+      - memcache:memcached
+      - redis:redis
+    networks:
+      - backend
+    restart: always
+volumes:
+  postgres_data:
+  mongo_data:
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge

@@ -8,8 +8,8 @@
 #  Copyright (c) 2015 storagon. All rights reserved.
 #
 
-import urllib2, urllib, bencode, re
-
+import urllib, bencode, re
+import urllib.request as urllib2
 from django.conf import settings;
 from django import shortcuts
 from django.http import *
@@ -73,7 +73,7 @@ def announce(request):
 			response = urllib2.urlopen(request)
 			response_body = response.read()
 			status = response.getcode()
-		except urllib2.HTTPError, e:
+		except urllib2.HTTPError as e:
 			response_body = e.read()
 			status = e.code
 			logging.error(u"Announce Error %s: %s"%(e.code,response_body))
@@ -101,7 +101,7 @@ def scrape(request):
 			response_body = response.read()
 			status = response.getcode()
 			logging.debug("Announce Response: %s"%response_body)
-		except urllib2.HTTPError, e:
+		except urllib2.HTTPError as e:
 			response_body = e.read()
 			status = e.code
 			logging.error("Announce Error %s: %s"%(e.code,response_body))

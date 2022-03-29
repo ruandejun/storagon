@@ -16,12 +16,12 @@ import calendar
 from django import shortcuts
 from django.template import RequestContext
 from django.http import *
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.contrib.auth.decorators import permission_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import PermissionDenied
 from django import forms
-from suit.widgets import SuitSplitDateTimeWidget
+#from suit.widgets import SuitSplitDateTimeWidget
 from django.utils import timezone
 from django.utils.html import escape
 from django.db import connection
@@ -30,8 +30,8 @@ from rest_framework import serializers
 
 from servermain.controllers import PaymentController
 from storagon.PrivateAPI_SDK import SignalSDK
-from models import User, ServerFile
-from mongo_models import Session
+from .models import User, ServerFile
+from .mongo_models import Session
 from storagon.enum import *
 from storagon.tool import *
 from system_configure.controllers import SystemConfigureController
@@ -56,8 +56,8 @@ class SessionFilterForm(forms.Form):
 	session_id = forms.CharField(required=False, max_length=24, min_length=24)  # 24 is fixed length of MongoDB ObjectID
 	type = forms.TypedChoiceField(required=True, coerce=int, choices=SessionType.ChoiceList(), initial=SessionType.upload)
 	status = forms.TypedChoiceField(required=False, coerce=int, choices=[(None, '---')] + SessionStatus.ChoiceList())
-	from_date = forms.SplitDateTimeField(required=False, widget=SuitSplitDateTimeWidget, initial=datetime.datetime.today() - datetime.timedelta(days=30))
-	to_date = forms.SplitDateTimeField(required=False, widget=SuitSplitDateTimeWidget)
+	from_date = forms.SplitDateTimeField(required=False, initial=datetime.datetime.today() - datetime.timedelta(days=30))
+	to_date = forms.SplitDateTimeField(required=False)
 	offset = forms.IntegerField(required=True, initial=0)
 	limit = forms.IntegerField(required=True, min_value=1, initial=25)
 
@@ -252,7 +252,7 @@ class SessionEditForm(forms.Form):
 
 	data = forms.CharField(required=True, initial='{}', widget=forms.Textarea)
 	text = forms.CharField(required=False)  # text for query on string
-	created = forms.SplitDateTimeField(required=True, initial=timezone.now, widget=SuitSplitDateTimeWidget)
+	created = forms.SplitDateTimeField(required=True, initial=timezone.now)
 
 
 @permission_required(['sessions.change_session'])
@@ -378,7 +378,7 @@ def sendServerFileSignal(request):
 		if form.is_valid():
 			fd = form.cleaned_data
 			serverFile = fd['serverFile']
-			print u"Send signal to %s =" % serverFile.server_address,
+			print (u"Send signal to %s =" % serverFile.server_address,)
 			signalSDK = SignalSDK(serverFile.server_address)
 			if fd['signal'] == 'initiateDeleteSessionProcess':
 				# print u'initiateDeleteSessionProcess'

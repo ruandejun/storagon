@@ -13,7 +13,7 @@ import random, hashlib, json, yaml
 from django.utils import timezone
 from django.core.cache import cache
 from django.conf import settings;
-from bunch import Bunch
+from munch import Munch
 from django.template import Context, Template
 from system_configure.models import SystemConfig,TemplateHTML
 
@@ -35,10 +35,10 @@ def getConfigure(key, default='', JSON=False, YAML=False, BUNCH=False):
 	if JSON:
 		result = json.loads(config.value);
 	elif YAML:
-		result = yaml.load(config.value);
+		result = yaml.safe_load(config.value);
 
 	if BUNCH and isinstance(result,dict):
-		result = Bunch.fromDict(result)
+		result = Munch.fromDict(result)
 
 	return result
 
@@ -88,7 +88,7 @@ def setHTML(key, body):
 
 
 def generateTemporaryCode(**kwargs):
-	temp_code = hashlib.sha1('temporary_code_%s'%(random.randint(0, 10**9))).hexdigest()[:10].upper()
+	temp_code = hashlib.sha1(('temporary_code_%s'%(random.randint(0, 10**9))).encode()).hexdigest()[:10].upper()
 	timeout = settings.TEMPORARY_CODE_EXPIRES;
 	cache.set(temp_code, kwargs, timeout);
 	return temp_code;
@@ -98,7 +98,7 @@ def verifyTemporaryCode(temp_code):
 	data = cache.get(temp_code);
 	cache.delete(temp_code);
 	if not data:return None;
-	return Bunch.fromDict(data);
+	return Munch.fromDict(data);
 
 
 

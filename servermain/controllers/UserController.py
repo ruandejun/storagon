@@ -9,18 +9,19 @@
 #
 import random
 import hashlib
+from typing import NamedTuple
 
 from django.utils import timezone
 from django.db.models import Sum
 from django.core.cache import cache
 from django.conf import settings;
 
-from servermain.models import User, UserProfile
+from servermain.models import RealFile, User, UserFile, UserProfile, AccountBalance, AccountCurrency, AccountType, TransactionLog
 from servermain.mongo_models import UserStorage, Session
 from storagon.tool import *
 from storagon.enum import *
 from system_configure.controllers import SystemConfigureController
-
+from django.db.models import Sum, F, Count, Q , Case, When, Value
 
 def calculateUserStorage(user_id):
 	"""Recalculate an user storage
@@ -28,7 +29,11 @@ def calculateUserStorage(user_id):
 	:param user_id:
 	:return:
 	"""
-	userStorage, created = UserStorage.objects.get_or_create(user_id=user_id, defaults={'user_id':user_id})
+	try:
+		userStorage = UserStorage.objects.get(user_id=user_id)
+	except UserStorage.DoesNotExist:
+		userStorage = UserStorage(user_id=user_id)
+		userStorage.save()
 
 	try:
 		user = User.objects.get(id=user_id)
@@ -57,6 +62,7 @@ def calculateUserStorage(user_id):
 	userStorage.calculated_date = timezone.now()
 
 	userStorage.save()
+
 
 	return userStorage
 
@@ -192,7 +198,7 @@ def checkGuestCanDownloadFile(userFile, REMOTE_ADDR=None):
 
 
 def generateAccountActivationCode(user_id, email):
-	activation_code = hashlib.sha1('storagon_activation_code_%s'%(random.randint(0, 1000000))).hexdigest()[:8].upper()
+	activation_code = hashlib.sha1(('storagon_activation_code_%s'%(random.randint(0, 1000000))).encode('utf-8')).hexdigest()[:8].upper()
 	timeout = settings.ACCOUNT_ACTIVATION_EXPIRES;
 	cache.set(activation_code, (user_id, email), timeout);
 	return activation_code;
@@ -216,4 +222,44 @@ def verifyAccountActivation(activation_code):
 		user.profile.save();
 	cache.delete(activation_code);
 	return True
+
+def calculateUserBlance(accountBalance, realtime=False):
+	if realtime:
+		print('==get deposit==')
+		transaction_deposits = TransactionLog.objects.filter(balance=accountBalance,transaction_type=TransactionType.deposit, transaction_status=TransactionStatus.success).aggregate(
+	            sum_amount=Sum(F('amount')), count=Count(F('id')))
+		print('==get paid==')
+		transaction_paids = TransactionLog.objects.filter(balance=accountBalance,transaction_type=TransactionType.pay, transaction_status=TransactionStatus.success).aggregate(
+	            sum_amount=Sum(F('amount')), count=Count(F('id')))
+		print('==get refund==')
+		transaction_withdrawns = TransactionLog.objects.filter(balance=accountBalance,transaction_type=TransactionType.withdrawn, transaction_status=TransactionStatus.success).aggregate(
+	            sum_amount=Sum(F('amount')), count=Count(F('id')))
+
+		if not transaction_deposits['sum_amount']:
+			sum_deposits_amount = 0
+		else:
+			sum_deposits_amount = transaction_deposits['sum_amount']
+
+		if not transaction_paids['sum_amount']:
+			sum_pays_amount = 0
+		else:
+			sum_pays_amount = transaction_paids['sum_amount']
+		if not transaction_withdrawns['sum_amount']:
+			sum_withdrawns_amount = 0
+		else:
+			sum_withdrawns_amount = transaction_withdrawns['sum_amount']
+		current_banlance = sum_deposits_amount - sum_pays_amount - sum_withdrawns_amount
+		accountBalance.amount = current_banlance
+		accountBalance.save(update_fields=['amount'])
+	else:
+		current_banlance = accountBalance.amount
+	return current_banlance
+
+
+
+
+
+
+
+
 

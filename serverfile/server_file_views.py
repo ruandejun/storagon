@@ -11,13 +11,16 @@
 # -*- coding: utf-8 -*-
 import datetime,time
 import os
-import StringIO
+try:
+    from StringIO import StringIO ## for Python 2
+except ImportError:
+    from io import StringIO ## for Python 3
 import jwt
 
 from django.http import *
 from django.utils import timezone
 from django.core.cache import cache
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from storagon.PrivateAPI_SDK import SessionSDK, FileSDK
 from storagon.tool import *
@@ -26,10 +29,10 @@ from storagon.decorator import signature_test
 from servermain.mongo_models import Session
 from serverfile.tasks import recursive_mkdir, processMoveFileSessionList, processDeleteFileSessionList, processClearTemporaryFolder
 from celery.exceptions import TimeoutError
-
+from rest_framework.decorators import api_view
 from private_tracker.controllers import TorrentController
 
-
+@api_view(['GET','POST','PUT'])
 def downloadTorrentView(request, downloadSessionID, token, fileName):
 	""" Serve file download with data in downloadSesstionID via torrent downloader
 		@param downloadSessionID , use to retrive info of current download in mainServer (or encrypt data in downloadSessionID)
@@ -67,10 +70,10 @@ def downloadTorrentView(request, downloadSessionID, token, fileName):
 		if session.type != SessionType.download or session.status == SessionStatus.failed or timezone.now() > session.created + datetime.timedelta(seconds=settings.MONGO_SESSION_EXPIRES):
 			return errorResponse(u"Invalid download session, cancel download!", code=0)
 
-		if session.data['ip_address'] in ['10.0.0.1','10.0.2.2','127.0.0.1'] or '192.168.1.' in session.data['ip_address']:
-			logging.info(u"Allow session IP=%s to download without checking REMOTE_ADDR=%s"%(session.data['ip_address'] , request.META['REMOTE_ADDR']));
-		elif session.data['ip_address'] != request.META['REMOTE_ADDR']:
-			return errorResponse(u"Invalid user IP address=%s, cancel download!"%(request.META['REMOTE_ADDR']), code=0)
+		# if session.data['ip_address'] in ['10.0.0.1','10.0.2.2','127.0.0.1'] or '192.168.1.' or '192.168.31.' in session.data['ip_address']:
+		# 	logging.info(u"Allow session IP=%s to download without checking REMOTE_ADDR=%s"%(session.data['ip_address'] , request.META['REMOTE_ADDR']));
+		# elif session.data['ip_address'] != request.META['REMOTE_ADDR']:
+		# 	return errorResponse(u"Invalid user IP address=%s, cancel download!"%(request.META['REMOTE_ADDR']), code=0)
 
 		file_name = session.data['file_name']
 		file_location = session.data['file_location']
@@ -124,11 +127,11 @@ def downloadTorrentView(request, downloadSessionID, token, fileName):
 		# These lines let nginx handle download file
 		logging.debug(u"download_file_path=%s"%download_file_path);
 		response = HttpResponse()
-		response["Content-Disposition"] = 'attachment; filename="%s"' % (unicode(torrent_file_name).encode('utf-8'))
+		response["Content-Disposition"] = 'attachment; filename="%s"' % (torrent_file_name)
 		response['X-Accel-Redirect'] = download_file_path
 		return response;
 
-
+@api_view(['GET','POST','PUT'])
 def downloadView(request, downloadSessionID, token, fileName):
 	""" Serve file download with data in downloadSesstionID
 		@param downloadSessionID , use to retrive info of current download in mainServer (or encrypt data in downloadSessionID)
@@ -166,13 +169,13 @@ def downloadView(request, downloadSessionID, token, fileName):
 		if session.type != SessionType.download or session.status == SessionStatus.failed or timezone.now() > session.created + datetime.timedelta(seconds=settings.MONGO_SESSION_EXPIRES):
 			return errorResponse(u"Invalid download session, cancel download!", code=0)
 
-		if session.data['ip_address'] in ['192.168.1.1','10.0.0.1','10.0.2.2','127.0.0.1']:
+		if session.data['ip_address'] in ['192.168.1.1', '192.168.31.1','10.0.0.1','10.0.2.2','127.0.0.1']:
 			logging.info(u"Allow session IP=%s to download without checking REMOTE_ADDR=%s"%(session.data['ip_address'] , request.META['REMOTE_ADDR']));
 		# elif session.data.get('tracker_url',None) is not None:
 		# 	logging.info(u"Allow torrent session IP=%s to download without checking REMOTE_ADDR=%s"%(session.data['ip_address'] , request.META['REMOTE_ADDR']));
-		elif session.data['ip_address'] != request.META['REMOTE_ADDR']:
-			return errorResponse(u"Invalid user IP address=%s, cancel download!"%(request.META['REMOTE_ADDR']), code=0)
-
+		# elif session.data['ip_address'] != request.META['REMOTE_ADDR']:
+		# 	return errorResponse(u"Invalid user IP address=%s, cancel download!"%(request.META['REMOTE_ADDR']), code=0)
+		print('==session.data==', session.data)
 		if fileName:
 			file_name = fileName;
 		else:
@@ -186,8 +189,8 @@ def downloadView(request, downloadSessionID, token, fileName):
 		interface = request.META.get('GATEWAY_INTERFACE')
 		rangeHeader = request.META.get('HTTP_RANGE')
 		# nginxRealIP = request.META.get('X_REAL_IP')
-		# print u"Range header=%s"%(rangeHeader);
-		# print u"RealIP=%s" % (nginxRealIP)
+		# print("Range header=" + rangeHeader)
+		# print("RealIP=" + nginxRealIP)
 
 		if interface == 'CGI/1.1':  # request not come from nginx
 			offset = block = 0
@@ -204,8 +207,8 @@ def downloadView(request, downloadSessionID, token, fileName):
 				except Exception as e:
 					return errorResponse(u"Invalid Range Header", code=0)
 			# django serve file
-			print request.META
-			print u"Warning: File serve direcly from django not nginx with offset=%s, block=%s" % (offset, block)
+			print(request.META)
+			print(u"Warning: File serve direcly from django not nginx with offset=%s, block=%s" % (offset, block))
 			fsock = open(settings.MEDIA_ROOT + '/' + file_location, 'rb')
 
 			fsock.seek(offset, 0)
@@ -215,12 +218,12 @@ def downloadView(request, downloadSessionID, token, fileName):
 				data = fsock.read()
 			fsock.close()
 			response = HttpResponse(data)
-			response["Content-Disposition"] = 'attachment; filename="%s"' % (unicode(file_name).encode('utf-8'))
+			response["Content-Disposition"] = 'attachment; filename="%s"' % (file_name)
 		else:
 			response = HttpResponse()
-			response["Content-Disposition"] = 'attachment; filename="%s"' % (unicode(file_name).encode('utf-8'))
+			response["Content-Disposition"] = 'attachment; filename="%s"' % (file_name)
 			file_path = '/media/' + file_location
-			# print file_path;
+			print('==file_path==',file_path);
 			# These lines let nginx handle download file
 			response['X-Accel-Redirect'] = file_path
 			# Set speed limit
@@ -231,12 +234,11 @@ def downloadView(request, downloadSessionID, token, fileName):
 
 			if connection_limit>2:
 				response['X-Accel-Redirect'] = '/nolimit'+file_path
-
 		return response
 	else:
 		return Http404()
 
-
+@api_view(['GET','POST','PUT'])
 @signature_test()
 def initiateDeleteSessionProcess(request):
 	""" Serve file will get DeleteSession from server main. Then delete all these file and send back deleteFile request
@@ -284,7 +286,7 @@ def initiateDeleteSessionProcess(request):
 	else:
 		return Http404()
 
-
+@api_view(['GET','POST','PUT'])
 @signature_test()
 def initiateMoveSessionProcess(request):
 	""" Serve file will get MoveSession from server main. Then delete all these file and send back deleteFile request
@@ -336,7 +338,7 @@ def initiateMoveSessionProcess(request):
 	else:
 		return Http404()
 
-
+@api_view(['GET','POST','PUT'])
 @signature_test()
 def initiateClearTemporaryFolderProcess(request):
 	""" Serve file will remove all chunk in temorary folder that exist more than an amount of time.

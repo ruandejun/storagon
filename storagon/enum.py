@@ -15,6 +15,13 @@ class AccountType(EnumBase):
 	reseller = 2
 	affiliatePPD = 3
 
+class LogicStep(EnumBase):
+	pending = 0
+	approved = 1
+	processing = 2
+	completed = 3
+	failed = 4
+	checked = 5
 
 class AccountStatus(EnumBase):
 	normal = 0
@@ -39,6 +46,10 @@ class BillStatus(EnumBase):
 	cancel = 1
 	fraud = 2
 
+class SellingStatus(EnumBase):
+	listed = 0
+	sold = 1
+	block = 2
 
 class TransactionType(EnumBase):
 	agency = 0
@@ -49,12 +60,17 @@ class TransactionType(EnumBase):
 	ppd = 5
 	rebill = 6
 	refererPPD = 7
+	deposit = 8
+	withdrawn = 9
 
 
 class TransactionStatus(EnumBase):
 	auto = 0
 	manual = 1
 	revert = 2
+	success = 3
+	pending = 4
+	canceled = 5
 
 
 class BalanceType(EnumBase):

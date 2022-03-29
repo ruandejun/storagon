@@ -41,18 +41,19 @@ class IsSignatureVerified(permissions.BasePermission):
 
 		elif request.method in ['POST','PATCH','PUT']:
 			params2 = request.body  # case 2
-			dataItems = request.data.items()
-			dataItems.sort()
+			dataItems = sorted(request.data.items())
+			# dataItems.sort()
 			#convert unicode to fix urlencode error
-			try:params = urllib.urlencode([(k.encode('utf-8'), v.encode('utf-8')) for k, v in dataItems]);
-			except:params = urllib.urlencode(dataItems)  # case 1
+			# try:params = urllib.urlencode([(k.encode('utf-8'), v.encode('utf-8')) for k, v in dataItems]);
+			# except:params = urllib.urlencode(dataItems)  # case 1
+			params = urllib.parse.urlencode(dataItems)  # case 1
 		else:
 			return False;#This Never Happend
 
-		correct_signature = hashlib.md5(settings.SECRET_KEY + params).hexdigest()
+		correct_signature = hashlib.md5(str(settings.SECRET_KEY + params).encode('utf-8')).hexdigest()
 		if correct_signature != signature:
 			# print params,'\n',params2
-			correct_signature2 = hashlib.md5(settings.SECRET_KEY + params2).hexdigest()
+			correct_signature2 = hashlib.md5(str(settings.SECRET_KEY + params2).encode('utf-8')).hexdigest()
 			if correct_signature2 != signature:
 				msgError = u"correct_signature=%s or %s, but signature=%s" % (correct_signature, correct_signature2, signature);
 				logging.debug(msgError)

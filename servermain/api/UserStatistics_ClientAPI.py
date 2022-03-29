@@ -23,8 +23,9 @@ from storagon.decorator import login_required_ajax, signature_test
 from servermain.controllers import PaymentController
 from system_configure.controllers import SystemConfigureController
 from django.db import connection
+from rest_framework.decorators import api_view
 
-
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 def getUserStorage(request):
@@ -34,14 +35,15 @@ def getUserStorage(request):
 		try:
 			userStorage = UserStorage.objects.get(user_id=request.user.id)
 		except UserStorage.DoesNotExist:
-			raise Http404()
+			userStorage = UserStorage(user_id=request.user.id)
+			userStorage.save()
 		return successResponse(userStorage.to_json(), encode=False)
 	elif request.method == 'POST':
 		raise Http404()
 	else:
 		raise Http404()
 
-
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 def listBill(request):
@@ -88,7 +90,7 @@ def listBill(request):
 	else:
 		raise Http404()
 
-
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 def listTransaction(request):
@@ -114,7 +116,7 @@ def listTransaction(request):
 			try: from_date = datetime.datetime.strptime(from_date_string, "%Y-%m-%d")
 			except ValueError: pass;
 
-		transactionQuery = TransactionLog.objects.all().filter(balance__user=request.user, created_date__gt=from_date).select_related('invoice_bill__money_charged')
+		transactionQuery = TransactionLog.objects.all().filter(balance__user=request.user, created_date__gt=from_date).select_related('invoice_bill')
 		if to_date_string:
 			today = timezone.now()
 			try: to_date = datetime.datetime.strptime(to_date_string, "%Y-%m-%d")
@@ -222,7 +224,7 @@ def exchangePoint(request):
 	else:
 		raise Http404()
 
-
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 def downloadCountSessionStatistic(request):
@@ -266,11 +268,11 @@ def downloadCountSessionStatistic(request):
 			]
 		);
 
-		return successResponse(downloadSessionResult.get('result', []));
+		return successResponse(list(downloadSessionResult));
 	else:
 		raise Http404()
 
-
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 def newUserOriginFromDownloadLinkStatistic(request):

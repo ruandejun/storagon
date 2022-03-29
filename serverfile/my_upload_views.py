@@ -14,7 +14,7 @@ import hashlib
 import os
 import jwt
 import time
-
+from rest_framework.decorators import api_view
 from django.utils import timezone
 
 
@@ -36,13 +36,13 @@ def upload_to_path(fileName, fileSize):
 	# doesn't need anymore, now we use linux scp to move file between server
 #	if '.' not in fileName and (len(fileName) == 32 or len(fileName) == 12):fileName=fileName;
 #	else:
-	fileName = hashlib.md5(str(datetime.datetime.now()) + fileName + str(fileSize)).hexdigest()
+	fileName = hashlib.md5((str(datetime.datetime.now()) + fileName + str(fileSize)).encode()).hexdigest()
 
 	return prePath + fileName
 
 
 def handleCompleted(request, actual_filepath, session_id, resumableFile):
-	print u"Session %s is completing..." % (session_id)
+	print(u"Session %s is completing..." % (session_id))
 	try:
 		file_name = resumableFile.filename
 	except UnicodeDecodeError:
@@ -53,14 +53,14 @@ def handleCompleted(request, actual_filepath, session_id, resumableFile):
 	fileSDK = FileSDK(settings.SERVER_MAIN_URL)
 	userFile_id = fileSDK.addFile(session_id, actual_filepath, file_name, file_size)
 	if not userFile_id:
-		print u"Sesssion %s failed, delete file at:%s" % (session_id, actual_filepath)
+		print(u"Sesssion %s failed, delete file at:%s" % (session_id, actual_filepath))
 		# remove file
 		try:
 			os.remove(settings.MEDIA_ROOT + '/' + actual_filepath)
 		except OSError:
 			pass
 		return None
-	print u"Session %s completed with userFile_id=%s, save file to:%s" % (session_id, userFile_id, actual_filepath)
+	print(u"Session %s completed with userFile_id=%s, save file to:%s" % (session_id, userFile_id, actual_filepath))
 	return userFile_id
 
 
@@ -93,7 +93,7 @@ def checkAndBanIPOfClientMakingTooManyFailureRequest(request,key_prefix=settings
 		history_failure.insert(0, now)
 		cache.set(key_failure, history_failure, duration)
 
-
+@api_view(['GET','POST','PUT'])
 def my_resumable(request, upload_session_id=None, token=None):
 	if request.method == 'POST':
 		kwarg = request.POST
@@ -112,22 +112,24 @@ def my_resumable(request, upload_session_id=None, token=None):
 		session = cache.get(settings.CACHE_MONGO_SESSION_PREFIX + upload_session_id, None)
 
 	if not session and token:
-		try:
-			decodedSessionData = jwt.decode(token, settings.SECRET_KEY);
-		except jwt.DecodeError as e:
-			logging.error(u"Failed to decode JWT token");
-		else:
-			session = Session.from_json(json.dumps(decodedSessionData));
-			logging.debug(u"Success decode JWT token");
+		decodedSessionData = jwt.decode(token, settings.SECRET_KEY, algorithms="HS256");
+		# try:
+		#
+		# except jwt.DecodeError as e:
+		# 	logging.error(u"Failed to decode JWT token");
+		# else:
+		session = Session.from_json(json.dumps(decodedSessionData));
+		logging.debug(u"Success decode JWT token");
 
 	# check session before upload here
 	if session is None:  # cache miss
 		sessionSDK = SessionSDK(settings.SERVER_MAIN_URL)
-		try:
-			session = sessionSDK.getSession(upload_session_id)
-		except Exception as e:
-			session = None
-			logging.error(u"my_resumable: Unable to getSession, error=%s" % (e))
+		session = sessionSDK.getSession(upload_session_id)
+		# try:
+
+		# except Exception as e:
+		# 	session = None
+		# 	logging.error(u"my_resumable: Unable to getSession, error=%s" % (e))
 
 	if not session:
 		checkAndBanIPOfClientMakingTooManyFailureRequest(request)

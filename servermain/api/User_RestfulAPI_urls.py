@@ -8,12 +8,12 @@
 #  Copyright (c) 2015 storagon. All rights reserved.
 #
 
-from django.conf.urls import patterns, include, url
-from django.views.generic import RedirectView, TemplateView
+# from django.conf.urls import patterns, include, url
+# from django.views.generic import RedirectView, TemplateView
+#
+# from rest_framework.urlpatterns import format_suffix_patterns
 
-from rest_framework.urlpatterns import format_suffix_patterns
-
-from servermain.api.User_RestfulAPI import CurrentUserProfileView,CurrentUserAccountBalanceView,CurrentUserWebsiteAgencyView,CurrentUserUserApplyList,CurrentUserUserApplyView,CurrentUserView
+from .User_RestfulAPI import CurrentUserProfileView,CurrentUserAccountBalanceView,CurrentUserWebsiteAgencyView,CurrentUserUserApplyList,CurrentUserUserApplyView,CurrentUserView
 
 # urlpatterns = format_suffix_patterns([
 #
@@ -30,12 +30,12 @@ from servermain.api.User_RestfulAPI import CurrentUserProfileView,CurrentUserAcc
 from system_configure.controllers.Tool import FullRouter
 
 router = FullRouter('user');
-router.register(r'profile', CurrentUserProfileView, base_name='Profile')
-router.register(r'accountBalance', CurrentUserAccountBalanceView, base_name='AccountBalance')
-router.register(r'websiteAgency', CurrentUserWebsiteAgencyView, base_name='WebsiteAgency')
-router.register(r'userApplyList', CurrentUserUserApplyList, base_name='UserApplyList')
-router.register(r'userApplyView', CurrentUserUserApplyView, base_name='UserApplyView')
-router.register(r'auth', CurrentUserView, base_name='UserView')
+router.register(r'profile', CurrentUserProfileView, basename='Profile')
+router.register(r'accountBalance', CurrentUserAccountBalanceView, basename='AccountBalance')
+router.register(r'websiteAgency', CurrentUserWebsiteAgencyView, basename='WebsiteAgency')
+router.register(r'userApplyList', CurrentUserUserApplyList, basename='UserApplyList')
+router.register(r'userApplyView', CurrentUserUserApplyView, basename='UserApplyView')
+router.register(r'auth', CurrentUserView, basename='UserView')
 
 urlpatterns = router.urls
 

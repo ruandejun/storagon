@@ -11,7 +11,7 @@
 from django import shortcuts
 from django.template import RequestContext
 from django.http import *
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from django.conf import settings;
 from django.views.decorators.csrf import csrf_exempt,csrf_protect
@@ -23,9 +23,9 @@ from storagon.enum import *
 from servermain.models import UserFile
 from servermain.mongo_models import Session
 from system_configure.controllers import Tool
-from bunch import Bunch
+from munch import Munch
 from rest_framework import serializers, mixins, permissions, exceptions, filters, status, generics, viewsets
-from rest_framework.decorators import detail_route,list_route
+from rest_framework.decorators import action
 from servermain.controllers import RestfulController
 
 from rest_framework_mongoengine import generics as mongo_generics
@@ -56,7 +56,7 @@ class CreateReportForm(serializers.Serializer):
 	detail = serializers.CharField();
 
 
-class SessionClientAPI(mongo_viewsets.MongoGenericViewSet, mongo_generics.ListAPIView):
+class SessionClientAPI(mongo_viewsets.ModelViewSet, mongo_generics.ListAPIView):
 	""" GET \n\n
 	type = serializers.IntegerField(min_value=0,default=SessionType.download);
 	status = serializers.IntegerField(min_value=-1,default=-1);
@@ -69,7 +69,7 @@ class SessionClientAPI(mongo_viewsets.MongoGenericViewSet, mongo_generics.ListAP
 	# permission_classes = [permissions.IsAuthenticated, RestfulController.IsSignatureVerified]
 	serializer_class = SessionSerializer
 
-	filter_backends = (filters.DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
+	filter_backends = (filters.SearchFilter, filters.OrderingFilter)
 	# filter_class = SesssionFilter
 	# filter_fields = ('type', 'status', 'created', 'uid', 'fid', 'sid', 'oid')
 	# search_fields = ('text', )
@@ -77,11 +77,11 @@ class SessionClientAPI(mongo_viewsets.MongoGenericViewSet, mongo_generics.ListAP
 	pagination_class = Tool.StandardResultsSetPagination
 
 	def get_queryset(self): #getter for queryset, overide queryset
-		form=SessionFilterForm(data=self.request.QUERY_PARAMS);
+		form=SessionFilterForm(data=self.request.query_params);
 		if not form.is_valid():
 			raise Tool.BadRequest(form.errors);
 		#::type: SessionFilterForm
-		data=Bunch(form.data)
+		data=Munch(form.data)
 
 		if data.type not in [SessionType.upload, SessionType.download, SessionType.report, SessionType.inbox]:
 			raise Tool.ServerError(u"SessionType=%s is not allowed" % (data.type))
@@ -129,13 +129,13 @@ class SessionClientAPI(mongo_viewsets.MongoGenericViewSet, mongo_generics.ListAP
 
 class SessionClientAPIView(viewsets.GenericViewSet):
 
-	@list_route(methods=['post'], serializer_class=CreateReportForm, permission_classes=[])
+	@action(detail=False,methods=['post'], serializer_class=CreateReportForm, permission_classes=[])
 	def createReport(self, request, *args, **kwargs):
 		formPOST=CreateReportForm(data=request.data);
 		if not formPOST.is_valid():
 			return Tool.errorResponseRestful(formPOST.errors,code=status.HTTP_400_BAD_REQUEST);
 		#::type: CreateReportForm
-		data=Bunch(formPOST.data)
+		data=Munch(formPOST.data)
 
 		user_id=0;
 		if request.user:

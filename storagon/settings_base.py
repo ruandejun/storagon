@@ -11,7 +11,11 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 import sys
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+from pathlib import Path
+from corsheaders.defaults import default_headers
+import mongoengine
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # Quick-start development settings - unsuitable for production
@@ -23,14 +27,8 @@ SECRET_KEY = '7yn^8pwp+yzd2l4ki6+v9kp(h)rzs$9gxu4ao^_p+9x_5+1*6o'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-TEMPLATE_DEBUG = True
-
-TEMPLATE_DIRS = (
-	os.path.join(BASE_DIR, 'storagon_templates'),
-)
-
 ALLOWED_HOSTS = [
-	'127.0.0.1', # Allow local host connect to server.
+	'*', # Allow local host connect to server.
 ]
 
 
@@ -38,11 +36,11 @@ ALLOWED_HOSTS = [
 
 INSTALLED_APPS = (
 	'system_configure', #need to be at top for first priority
-
-	'suit', 'suit_redactor',	# better admin interface
+	# 'suit',
+    # 'suit_redactor',	# better admin interface
 	'admin_resumable',	# support resumable file upload in admin
 	'corsheaders',	# CORS support
-	'memcache_admin',	# memcache viewer
+	#'memcache_admin',	# memcache viewer
 	'django.contrib.admin',
 	'django.contrib.auth',
 	'django.contrib.contenttypes',
@@ -50,32 +48,47 @@ INSTALLED_APPS = (
 	'django.contrib.messages',
 	'django.contrib.staticfiles',
 	'django.contrib.admindocs',	# doc
-
 	'rest_framework', # Restful API
+	'rest_framework.authtoken',
 	'rest_framework_mongoengine', # Restful for mongoengine
 	'admin_file_manager',
-	'attendance_tracking',
 	'private_tracker',
 	'servermain',
 	'serverfile',
+	'telegram_bot',
+	'django_celery_beat',
 
 )
 
-MIDDLEWARE_CLASSES = (
-	'corsheaders.middleware.CorsMiddleware',	# CORS must put before CommonMiddleware
-
+MIDDLEWARE = (
+	'corsheaders.middleware.CorsMiddleware',  # CORS must put before CommonMiddleware
 	'system_configure.controllers.Tool.DisableCSRF',
-
-	
 	'django.contrib.sessions.middleware.SessionMiddleware',
-	'django.middleware.common.CommonMiddleware',
-# 'django.middleware.csrf.CsrfViewMiddleware', #uncomment to enable csrf check
 	'django.contrib.auth.middleware.AuthenticationMiddleware',
-	'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+	'django.middleware.common.CommonMiddleware',
 	'django.contrib.messages.middleware.MessageMiddleware',
 	'django.middleware.clickjacking.XFrameOptionsMiddleware',
+	'storagon.middleware.CurrentUserMiddleware',
 )
 
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'APP_DIRS': True,
+        'OPTIONS': {
+			'context_processors': [
+				'django.contrib.auth.context_processors.auth',
+				'django.template.context_processors.request',
+				'django.template.context_processors.debug',
+				'django.template.context_processors.i18n',
+				'django.template.context_processors.media',
+				'django.template.context_processors.static',
+				'django.template.context_processors.tz',
+				'django.contrib.messages.context_processors.messages',
+			],
+        },
+    },
+]
 ROOT_URLCONF = 'storagon.urls'
 
 WSGI_APPLICATION = 'storagon.wsgi.application'
@@ -85,47 +98,62 @@ WSGI_APPLICATION = 'storagon.wsgi.application'
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 
 DATABASES = {
-
 	'default': {
-
 		'ENGINE': 'django.db.backends.postgresql_psycopg2',
-
 		'NAME': 'storagon',
-		'USER': 'root',	  # Not used with sqlite3.
-		'PASSWORD': '123',  # Not used with sqlite3.
+		'USER': 'storagon_post',    # Not used with sqlite3.
+		'PASSWORD': '2Lj2UkqXymn6',  # Not used with sqlite3.
 		'HOST': 'postgredb',  # Set to empty string for localhost. Not used with sqlite3.
 		'PORT': 5432,  # Set to empty string for default. Not used with sqlite3.
-
-	},
-
+	}
 }
-
-
+IS_RUNNING_UNIT_TEST = False
+if 'test' in sys.argv:
+	IS_RUNNING_UNIT_TEST = True
 MONGODB = {
 	'NAME': 'storagon',
+	'USER': 'root',
+	'PASSWORD': 'mongoadmin',
 	'HOST': 'mongodb',
 	'PORT': 27017,
 }
 
+
+
+MONGODB_HOST = 'mongodb://root:mongoadmin@mongodb:27017/storagon?authSource=admin'
+
+db_connection = mongoengine.connect(db=MONGODB['NAME'], host=MONGODB_HOST)
+
+# db_connection = mongoengine.connect(db=MONGODB['NAME'], host=MONGODB_HOST, username=MONGODB['USER'], password=MONGODB['PASSWORD'], authentication_source="admin")
+
+if IS_RUNNING_UNIT_TEST:
+	db_connection.drop_database(MONGODB['NAME'])
+	print("Clear MONGODB on launch")
+# Caching
+CACHES = {  # config for docker container memcached
+    'default': {  # Cluster MemCache (recommend for django-cache-machine)
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': ['memcached:11211'],
+        'PREFIX': 'storagon_',
+        'TIMEOUT': None,  # Keep cache forever, or for seconds
+    }
+}
+
 REDISDB = {
 	'DB': 0,
-	'HOST': 'rediscache',
+	'HOST': 'redis',
 	'PORT': 6379,
-	'PASSWORD': '',
+	'PASSWORD': 'hanoi123'
 }
 
-IS_RUNNING_UNIT_TEST = False
-if 'test' in sys.argv:
-	IS_RUNNING_UNIT_TEST = True
 
 
 
 
-
-MEMCACHE_ADMIN = {
-	'REFRESH_RATE': 1000,	# auto refresh webpage display server status every 1 seconds
-	'CACHE': 'default',	# use caches definition = default
-}
+# MEMCACHE_ADMIN = {
+# 	'REFRESH_RATE': 1000,	# auto refresh webpage display server status every 1 seconds
+# 	'CACHE': 'default',	# use caches definition = default
+# }
 
 # Caching
 CACHES = {
@@ -141,17 +169,17 @@ CACHES = {
 
 	'default': {	# Cluster MemCache (recommend for django-cache-machine)
 		'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-		'LOCATION': ['127.0.0.1:11211'],
+		'LOCATION': ['memcached:11211'],
 		'PREFIX': 'storagon_',
 		'TIMEOUT': None,	# Keep cache forever, or for seconds
-		'OPTIONS': {
-			'MAX_ENTRIES': 2000	# max number of row cached
-		}
+		# 'OPTIONS': {
+		# 	'MAX_ENTRIES': 2000	# max number of row cached
+		# }
 	}
 }
 
 if IS_RUNNING_UNIT_TEST:
-	print "Change Cache BACKEND to LocMemCache"
+	print ("Change Cache BACKEND to LocMemCache")
 	CACHES = {
 		'default': { #Simple Local MemCache (not work well with django-cache-machine)
 		'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
@@ -210,7 +238,7 @@ SUIT_CONFIG = {
 
 		{'label': 'Tool', 'icon': 'icon-wrench', 'models': [
 			'admin_file_manager.file',
-			{'label': 'Memcache Cluster', 'permissions': ('servermain.add_serverfile'), 'url': '/adl/memcache_admin/dashboard/'},
+			#{'label': 'Memcache Cluster', 'permissions': ('servermain.add_serverfile'), 'url': '/adl/memcache_admin/dashboard/'},
 			{'label': 'Send Signal', 'permissions': ('servermain.add_serverfile'), 'url': 'CustomAdmin:sendServerFileSignal'},
 			{'label': 'Test Upload', 'permissions': ('servermain.add_serverfile'), 'url': 'CustomAdmin:userFileUpload'},
 			{'label': 'Verify Bill', 'permissions': ('servermain.add_bill'), 'url': 'CustomAdmin:verifyBillManual'},
@@ -252,11 +280,13 @@ LOGIN_URL = '/adl/login/'
 LOGIN_REDIRECT_URL = '/adl/'
 LOGOUT_URL = '/adl/logout/'
 
-from django.conf.global_settings import TEMPLATE_CONTEXT_PROCESSORS
+# from django.conf.global_settings import TEMPLATE_CONTEXT_PROCESSORS
+#
+# TEMPLATE_CONTEXT_PROCESSORS += (
+# 	'django.core.context_processors.request',	# suit admin interface
+# )
 
-TEMPLATE_CONTEXT_PROCESSORS += (
-	'django.core.context_processors.request',	# suit admin interface
-)
+
 
 #Email
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -277,13 +307,15 @@ if 'test' in sys.argv:
 
 REST_FRAMEWORK = {
 	'DEFAULT_AUTHENTICATION_CLASSES': (
+		'rest_framework.authentication.TokenAuthentication',
 		'rest_framework.authentication.SessionAuthentication',
+		'rest_framework.authentication.BasicAuthentication',
 	),
 
 	'DEFAULT_RENDERER_CLASSES': (
 		'rest_framework.renderers.JSONRenderer',
+		'rest_framework.renderers.BrowsableAPIRenderer'
 	),
-
 	'DEFAULT_THROTTLE_CLASSES': (
 		# 'rest_framework.throttling.ScopedRateThrottle',
 		'system_configure.controllers.Tool.ScopedRateThrottleBanIP',
@@ -294,7 +326,7 @@ REST_FRAMEWORK = {
 		'heavy_api': '20/minute',
 		'light_api': '40/minute'
 	},
-
+	'DATETIME_FORMAT': "%Y-%m-%d %H:%M:%S.%f%z",
 	# 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
 	# 'PAGINATE_BY': 20,                 # Default to 10
 }
@@ -311,7 +343,9 @@ ADMIN_RESUMABLE_SUBDIR = 'realfile/'
 ADMIN_RESUMABLE_SHOW_THUMB = True
 
 
-CORS_ORIGIN_ALLOW_ALL = True	# allow all domain
+# CORS_ALLOW_ALL_ORIGINS = True # If this is used then CORS_ALLOWED_ORIGINS will not have any effect
+# CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True	# allow all domain
 # CORS_ORIGIN_WHITELIST = (
 #	 'storagon.com',
 #	 'test.storagon.com',
@@ -319,16 +353,14 @@ CORS_ORIGIN_ALLOW_ALL = True	# allow all domain
 #	 'localhost',
 #	 'localhost:8000',
 # )
-CORS_ALLOW_HEADERS = (
-	'x-requested-with',
-	'content-type',
-	'accept',
-	'origin',
-	'authorization',
-	'x-csrftoken',
+CORS_ALLOW_HEADERS = list(default_headers) + [
 	'range',
+	'Range',
 	'signature_authorization',
-)
+	'Signature-Authorization',
+	'Access-Control-Allow-Headers',
+	'access-control-allow-origin'
+]
 
 # CSRF_COOKIE_DOMAIN = '.storagon.com'
 # SESSION_COOKIE_DOMAIN = '.storagon.com'
@@ -424,6 +456,7 @@ FILE_MANAGER_ROOT_FOLDER = 'download' #must be inside MEDIA_ROOT dir
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # serverfile Settings
-SERVER_MAIN_URL = 'http://127.0.0.1:8000'
+SERVER_MAIN_URL = 'https://nhaphanguc.com'
 SERVER_FILE_ID = 1
 # ROOT_URLCONF = 'storagon.urls_serverFile'
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

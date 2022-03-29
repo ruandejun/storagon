@@ -11,7 +11,7 @@
 from django import shortcuts
 from django.template import RequestContext
 from django.http import *
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.utils import timezone
 from django.conf import settings  # site setting
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
@@ -24,8 +24,9 @@ from servermain.models import UserFile, RealFile, Folder, ServerFile
 from storagon.tool import *
 from storagon.enum import *
 from storagon.decorator import banned_check, login_required_ajax, signature_test
+from rest_framework.decorators import api_view
 
-
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 @user_passes_test(banned_check)
@@ -52,10 +53,9 @@ def moveFile(request):
 		try:
 			result = UserFile.objects.filter(id__in=fileIDList, user=request.user).update(folder_id=folder_id, modified_date=timezone.now())
 		except Exception as e:
-			logging.error(u"File_ClientAPI.moveFile: Bulk update failed with error=%s" % (e))
+			logging.error(u"File_ClientAPI.deleteFile: Bulk update failed with error={}".format(e))
 		else:
-			logging.info(u"File_ClientAPI.moveFile: Bulk update success with result=%s" % (result))
-
+			logging.info(u"File_ClientAPI.deleteFile: Bulk update success with result={}".format(result))
 		for userFile in UserFile.objects.filter(id__in=fileIDList, user=request.user):
 			FileController.autoReplaceUserFileWithSameNameInSameFolder(userFile);
 
@@ -63,7 +63,7 @@ def moveFile(request):
 	else:
 		raise Http404()
 
-
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 @user_passes_test(banned_check)
@@ -85,14 +85,14 @@ def deleteFile(request):
 		try:
 			result = UserFile.objects.filter(id__in=fileIDList, user=request.user).delete()
 		except Exception as e:
-			logging.error(u"File_ClientAPI.deleteFile: Bulk update failed with error=%s" % (e))
+			logging.error(u"File_ClientAPI.deleteFile: Bulk update failed with error={}".format(e))
 		else:
-			logging.info(u"File_ClientAPI.deleteFile: Bulk update success with result=%s" % (result))
+			logging.info(u"File_ClientAPI.deleteFile: Bulk update success with result={}".format(result))
 		return successResponse()
 	else:
 		raise Http404()
 
-
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 @user_passes_test(banned_check)
@@ -138,7 +138,7 @@ def newFolder(request):
 	else:
 		raise Http404()
 
-
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 @user_passes_test(banned_check)
@@ -170,9 +170,9 @@ def moveFolder(request):
 					parent_folder_id=to_folder_id,
 					modified_date=timezone.now())
 		except Exception as e:
-			logging.error(u"File_ClientAPI.moveFolder: Bulk update failed with error=%s" % (e))
+			logging.error(u"File_ClientAPI.deleteFile: Bulk update failed with error={}".format(e))
 		else:
-			logging.info(u"File_ClientAPI.moveFolder: Bulk update success with result=%s" % (result))
+			logging.info(u"File_ClientAPI.deleteFile: Bulk update success with result={}".format(result))
 
 		for folder in Folder.objects.filter(id__in=folderIDList, user=request.user):
 			FileController.autoMergeFolderWithSameNameInSameFolder(folder);
@@ -181,7 +181,7 @@ def moveFolder(request):
 	else:
 		raise Http404()
 
-
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 @user_passes_test(banned_check)
@@ -205,14 +205,14 @@ def deleteFolder(request):
 				folder_type=FolderType.normal, #allow only folder_type=normal to be deleted
 				user=request.user).delete()
 		except Exception as e:
-			logging.error(u"File_ClientAPI.deleteFolder: Bulk update failed with error=%s" % (e))
+			logging.error(u"File_ClientAPI.deleteFile: Bulk update failed with error={}".format(e))
 		else:
-			logging.info(u"File_ClientAPI.deleteFolder: Bulk update success with result=%s" % (result))
+			logging.info(u"File_ClientAPI.deleteFile: Bulk update success with result={}".format(result))
 		return successResponse()
 	else:
 		raise Http404()
 
-
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 @user_passes_test(banned_check)
@@ -359,7 +359,7 @@ def listFileAndFolder(request):
 	else:
 		raise Http404()
 
-
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 @user_passes_test(banned_check)
@@ -401,7 +401,7 @@ def editFolder(request):
 	else:
 		raise Http404()
 
-
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 @user_passes_test(banned_check)
@@ -443,7 +443,7 @@ def editFile(request):
 	else:
 		raise Http404()
 
-
+@api_view(['GET','POST','PUT'])
 @login_required_ajax()
 @signature_test()
 @user_passes_test(banned_check)
@@ -482,19 +482,55 @@ def getLink(request):
 		download_url_list = []
 		for file_id in fileIDList:
 			download_url_list += [
-				request.build_absolute_uri(
-					fileDict[file_id].get_absolute_url(usingDownloadViewNumber=1))]
+					fileDict[file_id].get_absolute_url(usingDownloadViewNumber=1)]
 
 		download_url_no_filename_list = []
 		for file_id in fileIDList:
 			download_url_no_filename_list += [
-				request.build_absolute_uri(
-					fileDict[file_id].get_absolute_url(usingDownloadViewNumber=2))]
+					fileDict[file_id].get_absolute_url(usingDownloadViewNumber=2)]
 
 		return successResponse({
 			'download_url_list': download_url_list,
 			'download_url_no_filename_list':download_url_no_filename_list,
 		})
+	elif request.method == 'POST':
+		raise Http404()
+	else:
+		raise Http404()
+
+@api_view(['GET','POST','PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
+def getFile(request):
+	""" Get download page url of file in fileIDList
+
+	request.GET = {
+			file_id: one or List of id
+	}
+
+	response = {
+			
+	}
+
+	"""
+	if request.method == 'GET':
+
+		fileID = getParamsOr400(request, ('file_id', int))
+		fileHash = getParamsOr400(request, ('file_hash', str))
+
+		userFile = shortcuts.get_object_or_404(
+			UserFile,
+				id=fileID,
+				string_id=fileHash)
+
+		fileInfoDict = {
+			'file_size': userFile.realFile.file_size,
+			'file_hash': userFile.realFile.file_hash,
+			'file_name': userFile.file_name,
+		}
+
+		return successResponse(fileInfoDict)
 	elif request.method == 'POST':
 		raise Http404()
 	else:

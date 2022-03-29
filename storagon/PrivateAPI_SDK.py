@@ -12,19 +12,19 @@
 import json
 import hashlib
 import urllib
-from storagon.browser import Browser
+from storagon.browser import Rqbrowser
 from servermain.mongo_models import Session
-
+from urllib.parse import urlencode
 #remember to set the head in correct format or apache won't allow it.
 SIGNATURE_HEADER = 'Signature-Authorization'
 SECRET_KEY = '7yn^8pwp+yzd2l4ki6+v9kp(h)rzs$9gxu4ao^_p+9x_5+1*6o'
 
 
 def generateAuthorizationHeader(params):
-	if isinstance(params, str) or isinstance(params, unicode):
-		signature = hashlib.md5(SECRET_KEY + params).hexdigest()
+	if isinstance(params, str) or isinstance(params, bytes):
+		signature = hashlib.md5(str(SECRET_KEY + str(params)).encode('utf-8')).hexdigest()
 	else:
-		signature = hashlib.md5(SECRET_KEY + urllib.urlencode(params)).hexdigest()
+		signature = hashlib.md5(str((SECRET_KEY) + str(urlencode(params))).encode('utf-8')).hexdigest()
 
 	return {SIGNATURE_HEADER: signature}
 
@@ -32,7 +32,7 @@ def generateAuthorizationHeader(params):
 class FileSDK():
 
 	def __init__(self, serverMainURL):
-		self.browser = Browser()
+		self.browser = Rqbrowser()
 		self.serverMainURL = serverMainURL
 
 	def addFile(self, upload_session_id, file_location, file_name, file_size):
@@ -45,7 +45,7 @@ class FileSDK():
 			'file_size': file_size,
 		}
 		html = self.browser.open(self.serverMainURL + '/prapi/file/addFile/', dataPOST, extraHeader=generateAuthorizationHeader(dataPOST))
-
+		# print('___addFile:',html)
 		result = json.loads(html)
 		return result['userFile_id']
 
@@ -91,7 +91,7 @@ class FileSDK():
 class SessionSDK():
 
 	def __init__(self, serverMainURL):
-		self.browser = Browser()
+		self.browser = Rqbrowser()
 		self.serverMainURL = serverMainURL
 
 	def getSession(self, session_id):
@@ -104,7 +104,8 @@ class SessionSDK():
 		dataGET = '?session_id=%s' % (session_id)
 		url = str(self.serverMainURL + '/prapi/session/getSession/' + dataGET)
 		html = self.browser.open(url, extraHeader=generateAuthorizationHeader(url))
-
+		# print('session_url==',url)
+		# print('html==',html)
 		session = Session.from_json(html)
 		return session
 
@@ -168,7 +169,7 @@ class SessionSDK():
 class SignalSDK():
 
 	def __init__(self, serverFileURL):
-		self.browser = Browser()
+		self.browser = Rqbrowser()
 		self.serverFileURL = serverFileURL
 
 	def initiateDeleteSessionProcess(self, maxFileDelete, retry=None):

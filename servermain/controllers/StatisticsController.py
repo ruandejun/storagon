@@ -11,7 +11,7 @@
 from django import shortcuts
 from django.template import RequestContext
 from django.http import *
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from django.conf import settings;
 from django.views.decorators.csrf import csrf_exempt,csrf_protect
@@ -40,7 +40,10 @@ def countSessionByDayOfFileOwnerUser(user_id, session_type,session_status,from_d
 			{ '$sort' : {"_id": 1}},
 		]
 	);
-	return countSessionResult.get('result', []);
+
+	# countSessionResult =
+	# print('countSessionResult===',countSessionResult)
+	return list(countSessionResult);
 
 
 def countAndSumTransactionByDayOfUser(user_id, transaction_type, from_date,to_date):

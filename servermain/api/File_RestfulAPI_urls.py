@@ -8,7 +8,7 @@
 #  Copyright (c) 2015 storagon. All rights reserved.
 #
 
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 from django.views.generic import RedirectView, TemplateView
 
 
@@ -25,8 +25,8 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from system_configure.controllers.Tool import FullRouter
 
 router = FullRouter('file');
-router.register(r'userfile', CurrentUserFileView, base_name='UserFile')
-router.register(r'folder', CurrentUserFolderView, base_name='Folder')
-router.register(r'folderAPI', FolderAPI, base_name='FolderAPI')
+router.register(r'userfile', CurrentUserFileView, basename='UserFile')
+router.register(r'folder', CurrentUserFolderView, basename='Folder')
+router.register(r'folderAPI', FolderAPI, basename='FolderAPI')
 
 urlpatterns = router.urls

@@ -1,4 +1,4 @@
-FROM python:2.7.9
+FROM python:3.9.5
 
 LABEL org.label-schema.build-date=${BUILD_DATE} \
       org.label-schema.name="storagon" \
@@ -15,7 +15,6 @@ ENV PYTHONIOENCODING UTF-8
 
 #Python 2.17.13 already exist in Debian, so install only other dependencies.
 RUN apt-get update -y --force-yes && apt-get install -y --force-yes --no-install-recommends \
-    python-pip \
     cron \
     gettext \
     python-setuptools \
@@ -30,15 +29,17 @@ RUN apt-get update -y --force-yes && apt-get install -y --force-yes --no-install
     && apt-get clean \
     && rm -rf /tmp/* /var/tmp/* /var/cache/apt/* /var/lib/apt/lists/*
 
-RUN pip install --upgrade
+RUN mkdir -p /var/www/storagon
+RUN mkdir -p /var/www/storagon/log
 
-RUN mkdir -p /opt/project/
+WORKDIR /var/www/storagon
 
-WORKDIR /opt/project/
+ADD ./pip_requirement.txt /var/www/storagon/pip_requirement.txt
+RUN /usr/local/bin/python -m pip install --upgrade pip
+RUN pip3 install -r pip_requirement.txt
 
-RUN pip install --upgrade pip==19.0.3
+RUN mkdir -p /var/log/uwsgi/
 
-ADD ./pip_requirement.txt /opt/project/pip_requirement.txt
-RUN pip install -r pip_requirement.txt
+EXPOSE 8000 8889
 
-CMD ["python"]
+CMD [ "sh", "-c", "uwsgi --ini storagon/uwsgi_config.ini"]

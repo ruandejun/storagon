@@ -8,14 +8,13 @@
 #  Copyright (c) 2015 storagon. All rights reserved.
 #
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.core.mail import send_mail
 from django.template import Context, Template
 
 from system_configure.controllers import SystemConfigureController
 from storagon.tool import *
-
-import UserController
+from . import UserController
 
 
 def sendWelcomeToStoragonMail(toAddress):
@@ -51,14 +50,14 @@ def sendAccountActivationMail(request, toAddress, user_id):
 				u'<a href="{{tos_link}}">Click this to read Term Of Service</a>',
 		tos_link=request.build_absolute_uri('/#/tos'),
 		);
-
-	try:
-		send_mail(header, html_body, senderAddress, [toAddress], html_message=html_body);
-	except Exception as e:
-		logging.error("send email from %s to %s error=%s"%(senderAddress, toAddress, e));
-		return False;
-	else:
-		logging.info("send email success to: %s"%(toAddress));
+	##send email need to fix to send by redis
+	# try:
+	# 	send_mail(header, html_body, senderAddress, [toAddress], html_message=html_body);
+	# except Exception as e:
+	# 	logging.error("send email from %s to %s error=%s"%(senderAddress, toAddress, e));
+	# 	return False;
+	# else:
+	# 	logging.info("send email success to: %s"%(toAddress));
 	return True;
 
 

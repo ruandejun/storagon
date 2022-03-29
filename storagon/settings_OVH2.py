@@ -119,4 +119,4 @@ if IS_RUNNING_UNIT_TEST:
 		'ENGINE': 'django.db.backends.sqlite3',
 		'NAME': 'storagon_test',
 	}
-	print "Swiching default DB to test using in-memory DB: %s"%(DATABASES['default']['NAME'])
+	print("Swiching default DB to test using in-memory DB: %s"%(DATABASES['default']['NAME']))

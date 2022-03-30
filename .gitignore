@@ -7,8 +7,9 @@ __pycache__/
 *.so
 
 #db
-postgres_data/
 data-db/
+postgres_data/
+log/
 
 # Distribution / packaging
 .Python

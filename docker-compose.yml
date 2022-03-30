@@ -33,7 +33,7 @@ services:
     image: mongo
     restart: always
     volumes:
-      - ./data-db:/data/db
+      - ./data_db:/data/db
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: mongoadmin

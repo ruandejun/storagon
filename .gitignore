@@ -7,7 +7,7 @@ __pycache__/
 *.so
 
 #db
-data-db/
+data_db/
 postgres_data/
 log/
 

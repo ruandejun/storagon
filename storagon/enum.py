@@ -51,6 +51,19 @@ class SellingStatus(EnumBase):
 	sold = 1
 	block = 2
 
+class ProfilesStatus(EnumBase):
+	normal = 0
+	warning = 1
+	block = 2
+ 
+class ProxyType(EnumBase):
+	proxy = 0
+	sock5 = 1
+class FingerStatus(EnumBase):
+	block = 0
+	noise = 1
+	follow = 2
+  
 class TransactionType(EnumBase):
 	agency = 0
 	referer = 1

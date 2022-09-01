@@ -9,4 +9,5 @@ from .Bot_clientAPI import *
 
 urlpatterns = [
 	url(r'^telegram_bot/', telegram_bot, name='telegram_bot'),
+	url(r'^create_browser_profile/', create_browser_profile, name='create_browser_profile'),
 ]

@@ -137,36 +137,37 @@ class BrowserProfiles(models.Model):
     owner = models.ForeignKey(User, verbose_name=_("owner"), related_name="accounts_owner_set", null=True,
                                  blank=True, on_delete=models.PROTECT)
     
-    name = models.CharField(verbose_name=_("name"),blank=True, null=True, max_length=255, db_index=True)
+    profile_name = models.CharField(verbose_name=_("name"),blank=True, null=True, max_length=255, db_index=True)
     
-    os = models.CharField(verbose_name=_("os"),blank=True, null=True, max_length=255, db_index=True)
-    browser = models.CharField(verbose_name=_("browser"),blank=True, null=True, max_length=255, db_index=True)
-    version = models.CharField(verbose_name=_("version"),blank=True, null=True, max_length=255, db_index=True)
-    proxy_type = models.PositiveSmallIntegerField(choices=ProxyType.ChoiceList(), default=ProxyType.sock5,
+    profile_os = models.CharField(verbose_name=_("os"),blank=True, null=True, max_length=255, db_index=True)
+    profile_browser = models.CharField(verbose_name=_("browser"),blank=True, null=True, max_length=255, db_index=True)
+    profile_version = models.CharField(verbose_name=_("version"),blank=True, null=True, max_length=255, db_index=True)
+    profile_proxy_type = models.PositiveSmallIntegerField(choices=ProxyType.ChoiceList(), default=ProxyType.sock5,
                                             db_index=True)
-    proxy = models.CharField(verbose_name=_("proxy"),blank=True, null=True, max_length=255, db_index=True)
-    proxy_username = models.CharField(verbose_name=_("proxy_username"),blank=True, null=True, max_length=255, db_index=True)
-    proxy_password = models.CharField(verbose_name=_("proxy_password"),blank=True, null=True, max_length=255, db_index=True)
-    path_cookies = models.CharField(verbose_name=_("path_cookies"),blank=True, null=True, max_length=255, db_index=True)
-    user_agent = models.CharField(verbose_name=_("user_agent"),blank=True, null=True, max_length=255, db_index=True)
-    resolution = models.CharField(verbose_name=_("resolution"),blank=True, null=True, max_length=255, db_index=True)
-    cpu = models.CharField(verbose_name=_("cpu"),blank=True, null=True, max_length=255, db_index=True)
-    canvas = models.CharField(verbose_name=_("canvas"),blank=True, null=True, max_length=255, db_index=True)
-    rects = models.CharField(verbose_name=_("rects"),blank=True, null=True, max_length=255, db_index=True)
-    font = models.CharField(verbose_name=_("font"),blank=True, null=True, max_length=255, db_index=True)
-    audio = models.TextField(verbose_name=_("audio"), blank=True, null=True)
-    webgl = models.TextField(verbose_name=_("webgl"), blank=True, null=True)
-    time_zone = models.PositiveSmallIntegerField(choices=FingerStatus.ChoiceList(), default=FingerStatus.follow,
+    profile_proxy = models.CharField(verbose_name=_("proxy"),blank=True, null=True, max_length=255, db_index=True)
+    profile_proxy_username = models.CharField(verbose_name=_("proxy_username"),blank=True, null=True, max_length=255, db_index=True)
+    profile_proxy_password = models.CharField(verbose_name=_("proxy_password"),blank=True, null=True, max_length=255, db_index=True)
+    profile_path_cookies = models.CharField(verbose_name=_("path_cookies"),blank=True, null=True, max_length=255, db_index=True)
+    profile_user_agent = models.CharField(verbose_name=_("user_agent"),blank=True, null=True, max_length=255, db_index=True)
+    profile_original_name = models.CharField(verbose_name=_("profile_original_name"),blank=True, null=True, max_length=255, db_index=True)
+    profile_resolution = models.CharField(verbose_name=_("resolution"),blank=True, null=True, max_length=255, db_index=True)
+    profile_cpu = models.CharField(verbose_name=_("cpu"),blank=True, null=True, max_length=255, db_index=True)
+    profile_canvas = models.CharField(verbose_name=_("canvas"),blank=True, null=True, max_length=255, db_index=True)
+    profile_rects = models.CharField(verbose_name=_("rects"),blank=True, null=True, max_length=255, db_index=True)
+    profile_font = models.CharField(verbose_name=_("font"),blank=True, null=True, max_length=255, db_index=True)
+    profile_audio = models.TextField(verbose_name=_("audio"), blank=True, null=True)
+    profile_webgl = models.TextField(verbose_name=_("webgl"), blank=True, null=True)
+    profile_time_zone = models.PositiveSmallIntegerField(choices=FingerStatus.ChoiceList(), default=FingerStatus.follow,
                                             db_index=True)
-    webrtc = models.PositiveSmallIntegerField(choices=FingerStatus.ChoiceList(), default=FingerStatus.follow,
+    profile_webrtc = models.PositiveSmallIntegerField(choices=FingerStatus.ChoiceList(), default=FingerStatus.follow,
                                             db_index=True)
-    geo = models.PositiveSmallIntegerField(choices=FingerStatus.ChoiceList(), default=FingerStatus.follow,
+    profile_geo = models.PositiveSmallIntegerField(choices=FingerStatus.ChoiceList(), default=FingerStatus.follow,
                                             db_index=True)
-    vendor = models.CharField(verbose_name=_("vendor"),blank=True, null=True, max_length=255, db_index=True)
-    renderer = models.CharField(verbose_name=_("renderer"), blank=True, null=True, max_length=255, db_index=True)
-    note = models.TextField(verbose_name=_("note"), blank=True, null=True)
+    profile_vendor = models.CharField(verbose_name=_("vendor"),blank=True, null=True, max_length=255, db_index=True)
+    profile_renderer = models.CharField(verbose_name=_("renderer"), blank=True, null=True, max_length=255, db_index=True)
+    profile_note = models.TextField(verbose_name=_("note"), blank=True, null=True)
     
-    status = models.PositiveSmallIntegerField(choices=ProfilesStatus.ChoiceList(), default=ProfilesStatus.normal,
+    profile_status = models.PositiveSmallIntegerField(choices=ProfilesStatus.ChoiceList(), default=ProfilesStatus.normal,
                                                 db_index=True)
 
     def save(self, *args, **kwargs):
@@ -179,7 +180,7 @@ class BrowserProfiles(models.Model):
         super(BrowserProfiles, self).save(*args, **kwargs)
 
     def __unicode__(self):
-        return self.name
+        return self.profile_name
 
     def __str__(self):
-        return self.name    
+        return self.profile_name    

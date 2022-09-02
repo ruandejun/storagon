@@ -134,38 +134,39 @@ class BrowserProfiles(models.Model):
     
     modified_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_modified', on_delete=models.PROTECT)
     
-    owner = models.ForeignKey(User, verbose_name=_("owner"), related_name="accounts_owner_set", null=True,
+    profile_owner = models.ForeignKey(User, verbose_name=_("profile_owner"), related_name="accounts_owner_set", null=True,
                                  blank=True, on_delete=models.PROTECT)
+
+    profile_name = models.CharField(verbose_name=_("profile_name"),blank=True, null=True, max_length=255, db_index=True, default='')
     
-    profile_name = models.CharField(verbose_name=_("name"),blank=True, null=True, max_length=255, db_index=True)
-    
-    profile_os = models.CharField(verbose_name=_("os"),blank=True, null=True, max_length=255, db_index=True)
-    profile_browser = models.CharField(verbose_name=_("browser"),blank=True, null=True, max_length=255, db_index=True)
-    profile_version = models.CharField(verbose_name=_("version"),blank=True, null=True, max_length=255, db_index=True)
+    profile_os = models.CharField(verbose_name=_("profile_os"),blank=True, null=True, max_length=255, db_index=True, default='')
+    profile_browser = models.CharField(verbose_name=_("profile_browser"),blank=True, null=True, max_length=255, db_index=True, default='')
+    profile_version = models.CharField(verbose_name=_("profile_version"),blank=True, null=True, max_length=255, db_index=True, default='')
     profile_proxy_type = models.PositiveSmallIntegerField(choices=ProxyType.ChoiceList(), default=ProxyType.sock5,
                                             db_index=True)
-    profile_proxy = models.CharField(verbose_name=_("proxy"),blank=True, null=True, max_length=255, db_index=True)
-    profile_proxy_username = models.CharField(verbose_name=_("proxy_username"),blank=True, null=True, max_length=255, db_index=True)
-    profile_proxy_password = models.CharField(verbose_name=_("proxy_password"),blank=True, null=True, max_length=255, db_index=True)
-    profile_path_cookies = models.CharField(verbose_name=_("path_cookies"),blank=True, null=True, max_length=255, db_index=True)
-    profile_user_agent = models.CharField(verbose_name=_("user_agent"),blank=True, null=True, max_length=255, db_index=True)
-    profile_original_name = models.CharField(verbose_name=_("profile_original_name"),blank=True, null=True, max_length=255, db_index=True)
-    profile_resolution = models.CharField(verbose_name=_("resolution"),blank=True, null=True, max_length=255, db_index=True)
-    profile_cpu = models.CharField(verbose_name=_("cpu"),blank=True, null=True, max_length=255, db_index=True)
-    profile_canvas = models.CharField(verbose_name=_("canvas"),blank=True, null=True, max_length=255, db_index=True)
-    profile_rects = models.CharField(verbose_name=_("rects"),blank=True, null=True, max_length=255, db_index=True)
-    profile_font = models.CharField(verbose_name=_("font"),blank=True, null=True, max_length=255, db_index=True)
-    profile_audio = models.TextField(verbose_name=_("audio"), blank=True, null=True)
-    profile_webgl = models.TextField(verbose_name=_("webgl"), blank=True, null=True)
+    profile_proxy_details = models.CharField(verbose_name=_("profile_proxy_details"),blank=True, null=True, max_length=255, db_index=True, default='')
+    profile_proxy_username = models.CharField(verbose_name=_("profile_proxy_username"),blank=True, null=True, max_length=255, db_index=True, default='')
+    profile_proxy_password = models.CharField(verbose_name=_("profile_proxy_password"),blank=True, null=True, max_length=255, db_index=True, default='')
+    profile_path_cookies = models.CharField(verbose_name=_("profile_path_cookies"),blank=True, null=True, max_length=255, db_index=True, default='')
+    profile_user_agent = models.CharField(verbose_name=_("profile_user_agent"),blank=True, null=True, max_length=255, db_index=True, default='')
+    profile_original_name = models.CharField(verbose_name=_("profile_original_name"),blank=True, null=True, max_length=255, db_index=True, default='')
+    profile_resolution = models.CharField(verbose_name=_("profile_resolution"),blank=True, null=True, max_length=255, db_index=True, default='')
+    profile_cpu = models.CharField(verbose_name=_("profile_cpu"),blank=True, null=True, max_length=255, db_index=True, default='')
+    profile_canvas = models.CharField(verbose_name=_("profile_canvas"),blank=True, null=True, max_length=255, db_index=True, default='')
+    profile_rects = models.CharField(verbose_name=_("profile_rects"),blank=True, null=True, max_length=255, db_index=True, default='')
+    profile_font = models.CharField(verbose_name=_("profile_font"),blank=True, null=True, max_length=255, db_index=True, default='')
+    profile_start_url = models.CharField(verbose_name=_("profile_start_url"),blank=True, null=True, max_length=255, db_index=True, default='')
+    profile_audio = models.TextField(verbose_name=_("profile_audio"), blank=True, null=True, default='')
+    profile_webgl = models.TextField(verbose_name=_("profile_webgl"), blank=True, null=True, default='')
     profile_time_zone = models.PositiveSmallIntegerField(choices=FingerStatus.ChoiceList(), default=FingerStatus.follow,
                                             db_index=True)
     profile_webrtc = models.PositiveSmallIntegerField(choices=FingerStatus.ChoiceList(), default=FingerStatus.follow,
                                             db_index=True)
     profile_geo = models.PositiveSmallIntegerField(choices=FingerStatus.ChoiceList(), default=FingerStatus.follow,
                                             db_index=True)
-    profile_vendor = models.CharField(verbose_name=_("vendor"),blank=True, null=True, max_length=255, db_index=True)
-    profile_renderer = models.CharField(verbose_name=_("renderer"), blank=True, null=True, max_length=255, db_index=True)
-    profile_note = models.TextField(verbose_name=_("note"), blank=True, null=True)
+    profile_vendor = models.CharField(verbose_name=_("vendor"),blank=True, null=True, max_length=255, db_index=True, default='')
+    profile_renderer = models.CharField(verbose_name=_("renderer"), blank=True, null=True, max_length=255, db_index=True, default='')
+    profile_note = models.TextField(verbose_name=_("note"), blank=True, null=True, default='')
     
     profile_status = models.PositiveSmallIntegerField(choices=ProfilesStatus.ChoiceList(), default=ProfilesStatus.normal,
                                                 db_index=True)

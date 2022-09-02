@@ -57,8 +57,9 @@ class ProfilesStatus(EnumBase):
 	block = 2
  
 class ProxyType(EnumBase):
-	proxy = 0
-	sock5 = 1
+	no_proxy=0
+	proxy = 1
+	sock5 = 2
 class FingerStatus(EnumBase):
 	block = 0
 	noise = 1

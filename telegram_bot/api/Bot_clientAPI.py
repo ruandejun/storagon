@@ -70,7 +70,8 @@ def create_browser_profile(request):
     #{'profile_name': '', 'profile_os': 'Window', 'profile_browser': 'Chrome', 'profile_version': '102.0.5005.63', 'profile_proxy': 'No Proxy', 'profile_proxy_details': '', 'profile_path_cookies': '', 'profile_user_agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36', 'profile_resolution': '1920×1080', 'profile_cpu': '8', 'profile_canvas': 'Noise', 'profile_rects': 'Noise', 'profile_font': 'Noise', 'profile_audio': 'Noise', 'profile_webgl': 'Noise', 'profile_time_zone': 'Follow IP', 'profile_webrtc': 'Follow IP', 'profile_geo': 'Follow IP', 'profile_vendor': 'Google Inc. (ATI Technologies Inc.)', 'profile_renderer': 'ANGLE (Intel(R) G41 Express Chipset (Microsoft Corporation - WDDM 1.1) Direct3D9Ex vs_3_0 ps_3_0)', 'profile_start_url': 'https://iphey.com'}
     
     profile_post = json.loads(request.body)
-    profile_dict =profile_post
+    print('=====profile_post',profile_post)
+    profile_dict = profile_post
     #proxy
     if profile_post['profile_proxy'] == 'No Proxy':
         profile_post['profile_proxy'] = 0

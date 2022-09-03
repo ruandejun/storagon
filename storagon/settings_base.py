@@ -113,14 +113,14 @@ if 'test' in sys.argv:
 MONGODB = {
 	'NAME': 'storagon',
 	'USER': 'root',
-	'PASSWORD': 'mongoadmin',
+	'PASSWORD': 'password',
 	'HOST': 'mongodb',
 	'PORT': 27017,
 }
 
 
 
-MONGODB_HOST = 'mongodb://root:mongoadmin@mongodb:27017/storagon?authSource=admin'
+MONGODB_HOST = 'mongodb://root:password@mongodb:27017/storagon?authSource=admin'
 
 db_connection = mongoengine.connect(db=MONGODB['NAME'], host=MONGODB_HOST)
 

@@ -22,9 +22,9 @@ class AccountsSellingSerializer(serializers.ModelSerializer):
 
 	modified_by = serializers.SlugRelatedField(slug_field='username', read_only=True)
 
-	customer = serializers.SlugRelatedField(slug_field='username')
+	customer = serializers.SlugRelatedField(slug_field='username', read_only=True)
 
-	owner = serializers.SlugRelatedField(slug_field='username')
+	owner = serializers.SlugRelatedField(slug_field='username', read_only=True)
 
 class BrowserProfilesSerializer(serializers.ModelSerializer):
 	class Meta:
@@ -42,4 +42,4 @@ class BrowserProfilesSerializer(serializers.ModelSerializer):
 				'profile_renderer', 'profile_note', 'profile_status'
           )
 
-	profile_owner = serializers.SlugRelatedField(slug_field='username', read_only=True, many=True);
+	profile_owner = serializers.SlugRelatedField(slug_field='username', read_only=True);

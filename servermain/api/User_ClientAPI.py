@@ -57,6 +57,7 @@ def custom_login(request):
             balance, created = AccountBalance.objects.get_or_create(user=user, balance_type=balanceType)
 
         status = {'success': True, 'token': token.key}
+        print(status)
         return successResponse(status)
     else:
         raise Http404()

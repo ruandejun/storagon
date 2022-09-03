@@ -10,7 +10,7 @@
 
 # -*- coding: utf-8 -*-
 
-from django.http import HttpResponse, HttpResponseServerError, Http404
+from django.http import HttpResponse, HttpResponseServerError, Http404, JsonResponse
 from django.conf import settings  # site setting
 from django.core.cache import cache
 from django import shortcuts
@@ -443,12 +443,11 @@ def successResponse(data=None, encode=True):
 	if data is not None:
 		if encode:
 			status.update(dict(data))
-			print('status=====',status)
-			return HttpResponse(json.dumps(status), content_type='application/json')
+			return JsonResponse(json.dumps(status))
 		else:
 			return HttpResponse(data)
 
-	return HttpResponse(json.dumps(status), content_type='application/json')
+	return JsonResponse(json.dumps(status))
 
 
 def successResponseRestful(data=None):

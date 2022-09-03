@@ -439,14 +439,14 @@ def errorResponse(error, code=0, response=None):
 
 
 def successResponse(data=None, encode=True):
-	status = {'success': True, 'msg': 'success'}
-	if data is not None:
-		if encode:
-			status.update(data)
-			print('status=====',status)
-			return HttpResponse(json.dumps(status), content_type='application/json')
-		else:
-			return HttpResponse(data)
+	status = {'success': True, 'msg': 'success','token': 'a54d78e4e23b4a939db113edac4e56ccf2dfe813'}
+	# if data is not None:
+	# 	if encode:
+	# 		status.update(dict(data))
+	# 		print('status=====',status)
+	# 		return HttpResponse(json.dumps(status), content_type='application/json')
+	# 	else:
+	# 		return HttpResponse(data)
 
 	return HttpResponse(json.dumps(status), content_type='application/json')
 

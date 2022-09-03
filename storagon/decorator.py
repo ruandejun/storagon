@@ -51,7 +51,7 @@ def signature_test():
                 prefix='http://'
                 if request.is_secure(): prefix='https://'
                 params2 = prefix + request.get_host() + request.get_full_path(); #request.build_absolute_uri(params)
-
+                print('===',params,params2)
             elif request.method == 'POST':
                 params2 = request.body.decode("utf-8")  # case 2
                 dataItems = sorted(request.POST.items())

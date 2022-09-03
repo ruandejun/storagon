@@ -443,11 +443,11 @@ def successResponse(data=None, encode=True):
 	if data is not None:
 		if encode:
 			status.update(dict(data))
-			return JsonResponse(json.dumps(status))
+			return JsonResponse(status, safe=False)
 		else:
 			return HttpResponse(data)
 
-	return JsonResponse(json.dumps(status))
+	return JsonResponse(status, safe=False)
 
 
 def successResponseRestful(data=None):

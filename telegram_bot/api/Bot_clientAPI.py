@@ -10,7 +10,7 @@ from storagon.decorator import banned_check, login_required_ajax, signature_test
 from django.contrib.auth.decorators import user_passes_test
 from rest_framework.decorators import api_view
 from telegram_bot.task import check_cmd_telegram
-from models import BrowserProfiles
+from telegram_bot.models import BrowserProfiles
 from TelegramBot_RestfulApi import BrowserProfilesSerializer
 import random, math
 

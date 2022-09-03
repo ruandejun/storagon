@@ -48,9 +48,9 @@ def get_browser_profiles(request):
     if browser_profiles.exists():
         profile_data = BrowserProfilesSerializer(browser_profiles, many=True)
     else:
-        return successResponse([])
+        return successResponse({'data':[]})
     ##
-    return successResponse(profile_data.data)
+    return successResponse({'data':profile_data.data})
 
 @api_view(['GET', 'POST', 'PUT'])
 def get_browser_profile_by_id(request):
@@ -63,7 +63,7 @@ def get_browser_profile_by_id(request):
         return errorResponse('Profile not found', 400)
     
     profile_data = BrowserProfilesSerializer(browser_profile)
-    return successResponse(profile_data.data)
+    return successResponse({'data':profile_data.data})
 
 @api_view(['GET', 'POST', 'PUT'])
 def create_browser_profile(request):
@@ -155,5 +155,5 @@ def create_browser_profile(request):
     profile_data = BrowserProfilesSerializer(browser_profiles)
 
     ##
-    return successResponse(profile_data.data)
+    return successResponse({'data':profile_data.data})
 

@@ -43,8 +43,6 @@ def telegram_bot(request):
 
 @api_view(['GET', 'POST', 'PUT'])
 def get_browser_profiles(request):
-    if request.method == 'GET':
-        return successResponse({"ok": "Get request processed"})
     browser_profiles = BrowserProfiles.objects.filter(profile_owner=request.user)
     profile_data = BrowserProfilesSerializer(browser_profiles, many=True)
     ##

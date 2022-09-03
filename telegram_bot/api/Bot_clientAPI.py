@@ -74,7 +74,7 @@ def create_browser_profile(request):
     profile_dict = profile_post
     #proxy
     if profile_post['profile_proxy_type'] == 'No Proxy':
-        profile_post['profile_proxy'] = 0
+        profile_post['profile_proxy_type'] = 0
     elif profile_post['profile_proxy_type'] == 'Proxy':
         profile_post['profile_proxy_type'] = 1
     else:

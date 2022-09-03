@@ -134,7 +134,7 @@ class BrowserProfiles(models.Model):
     
     modified_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_modified', on_delete=models.PROTECT)
     
-    profile_owner = models.ForeignKey(User, verbose_name=_("profile_owner"), related_name="accounts_owner_set", null=True,
+    profile_owner = models.ForeignKey(User, verbose_name=_("profile_owner"), related_name="accounts_profile_owner_set", null=True,
                                  blank=True, on_delete=models.PROTECT)
 
     profile_name = models.CharField(verbose_name=_("profile_name"),blank=True, null=True, max_length=255, db_index=True, default='')

@@ -27,7 +27,7 @@ from system_configure.controllers import SystemConfigureController
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
 
-# @signature_test()
+@signature_test()
 def custom_login(request):
     """ Login an user to Storagon using ajax POST
 
@@ -56,9 +56,8 @@ def custom_login(request):
         for balanceType in [BalanceType.credit,BalanceType.point,BalanceType.ppd]:
             balance, created = AccountBalance.objects.get_or_create(user=user, balance_type=balanceType)
 
-        status = {'success': True, 'token': token.key}
-        print(status)
-        return successResponse(status)
+
+        return successResponse({'token': token.key})
     else:
         raise Http404()
 

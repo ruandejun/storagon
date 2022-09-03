@@ -114,7 +114,7 @@ MONGODB = {
 	'NAME': 'storagon',
 	'USER': 'root',
 	'PASSWORD': 'password',
-	'HOST': 'mongodb',
+	'HOST': 'mongodb://mongodb:27017',
 	'PORT': 27017,
 }
 
@@ -122,7 +122,7 @@ MONGODB = {
 
 MONGODB_HOST = 'mongodb://root:password@mongodb:27017/storagon?authSource=admin'
 
-db_connection = mongoengine.connect(db=MONGODB['NAME'], host=MONGODB_HOST)
+db_connection = mongoengine.connect(db=MONGODB['NAME'], host=MONGODB['HOST'], alias='default')
 
 # db_connection = mongoengine.connect(db=MONGODB['NAME'], host=MONGODB_HOST, username=MONGODB['USER'], password=MONGODB['PASSWORD'], authentication_source="admin")
 

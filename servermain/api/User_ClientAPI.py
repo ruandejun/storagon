@@ -26,6 +26,7 @@ from storagon.decorator import banned_check, login_required_ajax, signature_test
 from system_configure.controllers import SystemConfigureController
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
+
 @signature_test()
 def custom_login(request):
     """ Login an user to Storagon using ajax POST
@@ -49,7 +50,7 @@ def custom_login(request):
         #
         user.backend = 'django.contrib.auth.backends.ModelBackend'
         login(request, user)
-        token, created = Token.objects.get_or_create(user=request.user)
+        token, created = Token.objects.get_or_create(user=user)
 
         # automaticaly create all type of balance for this user
         for balanceType in [BalanceType.credit,BalanceType.point,BalanceType.ppd]:

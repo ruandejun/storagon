@@ -27,7 +27,7 @@ from system_configure.controllers import SystemConfigureController
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
 
-@signature_test()
+# @signature_test()
 def custom_login(request):
     """ Login an user to Storagon using ajax POST
 

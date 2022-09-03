@@ -54,6 +54,7 @@ def signature_test():
                 print('===',params,params2)
             elif request.method == 'POST':
                 params2 = request.body.decode("utf-8")  # case 2
+                print('===params2',params2)
                 dataItems = sorted(request.POST.items())
                 # dataItems.sort()
                 #convert unicode to fix urlencode error

@@ -11,5 +11,7 @@ urlpatterns = [
 	url(r'^telegram_bot/', telegram_bot, name='telegram_bot'),
 	url(r'^create_browser_profile/', create_browser_profile, name='create_browser_profile'),
 	url(r'^get_browser_profile_by_id/', get_browser_profile_by_id, name='get_browser_profile_by_id'),
+	url(r'^get_inject_info_by_id/', get_inject_info_by_id, name='get_inject_info_by_id'),
+	url(r'^update_profile_by_id/', update_profile_by_id, name='update_profile_by_id'),
 	url(r'^get_browser_profiles/', get_browser_profiles, name='get_browser_profiles'),
 ]

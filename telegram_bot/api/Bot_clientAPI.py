@@ -73,12 +73,12 @@ def create_browser_profile(request):
     print('=====profile_post',profile_post)
     profile_dict = profile_post
     #proxy
-    if profile_post['profile_proxy'] == 'No Proxy':
+    if profile_post['profile_proxy_type'] == 'No Proxy':
         profile_post['profile_proxy'] = 0
-    elif profile_post['profile_proxy'] == 'Proxy':
-        profile_post['profile_proxy'] = 1
+    elif profile_post['profile_proxy_type'] == 'Proxy':
+        profile_post['profile_proxy_type'] = 1
     else:
-        profile_post['profile_proxy'] = 2
+        profile_post['profile_proxy_type'] = 2
     #audio
     if profile_post['profile_audio'] == 'Noise':
         list_length = 44100

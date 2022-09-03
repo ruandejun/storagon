@@ -53,7 +53,7 @@ def signature_test():
                 params2 = prefix + request.get_host() + request.get_full_path(); #request.build_absolute_uri(params)
                 print('===',params,params2)
             elif request.method == 'POST':
-                params2 = request.body  # case 2
+                params2 = request.body.decode("utf-8")  # case 2
                 print('===params2',params2)
                 dataItems = sorted(request.POST.items())
                 # dataItems.sort()

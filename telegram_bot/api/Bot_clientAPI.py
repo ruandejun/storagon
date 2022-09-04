@@ -843,7 +843,7 @@ def create_browser_profile(request):
         audio_dict['audio_content'] = listAudioContent
         audio_dict['audio_random1'] = audio_random1
         audio_dict['audio_random2'] = audio_random2
-        profile_dict['profile_audio'] = audio_dict
+        profile_dict['profile_audio'] = json.dumps(audio_dict)
     #canvas
     if profile_post['profile_canvas'] == 'Noise':
         list_canvas = [-3,-2,-1,0,1,2,3]
@@ -852,7 +852,7 @@ def create_browser_profile(request):
         bsalt_content = list_canvas[random.randint(0, len(list_canvas) - 1)]
         asalt_content = list_canvas[random.randint(0, len(list_canvas) - 1)]
         canvas_shift = {'r': rsalt_content,'g': gsalt_content,'b': bsalt_content,'a': asalt_content}
-        profile_dict['profile_canvas'] = canvas_shift
+        profile_dict['profile_canvas'] = json.dumps(canvas_shift)
     
     if profile_post['profile_webgl'] == 'Noise':
         #webgl
@@ -896,7 +896,7 @@ def create_browser_profile(request):
         webgl_replace['35724'] = list_glsl[random.randint(0, len(list_glsl) - 1)]
         gpu_vendor = "Google Inc. (ATI Technologies Inc.)"
         webgl_replace['37445'] = profile_post['profile_vendor']#gpu_vendor
-        profile_dict['profile_webgl'] = webgl_replace
+        profile_dict['profile_webgl'] = json.dumps(webgl_replace)
     print('request.user==', request.user)
     browser_profiles = BrowserProfiles(profile_owner=request.user,**profile_dict)
     browser_profiles.save()

@@ -58,7 +58,7 @@ def get_browser_profiles(request):
 @login_required_ajax()
 @signature_test()
 @user_passes_test(banned_check)
-def get_inject_info_by_id(request):
+def get_inject_info(request):
     inject_data = {}
     inject_data['audio'] = '''
     (function fakeAudioFinger() {

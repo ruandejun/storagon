@@ -29,7 +29,7 @@ class AccountsSellingSerializer(serializers.ModelSerializer):
 class BrowserProfilesSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = BrowserProfiles
-		fields = ('id', 'created', 'modified', 'created_by','profile_owner'
+		fields = ('id', 'created', 'modified', 'created_by','profile_owner',
 				'modified_by', 'profile_name', 'profile_os',
 				'profile_browser', 'profile_version', 'profile_proxy_type',
 				'profile_proxy_details', 'profile_proxy_username',
@@ -42,4 +42,4 @@ class BrowserProfilesSerializer(serializers.ModelSerializer):
 				'profile_renderer', 'profile_note', 'profile_status'
           )
 
-	# profile_owner = serializers.SlugRelatedField(slug_field='username', read_only=True);
+	profile_owner = serializers.SlugRelatedField(slug_field='username', read_only=True);

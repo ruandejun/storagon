@@ -223,8 +223,8 @@ def signup(request):
             user.set_password(password)
             user.save()
         except Exception as e:
-        	logging.error(u"Unable to create new user, error=%s"%(e));
-        	return errorResponse(u"Username already exist!")
+            logging.error(u"Unable to create new user, error=%s"%(e));
+            return errorResponse(u"Username already exist!")
 
         if referer:
             try: refererUser = User.objects.get(username=referer);

@@ -785,6 +785,11 @@ def create_browser_profile(request):
     print('=====profile_post',profile_post)
     profile_dict = profile_post
     #proxy
+    if profile_post['profile_time_zone'] == 'Follow IP':
+        profile_post['profile_time_zone'] = 2
+    else:
+        profile_post['profile_time_zone'] = 0
+    #proxy
     if profile_post['profile_proxy_type'] == 'No Proxy':
         profile_post['profile_proxy_type'] = 0
     elif profile_post['profile_proxy_type'] == 'Proxy':

@@ -776,6 +776,23 @@ def update_profile_by_id(request):
 @login_required_ajax()
 @signature_test()
 @user_passes_test(banned_check)
+def remove_profiles(request):
+    if request.method == 'GET':
+        return successResponse({"ok": "Get request processed"})
+    remove_post = json.loads(request.body)
+    if remove_post['list_id'] == 'all':
+        browser_profile = BrowserProfiles.objects.filter(profile_owner=request.user)
+    else:
+        browser_profile = BrowserProfiles.objects.filter(pk__in=remove_post['list_id'], profile_owner=request.user)
+
+    browser_profile.delete()
+    return successResponse()
+
+
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
 def create_browser_profile(request):
     if request.method == 'GET':
         return successResponse({"ok": "Get request processed"})

@@ -783,7 +783,15 @@ def create_browser_profile(request):
     
     profile_post = json.loads(request.body)
     print('=====profile_post',profile_post)
-    profile_dict = profile_post  
+    profile_dict = profile_post
+    block = 0
+    noise = 1
+    follow = 2    
+    #GEO
+    if profile_post['profile_geo'] == 'Follow IP':
+        profile_post['profile_geo'] = follow
+    else:
+        profile_post['profile_geo'] = block
     #webrtc
     if profile_post['profile_webrtc'] == 'Follow IP':
         profile_post['profile_webrtc'] = 2

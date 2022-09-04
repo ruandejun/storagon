@@ -860,7 +860,7 @@ def create_browser_profile(request):
         gpu_vendor = "Google Inc. (ATI Technologies Inc.)"
         webgl_replace['37445'] = profile_post['profile_vendor']#gpu_vendor
         profile_dict['profile_webgl'] = webgl_replace
-
+    print('request.user==', request.user)
     browser_profiles = BrowserProfiles(profile_owner=request.user,**profile_post)
     browser_profiles.save()
     profile_data = BrowserProfilesSerializer(browser_profiles)

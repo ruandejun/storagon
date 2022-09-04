@@ -174,7 +174,7 @@ class BrowserProfiles(models.Model):
     def save(self, *args, **kwargs):
         user = get_current_user()
         print('====user===',user)
-        if user and user.is_authenticated():
+        if user.is_authenticated():
             self.modified_by = user
             if self._state.adding:
                 self.created_by = user

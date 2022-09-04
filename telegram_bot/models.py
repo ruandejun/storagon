@@ -76,7 +76,7 @@ class AccountsSelling(models.Model):
     modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True, db_index=True)
 
     created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
-    modified_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_modified', on_delete=models.PROTECT)
+    modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)
 
     warranty_date = models.DateTimeField(verbose_name=_("warranty_date"), null=True, blank=True)
 
@@ -132,7 +132,7 @@ class BrowserProfiles(models.Model):
     
     created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
     
-    modified_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_modified', on_delete=models.PROTECT)
+    modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)
     
     profile_owner = models.ForeignKey(User, verbose_name=_("profile_owner"), related_name="accounts_profile_owner_set", null=True,
                                  blank=True, on_delete=models.PROTECT)
@@ -173,6 +173,7 @@ class BrowserProfiles(models.Model):
 
     def save(self, *args, **kwargs):
         user = get_current_user()
+        print('====user===',user)
         if user and user.is_authenticated():
             self.modified_by = user
             if self._state.adding:

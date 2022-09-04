@@ -783,8 +783,15 @@ def create_browser_profile(request):
     
     profile_post = json.loads(request.body)
     print('=====profile_post',profile_post)
-    profile_dict = profile_post
-    #proxy
+    profile_dict = profile_post  
+    #webrtc
+    if profile_post['profile_webrtc'] == 'Follow IP':
+        profile_post['profile_webrtc'] = 2
+    elif profile_post['profile_webrtc'] == 'Block':
+        profile_post['profile_webrtc'] = 0
+    else:
+        profile_post['profile_webrtc'] = 1
+    #time_zone
     if profile_post['profile_time_zone'] == 'Follow IP':
         profile_post['profile_time_zone'] = 2
     else:

@@ -42,4 +42,4 @@ class BrowserProfilesSerializer(serializers.ModelSerializer):
 				'profile_renderer', 'profile_note', 'profile_status'
           )
 
-	profile_owner = serializers.SlugRelatedField(slug_field='username', read_only=True);
+	# profile_owner = serializers.SlugRelatedField(slug_field='username', read_only=True);

@@ -789,26 +789,26 @@ def create_browser_profile(request):
     follow = 2    
     #GEO
     if profile_post['profile_geo'] == 'Follow IP':
-        profile_post['profile_geo'] = follow
+        profile_dict['profile_geo'] = follow
     else:
-        profile_post['profile_geo'] = block
+        profile_dict['profile_geo'] = block
     #webrtc
     if profile_post['profile_webrtc'] == 'Follow IP':
-        profile_post['profile_webrtc'] = 2
+        profile_dict['profile_webrtc'] = 2
     elif profile_post['profile_webrtc'] == 'Block':
-        profile_post['profile_webrtc'] = 0
+        profile_dict['profile_webrtc'] = 0
     else:
-        profile_post['profile_webrtc'] = 1
+        profile_dict['profile_webrtc'] = 1
     #time_zone
     if profile_post['profile_time_zone'] == 'Follow IP':
-        profile_post['profile_time_zone'] = 2
+        profile_dict['profile_time_zone'] = 2
     else:
-        profile_post['profile_time_zone'] = 0
+        profile_dict['profile_time_zone'] = 0
     #proxy
     if profile_post['profile_proxy_type'] == 'No Proxy':
-        profile_post['profile_proxy_type'] = 0
+        profile_dict['profile_proxy_type'] = 0
     elif profile_post['profile_proxy_type'] == 'Proxy':
-        profile_post['profile_proxy_type'] = 1
+        profile_dict['profile_proxy_type'] = 1
     else:
         profile_post['profile_proxy_type'] = 2
     #audio
@@ -881,7 +881,7 @@ def create_browser_profile(request):
         webgl_replace['37445'] = profile_post['profile_vendor']#gpu_vendor
         profile_dict['profile_webgl'] = webgl_replace
     print('request.user==', request.user)
-    browser_profiles = BrowserProfiles(profile_owner=request.user,**profile_post)
+    browser_profiles = BrowserProfiles(profile_owner=request.user,**profile_dict)
     browser_profiles.save()
     profile_data = BrowserProfilesSerializer(browser_profiles)
 

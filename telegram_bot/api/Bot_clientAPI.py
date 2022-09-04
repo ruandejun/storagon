@@ -72,7 +72,7 @@ def get_inject_info(request):
               if (context.BUFFER !== results_1) {
                 context.BUFFER = results_1;
    
-                let obj2 = {{audio_content}};
+                let obj2 = $$audio_content$$;
                 for (const key of Object.keys(obj2)) {
                     results_1[key] = obj2[key]
                 }
@@ -91,8 +91,8 @@ def get_inject_info(request):
                 "value": function () {
                   const results_3 = getFloatFrequencyData.apply(this, arguments);
                   for (var i = 0; i < arguments[0].length; i += 100) {
-                    let index = Math.floor({{audio_random1}} * i);
-                    var new_value = arguments[0][index] + {{audio_random2}} * 0.1;
+                    let index = Math.floor($$audio_random1$$ * i);
+                    var new_value = arguments[0][index] + $$audio_random2$$ * 0.1;
                     arguments[0][index] = new_value
                   }
                   return results_3;
@@ -163,7 +163,7 @@ def get_inject_info(request):
         var noisify = function (canvas, context) {
             //console.log('==let noisify==',context);
             if (context) {
-              const shift = {{canvas_shift}};
+              const shift = $$canvas_shift$$;
               //
               let ctxIdx = ctxArr.indexOf(context);
               let info = ctxInf[ctxIdx];
@@ -310,7 +310,7 @@ def get_inject_info(request):
     '''
     inject_data['time_zone'] = '''
     ( function fakeTimeZone() {
-        Date.prefs = {{timeZoneArray}};
+        Date.prefs = $$timeZoneArray$$;
         console.log('==Date.prefs==',Date.prefs);
         const ODateTimeFormat = Intl.DateTimeFormat;
         Intl.DateTimeFormat = function(locales, options = {}) {
@@ -548,8 +548,8 @@ def get_inject_info(request):
               const bufferData = proto.bufferData;
               Object.defineProperty(proto, "bufferData", {
                 "value": function () {
-                  var index = Math.floor({{gl_index}} * arguments[1].length);
-                  var noise = arguments[1][index] !== undefined ? 0.1 * {{gl_noise}} * arguments[1][index] : 0;
+                  var index = Math.floor($$gl_index$$ * arguments[1].length);
+                  var noise = arguments[1][index] !== undefined ? 0.1 * $$gl_noise$$ * arguments[1][index] : 0;
                   //
                   arguments[1][index] = arguments[1][index] + noise;
                   //
@@ -586,33 +586,33 @@ def get_inject_info(request):
                   else if (arguments[0] === 36063) return 8;
                   else if (arguments[0] === 36183) return 4;
                   else if (arguments[0] === 7936) return "WebKit";
-                  else if (arguments[0] === 37445) return "{{37445}}";
+                  else if (arguments[0] === 37445) return "$$37445$$";
                   else if (arguments[0] === 7937) return "WebKit WebGL";
-                  else if (arguments[0] === 3379) return {{3379}};
-                  else if (arguments[0] === 36347) return {{36347}};
-                  else if (arguments[0] === 34076) return {{34076}};
-                  else if (arguments[0] === 34024) return {{34024}};
-                  else if (arguments[0] === 3386) return {{3386}};
-                  else if (arguments[0] === 3413) return {{3413}};
-                  else if (arguments[0] === 3412) return {{3412}};
-                  else if (arguments[0] === 3411) return {{3411}};
-                  else if (arguments[0] === 3410) return {{3410}};
-                  else if (arguments[0] === 34047) return {{34047}};
-                  else if (arguments[0] === 34930) return {{34930}};
-                  else if (arguments[0] === 34921) return {{34921}};
-                  else if (arguments[0] === 34324) return Math.floor({{34324}} * 6100) + 8192;
-                  else if (arguments[0] === 35376) return Math.floor({{35376}} * 36384) + 10384;
-                  else if (arguments[0] === 35377) return Math.floor({{35377}} * 50188) + 20188;
-                  else if (arguments[0] === 35379) return Math.floor({{35379}} * 50188) + 20188;
-                  else if (arguments[0] === 35658) return Math.floor({{35658}} * 36) + 1000;
-                  else if (arguments[0] === 35660) return {{35660}};
-                  else if (arguments[0] === 35661) return {{35661}};                  
-                  else if (arguments[0] === 36349) return {{36349}};
-                  else if (arguments[0] === 33902) return {{33902}};
-                  else if (arguments[0] === 33901) return {{33901}};
-                  else if (arguments[0] === 37446) return "{{37446}}";
-                  else if (arguments[0] === 7938) return "{{7938}}";
-                  else if (arguments[0] === 35724) return "{{35724}}";
+                  else if (arguments[0] === 3379) return $$3379$$;
+                  else if (arguments[0] === 36347) return $$36347$$;
+                  else if (arguments[0] === 34076) return $$34076$$;
+                  else if (arguments[0] === 34024) return $$34024$$;
+                  else if (arguments[0] === 3386) return $$3386$$;
+                  else if (arguments[0] === 3413) return $$3413$$;
+                  else if (arguments[0] === 3412) return $$3412$$;
+                  else if (arguments[0] === 3411) return $$3411$$;
+                  else if (arguments[0] === 3410) return $$3410$$;
+                  else if (arguments[0] === 34047) return $$34047$$;
+                  else if (arguments[0] === 34930) return $$34930$$;
+                  else if (arguments[0] === 34921) return $$34921$$;
+                  else if (arguments[0] === 34324) return Math.floor($$34324$$ * 6100) + 8192;
+                  else if (arguments[0] === 35376) return Math.floor($$35376$$ * 36384) + 10384;
+                  else if (arguments[0] === 35377) return Math.floor($$35377$$ * 50188) + 20188;
+                  else if (arguments[0] === 35379) return Math.floor($$35379$$ * 50188) + 20188;
+                  else if (arguments[0] === 35658) return Math.floor($$35658$$ * 36) + 1000;
+                  else if (arguments[0] === 35660) return $$35660$$;
+                  else if (arguments[0] === 35661) return $$35661$$;                  
+                  else if (arguments[0] === 36349) return $$36349$$;
+                  else if (arguments[0] === 33902) return $$33902$$;
+                  else if (arguments[0] === 33901) return $$33901$$;
+                  else if (arguments[0] === 37446) return "$$37446$$";
+                  else if (arguments[0] === 7938) return "$$7938$$";
+                  else if (arguments[0] === 35724) return "$$35724$$";
                   //
                   return getParameter.apply(this, arguments);
                 }
@@ -640,16 +640,16 @@ def get_inject_info(request):
         if (nothingtest2 < 3000) {
           scope.Object.defineProperty(navigator.connection, "downlink", {enumerable: true, configurable: true, get: function() {
             return [4.9,4.9,4.05,7.15,6.15,8.15,4.15,6.15,5.15,4.9,4.9,4.9,4.9,4.9,4.9,4.9,5,5,8.05,3.3,3.9,4.9,5.15,5.4,5.15,4.15,7.1,7.15,7.3,8,8.15,4.55,6.5,6.95,6.2,4.15][Math.floor(Math.random() * 36)];
-          }});
+          $$);
             scope.Object.defineProperty(navigator.connection, "effectiveType", {enumerable: true, configurable: true, get: function() {
             return '4g';
-          }});
+          $$);
             scope.Object.defineProperty(navigator.connection, "rtt", {enumerable: true, configurable: true, get: function() {
             return [50,150,100,100,150,150,150,150,100,100,100,100,100,150,150][Math.floor(Math.random() * 15)];
-          }});
+          $$);
             scope.Object.defineProperty(navigator.connection, "saveData", {enumerable: true, configurable: true, get: function() {
             return false;
-          }});
+          $$);
               
           } else {
           }				

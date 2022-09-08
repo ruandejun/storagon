@@ -8,6 +8,7 @@ from telegram_bot.models import UserTelegram, AccountsSelling
 from storagon.enum import *
 from servermain.controllers import UserController
 from telegram_bot.api.TelegramBot_RestfulApi import AccountsSellingSerializer
+from rest_framework.authtoken.models import Token
 def send_telegram_notify_to_group(group_id,msg,reply_markup=None,reply_id=None):
     #token='1235501300:AAEWPcah92B1PvsdvTCSHdT12CCg4gq-qZo'
     token = settings.TELEGRAM_TOKEN
@@ -186,6 +187,25 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
             html_show = create_html_deposit(0)
             markup_button = creat_deposit_markup()
             send_telegram_notify_to_group(chat_id, msg=html_show, reply_id=message_id, reply_markup=markup_button)
+        elif cmd == 'token':
+            print('==get token user==')
+            user = User.objects.get(username=chat_id)
+            token, created = Token.objects.get_or_create(user=user)
+            # user.set_password('telegrambot123')
+            # user.save()
+            msg = "token:%s" %(token.key)
+            # send_message(msg, t_chat["id"])
+            send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
+        elif cmd == 'setpassword':
+            print('==set password user==')
+            user = User.objects.get(username=chat_id)
+            new_password = text.rstrip("/").strip()
+            # token, created = Token.objects.get_or_create(user=user)
+            user.set_password(new_password)
+            user.save()
+            msg = "Your password have been changed successfully."
+            # send_message(msg, t_chat["id"])
+            send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
         # else:
         #     import math
         #     page_total = math.ceil(float(123) / 10)
@@ -214,7 +234,7 @@ def createCoinBaseAddress(name="BTC"):
 
     return created
 
-if __name__ == '__main__':
-    # get_tbk_coupon('python')
-    print('===task===')
-    createCoinBaseAddress('ETH')
+# if __name__ == '__main__':
+#     # get_tbk_coupon('python')
+#     print('===task===')
+#     createCoinBaseAddress('ETH')

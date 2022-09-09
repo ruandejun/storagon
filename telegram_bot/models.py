@@ -199,14 +199,14 @@ class AccountsData(models.Model):
     created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
     modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)
 
-    customer = models.ForeignKey(User, verbose_name=_("customer"), related_name="accounts_customer_set", null=True,
+    customer = models.ForeignKey(User, verbose_name=_("customer"), related_name="accounts_data_customer_set", null=True,
                                  blank=True, on_delete=models.PROTECT)
 
     type = models.ForeignKey(AccountsType, verbose_name=_("type"),
-                             related_name="type_set", null=True,
+                             related_name="accounts_data_type_set", null=True,
                              blank=True, on_delete=models.PROTECT)
 
-    owner = models.ForeignKey(User, verbose_name=_("owner"), related_name="accounts_created_owner_set", null=True,
+    owner = models.ForeignKey(User, verbose_name=_("owner"), related_name="accounts_data_owner_set", null=True,
                                  blank=True, on_delete=models.PROTECT)
     
     note = models.TextField(verbose_name=_("note"), blank=True, null=True)
@@ -270,7 +270,7 @@ class AccountsEmails(models.Model):
                                  blank=True, on_delete=models.PROTECT)
     
     type = models.ForeignKey(AccountsType, verbose_name=_("type"),
-                             related_name="type_set", null=True,
+                             related_name="accounts_emails_type_set", null=True,
                              blank=True, on_delete=models.PROTECT)
     
     owner = models.ForeignKey(User, verbose_name=_("owner"), related_name="accounts_emails_owner_set", null=True,
@@ -337,7 +337,7 @@ class AccountsCreated(models.Model):
                                  blank=True, on_delete=models.PROTECT)    
 
     type = models.ForeignKey(AccountsType, verbose_name=_("type"),
-                             related_name="type_set", null=True,
+                             related_name="accounts_created_type_set", null=True,
                              blank=True, on_delete=models.PROTECT)
 
     browser_profiles = models.ForeignKey(BrowserProfiles, verbose_name=_("browser_profiles"), related_name="browser_profiles_set", null=True,

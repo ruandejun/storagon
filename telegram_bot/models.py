@@ -185,3 +185,137 @@ class BrowserProfiles(models.Model):
 
     def __str__(self):
         return self.profile_name    
+   
+
+class AccountsEmails(models.Model):
+    class Meta:
+        verbose_name = _("AccountsEmails")
+        verbose_name_plural = _("AccountsEmails")
+        # abstract = True
+    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True, db_index=True)
+    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True, db_index=True)
+
+    created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
+    modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)
+
+    customer = models.ForeignKey(User, verbose_name=_("customer"), related_name="accounts_customer_set", null=True,
+                                 blank=True, on_delete=models.PROTECT)
+
+    type = models.ForeignKey(AccountsType, verbose_name=_("type"),
+                             related_name="type_set", null=True,
+                             blank=True, on_delete=models.PROTECT)
+    
+    owner = models.ForeignKey(User, verbose_name=_("owner"), related_name="accounts_created_owner_set", null=True,
+                                 blank=True, on_delete=models.PROTECT)
+
+    note = models.TextField(verbose_name=_("note"), blank=True, null=True)
+    
+    email = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    
+    password = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    
+    proxy = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    
+    socks5 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    
+    state_ip = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+
+    state = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    
+    price = models.DecimalField(verbose_name=_("price"), default=decimal.Decimal(0), max_digits=MONEY_MAX_DIGITS,
+                                decimal_places=MONEY_DECIMAL_PLACES, validators=[MinValueValidator(0)], db_index=True)
+
+    signup_ip = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+
+    status = models.PositiveSmallIntegerField(choices=AccountStatus.ChoiceList(), default=AccountStatus.normal,
+                                                   db_index=True)
+    
+    used = models.PositiveSmallIntegerField(default=0, db_index=True)
+    
+    def save(self, *args, **kwargs):
+        user = get_current_user()
+        if user and user.is_authenticated():
+            self.modified_by = user
+            if self._state.adding:
+                self.created_by = user
+
+        super(AccountsEmails, self).save(*args, **kwargs)
+
+    def __unicode__(self):
+        return self.email
+
+    def __str__(self):
+        return self.email  
+    
+   
+    
+class AccountsCreated(models.Model):
+    class Meta:
+        verbose_name = _("AccountsCreated")
+        verbose_name_plural = _("AccountsCreated")
+        # abstract = True
+    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True, db_index=True)
+    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True, db_index=True)
+
+    created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
+    modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)
+
+    customer = models.ForeignKey(User, verbose_name=_("customer"), related_name="accounts_customer_set", null=True,
+                                 blank=True, on_delete=models.PROTECT)
+
+    type = models.ForeignKey(AccountsType, verbose_name=_("type"),
+                             related_name="type_set", null=True,
+                             blank=True, on_delete=models.PROTECT)
+
+    browser_profiles = models.ForeignKey(BrowserProfiles, verbose_name=_("browser_profiles"), related_name="browser_profiles_set", null=True,
+                                 blank=True, on_delete=models.PROTECT)
+
+
+    owner = models.ForeignKey(User, verbose_name=_("owner"), related_name="accounts_created_owner_set", null=True,
+                                 blank=True, on_delete=models.PROTECT)
+    
+    account_email = models.ForeignKey(AccountsEmails, verbose_name=_("account_email"), related_name="account_email_set", null=True,
+                                blank=True, on_delete=models.PROTECT)
+
+    note = models.TextField(verbose_name=_("note"), blank=True, null=True)
+    
+    email = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    
+    usernane = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    
+    password = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    
+    proxy = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    
+    socks5 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    
+    state_ip = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+
+    state = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    
+    price = models.DecimalField(verbose_name=_("price"), default=decimal.Decimal(0), max_digits=MONEY_MAX_DIGITS,
+                                decimal_places=MONEY_DECIMAL_PLACES, validators=[MinValueValidator(0)], db_index=True)
+
+    signup_ip = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+
+    status = models.PositiveSmallIntegerField(choices=AccountStatus.ChoiceList(), default=AccountStatus.normal,
+                                                   db_index=True)
+    viewed = models.PositiveSmallIntegerField(default=0, db_index=True)
+    
+    def save(self, *args, **kwargs):
+        user = get_current_user()
+        if user and user.is_authenticated():
+            self.modified_by = user
+            if self._state.adding:
+                self.created_by = user
+
+        super(AccountsCreated, self).save(*args, **kwargs)
+
+    def __unicode__(self):
+        return self.email
+
+    def __str__(self):
+        return self.email  
+    
+
+  

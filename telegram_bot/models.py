@@ -188,11 +188,10 @@ class BrowserProfiles(models.Model):
     def __str__(self):
         return self.profile_name    
    
-
-class AccountsEmails(models.Model):
+class AccountsData(models.Model):
     class Meta:
-        verbose_name = _("AccountsEmails")
-        verbose_name_plural = _("AccountsEmails")
+        verbose_name = _("AccountsData")
+        verbose_name_plural = _("AccountsData")
         # abstract = True
     created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True, db_index=True)
     modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True, db_index=True)
@@ -206,8 +205,75 @@ class AccountsEmails(models.Model):
     type = models.ForeignKey(AccountsType, verbose_name=_("type"),
                              related_name="type_set", null=True,
                              blank=True, on_delete=models.PROTECT)
-    
+
     owner = models.ForeignKey(User, verbose_name=_("owner"), related_name="accounts_created_owner_set", null=True,
+                                 blank=True, on_delete=models.PROTECT)
+    
+    note = models.TextField(verbose_name=_("note"), blank=True, null=True)
+    
+    fisrt_name = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    
+    last_name = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    
+    address1 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    
+    address2 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    
+    city = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    
+    state = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+
+    zipcode = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    
+    dob = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    
+    ssn = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    
+    price = models.DecimalField(verbose_name=_("price"), default=decimal.Decimal(0), max_digits=MONEY_MAX_DIGITS,
+                                decimal_places=MONEY_DECIMAL_PLACES, validators=[MinValueValidator(0)], db_index=True)
+
+    signup_ip = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+
+    status = models.PositiveSmallIntegerField(choices=AccountStatus.ChoiceList(), default=AccountStatus.normal,
+                                                   db_index=True)
+    used = models.PositiveSmallIntegerField(default=0, db_index=True)
+    
+    def save(self, *args, **kwargs):
+        user = get_current_user()
+        if user and user.is_authenticated():
+            self.modified_by = user
+            if self._state.adding:
+                self.created_by = user
+
+        super(AccountsData, self).save(*args, **kwargs)
+
+    def __unicode__(self):
+        return self.fisrt_name
+
+    def __str__(self):
+        return self.fisrt_name  
+    
+class AccountsEmails(models.Model):
+    class Meta:
+        verbose_name = _("AccountsEmails")
+        verbose_name_plural = _("AccountsEmails")
+        # abstract = True
+    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True, db_index=True)
+    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True, db_index=True)
+
+    created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
+    modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)
+
+    customer = models.ForeignKey(User, verbose_name=_("customer"), related_name="accounts_emails_customer_set", null=True,
+                                 blank=True, on_delete=models.PROTECT)
+    accounts_data = models.ForeignKey(AccountsData, verbose_name=_("account_data"), related_name="account_data_emails_set", null=True,
+                                 blank=True, on_delete=models.PROTECT)
+    
+    type = models.ForeignKey(AccountsType, verbose_name=_("type"),
+                             related_name="type_set", null=True,
+                             blank=True, on_delete=models.PROTECT)
+    
+    owner = models.ForeignKey(User, verbose_name=_("owner"), related_name="accounts_emails_owner_set", null=True,
                                  blank=True, on_delete=models.PROTECT)
 
     note = models.TextField(verbose_name=_("note"), blank=True, null=True)
@@ -223,6 +289,10 @@ class AccountsEmails(models.Model):
     state_ip = models.CharField(blank=True, null=True, max_length=255, db_index=True)
 
     state = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    
+    phone_number = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    
+    phone_service = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     
     price = models.DecimalField(verbose_name=_("price"), default=decimal.Decimal(0), max_digits=MONEY_MAX_DIGITS,
                                 decimal_places=MONEY_DECIMAL_PLACES, validators=[MinValueValidator(0)], db_index=True)
@@ -248,9 +318,7 @@ class AccountsEmails(models.Model):
 
     def __str__(self):
         return self.email  
-    
-   
-    
+     
 class AccountsCreated(models.Model):
     class Meta:
         verbose_name = _("AccountsCreated")
@@ -262,8 +330,11 @@ class AccountsCreated(models.Model):
     created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
     modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)
 
-    customer = models.ForeignKey(User, verbose_name=_("customer"), related_name="accounts_customer_set", null=True,
+    customer = models.ForeignKey(User, verbose_name=_("customer"), related_name="accounts_created_customer_set", null=True,
                                  blank=True, on_delete=models.PROTECT)
+    
+    accounts_data = models.ForeignKey(AccountsData, verbose_name=_("account_data"), related_name="account_data_created_set", null=True,
+                                 blank=True, on_delete=models.PROTECT)    
 
     type = models.ForeignKey(AccountsType, verbose_name=_("type"),
                              related_name="type_set", null=True,
@@ -294,6 +365,10 @@ class AccountsCreated(models.Model):
     state_ip = models.CharField(blank=True, null=True, max_length=255, db_index=True)
 
     state = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+
+    phone_number = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    
+    phone_service = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     
     price = models.DecimalField(verbose_name=_("price"), default=decimal.Decimal(0), max_digits=MONEY_MAX_DIGITS,
                                 decimal_places=MONEY_DECIMAL_PLACES, validators=[MinValueValidator(0)], db_index=True)
@@ -320,4 +395,5 @@ class AccountsCreated(models.Model):
         return self.email  
     
 
-  
+
+    

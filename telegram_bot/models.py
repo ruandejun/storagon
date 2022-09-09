@@ -170,6 +170,8 @@ class BrowserProfiles(models.Model):
     
     profile_status = models.PositiveSmallIntegerField(choices=ProfilesStatus.ChoiceList(), default=ProfilesStatus.normal,
                                                 db_index=True)
+    
+    profile_used = models.PositiveSmallIntegerField(default=0, db_index=True)
 
     def save(self, *args, **kwargs):
         user = get_current_user()

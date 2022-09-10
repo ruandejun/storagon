@@ -104,7 +104,6 @@ def get_accounts_data(request):
   
 
 
-
 @api_view(['GET', 'POST', 'PUT'])
 @login_required_ajax()
 @signature_test()

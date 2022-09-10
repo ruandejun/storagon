@@ -8,7 +8,7 @@
 from storagon.enum import *
 from rest_framework import serializers
 import rest_framework_bulk as restbulk
-from telegram_bot.models import AccountsSelling, BrowserProfiles
+from telegram_bot.models import AccountsCreated, AccountsData, AccountsEmails, AccountsSelling, BrowserProfiles
 
 class AccountsSellingSerializer(serializers.ModelSerializer):
 	class Meta:
@@ -41,5 +41,47 @@ class BrowserProfilesSerializer(serializers.ModelSerializer):
 				'profile_webrtc', 'profile_geo', 'profile_vendor',
 				'profile_renderer', 'profile_note', 'profile_status',
           )
-
 	profile_owner = serializers.SlugRelatedField(slug_field='username', read_only=True);
+ 
+class AccountsDataSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = AccountsData
+		fields = ('id', 'created', 'modified', 'created_by','customer',
+				'modified_by', 'type', 'owner',
+				'note', 'fisrt_name', 'last_name',
+				'address1', 'address2',
+				'city','state',
+    			'zipcode','dob',
+       			'ssn','status', 'price',
+				'used',
+          )
+	customer = serializers.SlugRelatedField(slug_field='username', read_only=True);
+	owner = serializers.SlugRelatedField(slug_field='username', read_only=True);
+class AccountsEmailsSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = AccountsEmails
+		fields = ('id', 'created', 'modified', 'created_by','customer',
+				'modified_by', 'type', 'owner',
+				'note', 'accounts_data', 'email',
+				'password', 'proxy',
+				'socks5','state',
+    			'state_ip','phone_number',
+       			'phone_service','status', 'price',
+				'used',
+          )
+	customer = serializers.SlugRelatedField(slug_field='username', read_only=True);
+	owner = serializers.SlugRelatedField(slug_field='username', read_only=True);
+class AccountsCreatedSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = AccountsCreated
+		fields = ('id', 'created', 'modified', 'created_by','customer',
+				'modified_by', 'type', 'owner',
+				'note', 'accounts_data', 'email',
+				'password', 'proxy',
+				'socks5','state',
+    			'state_ip','phone_number',
+       			'phone_service','status', 'price',
+				'viewed','browser_profiles','accounts_emails','usernane','signup_ip',
+          )
+	customer = serializers.SlugRelatedField(slug_field='username', read_only=True);
+	owner = serializers.SlugRelatedField(slug_field='username', read_only=True);

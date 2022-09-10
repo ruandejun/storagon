@@ -347,7 +347,7 @@ class AccountsCreated(models.Model):
     owner = models.ForeignKey(User, verbose_name=_("owner"), related_name="accounts_created_owner_set", null=True,
                                  blank=True, on_delete=models.PROTECT)
     
-    account_email = models.ForeignKey(AccountsEmails, verbose_name=_("account_email"), related_name="account_email_set", null=True,
+    accounts_emails = models.ForeignKey(AccountsEmails, verbose_name=_("accounts_emails"), related_name="accounts_emails_set", null=True,
                                 blank=True, on_delete=models.PROTECT)
 
     note = models.TextField(verbose_name=_("note"), blank=True, null=True)

@@ -10,9 +10,10 @@ from storagon.decorator import banned_check, login_required_ajax, signature_test
 from django.contrib.auth.decorators import user_passes_test
 from rest_framework.decorators import api_view
 from telegram_bot.task import check_cmd_telegram
-from telegram_bot.models import BrowserProfiles
-from telegram_bot.api.TelegramBot_RestfulApi import BrowserProfilesSerializer
+from telegram_bot.models import *
+from telegram_bot.api.TelegramBot_RestfulApi import *
 import random, math
+from random import choice
 
 @api_view(['GET', 'POST', 'PUT'])
 def telegram_bot(request):
@@ -52,6 +53,56 @@ def get_browser_profiles(request):
 
     ##
     return successResponse({'data':profile_data.data})
+
+
+
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
+def get_accounts_emails(request):
+    list_objects = AccountsEmails.objects.filter(owner=request.user)
+
+    accounts_data = AccountsEmailsSerializer(list_objects, many=True)
+
+    ##
+    return successResponse({'data':accounts_data.data})
+  
+ 
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
+def get_accounts_created(request):
+    list_objects = AccountsCreated.objects.filter(owner=request.user)
+
+    accounts_data = AccountsCreatedSerializer(list_objects, many=True)
+
+    ##
+    return successResponse({'data':accounts_data.data})
+  
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
+def get_accounts_data(request):
+    
+    if request.GET['action'] == 'refesh':
+        list_objects = AccountsData.objects.filter(owner=None)
+        if request.GET['state']:
+            list_objects = list_objects.objects.filter(state=request.GET['state'])
+        elif request.GET['city']:
+            list_objects = list_objects.objects.filter(city=request.GET['city'])
+        pks = list_objects.objects.values_list('pk', flat=True)
+        random_pk = choice(pks)
+        random_obj = list_objects.objects.get(pk=random_pk)
+        accounts_data = AccountsDataSerializer(random_obj)
+    else:
+        list_objects = AccountsData.objects.filter(owner=request.user)
+        accounts_data = AccountsDataSerializer(list_objects, many=True)
+    return successResponse({'data':accounts_data.data})
+  
+
 
 
 @api_view(['GET', 'POST', 'PUT'])

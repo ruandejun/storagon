@@ -205,7 +205,10 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
             # token, created = Token.objects.get_or_create(user=user)
             user.set_password(new_password)
             user.save()
-            msg = "Your password have been changed successfully."
+            msg = '''Your password have been changed successfully.
+                Username:%s
+                Password:%s
+            ''' % (chat_id, new_password)
             # send_message(msg, t_chat["id"])
             send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
         # else:

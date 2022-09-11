@@ -201,16 +201,22 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
         elif cmd == 'setpassword':
             print('==set password user==')
             user = User.objects.get(username=chat_id)
-            new_password = text.rstrip("/").strip()
-            # token, created = Token.objects.get_or_create(user=user)
-            user.set_password(new_password)
-            user.save()
-            msg = '''Your password have been changed successfully.
-                Username:%s
-                Password:%s
-            ''' % (chat_id, new_password)
-            # send_message(msg, t_chat["id"])
-            send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
+            new_password = text.split("/setpassword")[-1].strip()
+            if len(new_password) <=3:
+                msg = 'Your password must be longer that 3 characters'
+                send_telegram_notify_to_group(
+                    chat_id, msg=str(msg), reply_id=message_id)
+                return
+            else:
+                # token, created = Token.objects.get_or_create(user=user)
+                user.set_password(new_password)
+                user.save()
+                msg = '''Your password have been changed successfully.
+    Username:%s
+    Password:%s
+                ''' % (chat_id, new_password)
+                # send_message(msg, t_chat["id"])
+                send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
         # else:
         #     import math
         #     page_total = math.ceil(float(123) / 10)

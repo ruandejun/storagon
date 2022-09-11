@@ -165,6 +165,12 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
     else:
         
         cmd = text.lstrip("/")
+        extra_text = ''
+        if cmd.find(' ') != -1:
+            new_cmd = cmd.split(' ')[0]
+            extra_text = cmd.split(' ')[1]
+            cmd = new_cmd
+            
         print('cmd==', cmd, text)
         if cmd == "listing":
             print('===listing===')
@@ -203,21 +209,21 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
         elif cmd == 'setpassword':
             print('==set password user==')
             user = User.objects.get(username=chat_id)
-            new_password = text.split("/setpassword")[-1].strip()
-            if len(new_password) <=3:
+            
+            if len(extra_text) <= 3:
                 msg = 'Your password must be longer that 3 characters'
                 send_telegram_notify_to_group(
                     chat_id, msg=str(msg), reply_id=message_id)
                 return
             else:
                 # token, created = Token.objects.get_or_create(user=user)
-                user.set_password(new_password)
+                user.set_password(extra_text)
                 user.save()
                 msg = '''
 Your password have been changed successfully.
 Username:%s
 Password:%s
-                ''' % (chat_id, new_password)
+                ''' % (chat_id, extra_text)
                 # send_message(msg, t_chat["id"])
                 send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
         # else:

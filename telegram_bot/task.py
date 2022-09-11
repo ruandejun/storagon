@@ -164,12 +164,12 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
             edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
     else:
         
-        cmd = text.lstrip("/")
+        cmd = text.lstrip("/").strip()
         extra_text = ''
         if cmd.find(' ') != -1:
             new_cmd = cmd.split(' ')[0]
             extra_text = cmd.split(' ')[1]
-            cmd = new_cmd
+            cmd = new_cmd.strip()
             
         print('cmd==', cmd, text)
         if cmd == "listing":

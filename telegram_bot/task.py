@@ -119,8 +119,9 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
     if not userTelegram_objs.exists():
         print('==create new user==')
         user = User(username=chat_id)
-        user.set_password('telegrambot123')
         user.save()
+        user.set_password('telegrambot123')
+        
         if chat:
             user_telegram = UserTelegram(user=user,telegram_id=chat_id,first_name=chat['first_name'],last_name=chat['last_name'],username=chat['username'])
         else:

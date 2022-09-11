@@ -163,8 +163,9 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
             markup_button = creat_deposit_markup()
             edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
     else:
-        print('cmd==', cmd, text)
+        
         cmd = text.lstrip("/")
+        print('cmd==', cmd, text)
         if cmd == "listing":
             print('===listing===')
             list_account_objs = AccountsSelling.objects.filter(type__value='amazon', selling_status=SellingStatus.listed)

@@ -126,9 +126,10 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
         else:
             user_telegram = UserTelegram(user=user, telegram_id=chat_id)
         user_telegram.save()
-    else:
-        user_telegram = userTelegram_objs.first()
-        user = user_telegram.user
+        userTelegram_objs = UserTelegram.objects.filter(telegram_id=chat_id)
+
+    user_telegram = userTelegram_objs.first()
+    user = user_telegram.user
     currency_obj, created = AccountCurrency.objects.get_or_create(code='USD', label='USD')
     account_balance_obj, created = AccountBalance.objects.get_or_create(user=user,balance_type=BalanceType.credit,currency=currency_obj)
     current_banlance = UserController.calculateUserBlance(account_balance_obj)

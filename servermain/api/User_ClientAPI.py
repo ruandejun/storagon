@@ -54,7 +54,10 @@ def custom_login(request):
 
         # automaticaly create all type of balance for this user
         for balanceType in [BalanceType.credit,BalanceType.point,BalanceType.ppd]:
-            balance, created = AccountBalance.objects.get_or_create(user=user, balance_type=balanceType)
+            account_balance = AccountBalance.objects.filter(user=user, balance_type=balanceType)
+            if not account_balance.exists():
+                balance, created = AccountBalance.objects.get_or_create(user=user, balance_type=balanceType)
+
 
 
         return successResponse({'token': token.key})

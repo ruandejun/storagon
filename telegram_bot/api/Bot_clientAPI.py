@@ -814,12 +814,13 @@ def update_profile_by_id(request):
     if request.method == 'GET':
         return successResponse({"ok": "Get request processed"})
     update_post = json.loads(request.body)
-    try:
-        browser_profile = BrowserProfiles.objects.get(pk=update_post['id'], profile_owner=request.user)
-    except BrowserProfiles.DoesNotExist:
-        return errorResponse('Profile not found', 400)
-    browser_profile = browser_profile.update(**update_post['update_data'])
-    profile_data = BrowserProfilesSerializer(browser_profile)
+
+    browser_profiles = BrowserProfiles.objects.filter(pk=update_post['id'], profile_owner=request.user)
+    if browser_profiles.exists():
+      browser_profiles.update(**update_post['update_data'])
+      browser_profile = BrowserProfiles.objects.get(
+          pk=update_post['id'], profile_owner=request.user)
+      profile_data = BrowserProfilesSerializer(browser_profile)
     return successResponse({'data':profile_data.data})
 
 @api_view(['GET', 'POST', 'PUT'])

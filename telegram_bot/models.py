@@ -115,7 +115,7 @@ class AccountsSelling(models.Model):
             if self._state.adding:
                 self.created_by = user
 
-        super(BrowserProfiles, self).save(*args, **kwargs)
+        super(AccountsSelling, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return self.details
@@ -246,7 +246,7 @@ class AccountsData(models.Model):
             if self._state.adding:
                 self.created_by = user
 
-        super(BrowserProfiles, self).save(*args, **kwargs)
+        super(AccountsData, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return self.fisrt_name
@@ -312,7 +312,7 @@ class AccountsEmails(models.Model):
             if self._state.adding:
                 self.created_by = user
 
-        super(BrowserProfiles, self).save(*args, **kwargs)
+        super(AccountsEmails, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return self.email
@@ -387,7 +387,7 @@ class AccountsCreated(models.Model):
             if self._state.adding:
                 self.created_by = user
 
-        super(BrowserProfiles, self).save(*args, **kwargs)
+        super(AccountsCreated, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return self.email

@@ -96,7 +96,7 @@ def add_accounts_created(request):
     if not profile_objects.exists():
         return errorResponse('Profile not found', 400) 
     account_type, created = AccountsType.objects.get_or_create(value=type.lower())
-    accounts_data = AccountsCreated(email=email, password=password, browser_profiles=profile_objects[0], type=account_type)
+    accounts_data = AccountsCreated(email=email, password=password, browser_profiles=profile_objects[0], type=account_type, owner=request.user)
     accounts_data.save()
     accounts_data.refresh_from_db()
     data_serializer = AccountsCreatedSerializer(accounts_data, many=False)

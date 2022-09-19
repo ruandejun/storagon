@@ -329,6 +329,7 @@ class AccountsCreated(models.Model):
     modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True, db_index=True)
 
     created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
+    
     modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)
 
     customer = models.ForeignKey(User, verbose_name=_("customer"), related_name="accounts_created_customer_set", null=True,

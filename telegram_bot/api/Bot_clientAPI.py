@@ -95,7 +95,7 @@ def add_accounts_created(request):
     profile_objects = BrowserProfiles.objects.filter(pk=profile_id)
     if not profile_objects.exists():
         return errorResponse('Profile not found', 400) 
-    account_type = AccountsType.objects.get_or_create(value=type.lower())
+    account_type, created = AccountsType.objects.get_or_create(value=type.lower())
     accounts_data = AccountsCreated(email=email, password=password, browser_profiles=profile_objects[0], type=account_type)
     accounts_data.save()
     accounts_data.refresh_from_db()

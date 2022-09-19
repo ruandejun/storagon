@@ -107,14 +107,15 @@ class AccountsSelling(models.Model):
 
     selling_status = models.PositiveSmallIntegerField(choices=SellingStatus.ChoiceList(), default=SellingStatus.listed,
                                                    db_index=True)
+
     def save(self, *args, **kwargs):
         user = get_current_user()
-        if user and user.is_authenticated():
+        if user:
             self.modified_by = user
             if self._state.adding:
                 self.created_by = user
 
-        super(AccountsSelling, self).save(*args, **kwargs)
+        super(BrowserProfiles, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return self.details
@@ -240,12 +241,12 @@ class AccountsData(models.Model):
     
     def save(self, *args, **kwargs):
         user = get_current_user()
-        if user and user.is_authenticated():
+        if user:
             self.modified_by = user
             if self._state.adding:
                 self.created_by = user
 
-        super(AccountsData, self).save(*args, **kwargs)
+        super(BrowserProfiles, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return self.fisrt_name
@@ -306,12 +307,12 @@ class AccountsEmails(models.Model):
     
     def save(self, *args, **kwargs):
         user = get_current_user()
-        if user and user.is_authenticated():
+        if user:
             self.modified_by = user
             if self._state.adding:
                 self.created_by = user
 
-        super(AccountsEmails, self).save(*args, **kwargs)
+        super(BrowserProfiles, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return self.email
@@ -381,12 +382,12 @@ class AccountsCreated(models.Model):
     
     def save(self, *args, **kwargs):
         user = get_current_user()
-        if user and user.is_authenticated():
+        if user:
             self.modified_by = user
             if self._state.adding:
                 self.created_by = user
 
-        super(AccountsCreated, self).save(*args, **kwargs)
+        super(BrowserProfiles, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return self.email

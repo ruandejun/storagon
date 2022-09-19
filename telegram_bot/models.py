@@ -356,7 +356,8 @@ class AccountsCreated(models.Model):
     
     email = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     
-    usernane = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    username = models.CharField(
+        blank=True, null=True, max_length=255, db_index=True)
     
     password = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     

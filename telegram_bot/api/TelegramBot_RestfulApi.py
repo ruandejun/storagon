@@ -76,7 +76,7 @@ class AccountsCreatedSerializer(serializers.ModelSerializer):
 		model = AccountsCreated
 		fields = ('id', 'created', 'modified', 'created_by','customer',
 				'modified_by', 'type', 'owner',
-				'note', 'accounts_data', 'email', 'username'
+				'note', 'accounts_data', 'email', 'username',
 				'password', 'proxy',
 				'socks5','state',
     			'state_ip','phone_number',

@@ -85,6 +85,29 @@ def get_accounts_created(request):
 @login_required_ajax()
 @signature_test()
 @user_passes_test(banned_check)
+def add_accounts_created(request):
+  
+    accounts_playload = json.loads(request.body)
+    profile_id = accounts_playload['profile_id']
+    email = accounts_playload['email']  
+    password = accounts_playload['password']
+    type = accounts_playload['type']
+    profile_objects = BrowserProfiles.objects.filter(pk=profile_id)
+    if not profile_objects.exists():
+        return errorResponse('Profile not found', 400) 
+    account_type = AccountsType.objects.get_or_create(value=type.lower())
+    accounts_data = AccountsCreated(email=email, password=password, browser_profiles=profile_objects[0], type=account_type)
+    accounts_data.save()
+    accounts_data.refresh_from_db()
+    data_serializer = AccountsCreatedSerializer(accounts_data, many=False)
+    
+    return successResponse({'data':data_serializer.data}) 
+ 
+  
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
 def get_accounts_data(request):
     
     if request.GET['action'] == 'refesh':

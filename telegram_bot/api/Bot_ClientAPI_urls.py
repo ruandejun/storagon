@@ -18,4 +18,5 @@ urlpatterns = [
 	url(r'^get_accounts_emails/', get_accounts_emails, name='get_accounts_emails'),
 	url(r'^get_accounts_created/', get_accounts_created, name='get_accounts_created'),
 	url(r'^get_accounts_data/', get_accounts_data, name='get_accounts_data'),
+	url(r'^add_accounts_created/', add_accounts_created, name='add_accounts_created'),
 ]

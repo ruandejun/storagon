@@ -80,8 +80,8 @@ class AccountsCreatedSerializer(serializers.ModelSerializer):
 				'password', 'proxy',
 				'socks5','state',
     			'state_ip','phone_number',
-       			'phone_service','status', 'price',
-                    'viewed', 'browser_profiles', 'accounts_emails', 'username', 'signup_ip',
+       			'phone_service','status', 'price','auto_view',
+				'viewed', 'browser_profiles', 'accounts_emails', 'username', 'signup_ip',
           )
 	customer = serializers.SlugRelatedField(slug_field='username', read_only=True);
 	owner = serializers.SlugRelatedField(slug_field='username', read_only=True);

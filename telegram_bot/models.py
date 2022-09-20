@@ -205,10 +205,10 @@ class AccountsData(models.Model):
 
     type = models.ForeignKey(AccountsType, verbose_name=_("type"),
                              related_name="accounts_data_type_set", null=True,
-                             blank=True, on_delete=models.PROTECT)
+                             blank=True)
 
     owner = models.ForeignKey(User, verbose_name=_("owner"), related_name="accounts_data_owner_set", null=True,
-                                 blank=True, on_delete=models.PROTECT)
+                                 blank=True)
     
     note = models.TextField(verbose_name=_("note"), blank=True, null=True)
     
@@ -268,14 +268,14 @@ class AccountsEmails(models.Model):
     customer = models.ForeignKey(User, verbose_name=_("customer"), related_name="accounts_emails_customer_set", null=True,
                                  blank=True, on_delete=models.PROTECT)
     accounts_data = models.ForeignKey(AccountsData, verbose_name=_("account_data"), related_name="account_data_emails_set", null=True,
-                                 blank=True, on_delete=models.PROTECT)
+                                 blank=True)
     
     type = models.ForeignKey(AccountsType, verbose_name=_("type"),
                              related_name="accounts_emails_type_set", null=True,
-                             blank=True, on_delete=models.PROTECT)
+                             blank=True)
     
     owner = models.ForeignKey(User, verbose_name=_("owner"), related_name="accounts_emails_owner_set", null=True,
-                                 blank=True, on_delete=models.PROTECT)
+                                 blank=True)
 
     note = models.TextField(verbose_name=_("note"), blank=True, null=True)
     
@@ -336,21 +336,21 @@ class AccountsCreated(models.Model):
                                  blank=True, on_delete=models.PROTECT)
     
     accounts_data = models.ForeignKey(AccountsData, verbose_name=_("account_data"), related_name="account_data_created_set", null=True,
-                                 blank=True, on_delete=models.PROTECT)    
+                                 blank=True)    
 
     type = models.ForeignKey(AccountsType, verbose_name=_("type"),
                              related_name="accounts_created_type_set", null=True,
-                             blank=True, on_delete=models.PROTECT)
+                             blank=True)
 
     browser_profiles = models.ForeignKey(BrowserProfiles, verbose_name=_("browser_profiles"), related_name="browser_profiles_set", null=True,
-                                 blank=True, on_delete=models.PROTECT)
+                                 blank=True)
 
 
     owner = models.ForeignKey(User, verbose_name=_("owner"), related_name="accounts_created_owner_set", null=True,
-                                 blank=True, on_delete=models.PROTECT)
+                                 blank=True)
     
     accounts_emails = models.ForeignKey(AccountsEmails, verbose_name=_("accounts_emails"), related_name="accounts_emails_set", null=True,
-                                blank=True, on_delete=models.PROTECT)
+                                blank=True)
 
     note = models.TextField(verbose_name=_("note"), blank=True, null=True)
     

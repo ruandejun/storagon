@@ -872,7 +872,8 @@ def remove_accounts(request):
         return successResponse({"ok": "Get request processed"})
     remove_post = json.loads(request.body)
     if remove_post['list_id'] == 'all':
-        list_objects = AccountsCreated.objects.filter()
+        list_objects = AccountsCreated.objects.filter(
+            owner=request.user)
     else:
         print('remove_post==', remove_post['list_id'])
         list_objects = AccountsCreated.objects.filter(pk__in=remove_post['list_id'], owner=request.user)

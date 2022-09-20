@@ -905,6 +905,25 @@ def set_auto_views(request):
         list_objects.update(auto_view=True)
     return successResponse()
 
+
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
+def get_profile_for_auto_views(request):
+    if request.method == 'GET':
+        return successResponse({"ok": "Get request processed"})
+    remove_post = json.loads(request.body)
+    account_type = remove_post['account_type']
+    if account_type == 'amazon':
+        list_objects = AccountsCreated.objects.filter(
+            owner=request.user, type__value=account_type, auto_view=True)
+
+    if list_objects.exists():
+        print('===update===', len(list_objects))
+        list_objects.update(auto_view=True)
+    return successResponse()
+
 @api_view(['GET', 'POST', 'PUT'])
 @login_required_ajax()
 @signature_test()

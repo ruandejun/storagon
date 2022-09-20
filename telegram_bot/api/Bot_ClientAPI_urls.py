@@ -20,5 +20,5 @@ urlpatterns = [
 	url(r'^get_accounts_created/', get_accounts_created, name='get_accounts_created'),
 	url(r'^get_accounts_data/', get_accounts_data, name='get_accounts_data'),
 	url(r'^add_accounts_created/', add_accounts_created, name='add_accounts_created'),
-	url(r'^set_auto_view/', set_auto_view, name='set_auto_view'),
+	url(r'^set_auto_views/', set_auto_views, name='set_auto_views'),
 ]

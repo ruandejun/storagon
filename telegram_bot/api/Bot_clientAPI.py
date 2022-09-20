@@ -867,6 +867,25 @@ def remove_profiles(request):
 @login_required_ajax()
 @signature_test()
 @user_passes_test(banned_check)
+def remove_accounts(request):
+    if request.method == 'GET':
+        return successResponse({"ok": "Get request processed"})
+    remove_post = json.loads(request.body)
+    if remove_post['list_id'] == 'all':
+        list_objects = AccountsCreated.objects.filter(
+            profile_owner=request.user)
+    else:
+        list_objects = AccountsCreated.objects.filter(
+            pk__in=remove_post['list_id'], profile_owner=request.user)
+
+    list_objects.delete()
+    return successResponse()
+
+
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
 def create_browser_profile(request):
     if request.method == 'GET':
         return successResponse({"ok": "Get request processed"})

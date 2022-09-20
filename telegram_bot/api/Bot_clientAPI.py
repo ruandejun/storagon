@@ -875,7 +875,7 @@ def remove_accounts(request):
         list_objects = AccountsCreated.objects.filter(
             owner=request.user)
     else:
-        print('list_id==', remove_post['list_id'])
+        print('remove_post==', remove_post['list_id'])
         list_objects = AccountsCreated.objects.filter(pk__in=remove_post['list_id'], owner=request.user)
         
     if list_objects.exists():

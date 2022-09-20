@@ -873,10 +873,10 @@ def remove_accounts(request):
     remove_post = json.loads(request.body)
     if remove_post['list_id'] == 'all':
         list_objects = AccountsCreated.objects.filter(
-            profile_owner=request.user)
+            owner=request.user)
     else:
         list_objects = AccountsCreated.objects.filter(
-            pk__in=remove_post['list_id'], profile_owner=request.user)
+            pk__in=remove_post['list_id'], owner=request.user)
     if list_objects.exists:
         print('===remove===', len(list_objects))
         list_objects.delete()

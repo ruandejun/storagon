@@ -326,6 +326,7 @@ class AccountsCreated(models.Model):
         verbose_name_plural = _("AccountsCreated")
         # abstract = True
     created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True, db_index=True)
+    
     modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True, db_index=True)
 
     created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
@@ -381,6 +382,9 @@ class AccountsCreated(models.Model):
     status = models.PositiveSmallIntegerField(choices=AccountStatus.ChoiceList(), default=AccountStatus.normal,
                                                    db_index=True)
     viewed = models.PositiveSmallIntegerField(default=0, db_index=True)
+    
+    auto_view = models.BooleanField(verbose_name=_(
+        "auto_view"), default=False, db_index=True)
     
     def save(self, *args, **kwargs):
         user = get_current_user()

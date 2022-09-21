@@ -48,7 +48,7 @@ def signature_test():
 
             if request.method == 'GET':
                 params = request.get_full_path()
-                prefix='http://'
+                prefix='https://'
                 if request.is_secure(): prefix='https://'
                 params2 = prefix + request.get_host() + request.get_full_path(); #request.build_absolute_uri(params)
                 print('===',params,params2)

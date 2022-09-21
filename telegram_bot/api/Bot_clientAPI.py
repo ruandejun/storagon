@@ -921,7 +921,7 @@ def get_profile_for_auto_views(request):
         account_objects = AccountsCreated.objects.filter(
             owner=request.user, type__value=account_type, auto_view=True)
         print('account_objects', len(account_objects))
-        if account_objects.exist():
+        if account_objects.exists():
             account_obj = account_objects.earliest('auto_viewed')
             profile_data = BrowserProfilesSerializer(account_obj.browser_profiles)
             data_show['data'] = profile_data.data

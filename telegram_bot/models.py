@@ -67,6 +67,20 @@ class AccountsType(models.Model):
     def __str__(self):
         return str(self.label)
 
+class KeysSearch(models.Model):
+    class Meta:
+        verbose_name = _("KeysSearch")
+        verbose_name_plural = _("KeysSearch")
+
+    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
+    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
+    value = models.CharField(verbose_name=_("value"), max_length=25, unique=True)
+    # label = models.CharField(verbose_name=_("label"), max_length=255)
+    # default = models.BooleanField(verbose_name=_("default"), default=False, db_index=True)
+
+    def __str__(self):
+        return str(self.value)
+
 class AccountsSelling(models.Model):
     class Meta:
         verbose_name = _("AccountsSelling")

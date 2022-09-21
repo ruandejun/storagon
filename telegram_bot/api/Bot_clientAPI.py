@@ -830,6 +830,40 @@ def get_browser_profile_by_id(request):
     profile_data = BrowserProfilesSerializer(browser_profile)
     return successResponse({'data':profile_data.data})
 
+
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
+def get_key_for_search(request):
+    pks = KeysSearch.objects.values_list('pk', flat=True)
+    KeysSearch.objects.filter()
+    random_pk = choice(pks)
+    random_obj = KeysSearch.objects.get(pk=random_pk)
+    return successResponse({'data': random_obj.value})
+
+
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
+def add_key_for_search(request):
+    if request.method == 'GET':
+        return successResponse({"ok": "Get request processed"})
+    add_post = json.loads(request.body)
+    list_keys = add_post['list_keys']
+    list_create = []
+    for line_key in list_keys:
+        key_objs = KeysSearch.objects.filter(value=line_key)
+        if not key_objs.exists():
+            keyObj = KeysSearch(value=line_key)
+            list_create.append(keyObj)
+    if list_create:
+        KeysSearch.objects.bulk_create(list_create)
+
+    return successResponse()
+
+
 @api_view(['GET', 'POST', 'PUT'])
 @login_required_ajax()
 @signature_test()

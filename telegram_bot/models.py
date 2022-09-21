@@ -386,6 +386,9 @@ class AccountsCreated(models.Model):
     auto_view = models.BooleanField(verbose_name=_(
         "auto_view"), default=False, db_index=True)
     
+    auto_viewed = models.DateTimeField(verbose_name=_("auto_viewed"), auto_now=True, db_index=True, blank=True, null=True)
+    
+    
     def save(self, *args, **kwargs):
         user = get_current_user()
         if user:

@@ -3,6 +3,7 @@
 #
 #  Bot_ClientAPI.py
 
+import profile
 from django.core import serializers
 from storagon.tool import *
 from servermain.models import User, UserProfile
@@ -915,14 +916,13 @@ def get_profile_for_auto_views(request):
         return successResponse({"ok": "Get request processed"})
     remove_post = json.loads(request.body)
     account_type = remove_post['account_type']
+    data_show = {}
     if account_type == 'amazon':
-        list_objects = AccountsCreated.objects.filter(
-            owner=request.user, type__value=account_type, auto_view=True)
-
-    if list_objects.exists():
-        print('===update===', len(list_objects))
-        list_objects.update(auto_view=True)
-    return successResponse()
+        account_objects = AccountsCreated.objects.filter(
+            owner=request.user, type__value=account_type, auto_view=True).earliest('auto_viewed')
+        profile_data = BrowserProfilesSerializer(account_objects.browser_profiles)
+        data_show['data'] = profile_data.data
+    return successResponse(data_show)
 
 @api_view(['GET', 'POST', 'PUT'])
 @login_required_ajax()

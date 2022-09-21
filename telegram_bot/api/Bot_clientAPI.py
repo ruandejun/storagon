@@ -919,9 +919,12 @@ def get_profile_for_auto_views(request):
     data_show = {}
     if account_type == 'amazon':
         account_objects = AccountsCreated.objects.filter(
-            owner=request.user, type__value=account_type, auto_view=True).earliest('auto_viewed')
-        profile_data = BrowserProfilesSerializer(account_objects.browser_profiles)
-        data_show['data'] = profile_data.data
+            owner=request.user, type__value=account_type, auto_view=True)
+        print('account_objects', len(account_objects))
+        if account_objects.exist():
+            account_obj = account_objects.earliest('auto_viewed')
+            profile_data = BrowserProfilesSerializer(account_obj.browser_profiles)
+            data_show['data'] = profile_data.data
     return successResponse(data_show)
 
 @api_view(['GET', 'POST', 'PUT'])

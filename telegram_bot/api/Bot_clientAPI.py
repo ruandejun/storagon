@@ -830,6 +830,22 @@ def get_browser_profile_by_id(request):
     profile_data = BrowserProfilesSerializer(browser_profile)
     return successResponse({'data':profile_data.data})
 
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
+def get_profile_by_account_id(request):
+    if request.method == 'GET':
+        return successResponse({"ok": "Get request processed"})
+    id = request.POST['id']
+    try:
+        account_profile = AccountsCreated.objects.get(pk=id, profile_owner=request.user)
+    except BrowserProfiles.DoesNotExist:
+        return errorResponse('Profile not found', 400)
+    
+    profile_data = BrowserProfilesSerializer(account_profile.browser_profiles)
+    return successResponse({'data':profile_data.data})
+
 
 @api_view(['GET', 'POST', 'PUT'])
 @login_required_ajax()

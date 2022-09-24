@@ -955,6 +955,27 @@ def set_auto_views(request):
         print('===update===', len(list_objects))
         list_objects.update(auto_view=True)
     return successResponse()
+  
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
+def remove_auto_views(request):
+    if request.method == 'GET':
+        return successResponse({"ok": "Get request processed"})
+    remove_post = json.loads(request.body)
+    if remove_post['list_id'] == 'all':
+        list_objects = AccountsCreated.objects.filter(
+            owner=request.user)
+    else:
+        print('remove_post==', remove_post['list_id'])
+        list_objects = AccountsCreated.objects.filter(
+            pk__in=remove_post['list_id'], owner=request.user)
+
+    if list_objects.exists():
+        print('===update===', len(list_objects))
+        list_objects.update(auto_view=False)
+    return successResponse()
 
 
 @api_view(['GET', 'POST', 'PUT'])

@@ -839,7 +839,7 @@ def get_profile_by_account_id(request):
         return successResponse({"ok": "Get request processed"})
     id = request.POST['id']
     try:
-        account_profile = AccountsCreated.objects.get(pk=id, profile_owner=request.user)
+        account_profile = AccountsCreated.objects.get(pk=id, owner=request.user)
     except BrowserProfiles.DoesNotExist:
         return errorResponse('Profile not found', 400)
     

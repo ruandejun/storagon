@@ -911,7 +911,7 @@ def update_account_by_id(request):
       accounts_objs.update(**update_post['update_data'])
       account_obj = AccountsCreated.objects.get(
           pk=update_post['id'], owner=request.user)
-      if 'sock5' in update_post['update_data'] and account_obj.browser_profiles:
+      if 'socks5' in update_post['update_data'] and account_obj.browser_profiles:
           print('===update socks5')
           account_obj.browser_profiles.update(profile_socks5_details=update_post['socks5'])
       if 'proxy' in update_post['update_data'] and account_obj.browser_profiles:

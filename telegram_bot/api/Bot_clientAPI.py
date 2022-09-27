@@ -910,7 +910,7 @@ def update_account_by_id(request):
     if browser_profiles.exists():
       browser_profiles.update(**update_post['update_data'])
       browser_profile = AccountsCreated.objects.get(
-          pk=update_post['id'], profile_owner=request.user)
+          pk=update_post['id'], owner=request.user)
       account_data = AccountsCreatedSerializer(browser_profile)
     return successResponse({'data':account_data.data})
 

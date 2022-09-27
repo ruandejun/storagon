@@ -32,7 +32,7 @@ class BrowserProfilesSerializer(serializers.ModelSerializer):
 		fields = ('id', 'created', 'modified', 'created_by','profile_owner',
 				'modified_by', 'profile_name', 'profile_os',
 				'profile_browser', 'profile_version', 'profile_proxy_type',
-				'profile_proxy_details', 'profile_proxy_username',
+				'profile_proxy_details', 'profile_socks5_details', 'profile_proxy_username',
 				'profile_proxy_username','profile_path_cookies',
     			'profile_user_agent','profile_original_name',
        			'profile_resolution','profile_cpu', 'profile_canvas',

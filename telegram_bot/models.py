@@ -160,6 +160,7 @@ class BrowserProfiles(models.Model):
     profile_proxy_type = models.PositiveSmallIntegerField(choices=ProxyType.ChoiceList(), default=ProxyType.sock5,
                                             db_index=True)
     profile_proxy_details = models.CharField(verbose_name=_("profile_proxy_details"),blank=True, null=True, max_length=255, db_index=True, default='')
+    profile_socks5_details = models.CharField(verbose_name=_("profile_socks5_details"),blank=True, null=True, max_length=255, db_index=True, default='')
     profile_proxy_username = models.CharField(verbose_name=_("profile_proxy_username"),blank=True, null=True, max_length=255, db_index=True, default='')
     profile_proxy_password = models.CharField(verbose_name=_("profile_proxy_password"),blank=True, null=True, max_length=255, db_index=True, default='')
     profile_path_cookies = models.CharField(verbose_name=_("profile_path_cookies"),blank=True, null=True, max_length=255, db_index=True, default='')

@@ -14,6 +14,7 @@ urlpatterns = [
 	url(r'^get_profile_by_account_id/', get_profile_by_account_id, name='get_profile_by_account_id'),
 	url(r'^get_inject_info/', get_inject_info, name='get_inject_info'),
 	url(r'^update_profile_by_id/', update_profile_by_id, name='update_profile_by_id'),
+	url(r'^update_account_by_id/', update_account_by_id, name='update_account_by_id'),
 	url(r'^remove_profiles/', remove_profiles, name='remove_profiles'),
 	url(r'^remove_accounts/', remove_accounts, name='remove_accounts'),
 	url(r'^get_browser_profiles/', get_browser_profiles, name='get_browser_profiles'),

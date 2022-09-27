@@ -48,7 +48,7 @@ def telegram_bot(request):
 @signature_test()
 @user_passes_test(banned_check)
 def get_browser_profiles(request):
-    browser_profiles = BrowserProfiles.objects.filter(profile_owner=request.user)
+    browser_profiles = BrowserProfiles.objects.filter(profile_owner=request.user).order_by('-id')
 
     profile_data = BrowserProfilesSerializer(browser_profiles, many=True)
 
@@ -62,7 +62,7 @@ def get_browser_profiles(request):
 @signature_test()
 @user_passes_test(banned_check)
 def get_accounts_emails(request):
-    list_objects = AccountsEmails.objects.filter(owner=request.user)
+    list_objects = AccountsEmails.objects.filter(owner=request.user).order_by('-id')
 
     accounts_data = AccountsEmailsSerializer(list_objects, many=True)
 
@@ -75,7 +75,7 @@ def get_accounts_emails(request):
 @signature_test()
 @user_passes_test(banned_check)
 def get_accounts_created(request):
-    list_objects = AccountsCreated.objects.filter(owner=request.user)
+    list_objects = AccountsCreated.objects.filter(owner=request.user).order_by('-id')
 
     accounts_data = AccountsCreatedSerializer(list_objects, many=True)
 
@@ -896,6 +896,25 @@ def update_profile_by_id(request):
           pk=update_post['id'], profile_owner=request.user)
       profile_data = BrowserProfilesSerializer(browser_profile)
     return successResponse({'data':profile_data.data})
+
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
+def update_account_by_id(request):
+    if request.method == 'GET':
+        return successResponse({"ok": "Get request processed"})
+    update_post = json.loads(request.body)
+
+    browser_profiles = AccountsCreated.objects.filter(pk=update_post['id'], profile_owner=request.user)
+    if browser_profiles.exists():
+      browser_profiles.update(**update_post['update_data'])
+      browser_profile = AccountsCreated.objects.get(
+          pk=update_post['id'], profile_owner=request.user)
+      account_data = AccountsCreatedSerializer(browser_profile)
+    return successResponse({'data':account_data.data})
+
+
 
 @api_view(['GET', 'POST', 'PUT'])
 @login_required_ajax()

@@ -911,6 +911,10 @@ def update_account_by_id(request):
       browser_profiles.update(**update_post['update_data'])
       browser_profile = AccountsCreated.objects.get(
           pk=update_post['id'], owner=request.user)
+      if 'sock5' in update_post and browser_profile.browser_profiles:
+          browser_profile.browser_profiles.update(profile_socks5_details=update_post['socks5'])
+      if 'proxy' in update_post and browser_profile.browser_profiles:
+          browser_profile.browser_profiles.update(profile_proxy_details=update_post['proxy'])
       account_data = AccountsCreatedSerializer(browser_profile)
     return successResponse({'data':account_data.data})
 

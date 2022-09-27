@@ -906,16 +906,16 @@ def update_account_by_id(request):
         return successResponse({"ok": "Get request processed"})
     update_post = json.loads(request.body)
 
-    browser_profiles = AccountsCreated.objects.filter(pk=update_post['id'], owner=request.user)
-    if browser_profiles.exists():
-      browser_profiles.update(**update_post['update_data'])
-      browser_profile = AccountsCreated.objects.get(
+    accounts_objs = AccountsCreated.objects.filter(pk=update_post['id'], owner=request.user)
+    if accounts_objs.exists():
+      accounts_objs.update(**update_post['update_data'])
+      account_obj = AccountsCreated.objects.get(
           pk=update_post['id'], owner=request.user)
-      if 'sock5' in update_post['update_data'] and browser_profile.browser_profiles:
-          browser_profile.browser_profiles.update(profile_socks5_details=update_post['socks5'])
-      if 'proxy' in update_post['update_data'] and browser_profile.browser_profiles:
-          browser_profile.browser_profiles.update(profile_proxy_details=update_post['proxy'])
-      account_data = AccountsCreatedSerializer(browser_profile)
+      if 'sock5' in update_post['update_data'] and account_obj.browser_profiles:
+          account_obj.browser_profiles.update(profile_socks5_details=update_post['socks5'])
+      if 'proxy' in update_post['update_data'] and account_obj.browser_profiles:
+          account_obj.browser_profiles.update(profile_proxy_details=update_post['proxy'])
+      account_data = AccountsCreatedSerializer(account_obj)
     return successResponse({'data':account_data.data})
 
 

@@ -906,7 +906,7 @@ def update_account_by_id(request):
         return successResponse({"ok": "Get request processed"})
     update_post = json.loads(request.body)
 
-    browser_profiles = AccountsCreated.objects.filter(pk=update_post['id'], profile_owner=request.user)
+    browser_profiles = AccountsCreated.objects.filter(pk=update_post['id'], owner=request.user)
     if browser_profiles.exists():
       browser_profiles.update(**update_post['update_data'])
       browser_profile = AccountsCreated.objects.get(

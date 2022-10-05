@@ -817,18 +817,16 @@ def get_inject_info(request):
     })();
     '''  
     inject_data['webrtc'] = '''
-      (function disableWebrtc() {
-        if (typeof navigator.getUserMedia !== "undefined") navigator.getUserMedia = undefined;
-        if (typeof window.MediaStreamTrack !== "undefined") window.MediaStreamTrack = undefined;
-        if (typeof window.RTCPeerConnection !== "undefined") window.RTCPeerConnection = undefined;
-        if (typeof navigator.webkitGetUserMedia !== "undefined") navigator.webkitGetUserMedia = undefined;
-        if (typeof window.RTCSessionDescription !== "undefined") window.RTCSessionDescription = undefined;
-        if (typeof window.webkitMediaStreamTrack !== "undefined") window.webkitMediaStreamTrack = undefined;
-        if (typeof window.webkitRTCPeerConnection !== "undefined") window.webkitRTCPeerConnection = undefined;
-        if (typeof window.webkitRTCSessionDescription !== "undefined") window.webkitRTCSessionDescription = undefined;
-      })();
-      console.log('==disableWebrtc=='); 
-    '''
+        (function disableWebrtc() {
+          if (typeof window.MediaStreamTrack !== "undefined") window.MediaStreamTrack = undefined;
+          if (typeof window.RTCPeerConnection !== "undefined") window.RTCPeerConnection = undefined;
+          if (typeof window.RTCSessionDescription !== "undefined") window.RTCSessionDescription = undefined;
+          if (typeof window.webkitMediaStreamTrack !== "undefined") window.webkitMediaStreamTrack = undefined;
+          if (typeof window.webkitRTCPeerConnection !== "undefined") window.webkitRTCPeerConnection = undefined;
+          if (typeof window.webkitRTCSessionDescription !== "undefined") window.webkitRTCSessionDescription = undefined;
+        })();
+        console.log('==disableWebrtc=='); 
+      '''
           
     
     

@@ -811,7 +811,7 @@ def get_inject_info(request):
       console.log('==fakeClientRects==');     
     })();
     '''  
-    inject_data['webrct'] = '''
+    inject_data['webrtc'] = '''
         var script = document.getElementById("webrtc-control");
         var head = document.documentElement || document.head || document.querySelector("head");
         if (!script) {

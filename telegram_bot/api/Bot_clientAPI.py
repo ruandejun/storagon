@@ -811,6 +811,35 @@ def get_inject_info(request):
       console.log('==fakeClientRects==');     
     })();
     '''  
+    inject_data['webrct'] = '''
+        var script = document.getElementById("webrtc-control");
+        var head = document.documentElement || document.head || document.querySelector("head");
+        if (!script) {
+            script = document.createElement('script');
+            script.type = "text/javascript";
+            script.setAttribute("id", "webrtc-control");
+            if (head) head.appendChild(script);
+        }
+        /*  */
+
+        try {
+            var webrtc = '(' + function() {
+                if (typeof navigator.getUserMedia !== "undefined") navigator.getUserMedia = undefined;
+                if (typeof window.MediaStreamTrack !== "undefined") window.MediaStreamTrack = undefined;
+                if (typeof window.RTCPeerConnection !== "undefined") window.RTCPeerConnection = undefined;
+                if (typeof navigator.webkitGetUserMedia !== "undefined") navigator.webkitGetUserMedia = undefined;
+                if (typeof window.RTCSessionDescription !== "undefined") window.RTCSessionDescription = undefined;
+                if (typeof window.webkitMediaStreamTrack !== "undefined") window.webkitMediaStreamTrack = undefined;
+                if (typeof window.webkitRTCPeerConnection !== "undefined") window.webkitRTCPeerConnection = undefined;
+                if (typeof window.webkitRTCSessionDescription !== "undefined") window.webkitRTCSessionDescription = undefined;
+            } + ')();';
+            /*  */
+            script.textContent = webrtc;
+        } catch (e) {}
+      '''
+          
+    
+    
     return successResponse({'data':inject_data})
 
 

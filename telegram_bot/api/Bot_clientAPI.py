@@ -134,6 +134,11 @@ def get_accounts_data(request):
 @user_passes_test(banned_check)
 def get_inject_info(request):
     inject_data = {}
+    inject_data['UserAgent'] = '''
+      (function fakeUserAgent() {
+        Object.defineProperty(navigator, 'userAgent', {   value: '{{UserAgent}}',   configurable: true });
+      })();
+      '''
     inject_data['audio'] = '''
     (function fakeAudioFinger() {
       const context = {

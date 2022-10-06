@@ -4,6 +4,7 @@
 #  Bot_ClientAPI.py
 
 import profile
+from time import time
 from django.core import serializers
 from storagon.tool import *
 from servermain.models import User, UserProfile
@@ -15,7 +16,7 @@ from telegram_bot.models import *
 from telegram_bot.api.TelegramBot_RestfulApi import *
 import random, math
 from random import choice
-
+from django.utils import timezone
 @api_view(['GET', 'POST', 'PUT'])
 def telegram_bot(request):
     if request.method == 'GET':
@@ -1039,6 +1040,8 @@ def get_profile_for_auto_views(request):
         print('account_objects', len(account_objects))
         if account_objects.exists():
             account_obj = account_objects.earliest('auto_viewed')
+            account_obj.auto_viewed = timezone.now()
+            account_obj.save()
             profile_data = BrowserProfilesSerializer(account_obj.browser_profiles)
             data_show['data'] = profile_data.data
     return successResponse(data_show)

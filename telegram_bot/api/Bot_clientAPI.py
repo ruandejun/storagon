@@ -1046,6 +1046,216 @@ def get_profile_for_auto_views(request):
             data_show['data'] = profile_data.data
     return successResponse(data_show)
 
+
+def create_random_profile():
+    profile_dict = {}
+
+    #GEO
+
+    profile_dict['profile_geo'] = 2
+
+    #webrtc
+
+    profile_dict['profile_webrtc'] = 2
+    #time_zone
+
+    profile_dict['profile_time_zone'] = 2
+
+    #proxy
+    profile_dict['profile_socks5_details'] = sock5
+    profile_dict['profile_proxy_details'] = proxy
+    profile_dict['profile_proxy_type'] = 2
+    #audio
+
+    list_length = 44100
+    listAudioContent = {}
+    i = 0
+    while i < list_length:
+        index = int(random.uniform(0.01, 0.99)*i)
+        listAudioContent[index] = round(
+            random.uniform(0.01, 0.99) * 0.0000001, 15)
+        i += 100
+    audio_random1 = round(random.uniform(0.01, 0.99), 15)
+    audio_random2 = round(random.uniform(0.01, 0.99), 15)
+    audio_dict = {}
+    audio_dict['audio_content'] = listAudioContent
+    audio_dict['audio_random1'] = audio_random1
+    audio_dict['audio_random2'] = audio_random2
+    profile_dict['profile_audio'] = json.dumps(audio_dict)
+    #canvas
+
+    list_canvas = [-3, -2, -1, 0, 1, 2, 3]
+    rsalt_content = list_canvas[random.randint(0, len(list_canvas) - 1)]
+    gsalt_content = list_canvas[random.randint(0, len(list_canvas) - 1)]
+    bsalt_content = list_canvas[random.randint(0, len(list_canvas) - 1)]
+    asalt_content = list_canvas[random.randint(0, len(list_canvas) - 1)]
+    canvas_shift = {'r': rsalt_content, 'g': gsalt_content,
+                    'b': bsalt_content, 'a': asalt_content}
+    profile_dict['profile_canvas'] = json.dumps(canvas_shift)
+
+    #webgl
+    list_floats = [math.pow(2, 0), math.pow(2, 10), math.pow(
+        2, 11), math.pow(2, 12), math.pow(2, 13)]
+    list_int = [math.pow(2, 13), math.pow(2, 14), math.pow(2, 15)]
+    int_3386 = int(list_int[random.randint(0, len(list_int) - 1)])
+    list_1234 = [math.pow(2, 1), math.pow(
+        2, 2), math.pow(2, 3), math.pow(2, 4)]
+    list_1415 = [math.pow(2, 14), math.pow(2, 15)]
+    list_1213 = [math.pow(2, 12), math.pow(2, 13)]
+    list_45678 = [math.pow(2, 4), math.pow(2, 5), math.pow(
+        2, 6), math.pow(2, 7), math.pow(2, 8)]
+    list_10111213 = [math.pow(2, 10), math.pow(
+        2, 11), math.pow(2, 12), math.pow(2, 13)]
+    webgl_replace = {}
+    webgl_replace['36347'] = int(
+        list_1213[random.randint(0, len(list_1213) - 1)])
+    webgl_replace['3379'] = int(
+        list_1415[random.randint(0, len(list_1415) - 1)])
+    webgl_replace['34076'] = int(
+        list_1415[random.randint(0, len(list_1415) - 1)])
+    webgl_replace['34024'] = int(
+        list_1415[random.randint(0, len(list_1415) - 1)])
+    webgl_replace['35661'] = int(
+        list_45678[random.randint(0, len(list_45678) - 1)])
+    webgl_replace['36349'] = int(
+        list_10111213[random.randint(0, len(list_10111213) - 1)])
+    webgl_replace['3413'] = int(
+        list_1234[random.randint(0, len(list_1234) - 1)])
+    webgl_replace['3412'] = int(
+        list_1234[random.randint(0, len(list_1234) - 1)])
+    webgl_replace['3411'] = int(
+        list_1234[random.randint(0, len(list_1234) - 1)])
+    webgl_replace['3410'] = int(
+        list_1234[random.randint(0, len(list_1234) - 1)])
+    webgl_replace['35660'] = int(
+        list_1234[random.randint(0, len(list_1234) - 1)])
+    webgl_replace['34047'] = int(
+        list_1234[random.randint(0, len(list_1234) - 1)])
+    webgl_replace['34930'] = int(
+        list_1234[random.randint(0, len(list_1234) - 1)])
+    webgl_replace['34921'] = int(
+        list_1234[random.randint(0, len(list_1234) - 1)])
+    webgl_replace['3386'] = [int_3386, int_3386]
+    webgl_replace['33901'] = [round(random.uniform(
+        0.01, 1), 15), list_floats[random.randint(0, len(list_floats) - 1)]]
+    webgl_replace['33902'] = [round(random.uniform(
+        0.01, 1), 15), list_floats[random.randint(0, len(list_floats) - 1)]]
+    webgl_replace['34324'] = round(random.uniform(0.01, 0.99), 15)
+    webgl_replace['35376'] = round(random.uniform(0.01, 0.99), 15)
+    webgl_replace['35377'] = round(random.uniform(0.01, 0.99), 15)
+    webgl_replace['35379'] = round(random.uniform(0.01, 0.99), 15)
+    webgl_replace['35658'] = round(random.uniform(0.01, 0.99), 15)
+    webgl_replace['gl_index'] = round(random.uniform(0.01, 0.99), 15)
+    webgl_replace['gl_noise'] = round(random.uniform(0.01, 0.99), 15)
+    # list_vgas[random.randint(0, len(list_vgas) - 1)]
+    list_vgas = ['ANGLE (NVIDIA Quadro 2000M Direct3D11 vs_5_0 ps_5_0)','ANGLE (NVIDIA Quadro K420 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA Quadro 2000M Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA Quadro K2000M Direct3D11 vs_5_0 ps_5_0)','ANGLE (Intel(R) HD Graphics Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) HD Graphics Family Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (ATI Radeon HD 3800 Series Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) HD Graphics 4000 Direct3D11 vs_5_0 ps_5_0)','ANGLE (Intel(R) HD Graphics 4000 Direct3D11 vs_5_0 ps_5_0)','ANGLE (AMD Radeon R9 200 Series Direct3D11 vs_5_0 ps_5_0)','ANGLE (Intel(R) HD Graphics Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) HD Graphics Family Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) HD Graphics Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) HD Graphics Family Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) HD Graphics 4000 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) HD Graphics 3000 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Mobile Intel(R) 4 Series Express Chipset Family Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) G33/G31 Express Chipset Family Direct3D9Ex vs_0_0 ps_2_0)','ANGLE (Intel(R) Graphics Media Accelerator 3150 Direct3D9Ex vs_0_0 ps_2_0)','ANGLE (Intel(R) G41 Express Chipset Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce 6150SE nForce 430 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) HD Graphics 4000)','ANGLE (Mobile Intel(R) 965 Express Chipset Family Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) HD Graphics Family)','ANGLE (NVIDIA GeForce GTX 760 Direct3D11 vs_5_0 ps_5_0)','ANGLE (NVIDIA GeForce GTX 760 Direct3D11 vs_5_0 ps_5_0)','ANGLE (NVIDIA GeForce GTX 760 Direct3D11 vs_5_0 ps_5_0)','ANGLE (AMD Radeon HD 6310 Graphics Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) Graphics Media Accelerator 3600 Series Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) G33/G31 Express Chipset Family Direct3D9 vs_0_0 ps_2_0)','ANGLE (AMD Radeon HD 6320 Graphics Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) G33/G31 Express Chipset Family (Microsoft Corporation - WDDM 1.0) Direct3D9Ex vs_0_0 ps_2_0)','ANGLE (Intel(R) G41 Express Chipset)','ANGLE (ATI Mobility Radeon HD 5470 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) Q45/Q43 Express Chipset Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce 310M Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) G41 Express Chipset Direct3D9 vs_3_0 ps_3_0)','ANGLE (Mobile Intel(R) 45 Express Chipset Family (Microsoft Corporation - WDDM 1.1) Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce GT 440 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (ATI Radeon HD 4300/4500 Series Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (AMD Radeon HD 7310 Graphics Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) HD Graphics)','ANGLE (Intel(R) 4 Series Internal Chipset Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (AMD Radeon(TM) HD 6480G Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (ATI Radeon HD 3200 Graphics Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (AMD Radeon HD 7800 Series Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) G41 Express Chipset (Microsoft Corporation - WDDM 1.1) Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce 210 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce GT 630 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (AMD Radeon HD 7340 Graphics Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) 82945G Express Chipset Family Direct3D9 vs_0_0 ps_2_0)','ANGLE (NVIDIA GeForce GT 430 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce 7025 / NVIDIA nForce 630a Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) Q35 Express Chipset Family Direct3D9Ex vs_0_0 ps_2_0)','ANGLE (Intel(R) HD Graphics 4600 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (AMD Radeon HD 7520G Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (AMD 760G (Microsoft Corporation WDDM 1.1) Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce GT 220 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce 9500 GT Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) HD Graphics Family Direct3D9 vs_3_0 ps_3_0)','ANGLE (Intel(R) Graphics Media Accelerator HD Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce 9800 GT Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) Q965/Q963 Express Chipset Family (Microsoft Corporation - WDDM 1.0) Direct3D9Ex vs_0_0 ps_2_0)','ANGLE (NVIDIA GeForce GTX 550 Ti Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) Q965/Q963 Express Chipset Family Direct3D9Ex vs_0_0 ps_2_0)','ANGLE (AMD M880G with ATI Mobility Radeon HD 4250 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce GTX 650 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (ATI Mobility Radeon HD 5650 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (ATI Radeon HD 4200 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (AMD Radeon HD 7700 Series Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) G33/G31 Express Chipset Family)','ANGLE (Intel(R) 82945G Express Chipset Family Direct3D9Ex vs_0_0 ps_2_0)','ANGLE (SiS Mirage 3 Graphics Direct3D9Ex vs_2_0 ps_2_0)','ANGLE (NVIDIA GeForce GT 430)','ANGLE (AMD RADEON HD 6450 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (ATI Radeon 3000 Graphics Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) 4 Series Internal Chipset Direct3D9 vs_3_0 ps_3_0)','ANGLE (Intel(R) Q35 Express Chipset Family (Microsoft Corporation - WDDM 1.0) Direct3D9Ex vs_0_0 ps_2_0)','ANGLE (NVIDIA GeForce GT 220 Direct3D9 vs_3_0 ps_3_0)','ANGLE (AMD Radeon HD 7640G Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (AMD 760G Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (AMD Radeon HD 6450 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce GT 640 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce 9200 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce GT 610 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (AMD Radeon HD 6290 Graphics Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (ATI Mobility Radeon HD 4250 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce 8600 GT Direct3D9 vs_3_0 ps_3_0)','ANGLE (ATI Radeon HD 5570 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (AMD Radeon HD 6800 Series Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) G45/G43 Express Chipset Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (ATI Radeon HD 4600 Series Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA Quadro NVS 160M Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) HD Graphics 3000)','ANGLE (NVIDIA GeForce G100)','ANGLE (AMD Radeon HD 8610G + 8500M Dual Graphics Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Mobile Intel(R) 4 Series Express Chipset Family Direct3D9 vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce 7025 / NVIDIA nForce 630a (Microsoft Corporation - WDDM) Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) Q965/Q963 Express Chipset Family Direct3D9 vs_0_0 ps_2_0)','ANGLE (AMD RADEON HD 6350 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (ATI Radeon HD 5450 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce 9500 GT)','ANGLE (AMD Radeon HD 6500M/5600/5700 Series Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Mobile Intel(R) 965 Express Chipset Family)','ANGLE (NVIDIA GeForce 8400 GS Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) HD Graphics Direct3D9 vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce GTX 560 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce GT 620 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce GTX 660 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (AMD Radeon(TM) HD 6520G Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce GT 240 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (AMD Radeon HD 8240 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA Quadro NVS 140M)','ANGLE (Intel(R) Q35 Express Chipset Family Direct3D9 vs_0_0 ps_2_0)']
+    webgl_replace['37446'] = list_vgas[random.randint(0, len(list_vgas) - 1)]
+    list_es = ["WebGL 2.0 (OpenGL ES 3.0 Chromium)"]
+    list_glsl = ["WebGL GLSL ES (OpenGL Chromium)","WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)"]
+    webgl_replace['7938'] = list_es[random.randint(0, len(list_es) - 1)]
+    webgl_replace['35724'] = list_glsl[random.randint(0, len(list_glsl) - 1)]
+    gpu_vendor = "Google Inc. (ATI Technologies Inc.)"
+    webgl_replace['37445'] = gpu_vendor 
+    profile_dict['profile_webgl'] = json.dumps(webgl_replace)
+    profile_dict['profile_name'] = ''
+    profile_dict['profile_user_agent'] = ''
+    list_os = ['Window', 'Mac OS X', 'Linux']
+    comboBoxOS = list_os[random.randint(0, len(list_os)-1)]
+    AgentOperationOS = ''
+    if comboBoxOS == 'Window':
+        AgentOperationOS = 'Windows NT 10.0; Win64; x64'
+    elif comboBoxOS == 'Mac OS X':
+      AgentOperationOS = 'Macintosh; Intel Mac OS X 12_5_1'
+    elif comboBoxOS == 'Linux':
+      AgentOperationOS = 'X11; Linux x86_64'
+    else:
+      AgentOperationOS = "X11; CrOS x86_64 14909.100.0"
+      
+    self.list_cpu = ["2","4","6","8","10"]
+    self.list_screen_resolution = ['5120x2880','4500x3000','4480x2520','3840x2160','2880x1800','2736x1824','2732x2048','2560x1600','2560x1440','1920x1200','1920x1080','1280x720']
+    
+    self.list_chrome_version = ["105.0.5195.125","105.0.0.0","105.0.5195.136","104.0.5112.79","104.0.0.0"]
+
+              
+
+    Agentversion = self.list_chrome_version[random.randint(
+        0, len(self.list_chrome_version)-1)]
+
+    self.user_header_set = "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36" % (
+                    AgentOperationOS, Agentversion)
+    
+    profile_resolution = self.list_screen_resolution[random.randint(
+        0, len(self.list_screen_resolution)-1)]
+    profile_cpu = self.list_cpu[random.randint(
+        0, len(self.list_cpu)-1)]
+    
+    profile_dict['profile_user_agent'] = self.user_header_set
+    profile_dict['profile_os'] = comboBoxOS
+    profile_dict['profile_resolution'] = profile_resolution
+    profile_dict['profile_cpu'] = profile_cpu
+    if sock5:
+        profile_dict['profile_proxy_details'] = sock5
+    elif proxy:
+        profile_dict['profile_proxy_details'] = proxy
+    else:
+        profile_dict['profile_proxy_details'] = ''
+
+    profile_dict['profile_rects'] = 'Noise'
+    profile_dict['profile_font'] = 'Noise'
+    profile_dict['profile_start_url'] = ''
+    return profile_dict
+
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
+def update_new_profiles(request):
+    if request.method == 'GET':
+        return successResponse({"ok": "Get request processed"})
+    remove_post = json.loads(request.body)
+    if remove_post['list_id'] == 'all':
+        list_objects = BrowserProfiles.objects.filter(
+            owner=request.user)
+    else:
+        list_objects = BrowserProfiles.objects.filter(
+            pk__in=remove_post['list_id'], owner=request.user)
+
+    if list_objects.exists():
+        print('===update===', len(list_objects))
+        i = 0
+        for line_profile in list_objects:
+            profile_dict = create_random_profile()
+            line_profile.update(**profile_dict)
+            i+=1
+
+    return successResponse()
+
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
+def accounts_update_new_profiles(request):
+    if request.method == 'GET':
+        return successResponse({"ok": "Get request processed"})
+    remove_post = json.loads(request.body)
+    if remove_post['list_id'] == 'all':
+        list_objects = AccountsCreated.objects.filter(
+            owner=request.user)
+    else:
+        print('remove_post==', remove_post['list_id'])
+        list_objects = AccountsCreated.objects.filter(
+            pk__in=remove_post['list_id'], owner=request.user)
+
+    if list_objects.exists():
+        print('===update===', len(list_objects))
+        i = 0
+        for line_account in list_objects:
+            profile_dict = create_random_profile()
+            line_account.browser_profiles.update(**profile_dict)
+            i+=1
+    return successResponse()
+
+
 @api_view(['GET', 'POST', 'PUT'])
 @login_required_ajax()
 @signature_test()

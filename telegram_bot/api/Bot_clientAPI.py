@@ -1225,7 +1225,8 @@ def update_new_profiles(request):
         i = 0
         for line_profile in list_objects:
             profile_dict = create_random_profile()
-            line_profile.update(**profile_dict)
+            browser_profiles_objs = BrowserProfiles.objects.filter(pk=line_profile.id)
+            browser_profiles_objs.update(**profile_dict)
             i+=1
 
     return successResponse()
@@ -1251,7 +1252,8 @@ def accounts_update_new_profiles(request):
         i = 0
         for line_account in list_objects:
             profile_dict = create_random_profile()
-            line_account.browser_profiles.update(**profile_dict)
+            browser_profiles_objs = BrowserProfiles.objects.filter(pk=line_account.browser_profiles.id)
+            browser_profiles_objs.update(**profile_dict)
             i+=1
     return successResponse()
 

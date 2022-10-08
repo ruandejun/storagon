@@ -1157,8 +1157,6 @@ def create_random_profile():
     gpu_vendor = "Google Inc. (ATI Technologies Inc.)"
     webgl_replace['37445'] = gpu_vendor 
     profile_dict['profile_webgl'] = json.dumps(webgl_replace)
-    profile_dict['profile_name'] = ''
-    profile_dict['profile_user_agent'] = ''
     list_os = ['Window', 'Mac OS X', 'Linux']
     comboBoxOS = list_os[random.randint(0, len(list_os)-1)]
     AgentOperationOS = ''

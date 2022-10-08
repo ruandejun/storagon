@@ -1062,9 +1062,9 @@ def create_random_profile():
     profile_dict['profile_time_zone'] = 2
 
     #proxy
-    profile_dict['profile_socks5_details'] = sock5
-    profile_dict['profile_proxy_details'] = proxy
-    profile_dict['profile_proxy_type'] = 2
+    # profile_dict['profile_socks5_details'] = sock5
+    # profile_dict['profile_proxy_details'] = proxy
+    # profile_dict['profile_proxy_type'] = 2
     #audio
 
     list_length = 44100
@@ -1171,34 +1171,34 @@ def create_random_profile():
     else:
       AgentOperationOS = "X11; CrOS x86_64 14909.100.0"
       
-    self.list_cpu = ["2","4","6","8","10"]
-    self.list_screen_resolution = ['5120x2880','4500x3000','4480x2520','3840x2160','2880x1800','2736x1824','2732x2048','2560x1600','2560x1440','1920x1200','1920x1080','1280x720']
+    list_cpu = ["2","4","6","8","10"]
+    list_screen_resolution = ['5120x2880','4500x3000','4480x2520','3840x2160','2880x1800','2736x1824','2732x2048','2560x1600','2560x1440','1920x1200','1920x1080','1280x720']
     
-    self.list_chrome_version = ["105.0.5195.125","105.0.0.0","105.0.5195.136","104.0.5112.79","104.0.0.0"]
+    list_chrome_version = ["105.0.5195.125","105.0.0.0","105.0.5195.136","104.0.5112.79","104.0.0.0"]
 
               
 
-    Agentversion = self.list_chrome_version[random.randint(
-        0, len(self.list_chrome_version)-1)]
+    Agentversion = list_chrome_version[random.randint(
+        0, len(list_chrome_version)-1)]
 
-    self.user_header_set = "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36" % (
+    user_header_set = "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36" % (
                     AgentOperationOS, Agentversion)
     
-    profile_resolution = self.list_screen_resolution[random.randint(
-        0, len(self.list_screen_resolution)-1)]
-    profile_cpu = self.list_cpu[random.randint(
-        0, len(self.list_cpu)-1)]
+    profile_resolution = list_screen_resolution[random.randint(
+        0, len(list_screen_resolution)-1)]
+    profile_cpu = list_cpu[random.randint(
+        0, len(list_cpu)-1)]
     
-    profile_dict['profile_user_agent'] = self.user_header_set
+    profile_dict['profile_user_agent'] = user_header_set
     profile_dict['profile_os'] = comboBoxOS
     profile_dict['profile_resolution'] = profile_resolution
     profile_dict['profile_cpu'] = profile_cpu
-    if sock5:
-        profile_dict['profile_proxy_details'] = sock5
-    elif proxy:
-        profile_dict['profile_proxy_details'] = proxy
-    else:
-        profile_dict['profile_proxy_details'] = ''
+    # if sock5:
+    #     profile_dict['profile_proxy_details'] = sock5
+    # elif proxy:
+    #     profile_dict['profile_proxy_details'] = proxy
+    # else:
+    #     profile_dict['profile_proxy_details'] = ''
 
     profile_dict['profile_rects'] = 'Noise'
     profile_dict['profile_font'] = 'Noise'

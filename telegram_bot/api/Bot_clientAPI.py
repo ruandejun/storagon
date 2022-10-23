@@ -135,6 +135,73 @@ def get_accounts_data(request):
 @user_passes_test(banned_check)
 def get_inject_info(request):
     inject_data = {}
+    inject_data['resolution'] = '''
+      (function fakeScreenResolution(){
+        "use strict";
+        /**
+        * Define property on an object.
+        */
+        var defineProp = function(obj, prop, val) {
+          Object.defineProperty(obj, prop, {
+            enumerable: true,
+            configurable: true,
+            value: val
+          });
+        };
+        /**
+        * Return screen attributes based on the most commons ones.
+        */
+        var getScreenAttrs = function() {
+          return {
+            width: {{screen_width}},
+            height: {{screen_height}},
+            colorDepth: 24,
+            pixelDepth: 24
+          };
+        };
+        /**
+        * Spoof screen resolution.
+        */
+        var spoofScreenResolution = function() {
+          var screen = getScreenAttrs();
+          defineProp(window.screen, "width", screen.width);
+          defineProp(window.screen, "height", screen.height);
+          defineProp(window.screen, "availWidth", screen.width);
+          defineProp(window.screen, "availHeight", screen.height);
+          defineProp(window.screen, "top", 0);
+          defineProp(window.screen, "left", 0);
+          defineProp(window.screen, "availTop", 0);
+          defineProp(window.screen, "availLeft", 0);
+          defineProp(window.screen, "colorDepth", screen.colorDepth);
+          defineProp(window.screen, "pixelDepth", screen.pixelDepth);
+          /**
+          * @todo Implement window.innerHeight, window.innerWidth, etc...
+          * @see https://developer.mozilla.org/en-US/docs/Web/API/Screen
+          */
+        };
+      
+        /**
+        * Initialize script
+        */
+        var init = function() {
+          // LET SPOOF THAT FUCKIN' RES/COLOR DEPTH
+          spoofScreenResolution();
+        };
+        init();
+      })();
+
+
+    '''
+    inject_data['vendor'] = '''
+      (function fakeVendor() {
+      Object.defineProperty(navigator, 'vendor', {   value: '{{vendor}}',   configurable: true });
+    })();     
+    '''
+    inject_data['MaxTouchPoints'] = '''
+    (function fakeMaxTouchPoints() {
+      Object.defineProperty(navigator, 'maxTouchPoints', {   value: {{MaxTouchPoints}},   configurable: true });
+    })();
+    '''
     inject_data['UserAgent'] = '''
       (function fakeUserAgent() {
         Object.defineProperty(navigator, 'userAgent', {   value: '{{UserAgent}}',   configurable: true });
@@ -1047,7 +1114,7 @@ def get_profile_for_auto_views(request):
     return successResponse(data_show)
 
 
-def create_random_profile():
+def create_random_profile(self, sock5='', proxy='', phoneOs=False):
     profile_dict = {}
 
     #GEO
@@ -1062,9 +1129,9 @@ def create_random_profile():
     profile_dict['profile_time_zone'] = 2
 
     #proxy
-    # profile_dict['profile_socks5_details'] = sock5
-    # profile_dict['profile_proxy_details'] = proxy
-    # profile_dict['profile_proxy_type'] = 2
+    profile_dict['profile_socks5_details'] = sock5
+    profile_dict['profile_proxy_details'] = proxy
+    profile_dict['profile_proxy_type'] = 2
     #audio
 
     list_length = 44100
@@ -1149,15 +1216,23 @@ def create_random_profile():
     webgl_replace['gl_noise'] = round(random.uniform(0.01, 0.99), 15)
     # list_vgas[random.randint(0, len(list_vgas) - 1)]
     list_vgas = ['ANGLE (NVIDIA Quadro 2000M Direct3D11 vs_5_0 ps_5_0)','ANGLE (NVIDIA Quadro K420 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA Quadro 2000M Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA Quadro K2000M Direct3D11 vs_5_0 ps_5_0)','ANGLE (Intel(R) HD Graphics Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) HD Graphics Family Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (ATI Radeon HD 3800 Series Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) HD Graphics 4000 Direct3D11 vs_5_0 ps_5_0)','ANGLE (Intel(R) HD Graphics 4000 Direct3D11 vs_5_0 ps_5_0)','ANGLE (AMD Radeon R9 200 Series Direct3D11 vs_5_0 ps_5_0)','ANGLE (Intel(R) HD Graphics Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) HD Graphics Family Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) HD Graphics Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) HD Graphics Family Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) HD Graphics 4000 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) HD Graphics 3000 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Mobile Intel(R) 4 Series Express Chipset Family Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) G33/G31 Express Chipset Family Direct3D9Ex vs_0_0 ps_2_0)','ANGLE (Intel(R) Graphics Media Accelerator 3150 Direct3D9Ex vs_0_0 ps_2_0)','ANGLE (Intel(R) G41 Express Chipset Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce 6150SE nForce 430 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) HD Graphics 4000)','ANGLE (Mobile Intel(R) 965 Express Chipset Family Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) HD Graphics Family)','ANGLE (NVIDIA GeForce GTX 760 Direct3D11 vs_5_0 ps_5_0)','ANGLE (NVIDIA GeForce GTX 760 Direct3D11 vs_5_0 ps_5_0)','ANGLE (NVIDIA GeForce GTX 760 Direct3D11 vs_5_0 ps_5_0)','ANGLE (AMD Radeon HD 6310 Graphics Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) Graphics Media Accelerator 3600 Series Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) G33/G31 Express Chipset Family Direct3D9 vs_0_0 ps_2_0)','ANGLE (AMD Radeon HD 6320 Graphics Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) G33/G31 Express Chipset Family (Microsoft Corporation - WDDM 1.0) Direct3D9Ex vs_0_0 ps_2_0)','ANGLE (Intel(R) G41 Express Chipset)','ANGLE (ATI Mobility Radeon HD 5470 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) Q45/Q43 Express Chipset Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce 310M Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) G41 Express Chipset Direct3D9 vs_3_0 ps_3_0)','ANGLE (Mobile Intel(R) 45 Express Chipset Family (Microsoft Corporation - WDDM 1.1) Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce GT 440 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (ATI Radeon HD 4300/4500 Series Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (AMD Radeon HD 7310 Graphics Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) HD Graphics)','ANGLE (Intel(R) 4 Series Internal Chipset Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (AMD Radeon(TM) HD 6480G Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (ATI Radeon HD 3200 Graphics Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (AMD Radeon HD 7800 Series Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) G41 Express Chipset (Microsoft Corporation - WDDM 1.1) Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce 210 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce GT 630 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (AMD Radeon HD 7340 Graphics Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) 82945G Express Chipset Family Direct3D9 vs_0_0 ps_2_0)','ANGLE (NVIDIA GeForce GT 430 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce 7025 / NVIDIA nForce 630a Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) Q35 Express Chipset Family Direct3D9Ex vs_0_0 ps_2_0)','ANGLE (Intel(R) HD Graphics 4600 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (AMD Radeon HD 7520G Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (AMD 760G (Microsoft Corporation WDDM 1.1) Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce GT 220 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce 9500 GT Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) HD Graphics Family Direct3D9 vs_3_0 ps_3_0)','ANGLE (Intel(R) Graphics Media Accelerator HD Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce 9800 GT Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) Q965/Q963 Express Chipset Family (Microsoft Corporation - WDDM 1.0) Direct3D9Ex vs_0_0 ps_2_0)','ANGLE (NVIDIA GeForce GTX 550 Ti Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) Q965/Q963 Express Chipset Family Direct3D9Ex vs_0_0 ps_2_0)','ANGLE (AMD M880G with ATI Mobility Radeon HD 4250 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce GTX 650 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (ATI Mobility Radeon HD 5650 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (ATI Radeon HD 4200 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (AMD Radeon HD 7700 Series Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) G33/G31 Express Chipset Family)','ANGLE (Intel(R) 82945G Express Chipset Family Direct3D9Ex vs_0_0 ps_2_0)','ANGLE (SiS Mirage 3 Graphics Direct3D9Ex vs_2_0 ps_2_0)','ANGLE (NVIDIA GeForce GT 430)','ANGLE (AMD RADEON HD 6450 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (ATI Radeon 3000 Graphics Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) 4 Series Internal Chipset Direct3D9 vs_3_0 ps_3_0)','ANGLE (Intel(R) Q35 Express Chipset Family (Microsoft Corporation - WDDM 1.0) Direct3D9Ex vs_0_0 ps_2_0)','ANGLE (NVIDIA GeForce GT 220 Direct3D9 vs_3_0 ps_3_0)','ANGLE (AMD Radeon HD 7640G Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (AMD 760G Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (AMD Radeon HD 6450 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce GT 640 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce 9200 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce GT 610 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (AMD Radeon HD 6290 Graphics Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (ATI Mobility Radeon HD 4250 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce 8600 GT Direct3D9 vs_3_0 ps_3_0)','ANGLE (ATI Radeon HD 5570 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (AMD Radeon HD 6800 Series Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) G45/G43 Express Chipset Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (ATI Radeon HD 4600 Series Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA Quadro NVS 160M Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) HD Graphics 3000)','ANGLE (NVIDIA GeForce G100)','ANGLE (AMD Radeon HD 8610G + 8500M Dual Graphics Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Mobile Intel(R) 4 Series Express Chipset Family Direct3D9 vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce 7025 / NVIDIA nForce 630a (Microsoft Corporation - WDDM) Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) Q965/Q963 Express Chipset Family Direct3D9 vs_0_0 ps_2_0)','ANGLE (AMD RADEON HD 6350 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (ATI Radeon HD 5450 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce 9500 GT)','ANGLE (AMD Radeon HD 6500M/5600/5700 Series Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Mobile Intel(R) 965 Express Chipset Family)','ANGLE (NVIDIA GeForce 8400 GS Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (Intel(R) HD Graphics Direct3D9 vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce GTX 560 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce GT 620 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce GTX 660 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (AMD Radeon(TM) HD 6520G Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA GeForce GT 240 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (AMD Radeon HD 8240 Direct3D9Ex vs_3_0 ps_3_0)','ANGLE (NVIDIA Quadro NVS 140M)','ANGLE (Intel(R) Q35 Express Chipset Family Direct3D9 vs_0_0 ps_2_0)']
-    webgl_replace['37446'] = list_vgas[random.randint(0, len(list_vgas) - 1)]
+    if phoneOs:
+      webgl_replace['37446'] = 'Apple GPU'
+    else:
+      webgl_replace['37446'] = list_vgas[random.randint(0, len(list_vgas) - 1)]
     list_es = ["WebGL 2.0 (OpenGL ES 3.0 Chromium)"]
     list_glsl = ["WebGL GLSL ES (OpenGL Chromium)","WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)"]
     webgl_replace['7938'] = list_es[random.randint(0, len(list_es) - 1)]
     webgl_replace['35724'] = list_glsl[random.randint(0, len(list_glsl) - 1)]
-    gpu_vendor = "Google Inc. (ATI Technologies Inc.)"
+    if phoneOs:
+      gpu_vendor = "Apple Computer, Inc."
+    else:
+      gpu_vendor = "Google Inc. (ATI Technologies Inc.)"
     webgl_replace['37445'] = gpu_vendor 
     profile_dict['profile_webgl'] = json.dumps(webgl_replace)
-    list_os = ['Window', 'Mac OS X', 'Linux']
+    profile_dict['profile_name'] = ''
+    # profile_dict['profile_user_agent'] = ''
+    list_os = ['Window', 'Mac OS X', 'Linux', 'Chrome OS']
     comboBoxOS = list_os[random.randint(0, len(list_os)-1)]
     AgentOperationOS = ''
     if comboBoxOS == 'Window':
@@ -1169,34 +1244,39 @@ def create_random_profile():
     else:
       AgentOperationOS = "X11; CrOS x86_64 14909.100.0"
       
-    list_cpu = ["2","4","6","8","10"]
-    list_screen_resolution = ['5120x2880','4500x3000','4480x2520','3840x2160','2880x1800','2736x1824','2732x2048','2560x1600','2560x1440','1920x1200','1920x1080','1280x720']
+    self.list_cpu = ["2","4","6","8","10"]
+    self.list_screen_resolution = ['1920x1200','1920x1080','1536x864','1440x900','1366x768','1280x720']
     
-    list_chrome_version = ["105.0.5195.125","105.0.0.0","105.0.5195.136","104.0.5112.79","104.0.0.0"]
-
-              
-
-    Agentversion = list_chrome_version[random.randint(
-        0, len(list_chrome_version)-1)]
-
-    user_header_set = "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36" % (
-                    AgentOperationOS, Agentversion)
+    self.list_chrome_version = ["105.0.5195.125","105.0.0.0","105.0.5195.136","104.0.5112.79","104.0.0.0"]
+          
+    self.list_iPhone_resolution = {'iPhone 14 Pro Max':{'resolution':'430x932','scale':'3'},'iPhone 14 Pro':{'resolution':'393x852','scale':'3'}, 'iPhone 14 Plus':{'resolution':'428x926','scale':'3'},'iPhone 14':{'resolution':'390x844','scale':'3'},'iPhone SE 3rd gen':{'resolution':'375x667','scale':'2'},'iPhone 13':{'resolution':'390x844','scale':'3'}, 'iPhone 13 mini':{'resolution':'375x812','scale':'3'},'iPhone 13 Pro Max':{'resolution':'428x926','scale':'3'}, 'iPhone 13 Pro':{'resolution':'390x844','scale':'3'}, 'iPhone 12':{'resolution':'390x844','scale':'3'},'iPhone 12 mini':{'resolution':'375x812','scale':'3'}, 'iPhone 12 Pro Max':{'resolution':'428x926','scale':'3'}, 'iPhone 12 Pro': {'resolution':'390x844','scale':'3'}, 'iPhone SE 2nd gen':{'resolution':'375x667','scale':'2'}, 'iPhone 11 Pro Max':{'resolution':'414x896','scale':'3'}, 'iPhone 11 Pro':{'resolution':'375x812','scale':'3'}, 'iPhone 11':{'resolution':'414x896','scale':'2'}, 'iPhone XR':{'resolution':'414x896','scale':'2'}, 'iPhone XS Max':{'resolution':'414x896','scale':'3'}, 'iPhone XS':{'resolution':'375x812','scale':'3'}, 'iPhone X':{'resolution':'375x812','scale':'3'}}
+    Agentversion = self.list_chrome_version[random.randint(
+          0, len(self.list_chrome_version)-1)]
+    if phoneOs:
+      list_phone_os = list(self.list_iPhone_resolution.keys())
+      # print(list_phone_os)
+      comboBoxOS = list_phone_os[random.randint(0, len(list_phone_os)-1)]
+      self.user_header_set = "Mozilla/5.0 (iPhone; CPU iPhone OS 15_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/%s Mobile/15E148 Safari/604.1" % (Agentversion)		
+      profile_resolution = self.list_iPhone_resolution[comboBoxOS]['resolution']
+    else:
+      self.user_header_set = "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36" % (
+                      AgentOperationOS, Agentversion)
     
-    profile_resolution = list_screen_resolution[random.randint(
-        0, len(list_screen_resolution)-1)]
-    profile_cpu = list_cpu[random.randint(
-        0, len(list_cpu)-1)]
+      profile_resolution = self.list_screen_resolution[random.randint(
+          0, len(self.list_screen_resolution)-1)]
+    profile_cpu = self.list_cpu[random.randint(
+        0, len(self.list_cpu)-1)]
     
-    profile_dict['profile_user_agent'] = user_header_set
+    profile_dict['profile_user_agent'] = self.user_header_set
     profile_dict['profile_os'] = comboBoxOS
     profile_dict['profile_resolution'] = profile_resolution
     profile_dict['profile_cpu'] = profile_cpu
-    # if sock5:
-    #     profile_dict['profile_proxy_details'] = sock5
-    # elif proxy:
-    #     profile_dict['profile_proxy_details'] = proxy
-    # else:
-    #     profile_dict['profile_proxy_details'] = ''
+    if sock5:
+        profile_dict['profile_proxy_details'] = sock5
+    elif proxy:
+        profile_dict['profile_proxy_details'] = proxy
+    else:
+        profile_dict['profile_proxy_details'] = ''
 
     profile_dict['profile_rects'] = 'Noise'
     profile_dict['profile_font'] = 'Noise'

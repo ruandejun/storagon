@@ -33,7 +33,7 @@ class BrowserProfilesSerializer(serializers.ModelSerializer):
 				'modified_by', 'profile_name', 'profile_os',
 				'profile_browser', 'profile_version', 'profile_proxy_type',
 				'profile_proxy_details', 'profile_socks5_details', 'profile_proxy_username',
-				'profile_proxy_username','profile_path_cookies',
+				'profile_proxy_password','profile_path_cookies',
     			'profile_user_agent','profile_original_name',
        			'profile_resolution','profile_cpu', 'profile_canvas',
 				'profile_rects', 'profile_font', 'profile_start_url',
@@ -78,7 +78,7 @@ class AccountsCreatedSerializer(serializers.ModelSerializer):
 				'modified_by', 'type', 'owner',
 				'note', 'accounts_data', 'email',
 				'password', 'proxy',
-				'socks5','state',
+				'socks5','state','proxy_username', 'proxy_password'
     			'state_ip','phone_number',
        			'phone_service','status', 'price','auto_view',
 				'viewed', 'browser_profiles', 'accounts_emails', 'username', 'signup_ip',

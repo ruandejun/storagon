@@ -71,6 +71,7 @@ class AccountsEmailsSerializer(serializers.ModelSerializer):
           )
 	customer = serializers.SlugRelatedField(slug_field='username', read_only=True);
 	owner = serializers.SlugRelatedField(slug_field='username', read_only=True);
+ 
 class AccountsCreatedSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = AccountsCreated
@@ -85,3 +86,4 @@ class AccountsCreatedSerializer(serializers.ModelSerializer):
           )
 	customer = serializers.SlugRelatedField(slug_field='username', read_only=True);
 	owner = serializers.SlugRelatedField(slug_field='username', read_only=True);
+	profile_proxy_username = serializers.SerializerMethodField()

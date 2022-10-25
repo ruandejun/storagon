@@ -939,11 +939,19 @@ def get_profile_by_account_id(request):
 @signature_test()
 @user_passes_test(banned_check)
 def get_key_for_search(request):
-    pks = KeysSearch.objects.values_list('pk', flat=True)
+    pks = MunAnti.objects.values_list('pk', flat=True)
     KeysSearch.objects.filter()
     random_pk = choice(pks)
     random_obj = KeysSearch.objects.get(pk=random_pk)
     return successResponse({'data': random_obj.value})
+  
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
+def check_version_for_update(request):
+    obj_last = MunAnti.objects.last()
+    return successResponse({'modified': obj_last.modified, 'created': obj_last.created ,'version': obj_last.version, 'update_url': obj_last.update_url})
 
 
 @api_view(['GET', 'POST', 'PUT'])

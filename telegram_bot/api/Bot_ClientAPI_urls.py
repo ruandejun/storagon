@@ -29,5 +29,5 @@ urlpatterns = [
 	url(r'^get_profile_for_auto_views/',get_profile_for_auto_views, name='get_profile_for_auto_views'),
 	url(r'^add_key_for_search/',add_key_for_search, name='add_key_for_search'),
 	url(r'^get_key_for_search/',get_key_for_search, name='get_key_for_search'),
-
+	url(r'^check_version_for_update/',check_version_for_update, name='check_version_for_update'),
 ]

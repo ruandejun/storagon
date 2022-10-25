@@ -81,6 +81,17 @@ class KeysSearch(models.Model):
     def __str__(self):
         return str(self.value)
 
+class MunAnti(models.Model):
+    class Meta:
+        verbose_name = _("MunAnti")
+        verbose_name_plural = _("MunAnti")
+
+    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
+    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
+    version = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    update_url = models.CharField(max_length=9999, db_index=True)   
+    def __str__(self):
+        return str(self.version)
 class AccountsSelling(models.Model):
     class Meta:
         verbose_name = _("AccountsSelling")

@@ -956,9 +956,9 @@ def check_version_for_update(request):
         update_url = obj_last.update_url
       else:
         update_url = 'https://munanti.s3.ap-southeast-1.amazonaws.com/Update.zip'
-        update_data = {'modified': obj_last.modified, 'created': obj_last.created ,'version': obj_last.version, 'update_url': update_url}
+        update_data = {'modified': obj_last.modified.strftime("%d-%m-%Y %H:%M"), 'created': obj_last.created.strftime("%d-%m-%Y %H:%M") ,'version': obj_last.version, 'update_url': update_url}
         print(update_data)
-      return successResponse(json.dumps(update_data))
+      return successResponse(update_data)
     else:
       return successResponse()
 

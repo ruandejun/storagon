@@ -79,7 +79,7 @@ class AccountsCreatedSerializer(serializers.ModelSerializer):
 				'modified_by', 'type', 'owner',
 				'note', 'accounts_data', 'email',
 				'password', 'proxy',
-				'socks5','state','proxy_username', 'proxy_password'
+				'socks5','state','proxy_username', 'proxy_password',
     			'state_ip','phone_number',
        			'phone_service','status', 'price','auto_view',
 				'viewed', 'browser_profiles', 'accounts_emails', 'username', 'signup_ip',

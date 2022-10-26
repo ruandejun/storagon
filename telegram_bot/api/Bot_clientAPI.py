@@ -1013,6 +1013,12 @@ def update_account_by_id(request):
       if 'proxy' in update_post['update_data'] and account_obj.browser_profiles:
           account_obj.browser_profiles.profile_proxy_details=update_post['update_data']['proxy']
           account_obj.browser_profiles.save()
+      if 'proxy_username' in update_post['update_data'] and account_obj.browser_profiles:
+          account_obj.browser_profiles.profile_proxy_username=update_post['update_data']['proxy_username']
+          account_obj.browser_profiles.save()
+      if 'proxy_password' in update_post['update_data'] and account_obj.browser_profiles:
+          account_obj.browser_profiles.profile_proxy_password=update_post['update_data']['proxy_password']
+          account_obj.browser_profiles.save()          
       account_data = AccountsCreatedSerializer(account_obj)
     return successResponse({'data':account_data.data})
 

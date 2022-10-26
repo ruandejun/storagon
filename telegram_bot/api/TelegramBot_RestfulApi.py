@@ -75,7 +75,7 @@ class AccountsEmailsSerializer(serializers.ModelSerializer):
 class AccountsCreatedSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = AccountsCreated
-		fields = ('id', 'created', 'modified', 'created_by','customer',
+		fields = ('id', 'created', 'modified', 'created_by','customer','profile_os',
 				'modified_by', 'type', 'owner',
 				'note', 'accounts_data', 'email',
 				'password', 'proxy',

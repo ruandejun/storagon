@@ -951,8 +951,10 @@ def get_key_for_search(request):
 @user_passes_test(banned_check)
 def check_version_for_update(request):
     obj_last = MunAnti.objects.last()
-    return successResponse({'modified': obj_last.modified, 'created': obj_last.created ,'version': obj_last.version, 'update_url': obj_last.update_url})
-
+    if obj_last:
+      return successResponse({'modified': obj_last.modified, 'created': obj_last.created ,'version': obj_last.version, 'update_url': obj_last.update_url})
+    else:
+      return successResponse()
 
 @api_view(['GET', 'POST', 'PUT'])
 @login_required_ajax()

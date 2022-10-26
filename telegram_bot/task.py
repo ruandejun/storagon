@@ -1,10 +1,11 @@
+from ensurepip import version
 import re, telebot
 from celery import shared_task
 from storagon import settings
 from telebot import types
 from servermain.models import AccountBalance, AccountCurrency
 from django.contrib.auth.models import User
-from telegram_bot.models import UserTelegram, AccountsSelling
+from telegram_bot.models import MunAnti, UserTelegram, AccountsSelling
 from storagon.enum import *
 from servermain.controllers import UserController
 from telegram_bot.api.TelegramBot_RestfulApi import AccountsSellingSerializer
@@ -206,6 +207,17 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
             msg = "token:%s" %(token.key)
             # send_message(msg, t_chat["id"])
             send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
+        elif cmd == 'setversion':
+            print('==set version==')
+            if str(chat_id) == '892844098':
+                MunAnti.objects.get_or_create(version=extra_text.strip())
+                send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
+        elif cmd == 'version':
+            print('==get version==')
+            obj_last = MunAnti.objects.last()
+            info_update = {'modified': obj_last.modified, 'created': obj_last.created ,'version': obj_last.version, 'update_url': obj_last.update_url}  
+            send_telegram_notify_to_group(chat_id, msg=str(info_update), reply_id=message_id)
+              
         elif cmd == 'setpassword':
             print('==set password user==')
             user = User.objects.get(username=chat_id)

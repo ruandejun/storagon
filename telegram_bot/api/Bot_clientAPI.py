@@ -952,7 +952,11 @@ def get_key_for_search(request):
 def check_version_for_update(request):
     obj_last = MunAnti.objects.last()
     if obj_last:
-      return successResponse({'modified': obj_last.modified, 'created': obj_last.created ,'version': obj_last.version, 'update_url': obj_last.update_url})
+      if obj_last.update_url:
+        update_url = obj_last.update_url
+      else:
+        update_url = 'https://munanti.s3.ap-southeast-1.amazonaws.com/Update.zip'
+      return successResponse({'modified': obj_last.modified, 'created': obj_last.created ,'version': obj_last.version, 'update_url': update_url})
     else:
       return successResponse()
 

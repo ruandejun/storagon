@@ -86,4 +86,11 @@ class AccountsCreatedSerializer(serializers.ModelSerializer):
           )
 	customer = serializers.SlugRelatedField(slug_field='username', read_only=True);
 	owner = serializers.SlugRelatedField(slug_field='username', read_only=True);
-	profile_proxy_username = serializers.SerializerMethodField()
+	profile_os = serializers.SerializerMethodField()
+ 
+	@staticmethod
+	def get_profile_os(accounts_created):
+		if accounts_created.browser_profiles:
+			return accounts_created.browser_profiles.profile_os
+		else:
+			return ''

@@ -392,6 +392,10 @@ class AccountsCreated(models.Model):
     
     socks5 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     
+    proxy_username = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    
+    proxy_password = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    
     state_ip = models.CharField(blank=True, null=True, max_length=255, db_index=True)
 
     state = models.CharField(blank=True, null=True, max_length=255, db_index=True)

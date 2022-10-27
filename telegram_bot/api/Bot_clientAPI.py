@@ -950,7 +950,7 @@ def get_key_for_search(request):
 @signature_test()
 @user_passes_test(banned_check)
 def check_version_for_update(request):
-    obj_last = MunAnti.objects.last()
+    obj_last = MunAnti.objects.first()
     if obj_last:
       if obj_last.update_url:
         update_url = obj_last.update_url

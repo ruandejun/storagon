@@ -216,12 +216,16 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
         elif cmd == 'version':
             print('==get version==')
             obj_last = MunAnti.objects.first()
+            if obj_last.update_url:
+                update_url = obj_last.update_url
+            else:
+                update_url = 'https://munanti.s3.ap-southeast-1.amazonaws.com/Update.zip'
             msg = '''
 MunAnti AIO Automator.
 Version:%s
 Update URL:%s
 Updateded:%s
-                ''' % (obj_last.version, obj_last.update_url, obj_last.modified)
+                ''' % (obj_last.version, update_url, obj_last.modified.strftime("%d-%m-%Y %H:%M"))
             send_telegram_notify_to_group(chat_id, msg=msg, reply_id=message_id)
               
         elif cmd == 'setpassword':

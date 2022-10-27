@@ -213,7 +213,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                 mun_obj, created = MunAnti.objects.get_or_create(version=extra_text.strip())
                 msg = 'New version %s already updated!' % (extra_text)
                 send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
-        elif cmd == 'version':
+        elif cmd == 'version' or cmd == 'v':
             print('==get version==')
             obj_last = MunAnti.objects.first()
             if obj_last.update_url:

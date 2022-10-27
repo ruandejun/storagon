@@ -946,7 +946,6 @@ def get_key_for_search(request):
     return successResponse({'data': random_obj.value})
   
 @api_view(['GET', 'POST', 'PUT'])
-@login_required_ajax()
 @signature_test()
 @user_passes_test(banned_check)
 def check_version_for_update(request):

@@ -947,7 +947,6 @@ def get_key_for_search(request):
   
 @api_view(['GET', 'POST', 'PUT'])
 @signature_test()
-@user_passes_test(banned_check)
 def check_version_for_update(request):
     obj_last = MunAnti.objects.first()
     if obj_last:

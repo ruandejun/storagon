@@ -948,7 +948,7 @@ def get_key_for_search(request):
 @api_view(['GET', 'POST', 'PUT'])
 @signature_test()
 def check_version_for_update(request):
-    obj_last = MunAnti.objects.latest()
+    obj_last = MunAnti.objects.last()
     if obj_last:
       if obj_last.update_url:
         update_url = obj_last.update_url

@@ -215,7 +215,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                 send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
         elif cmd == 'version' or cmd == 'v':
             print('==get version==')
-            obj_last = MunAnti.objects.latest()
+            obj_last = MunAnti.objects.last()
             if obj_last.update_url:
                 update_url = obj_last.update_url
             else:

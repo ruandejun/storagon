@@ -210,7 +210,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
         elif cmd == 'setversion':
             print('==set version==')
             if str(chat_id) == '892844098':
-                mun_obj, created = MunAnti.objects.get_or_create(version=extra_text.strip())
+                mun_obj = MunAnti.objects.create(version=extra_text.strip())
                 msg = 'New version %s already updated!' % (extra_text)
                 send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
         elif cmd == 'version' or cmd == 'v':

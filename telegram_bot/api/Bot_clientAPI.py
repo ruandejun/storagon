@@ -1027,11 +1027,12 @@ def add_mun_proxies(request):
     rotating_time = munproxies_playload['rotating_time']
     country_code = munproxies_playload['country_code']
 
-    munproxies_obj, created = MunProxies.objects.get_or_create(socks_port=socks_port)
+    munproxies_obj, created = MunProxies.objects.get_or_create(socks_port=socks_port, owner=request.user)
     munproxies_obj.control_port = control_port
     munproxies_obj.bridges_string = bridges_string
     munproxies_obj.rotating_time = rotating_time
     munproxies_obj.country_code = country_code
+    
     munproxies_obj.save()
     munproxies_obj.refresh_from_db()
     data_serializer = MunProxiesSerializer(munproxies_obj, many=False)

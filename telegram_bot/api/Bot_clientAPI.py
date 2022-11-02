@@ -1042,7 +1042,7 @@ def add_mun_proxies(request):
 @login_required_ajax()
 @signature_test()
 @user_passes_test(banned_check)
-def remove_mun_profiles(request):
+def remove_mun_proxies(request):
     if request.method == 'GET':
         return successResponse({"ok": "Get request processed"})
     remove_post = json.loads(request.body)

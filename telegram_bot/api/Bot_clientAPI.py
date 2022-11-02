@@ -69,6 +69,19 @@ def get_accounts_emails(request):
 
     ##
     return successResponse({'data':accounts_data.data})
+
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
+def get_mun_proxies(request):
+    list_objects = MunProxies.objects.filter(owner=request.user).order_by('-id')
+
+    object_data = MunProxiesSerializer(list_objects, many=True)
+
+    ##
+    return successResponse({'data':object_data.data})
+  
   
  
 @api_view(['GET', 'POST', 'PUT'])
@@ -978,6 +991,67 @@ def add_key_for_search(request):
     if list_create:
         KeysSearch.objects.bulk_create(list_create)
 
+    return successResponse()
+
+
+
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
+def update_munproxies_by_id(request):
+    if request.method == 'GET':
+        return successResponse({"ok": "Get request processed"})
+    update_post = json.loads(request.body)
+
+    mun_proxies_objs = MunProxies.objects.filter(pk=update_post['id'], profile_owner=request.user)
+    if mun_proxies_objs.exists():
+      mun_proxies_objs.update(**update_post['update_data'])
+      mun_proxies_obj = MunProxies.objects.get(
+          pk=update_post['id'], profile_owner=request.user)
+      munproxies_data = MunProxiesSerializer(mun_proxies_obj)
+    return successResponse({'data':munproxies_data.data})
+
+
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
+def add_mun_proxies(request):
+  
+    munproxies_playload = json.loads(request.body)
+    "'socks_port', 'control_port','bridges_string','rotating_time', 'country_code', 'country_name'"
+    socks_port = munproxies_playload['socks_port']
+    control_port = munproxies_playload['control_port']  
+    bridges_string = munproxies_playload['bridges_string']
+    rotating_time = munproxies_playload['rotating_time']
+    country_code = munproxies_playload['country_code']
+
+    munproxies_obj, created = MunProxies.objects.get_or_create(socks_port=socks_port)
+    munproxies_obj.control_port = control_port
+    munproxies_obj.bridges_string = bridges_string
+    munproxies_obj.rotating_time = rotating_time
+    munproxies_obj.country_code = country_code
+    munproxies_obj.save()
+    munproxies_obj.refresh_from_db()
+    data_serializer = MunProxiesSerializer(munproxies_obj, many=False)
+    
+    return successResponse({'data':data_serializer.data}) 
+
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
+def remove_mun_profiles(request):
+    if request.method == 'GET':
+        return successResponse({"ok": "Get request processed"})
+    remove_post = json.loads(request.body)
+    if remove_post['list_id'] == 'all':
+        mun_proxies_objs = MunProxies.objects.filter(profile_owner=request.user)
+    else:
+        mun_proxies_objs = MunProxies.objects.filter(pk__in=remove_post['list_id'], profile_owner=request.user)
+
+    mun_proxies_objs.delete()
     return successResponse()
 
 

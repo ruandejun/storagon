@@ -81,6 +81,28 @@ class KeysSearch(models.Model):
     def __str__(self):
         return str(self.value)
 
+class MunProxies(models.Model):
+    class Meta:
+        verbose_name = _("MunProxies")
+        verbose_name_plural = _("MunProxies")
+
+    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True, db_index=True)
+    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True, db_index=True)
+
+    created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
+    modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT) 
+    
+    socks_port = models.CharField(verbose_name=_("socks_port"),blank=True, null=True, max_length=255, db_index=True, default='')
+    control_port = models.CharField(verbose_name=_("control_port"),blank=True, null=True, max_length=255, db_index=True, default='')
+    bridges_string = models.CharField(verbose_name=_("bridges_string"),blank=True, null=True, max_length=255, db_index=True, default='')
+    rotating_time = models.CharField(verbose_name=_("rotating_time"),blank=True, null=True, max_length=255, db_index=True, default='')
+    country_code = models.CharField(verbose_name=_("country_code"),blank=True, null=True, max_length=255, db_index=True, default='')
+    country_name = models.CharField(verbose_name=_("country_name"),blank=True, null=True, max_length=255, db_index=True, default='')
+    owner = models.ForeignKey(User, verbose_name=_("owner"), related_name="munproxies_owner_set", null=True,
+                                 blank=True, on_delete=models.PROTECT)
+    def __str__(self):
+        return str(self.socks_port)
+
 class MunAnti(models.Model):
     class Meta:
         verbose_name = _("MunAnti")

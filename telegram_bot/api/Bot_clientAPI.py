@@ -952,8 +952,8 @@ def get_profile_by_account_id(request):
 @signature_test()
 @user_passes_test(banned_check)
 def get_key_for_search(request):
-    pks = MunAnti.objects.values_list('pk', flat=True)
-    KeysSearch.objects.filter()
+    pks = KeysSearch.objects.values_list('pk', flat=True)
+    # KeysSearch.objects.filter()
     random_pk = choice(pks)
     random_obj = KeysSearch.objects.get(pk=random_pk)
     return successResponse({'data': random_obj.value})

@@ -69,6 +69,42 @@ def get_accounts_emails(request):
 
     ##
     return successResponse({'data':accounts_data.data})
+  
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
+def add_accounts_emails(request):
+    accounts_playload = json.loads(request.body)
+    list_emails = accounts_playload['emails']
+    objs = [
+    AccountsEmails(
+        owner=request.user,
+        email=e['email'],
+        password=e['password']
+      ) for e in list_emails
+    ]
+    msg = AccountsEmails.objects.bulk_create(objs)
+    return successResponse() 
+
+  
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
+def update_accounts_emails(request):
+    if request.method == 'GET':
+        return successResponse({"ok": "Get request processed"})
+    update_post = json.loads(request.body)
+
+    accounts_emails_obj = AccountsEmails.objects.filter(pk=update_post['id'], owner=request.user)
+    if accounts_emails_obj.exists():
+      accounts_emails_obj.update(**update_post['update_data'])
+      accounts_emails_obj = AccountsEmails.objects.get(
+          pk=update_post['id'], profile_owner=request.user)
+      accounts_emails_data = MunProxiesSerializer(accounts_emails_obj)
+    return successResponse({'data':accounts_emails_data.data})
+  
 
 @api_view(['GET', 'POST', 'PUT'])
 @login_required_ajax()
@@ -1004,11 +1040,11 @@ def update_munproxies_by_id(request):
         return successResponse({"ok": "Get request processed"})
     update_post = json.loads(request.body)
 
-    mun_proxies_objs = MunProxies.objects.filter(pk=update_post['id'], profile_owner=request.user)
+    mun_proxies_objs = MunProxies.objects.filter(pk=update_post['id'], owner=request.user)
     if mun_proxies_objs.exists():
       mun_proxies_objs.update(**update_post['update_data'])
       mun_proxies_obj = MunProxies.objects.get(
-          pk=update_post['id'], profile_owner=request.user)
+          pk=update_post['id'], owner=request.user)
       munproxies_data = MunProxiesSerializer(mun_proxies_obj)
     return successResponse({'data':munproxies_data.data})
 

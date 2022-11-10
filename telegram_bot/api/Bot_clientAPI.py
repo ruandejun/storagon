@@ -76,7 +76,7 @@ def get_accounts_emails(request):
 @user_passes_test(banned_check)
 def add_accounts_emails(request):
     accounts_playload = json.loads(request.body)
-    list_emails = accounts_playload['emails']
+    list_emails = accounts_playload['list_emails']
     objs = [
     AccountsEmails(
         owner=request.user,

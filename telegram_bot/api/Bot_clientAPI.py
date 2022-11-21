@@ -1227,7 +1227,7 @@ def get_inject_info(request):
         });
     '''
     
-    return successResponse({'data':json.dumps(inject_data)})
+    return successResponse({'data':inject_data})
 
 
 @api_view(['GET', 'POST', 'PUT'])

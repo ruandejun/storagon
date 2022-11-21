@@ -183,919 +183,1020 @@ def get_accounts_data(request):
 @signature_test()
 @user_passes_test(banned_check)
 def get_inject_info(request):
-      inject_data = {}
-      inject_data['resolution'] = '''
-        (function fakeScreenResolution(){
-          "use strict";
-          /**
-          * Define property on an object.
-          */
-          var defineProp = function(obj, prop, val) {
-            Object.defineProperty(obj, prop, {
-              enumerable: true,
-              configurable: true,
-              value: val
-            });
+    inject_data = {}
+    inject_data['resolution'] = '''
+      (function fakeScreenResolution(){
+        "use strict";
+        /**
+        * Define property on an object.
+        */
+        var defineProp = function(obj, prop, val) {
+          Object.defineProperty(obj, prop, {
+            enumerable: true,
+            configurable: true,
+            value: val
+          });
+        };
+        /**
+        * Return screen attributes based on the most commons ones.
+        */
+        var getScreenAttrs = function() {
+          return {
+            width: {{screen_width}},
+            height: {{screen_height}},
+            colorDepth: 24,
+            pixelDepth: 24
           };
+        };
+        /**
+        * Spoof screen resolution.
+        */
+        var spoofScreenResolution = function() {
+          var screen = getScreenAttrs();
+          defineProp(window.screen, "width", screen.width);
+          defineProp(window.screen, "height", screen.height);
+          defineProp(window.screen, "availWidth", screen.width);
+          defineProp(window.screen, "availHeight", screen.height);
+          defineProp(window.screen, "top", 0);
+          defineProp(window.screen, "left", 0);
+          defineProp(window.screen, "availTop", 0);
+          defineProp(window.screen, "availLeft", 0);
+          defineProp(window.screen, "colorDepth", screen.colorDepth);
+          defineProp(window.screen, "pixelDepth", screen.pixelDepth);
           /**
-          * Return screen attributes based on the most commons ones.
+          * @todo Implement window.innerHeight, window.innerWidth, etc...
+          * @see https://developer.mozilla.org/en-US/docs/Web/API/Screen
           */
-          var getScreenAttrs = function() {
-            return {
-              width: {{screen_width}},
-              height: {{screen_height}},
-              colorDepth: 24,
-              pixelDepth: 24
-            };
-          };
-          /**
-          * Spoof screen resolution.
-          */
-          var spoofScreenResolution = function() {
-            var screen = getScreenAttrs();
-            defineProp(window.screen, "width", screen.width);
-            defineProp(window.screen, "height", screen.height);
-            defineProp(window.screen, "availWidth", screen.width);
-            defineProp(window.screen, "availHeight", screen.height);
-            defineProp(window.screen, "top", 0);
-            defineProp(window.screen, "left", 0);
-            defineProp(window.screen, "availTop", 0);
-            defineProp(window.screen, "availLeft", 0);
-            defineProp(window.screen, "colorDepth", screen.colorDepth);
-            defineProp(window.screen, "pixelDepth", screen.pixelDepth);
-            /**
-            * @todo Implement window.innerHeight, window.innerWidth, etc...
-            * @see https://developer.mozilla.org/en-US/docs/Web/API/Screen
-            */
-          };
-        
-          /**
-          * Initialize script
-          */
-          var init = function() {
-            // LET SPOOF THAT FUCKIN' RES/COLOR DEPTH
-            spoofScreenResolution();
-          };
-          init();
-        })();
+        };
+      
+        /**
+        * Initialize script
+        */
+        var init = function() {
+          // LET SPOOF THAT FUCKIN' RES/COLOR DEPTH
+          spoofScreenResolution();
+        };
+        init();
+      })();
 
 
-      '''
-      inject_data['UserAgent'] = '''
-      (function fakeUserAgent() {
-        Object.defineProperty(navigator, 'userAgent', {   value: '{{UserAgent}}',   configurable: true });
-      })();
-      '''
-      inject_data['vendor'] = '''
-       (function fakeVendor() {
-        Object.defineProperty(navigator, 'vendor', {   value: '{{vendor}}', configurable: true });
-      })();     
-      '''
-      inject_data['MaxTouchPoints'] = '''
-      (function fakeMaxTouchPoints() {
-        Object.defineProperty(navigator, 'maxTouchPoints', {   value: {{MaxTouchPoints}},   configurable: true });
-      })();
-      '''
-      inject_data['audio'] = '''
-      (function fakeAudioFinger() {
-        const context = {
-          "BUFFER": null,
-          "getChannelData": function (e) {
-            const getChannelData = e.prototype.getChannelData;
-            Object.defineProperty(e.prototype, "getChannelData", {
-              "value": function () {
-                const results_1 = getChannelData.apply(this, arguments);
-                if (context.BUFFER !== results_1) {
-                  context.BUFFER = results_1;
-    
-                  let obj2 = {{audio_content}};
-                  for (const key of Object.keys(obj2)) {
-                      results_1[key] = obj2[key]
+    '''
+    inject_data['UserAgent'] = '''
+    (function fakeUserAgent() {
+      Object.defineProperty(navigator, 'userAgent', {   value: '{{UserAgent}}',   configurable: true });
+    })();
+    '''
+    inject_data['vendor'] = '''
+      (function fakeVendor() {
+      Object.defineProperty(navigator, 'vendor', {   value: '{{vendor}}', configurable: true });
+    })();     
+    '''
+    inject_data['MaxTouchPoints'] = '''
+    (function fakeMaxTouchPoints() {
+      Object.defineProperty(navigator, 'maxTouchPoints', {   value: {{MaxTouchPoints}},   configurable: true });
+    })();
+    '''
+    inject_data['audio'] = '''
+    (function fakeAudioFinger() {
+      const context = {
+        "BUFFER": null,
+        "getChannelData": function (e) {
+          const getChannelData = e.prototype.getChannelData;
+          Object.defineProperty(e.prototype, "getChannelData", {
+            "value": function () {
+              const results_1 = getChannelData.apply(this, arguments);
+              if (context.BUFFER !== results_1) {
+                context.BUFFER = results_1;
+
+                let obj2 = {{audio_content}};
+                for (const key of Object.keys(obj2)) {
+                    results_1[key] = obj2[key]
+                }
+              }
+              return results_1;
+            }, configurable: true, writable: true
+          });
+        },
+        "createAnalyser": function (e) {
+          const createAnalyser = e.prototype.__proto__.createAnalyser;
+          Object.defineProperty(e.prototype.__proto__, "createAnalyser", {
+            "value": function () {
+              const results_2 = createAnalyser.apply(this, arguments);
+              const getFloatFrequencyData = results_2.__proto__.getFloatFrequencyData;
+              Object.defineProperty(results_2.__proto__, "getFloatFrequencyData", {
+                "value": function () {
+                  const results_3 = getFloatFrequencyData.apply(this, arguments);
+                  for (var i = 0; i < arguments[0].length; i += 100) {
+                    let index = Math.floor({{audio_random1}} * i);
+                    var new_value = arguments[0][index] + {{audio_random2}} * 0.1;
+                    arguments[0][index] = new_value
+                  }
+                  return results_3;
+                }, configurable: true, writable: true
+              });
+              //
+              return results_2;
+            }, configurable: true, writable: true
+          });
+        }
+      };
+      //
+      context.getChannelData(AudioBuffer);
+      context.createAnalyser(AudioContext);
+      context.getChannelData(OfflineAudioContext);
+      context.createAnalyser(OfflineAudioContext);
+      console.log('==fakeAudioFinger==',AudioBuffer);
+    })();
+    '''
+    inject_data['canvas'] = '''
+      (function fakeCanvasFingerPrint() {
+        const toBlob = HTMLCanvasElement.prototype.toBlob;
+        const toDataURL = HTMLCanvasElement.prototype.toDataURL;
+        const getImageData = CanvasRenderingContext2D.prototype.getImageData;
+        //
+        var noisify = function (canvas, context) {
+            //console.log('==let noisify==',context);
+            if (context) {
+              const shift = {{canvas_shift}};
+              //
+              let ctxIdx = ctxArr.indexOf(context);
+              let info = ctxInf[ctxIdx];
+              const width = canvas.width;
+              const height = canvas.height;
+              if (info.useArc || info.useFillText && width && height) {
+                const imageData = getImageData.apply(context, [0, 0, width, height]);
+                for (let i = 0; i < height; i++) {
+                  for (let j = 0; j < width; j++) {
+                    const n = ((i * (width * 4)) + (j * 4));
+                    imageData.data[n + 0] = imageData.data[n + 0] + shift.r;
+                    imageData.data[n + 1] = imageData.data[n + 1] + shift.g;
+                    imageData.data[n + 2] = imageData.data[n + 2] + shift.b;
+                    imageData.data[n + 3] = imageData.data[n + 3] + shift.a;
                   }
                 }
-                return results_1;
-              }, configurable: true, writable: true
-            });
-          },
-          "createAnalyser": function (e) {
-            const createAnalyser = e.prototype.__proto__.createAnalyser;
-            Object.defineProperty(e.prototype.__proto__, "createAnalyser", {
-              "value": function () {
-                const results_2 = createAnalyser.apply(this, arguments);
-                const getFloatFrequencyData = results_2.__proto__.getFloatFrequencyData;
-                Object.defineProperty(results_2.__proto__, "getFloatFrequencyData", {
-                  "value": function () {
-                    const results_3 = getFloatFrequencyData.apply(this, arguments);
-                    for (var i = 0; i < arguments[0].length; i += 100) {
-                      let index = Math.floor({{audio_random1}} * i);
-                      var new_value = arguments[0][index] + {{audio_random2}} * 0.1;
-                      arguments[0][index] = new_value
+                //
+                //window.top.postMessage("canvas-fingerprint-defender-alert", '*');
+                context.putImageData(imageData, 0, 0); 
+              }
+            }
+        };
+        let ctxArr = [];
+        let ctxInf = [];    
+        let rawGetContext = HTMLCanvasElement.prototype.getContext
+
+        Object.defineProperty(HTMLCanvasElement.prototype, "getContext", {
+            "value": function () {
+                let result = rawGetContext.apply(this, arguments);
+                if (arguments[0] === '2d') {
+                    ctxArr.push(result)
+                    ctxInf.push({})
+                }
+                return result;
+            }, configurable: true
+        });
+
+        Object.defineProperty(HTMLCanvasElement.prototype.constructor, "length", {
+            "value": 1, configurable: true, writable: true
+        });
+
+        Object.defineProperty(HTMLCanvasElement.prototype.constructor, "toString", {
+            "value": () => "function getContext() { [native code] }", configurable: true, writable: true
+        });
+
+        Object.defineProperty(CanvasRenderingContext2D.prototype.constructor, "name", {
+            "value": "getContext", configurable: true
+        });
+        let rawArc = CanvasRenderingContext2D.prototype.arc
+        Object.defineProperty(CanvasRenderingContext2D.prototype, "arc", {
+            "value": function () {
+                let ctxIdx = ctxArr.indexOf(this);
+                ctxInf[ctxIdx].useArc = true;
+                return rawArc.apply(this, arguments);
+            }, configurable: true, writable: true
+        });
+
+        Object.defineProperty(CanvasRenderingContext2D.prototype.arc, "length", {
+            "value": 5, configurable: true, writable: true
+        });
+
+        Object.defineProperty(CanvasRenderingContext2D.prototype.arc, "toString", {
+            "value": () => "function arc() { [native code] }", configurable: true, writable: true
+        });
+
+        Object.defineProperty(CanvasRenderingContext2D.prototype.arc, "name", {
+            "value": "arc", configurable: true, writable: true
+        });    
+        const rawFillText = CanvasRenderingContext2D.prototype.fillText;
+        Object.defineProperty(CanvasRenderingContext2D.prototype, "fillText", {
+            "value": function () {
+                let ctxIdx = ctxArr.indexOf(this);
+                ctxInf[ctxIdx].useFillText = true;
+                return rawFillText.apply(this, arguments);
+            }, configurable: true, writable: true
+        });
+
+        Object.defineProperty(CanvasRenderingContext2D.prototype.fillText, "length", {
+            "value": 4, configurable: true, writable: true
+        });
+
+        Object.defineProperty(CanvasRenderingContext2D.prototype.fillText, "toString", {
+            "value": () => "function fillText() { [native code] }", configurable: true, writable: true
+        });
+
+        Object.defineProperty(CanvasRenderingContext2D.prototype.fillText, "name", {
+            "value": "fillText", configurable: true, writable: true
+        }); 
+        //
+        Object.defineProperty(HTMLCanvasElement.prototype, "toBlob", {
+            "value": function () {
+              noisify(this, this.getContext("2d"));
+              return toBlob.apply(this, arguments);
+            }, configurable: true, writable: true
+        });
+        Object.defineProperty(HTMLCanvasElement.prototype.toBlob, "length", {
+            "value": 1, configurable: true, writable: true
+        });
+
+        Object.defineProperty(HTMLCanvasElement.prototype.toBlob, "toString", {
+            "value": () => "function toBlob() { [native code] }", configurable: true, writable: true
+        });
+
+        Object.defineProperty(HTMLCanvasElement.prototype.toBlob, "name", {
+            "value": "toBlob", configurable: true, writable: true
+        });  
+        //
+        Object.defineProperty(HTMLCanvasElement.prototype, "toDataURL", {
+            "value": function () {
+              noisify(this, this.getContext("2d"));
+              return toDataURL.apply(this, arguments);
+            }, configurable: true, writable: true
+        });
+        Object.defineProperty(HTMLCanvasElement.prototype.toDataURL, "length", {
+            "value": 0, configurable: true, writable: true
+        });
+
+        Object.defineProperty(HTMLCanvasElement.prototype.toDataURL, "toString", {
+            "value": () => "function toDataURL() { [native code] }", configurable: true, writable: true
+        });
+
+        Object.defineProperty(HTMLCanvasElement.prototype.toDataURL, "name", {
+            "value": "toDataURL", configurable: true, writable: true
+        });
+        //
+        Object.defineProperty(CanvasRenderingContext2D.prototype, "getImageData", {
+            "value": function () {
+              noisify(this.canvas, this);
+              return getImageData.apply(this, arguments);
+            }, configurable: true, writable: true
+        });
+        Object.defineProperty(CanvasRenderingContext2D.prototype.getImageData, "length", {
+            "value": 4, configurable: true, writable: true
+        });
+
+        Object.defineProperty(CanvasRenderingContext2D.prototype.getImageData, "toString", {
+            "value": () => "function getImageData() { [native code] }", configurable: true, writable: true
+        });
+
+        Object.defineProperty(CanvasRenderingContext2D.prototype.getImageData, "name", {
+            "value": "getImageData", configurable: true, writable: true
+        });
+      })(); 
+
+    '''
+    inject_data['time_zone'] = '''
+    ( function fakeTimeZone() {
+        Date.prefs = {{timeZoneArray}};
+        console.log('==Date.prefs==',Date.prefs);
+        const ODateTimeFormat = Intl.DateTimeFormat;
+        Intl.DateTimeFormat = function(locales, options = {}) {
+          Object.assign(options, {
+            timeZone: Date.prefs[0]
+          });
+          return ODateTimeFormat(locales, options);
+        };
+        Intl.DateTimeFormat.prototype = Object.create(ODateTimeFormat.prototype);
+        Intl.DateTimeFormat.supportedLocalesOf = ODateTimeFormat.supportedLocalesOf;
+        const clean = str => {
+          const toGMT = offset => {
+            const z = n => (n < 10 ? '0' : '') + n;
+            const sign = offset <= 0 ? '+' : '-';
+            offset = Math.abs(offset);
+            return sign + z(offset / 60 | 0) + z(offset % 60);
+          };
+          str = str.replace(/([T\\(])[\\+-]\\d+/g, '$1' + toGMT(Date.prefs[1]));
+          if (str.indexOf(' (') !== -1) {
+            str = str.split(' (')[0] + ' (' + Date.prefs[3] + ')';
+          }
+          return str;
+        }
+
+        const ODate = Date;
+        const {
+          getTime, getDate, getDay, getFullYear, getHours, getMilliseconds, getMinutes, getMonth, getSeconds, getYear,
+          toDateString, toLocaleString, toString, toTimeString, toLocaleTimeString, toLocaleDateString,
+          setYear, setHours, setTime, setFullYear, setMilliseconds, setMinutes, setMonth, setSeconds, setDate,
+          setUTCDate, setUTCFullYear, setUTCHours, setUTCMilliseconds, setUTCMinutes, setUTCMonth, setUTCSeconds
+        } = ODate.prototype;
+        
+        class ShiftedDate extends ODate {
+          constructor(...args) {
+            super(...args);
+            this.nd = new ODate(
+              getTime.apply(this) + (Date.prefs[2] - Date.prefs[1]) * 60 * 1000
+            );
+          }
+          // get
+          toLocaleString(...args) {
+            return toLocaleString.apply(this.nd, args);
+          }
+          toLocaleTimeString(...args) {
+            return toLocaleTimeString.apply(this.nd, args);
+          }
+          toLocaleDateString(...args) {
+            return toLocaleDateString.apply(this.nd, args);
+          }
+          toDateString(...args) {
+            return toDateString.apply(this.nd, args);
+          }
+          getDate(...args) {
+            return getDate.apply(this.nd, args);
+          }
+          getDay(...args) {
+            return getDay.apply(this.nd, args);
+          }
+          getFullYear(...args) {
+            return getFullYear.apply(this.nd, args);
+          }
+          getHours(...args) {
+            return getHours.apply(this.nd, args);
+          }
+          getMilliseconds(...args) {
+            return getMilliseconds.apply(this.nd, args);
+          }
+          getMinutes(...args) {
+            return getMinutes.apply(this.nd, args);
+          }
+          getMonth(...args) {
+            return getMonth.apply(this.nd, args);
+          }
+          getSeconds(...args) {
+            return getSeconds.apply(this.nd, args);
+          }
+          getYear(...args) {
+            return getYear.apply(this.nd, args);
+          }
+          // set
+          setHours(...args) {
+            const a = getTime.call(this.nd);
+            const b = setHours.apply(this.nd, args);
+            setTime.call(this, getTime.call(this) + b - a);
+            return b;
+          }
+          setFullYear(...args) {
+            const a = getTime.call(this.nd);
+            const b = setFullYear.apply(this.nd, args);
+            setTime.call(this, getTime.call(this) + b - a);
+            return b;
+          }
+          setMilliseconds(...args) {
+            const a = getTime.call(this.nd);
+            const b = setMilliseconds.apply(this.nd, args);
+            setTime.call(this, getTime.call(this) + b - a);
+            return b;
+          }
+          setMinutes(...args) {
+            const a = getTime.call(this.nd);
+            const b = setMinutes.apply(this.nd, args);
+            setTime.call(this, getTime.call(this) + b - a);
+            return b;
+          }
+          setMonth(...args) {
+            const a = getTime.call(this.nd);
+            const b = setMonth.apply(this.nd, args);
+            setTime.call(this, getTime.call(this) + b - a);
+            return b;
+          }
+          setSeconds(...args) {
+            const a = getTime.call(this.nd);
+            const b = setSeconds.apply(this.nd, args);
+            setTime.call(this, getTime.call(this) + b - a);
+            return b;
+          }
+          setDate(...args) {
+            const a = getTime.call(this.nd);
+            const b = setDate.apply(this.nd, args);
+            setTime.call(this, getTime.call(this) + b - a);
+            return b;
+          }
+          setYear(...args) {
+            const a = getTime.call(this.nd);
+            const b = setYear.apply(this.nd, args);
+            setTime.call(this, getTime.call(this) + b - a);
+            return b;
+          }
+          setTime(...args) {
+            const a = getTime.call(this);
+            const b = setTime.apply(this, args);
+            setTime.call(this.nd, getTime.call(this.nd) + b - a);
+            return b;
+          }
+          setUTCDate(...args) {
+            const a = getTime.call(this);
+            const b = setUTCDate.apply(this, args);
+            setTime.call(this.nd, getTime.call(this.nd) + b - a);
+            return b;
+          }
+          setUTCFullYear(...args) {
+            const a = getTime.call(this);
+            const b = setUTCFullYear.apply(this, args);
+            setTime.call(this.nd, getTime.call(this.nd) + b - a);
+            return b;
+          }
+          setUTCHours(...args) {
+            const a = getTime.call(this);
+            const b = setUTCHours.apply(this, args);
+            setTime.call(this.nd, getTime.call(this.nd) + b - a);
+            return b;
+          }
+          setUTCMilliseconds(...args) {
+            const a = getTime.call(this);
+            const b = setUTCMilliseconds.apply(this, args);
+            setTime.call(this.nd, getTime.call(this.nd) + b - a);
+            return b;
+          }
+          setUTCMinutes(...args) {
+            const a = getTime.call(this);
+            const b = setUTCMinutes.apply(this, args);
+            setTime.call(this.nd, getTime.call(this.nd) + b - a);
+            return b;
+          }
+          setUTCMonth(...args) {
+            const a = getTime.call(this);
+            const b = setUTCMonth.apply(this, args);
+            setTime.call(this.nd, getTime.call(this.nd) + b - a);
+            return b;
+          }
+          setUTCSeconds(...args) {
+            const a = getTime.call(this);
+            const b = setUTCSeconds.apply(this, args);
+            setTime.call(this.nd, getTime.call(this.nd) + b - a);
+            return b;
+          }
+          // toString
+          toString(...args) {
+            return clean(toString.apply(this.nd, args));
+          }
+          toTimeString(...args) {
+            return clean(toTimeString.apply(this.nd, args));
+          }
+          // offset
+          getTimezoneOffset() {
+            return Date.prefs[1];
+          }
+        }
+        Date = ShiftedDate;
+        console.log('==fakeTimeZone==');       
+    })();    
+    '''
+    inject_data['webgl'] = '''
+      self['MunAnti_evbONQiZwfG_func'] = function(frame){
+          if (frame === null) {
+              console.error("Frame is null");
+              return;
+          }
+
+          if (!frame['MunAnti_evbONQiZwfG_done']) {
+              (function(frame, settings) {
+                var config = {
+                  "random": {
+                    "value": function () {
+                      return Math.random();
+                    },
+                    "item": function (e) {
+                      var rand = e.length * config.random.value();
+                      return e[Math.floor(rand)];
+                    },
+                    "number": function (power) {
+                      var tmp = [];
+                      for (var i = 0; i < power.length; i++) {
+                        tmp.push(Math.pow(2, power[i]));
+                      }
+                      /*  */
+                      return config.random.item(tmp);
+                    },
+                    "int": function (power) {
+                      var tmp = [];
+                      for (var i = 0; i < power.length; i++) {
+                        var n = Math.pow(2, power[i]);
+                        tmp.push(new Int32Array([n, n]));
+                      }
+                      /*  */
+                      return config.random.item(tmp);
+                    },
+                    "float": function (power) {
+                      var tmp = [];
+                      for (var i = 0; i < power.length; i++) {
+                        var n = Math.pow(2, power[i]);
+                        tmp.push(new Float32Array([1, n]));
+                      }
+                      /*  */
+                      return config.random.item(tmp);
                     }
-                    return results_3;
-                  }, configurable: true, writable: true
+                  },
+                  "spoof": {
+                    "webgl": {
+                      "buffer": function (target) {
+                        var proto = target.prototype ? target.prototype : target.__proto__;
+                        const bufferData = proto.bufferData;
+                        Object.defineProperty(proto, "bufferData", {
+                          "value": function () {
+                            var index = Math.floor({{gl_index}} * arguments[1].length);
+                            var noise = arguments[1][index] !== undefined ? 0.1 * {{gl_noise}} * arguments[1][index] : 0;
+                            //
+                            arguments[1][index] = arguments[1][index] + noise;
+                            //
+                            return bufferData.apply(this, arguments);
+                          }, configurable: true, writable: true
+                        });
+                      },
+                      "parameter": function (target) {
+                        var proto = target.prototype ? target.prototype : target.__proto__;
+                        const getParameter = proto.getParameter;
+                        Object.defineProperty(proto, "getParameter", {
+                          "value": function () {
+                            //window.top.postMessage("webgl-fingerprint-defender-alert", '*');
+                            //
+                            if (arguments[0] === 3415) return 0;
+                            else if (arguments[0] === 3414) return 24;
+                            else if (arguments[0] === 3410) return 8;
+                            else if (arguments[0] === 3411) return 8;
+                            else if (arguments[0] === 3412) return 8;
+                            else if (arguments[0] === 3413) return 8;
+                            else if (arguments[0] === 3415) return 8;
+                            else if (arguments[0] === 35375) return 24;
+                            else if (arguments[0] === 35374) return 24;
+                            else if (arguments[0] === 35380) return 4;
+                            else if (arguments[0] === 34045) return 12;
+                            else if (arguments[0] === 36348) return 32;
+                            else if (arguments[0] === 35371) return 12;
+                            else if (arguments[0] === 37154) return 64;
+                            else if (arguments[0] === 35659) return 128;
+                            else if (arguments[0] === 35978) return 64;
+                            else if (arguments[0] === 35979) return 4;
+                            else if (arguments[0] === 35968) return 64;
+                            else if (arguments[0] === 34852) return 8;
+                            else if (arguments[0] === 36063) return 8;
+                            else if (arguments[0] === 36183) return 4;
+                            else if (arguments[0] === 7936) return "WebKit";
+                            else if (arguments[0] === 37445) return "{{37445}}";
+                            else if (arguments[0] === 7937) return "WebKit WebGL";
+                            else if (arguments[0] === 3379) return {{3379}};
+                            else if (arguments[0] === 36347) return {{36347}};
+                            else if (arguments[0] === 34076) return {{34076}};
+                            else if (arguments[0] === 34024) return {{34024}};
+                            else if (arguments[0] === 3386) return {{3386}};
+                            else if (arguments[0] === 3413) return {{3413}};
+                            else if (arguments[0] === 3412) return {{3412}};
+                            else if (arguments[0] === 3411) return {{3411}};
+                            else if (arguments[0] === 3410) return {{3410}};
+                            else if (arguments[0] === 34047) return {{34047}};
+                            else if (arguments[0] === 34930) return {{34930}};
+                            else if (arguments[0] === 34921) return {{34921}};
+                            else if (arguments[0] === 34324) return Math.floor({{34324}} * 6100) + 8192;
+                            else if (arguments[0] === 35376) return Math.floor({{35376}} * 36384) + 10384;
+                            else if (arguments[0] === 35377) return Math.floor({{35377}} * 50188) + 20188;
+                            else if (arguments[0] === 35379) return Math.floor({{35379}} * 50188) + 20188;
+                            else if (arguments[0] === 35658) return Math.floor({{35658}} * 36) + 1000;
+                            else if (arguments[0] === 35660) return {{35660}};
+                            else if (arguments[0] === 35661) return {{35661}};                  
+                            else if (arguments[0] === 36349) return {{36349}};
+                            else if (arguments[0] === 33902) return {{33902}};
+                            else if (arguments[0] === 33901) return {{33901}};
+                            else if (arguments[0] === 37446) return "{{37446}}";
+                            else if (arguments[0] === 7938) return "{{7938}}";
+                            else if (arguments[0] === 35724) return "{{35724}}";
+                            //
+                            return getParameter.apply(this, arguments);
+                          }, configurable: true, writable: true
+                        });
+                      }
+                    }
+                  }
+                };  
+                config.spoof.webgl.buffer(WebGLRenderingContext);
+                config.spoof.webgl.buffer(WebGL2RenderingContext);
+                config.spoof.webgl.parameter(WebGLRenderingContext);
+                config.spoof.webgl.parameter(WebGL2RenderingContext);
+                console.log('==fakeWebglFingerPrint==');
+              })(frame);
+          } else {
+              frame['MunAnti_evbONQiZwfG_done'] = true;
+              //console.log(frame);
+          }
+      };
+      self['MunAnti_evbONQiZwfG_func'](window);
+      ["HTMLIFrameElement","HTMLFrameElement"].forEach(function(el) {
+          var wind = self[el].prototype.__lookupGetter__('contentWindow'),
+              cont = self[el].prototype.__lookupGetter__('contentDocument');
+
+          Object.defineProperties(self[el].prototype,{
+              contentWindow:{
+                  get:function(){
+                      if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return wind.apply(this);
+
+                      let frame = wind.apply(this);
+                      if (frame) self['MunAnti_evbONQiZwfG_func'](frame);
+
+                      return frame;
+                  }
+              },
+              contentDocument:{
+                  get:function(){
+                      if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return cont.apply(this);
+
+                      let frame = cont.apply(this);
+                      if (frame) self['MunAnti_evbONQiZwfG_func'](frame);
+
+                      return frame;
+                  }
+              }
+          });
+      });   
+    '''
+    inject_data['network'] = '''
+      self['MunAnti_mGqvslHkDLh_func'] = function(frame){
+        if (frame === null) {
+          console.error("Frame is null");
+          return;
+        }
+
+        if (!frame['MunAnti_mGqvslHkDLh_done']) {
+          (function(frame, settings){
+            if (!frame.navigator || !frame.NetworkInformation){
+              return;
+            }
+
+            function doUpdateProp(obj, prop, newVal){
+                let props = Object.getOwnPropertyDescriptor(obj, prop) || {configurable:true};
+
+                props["value"] = newVal;
+                props["configurable"] = true;
+                Object.defineProperty(obj, prop, props);
+
+                return props;
+            }
+            var rand = function(max){
+                return Math.floor(Math.random()*max);
+            };
+            var randArr = function(arr){
+                return arr[Math.floor(Math.random() * arr.length)];
+            };
+
+            let NetworkInformation = function(){
+                this.downlink = rand(10);
+                this.downlinkMax = Infinity;
+                this.effectiveType = "4g"; // randArr(["4g","3g","2g"]);
+                this.rtt = randArr([50,75,100,125,150]);
+                this.saveData = false;
+                this.type = randArr(["wifi","ethernet","other"]);
+
+                this.onchange = null;
+                this.ontypechange = null;
+
+                this.__proto__ = frame.NetworkInformation;
+            };
+            let fakeNet = new NetworkInformation();
+
+            fakeNet.addEventListener = function(){};
+
+            doUpdateProp(frame.navigator,"connection", fakeNet);
+          })(frame);
+        } else {
+          frame['MunAnti_mGqvslHkDLh_done'] = true;
+          //console.log(frame);
+          }
+        };
+
+        //console.log(window);
+        //console.log(self);
+        self['MunAnti_mGqvslHkDLh_func'](window);
+        //self['MunAnti_mGqvslHkDLh_func'](self);
+
+        ["HTMLIFrameElement","HTMLFrameElement"].forEach(function(el) {
+            var wind = self[el].prototype.__lookupGetter__('contentWindow'),
+                cont = self[el].prototype.__lookupGetter__('contentDocument');
+
+            Object.defineProperties(self[el].prototype,{
+                contentWindow:{
+                    get:function(){
+                        if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return wind.apply(this);
+
+                        let frame = wind.apply(this);
+                        if (frame) self['MunAnti_mGqvslHkDLh_func'](frame);
+
+                        return frame;
+                    }
+                },
+                contentDocument:{
+                    get:function(){
+                        if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return cont.apply(this);
+
+                        let frame = cont.apply(this);
+                        if (frame) self['MunAnti_mGqvslHkDLh_func'](frame);
+
+                        return frame;
+                }
+            }
+          });
+      });
+    '''
+    inject_data['fonts'] = '''
+      self['MunAnti_xYjGlskqmzJ_func'] = function(frame){
+          if (frame === null) {
+              console.error("Frame is null");
+              return;
+          }
+
+          if (!frame['MunAnti_xYjGlskqmzJ_done']) {
+              (function(frame) {
+                var rand = {
+                  "noise": function () {
+                    var SIGN = Math.random() < Math.random() ? -1 : 1;
+                    return Math.floor(Math.random() + SIGN * Math.random());
+                  },
+                  "sign": function () {
+                    const tmp = [-1, -1, -1, -1, -1, -1, +1, -1, -1, -1];
+                    const index = Math.floor(Math.random() * tmp.length);
+                    return tmp[index];
+                  }
+                };
+                //
+                console.log('rand.sign()==',)
+                Object.defineProperty(HTMLElement.prototype, "offsetHeight", {
+                  get () {
+                    const height = Math.floor(this.getBoundingClientRect().height);
+                    const valid = height && rand.sign() === 1;
+                    const result = valid ? height + rand.noise() : height;
+                    //
+                    if (valid && result !== height) {
+                      window.top.postMessage("font-fingerprint-defender-alert", '*');
+                    }
+                    //
+                    return result;
+                  }, configurable: true
                 });
                 //
-                return results_2;
-              }, configurable: true, writable: true
-            });
-          }
-        };
-        //
-        context.getChannelData(AudioBuffer);
-        context.createAnalyser(AudioContext);
-        context.getChannelData(OfflineAudioContext);
-        context.createAnalyser(OfflineAudioContext);
-        console.log('==fakeAudioFinger==',AudioBuffer);
-      })();
-      '''
-      inject_data['canvas'] = '''
-        (function fakeCanvasFingerPrint() {
-          const toBlob = HTMLCanvasElement.prototype.toBlob;
-          const toDataURL = HTMLCanvasElement.prototype.toDataURL;
-          const getImageData = CanvasRenderingContext2D.prototype.getImageData;
-          //
-          var noisify = function (canvas, context) {
-              //console.log('==let noisify==',context);
-              if (context) {
-                const shift = {{canvas_shift}};
+                Object.defineProperty(HTMLElement.prototype, "offsetWidth", {
+                  get () {
+                    const width = Math.floor(this.getBoundingClientRect().width);
+                    const valid = width && rand.sign() === 1;
+                    const result = valid ? width + rand.noise() : width;
+
+                    return result;
+                  }, configurable: true
+                });
                 //
-                let ctxIdx = ctxArr.indexOf(context);
-                let info = ctxInf[ctxIdx];
-                const width = canvas.width;
-                const height = canvas.height;
-                if (info.useArc || info.useFillText && width && height) {
-                  const imageData = getImageData.apply(context, [0, 0, width, height]);
-                  for (let i = 0; i < height; i++) {
-                    for (let j = 0; j < width; j++) {
-                      const n = ((i * (width * 4)) + (j * 4));
-                      imageData.data[n + 0] = imageData.data[n + 0] + shift.r;
-                      imageData.data[n + 1] = imageData.data[n + 1] + shift.g;
-                      imageData.data[n + 2] = imageData.data[n + 2] + shift.b;
-                      imageData.data[n + 3] = imageData.data[n + 3] + shift.a;
-                    }
+                console.log('==fakeFonts=='); 
+              })(frame);
+          } else {
+              frame['MunAnti_xYjGlskqmzJ_done'] = true;
+              //console.log(frame);
+          }
+      };
+
+      self['MunAnti_xYjGlskqmzJ_func'](window);
+
+      ["HTMLIFrameElement","HTMLFrameElement"].forEach(function(el) {
+          var wind = self[el].prototype.__lookupGetter__('contentWindow'),
+              cont = self[el].prototype.__lookupGetter__('contentDocument');
+
+          Object.defineProperties(self[el].prototype,{
+              contentWindow:{
+                  get:function(){
+                      if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return wind.apply(this);
+
+                      let frame = wind.apply(this);
+                      if (frame) self['MunAnti_xYjGlskqmzJ_func'](frame);
+
+                      return frame;
                   }
-                  //
-                  //window.top.postMessage("canvas-fingerprint-defender-alert", '*');
-                  context.putImageData(imageData, 0, 0); 
-                }
+              },
+              contentDocument:{
+                  get:function(){
+                      if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return cont.apply(this);
+
+                      let frame = cont.apply(this);
+                      if (frame) self['MunAnti_xYjGlskqmzJ_func'](frame);
+
+                      return frame;
+                  }
               }
-          };
-          let ctxArr = [];
-          let ctxInf = [];    
-          let rawGetContext = HTMLCanvasElement.prototype.getContext
-      
-          Object.defineProperty(HTMLCanvasElement.prototype, "getContext", {
-              "value": function () {
-                  let result = rawGetContext.apply(this, arguments);
-                  if (arguments[0] === '2d') {
-                      ctxArr.push(result)
-                      ctxInf.push({})
-                  }
-                  return result;
-              }, configurable: true
           });
-      
-          Object.defineProperty(HTMLCanvasElement.prototype.constructor, "length", {
-              "value": 1, configurable: true, writable: true
-          });
-      
-          Object.defineProperty(HTMLCanvasElement.prototype.constructor, "toString", {
-              "value": () => "function getContext() { [native code] }", configurable: true, writable: true
-          });
-      
-          Object.defineProperty(CanvasRenderingContext2D.prototype.constructor, "name", {
-              "value": "getContext", configurable: true
-          });
-          let rawArc = CanvasRenderingContext2D.prototype.arc
-          Object.defineProperty(CanvasRenderingContext2D.prototype, "arc", {
-              "value": function () {
-                  let ctxIdx = ctxArr.indexOf(this);
-                  ctxInf[ctxIdx].useArc = true;
-                  return rawArc.apply(this, arguments);
-              }, configurable: true, writable: true
-          });
-      
-          Object.defineProperty(CanvasRenderingContext2D.prototype.arc, "length", {
-              "value": 5, configurable: true, writable: true
-          });
-      
-          Object.defineProperty(CanvasRenderingContext2D.prototype.arc, "toString", {
-              "value": () => "function arc() { [native code] }", configurable: true, writable: true
-          });
-      
-          Object.defineProperty(CanvasRenderingContext2D.prototype.arc, "name", {
-              "value": "arc", configurable: true, writable: true
-          });    
-          const rawFillText = CanvasRenderingContext2D.prototype.fillText;
-          Object.defineProperty(CanvasRenderingContext2D.prototype, "fillText", {
-              "value": function () {
-                  let ctxIdx = ctxArr.indexOf(this);
-                  ctxInf[ctxIdx].useFillText = true;
-                  return rawFillText.apply(this, arguments);
-              }, configurable: true, writable: true
-          });
-      
-          Object.defineProperty(CanvasRenderingContext2D.prototype.fillText, "length", {
-              "value": 4, configurable: true, writable: true
-          });
-      
-          Object.defineProperty(CanvasRenderingContext2D.prototype.fillText, "toString", {
-              "value": () => "function fillText() { [native code] }", configurable: true, writable: true
-          });
-      
-          Object.defineProperty(CanvasRenderingContext2D.prototype.fillText, "name", {
-              "value": "fillText", configurable: true, writable: true
-          }); 
-          //
-          Object.defineProperty(HTMLCanvasElement.prototype, "toBlob", {
-              "value": function () {
-                noisify(this, this.getContext("2d"));
-                return toBlob.apply(this, arguments);
-              }, configurable: true, writable: true
-          });
-          Object.defineProperty(HTMLCanvasElement.prototype.toBlob, "length", {
-              "value": 1, configurable: true, writable: true
-          });
-      
-          Object.defineProperty(HTMLCanvasElement.prototype.toBlob, "toString", {
-              "value": () => "function toBlob() { [native code] }", configurable: true, writable: true
-          });
-      
-          Object.defineProperty(HTMLCanvasElement.prototype.toBlob, "name", {
-              "value": "toBlob", configurable: true, writable: true
-          });  
-          //
-          Object.defineProperty(HTMLCanvasElement.prototype, "toDataURL", {
-              "value": function () {
-                noisify(this, this.getContext("2d"));
-                return toDataURL.apply(this, arguments);
-              }, configurable: true, writable: true
-          });
-          Object.defineProperty(HTMLCanvasElement.prototype.toDataURL, "length", {
-              "value": 0, configurable: true, writable: true
-          });
-      
-          Object.defineProperty(HTMLCanvasElement.prototype.toDataURL, "toString", {
-              "value": () => "function toDataURL() { [native code] }", configurable: true, writable: true
-          });
-      
-          Object.defineProperty(HTMLCanvasElement.prototype.toDataURL, "name", {
-              "value": "toDataURL", configurable: true, writable: true
-          });
-          //
-          Object.defineProperty(CanvasRenderingContext2D.prototype, "getImageData", {
-              "value": function () {
-                noisify(this.canvas, this);
-                return getImageData.apply(this, arguments);
-              }, configurable: true, writable: true
-          });
-          Object.defineProperty(CanvasRenderingContext2D.prototype.getImageData, "length", {
-              "value": 4, configurable: true, writable: true
-          });
-      
-          Object.defineProperty(CanvasRenderingContext2D.prototype.getImageData, "toString", {
-              "value": () => "function getImageData() { [native code] }", configurable: true, writable: true
-          });
-      
-          Object.defineProperty(CanvasRenderingContext2D.prototype.getImageData, "name", {
-              "value": "getImageData", configurable: true, writable: true
-          });
-        })(); 
- 
-      '''
-      inject_data['time_zone'] = '''
-      ( function fakeTimeZone() {
-          Date.prefs = {{timeZoneArray}};
-          console.log('==Date.prefs==',Date.prefs);
-          const ODateTimeFormat = Intl.DateTimeFormat;
-          Intl.DateTimeFormat = function(locales, options = {}) {
-            Object.assign(options, {
-              timeZone: Date.prefs[0]
-            });
-            return ODateTimeFormat(locales, options);
-          };
-          Intl.DateTimeFormat.prototype = Object.create(ODateTimeFormat.prototype);
-          Intl.DateTimeFormat.supportedLocalesOf = ODateTimeFormat.supportedLocalesOf;
-          const clean = str => {
-            const toGMT = offset => {
-              const z = n => (n < 10 ? '0' : '') + n;
-              const sign = offset <= 0 ? '+' : '-';
-              offset = Math.abs(offset);
-              return sign + z(offset / 60 | 0) + z(offset % 60);
-            };
-            str = str.replace(/([T\\(])[\\+-]\\d+/g, '$1' + toGMT(Date.prefs[1]));
-            if (str.indexOf(' (') !== -1) {
-              str = str.split(' (')[0] + ' (' + Date.prefs[3] + ')';
-            }
-            return str;
-          }
-
-          const ODate = Date;
-          const {
-            getTime, getDate, getDay, getFullYear, getHours, getMilliseconds, getMinutes, getMonth, getSeconds, getYear,
-            toDateString, toLocaleString, toString, toTimeString, toLocaleTimeString, toLocaleDateString,
-            setYear, setHours, setTime, setFullYear, setMilliseconds, setMinutes, setMonth, setSeconds, setDate,
-            setUTCDate, setUTCFullYear, setUTCHours, setUTCMilliseconds, setUTCMinutes, setUTCMonth, setUTCSeconds
-          } = ODate.prototype;
-          
-          class ShiftedDate extends ODate {
-            constructor(...args) {
-              super(...args);
-              this.nd = new ODate(
-                getTime.apply(this) + (Date.prefs[2] - Date.prefs[1]) * 60 * 1000
-              );
-            }
-            // get
-            toLocaleString(...args) {
-              return toLocaleString.apply(this.nd, args);
-            }
-            toLocaleTimeString(...args) {
-              return toLocaleTimeString.apply(this.nd, args);
-            }
-            toLocaleDateString(...args) {
-              return toLocaleDateString.apply(this.nd, args);
-            }
-            toDateString(...args) {
-              return toDateString.apply(this.nd, args);
-            }
-            getDate(...args) {
-              return getDate.apply(this.nd, args);
-            }
-            getDay(...args) {
-              return getDay.apply(this.nd, args);
-            }
-            getFullYear(...args) {
-              return getFullYear.apply(this.nd, args);
-            }
-            getHours(...args) {
-              return getHours.apply(this.nd, args);
-            }
-            getMilliseconds(...args) {
-              return getMilliseconds.apply(this.nd, args);
-            }
-            getMinutes(...args) {
-              return getMinutes.apply(this.nd, args);
-            }
-            getMonth(...args) {
-              return getMonth.apply(this.nd, args);
-            }
-            getSeconds(...args) {
-              return getSeconds.apply(this.nd, args);
-            }
-            getYear(...args) {
-              return getYear.apply(this.nd, args);
-            }
-            // set
-            setHours(...args) {
-              const a = getTime.call(this.nd);
-              const b = setHours.apply(this.nd, args);
-              setTime.call(this, getTime.call(this) + b - a);
-              return b;
-            }
-            setFullYear(...args) {
-              const a = getTime.call(this.nd);
-              const b = setFullYear.apply(this.nd, args);
-              setTime.call(this, getTime.call(this) + b - a);
-              return b;
-            }
-            setMilliseconds(...args) {
-              const a = getTime.call(this.nd);
-              const b = setMilliseconds.apply(this.nd, args);
-              setTime.call(this, getTime.call(this) + b - a);
-              return b;
-            }
-            setMinutes(...args) {
-              const a = getTime.call(this.nd);
-              const b = setMinutes.apply(this.nd, args);
-              setTime.call(this, getTime.call(this) + b - a);
-              return b;
-            }
-            setMonth(...args) {
-              const a = getTime.call(this.nd);
-              const b = setMonth.apply(this.nd, args);
-              setTime.call(this, getTime.call(this) + b - a);
-              return b;
-            }
-            setSeconds(...args) {
-              const a = getTime.call(this.nd);
-              const b = setSeconds.apply(this.nd, args);
-              setTime.call(this, getTime.call(this) + b - a);
-              return b;
-            }
-            setDate(...args) {
-              const a = getTime.call(this.nd);
-              const b = setDate.apply(this.nd, args);
-              setTime.call(this, getTime.call(this) + b - a);
-              return b;
-            }
-            setYear(...args) {
-              const a = getTime.call(this.nd);
-              const b = setYear.apply(this.nd, args);
-              setTime.call(this, getTime.call(this) + b - a);
-              return b;
-            }
-            setTime(...args) {
-              const a = getTime.call(this);
-              const b = setTime.apply(this, args);
-              setTime.call(this.nd, getTime.call(this.nd) + b - a);
-              return b;
-            }
-            setUTCDate(...args) {
-              const a = getTime.call(this);
-              const b = setUTCDate.apply(this, args);
-              setTime.call(this.nd, getTime.call(this.nd) + b - a);
-              return b;
-            }
-            setUTCFullYear(...args) {
-              const a = getTime.call(this);
-              const b = setUTCFullYear.apply(this, args);
-              setTime.call(this.nd, getTime.call(this.nd) + b - a);
-              return b;
-            }
-            setUTCHours(...args) {
-              const a = getTime.call(this);
-              const b = setUTCHours.apply(this, args);
-              setTime.call(this.nd, getTime.call(this.nd) + b - a);
-              return b;
-            }
-            setUTCMilliseconds(...args) {
-              const a = getTime.call(this);
-              const b = setUTCMilliseconds.apply(this, args);
-              setTime.call(this.nd, getTime.call(this.nd) + b - a);
-              return b;
-            }
-            setUTCMinutes(...args) {
-              const a = getTime.call(this);
-              const b = setUTCMinutes.apply(this, args);
-              setTime.call(this.nd, getTime.call(this.nd) + b - a);
-              return b;
-            }
-            setUTCMonth(...args) {
-              const a = getTime.call(this);
-              const b = setUTCMonth.apply(this, args);
-              setTime.call(this.nd, getTime.call(this.nd) + b - a);
-              return b;
-            }
-            setUTCSeconds(...args) {
-              const a = getTime.call(this);
-              const b = setUTCSeconds.apply(this, args);
-              setTime.call(this.nd, getTime.call(this.nd) + b - a);
-              return b;
-            }
-            // toString
-            toString(...args) {
-              return clean(toString.apply(this.nd, args));
-            }
-            toTimeString(...args) {
-              return clean(toTimeString.apply(this.nd, args));
-            }
-            // offset
-            getTimezoneOffset() {
-              return Date.prefs[1];
-            }
-          }
-          Date = ShiftedDate;
-          console.log('==fakeTimeZone==');       
-      })();    
-      '''
-      inject_data['webgl'] = '''
-        self['MunAnti_evbONQiZwfG_func'] = function(frame){
-            if (frame === null) {
-                console.error("Frame is null");
-                return;
-            }
-
-            if (!frame['MunAnti_evbONQiZwfG_done']) {
-                (function(frame, settings) {
-                  var config = {
-                    "random": {
-                      "value": function () {
-                        return Math.random();
-                      },
-                      "item": function (e) {
-                        var rand = e.length * config.random.value();
-                        return e[Math.floor(rand)];
-                      },
-                      "number": function (power) {
-                        var tmp = [];
-                        for (var i = 0; i < power.length; i++) {
-                          tmp.push(Math.pow(2, power[i]));
-                        }
-                        /*  */
-                        return config.random.item(tmp);
-                      },
-                      "int": function (power) {
-                        var tmp = [];
-                        for (var i = 0; i < power.length; i++) {
-                          var n = Math.pow(2, power[i]);
-                          tmp.push(new Int32Array([n, n]));
-                        }
-                        /*  */
-                        return config.random.item(tmp);
-                      },
-                      "float": function (power) {
-                        var tmp = [];
-                        for (var i = 0; i < power.length; i++) {
-                          var n = Math.pow(2, power[i]);
-                          tmp.push(new Float32Array([1, n]));
-                        }
-                        /*  */
-                        return config.random.item(tmp);
-                      }
-                    },
-                    "spoof": {
-                      "webgl": {
-                        "buffer": function (target) {
-                          var proto = target.prototype ? target.prototype : target.__proto__;
-                          const bufferData = proto.bufferData;
-                          Object.defineProperty(proto, "bufferData", {
-                            "value": function () {
-                              var index = Math.floor({{gl_index}} * arguments[1].length);
-                              var noise = arguments[1][index] !== undefined ? 0.1 * {{gl_noise}} * arguments[1][index] : 0;
-                              //
-                              arguments[1][index] = arguments[1][index] + noise;
-                              //
-                              return bufferData.apply(this, arguments);
-                            }, configurable: true, writable: true
-                          });
-                        },
-                        "parameter": function (target) {
-                          var proto = target.prototype ? target.prototype : target.__proto__;
-                          const getParameter = proto.getParameter;
-                          Object.defineProperty(proto, "getParameter", {
-                            "value": function () {
-                              //window.top.postMessage("webgl-fingerprint-defender-alert", '*');
-                              //
-                              if (arguments[0] === 3415) return 0;
-                              else if (arguments[0] === 3414) return 24;
-                              else if (arguments[0] === 3410) return 8;
-                              else if (arguments[0] === 3411) return 8;
-                              else if (arguments[0] === 3412) return 8;
-                              else if (arguments[0] === 3413) return 8;
-                              else if (arguments[0] === 3415) return 8;
-                              else if (arguments[0] === 35375) return 24;
-                              else if (arguments[0] === 35374) return 24;
-                              else if (arguments[0] === 35380) return 4;
-                              else if (arguments[0] === 34045) return 12;
-                              else if (arguments[0] === 36348) return 32;
-                              else if (arguments[0] === 35371) return 12;
-                              else if (arguments[0] === 37154) return 64;
-                              else if (arguments[0] === 35659) return 128;
-                              else if (arguments[0] === 35978) return 64;
-                              else if (arguments[0] === 35979) return 4;
-                              else if (arguments[0] === 35968) return 64;
-                              else if (arguments[0] === 34852) return 8;
-                              else if (arguments[0] === 36063) return 8;
-                              else if (arguments[0] === 36183) return 4;
-                              else if (arguments[0] === 7936) return "WebKit";
-                              else if (arguments[0] === 37445) return "{{37445}}";
-                              else if (arguments[0] === 7937) return "WebKit WebGL";
-                              else if (arguments[0] === 3379) return {{3379}};
-                              else if (arguments[0] === 36347) return {{36347}};
-                              else if (arguments[0] === 34076) return {{34076}};
-                              else if (arguments[0] === 34024) return {{34024}};
-                              else if (arguments[0] === 3386) return {{3386}};
-                              else if (arguments[0] === 3413) return {{3413}};
-                              else if (arguments[0] === 3412) return {{3412}};
-                              else if (arguments[0] === 3411) return {{3411}};
-                              else if (arguments[0] === 3410) return {{3410}};
-                              else if (arguments[0] === 34047) return {{34047}};
-                              else if (arguments[0] === 34930) return {{34930}};
-                              else if (arguments[0] === 34921) return {{34921}};
-                              else if (arguments[0] === 34324) return Math.floor({{34324}} * 6100) + 8192;
-                              else if (arguments[0] === 35376) return Math.floor({{35376}} * 36384) + 10384;
-                              else if (arguments[0] === 35377) return Math.floor({{35377}} * 50188) + 20188;
-                              else if (arguments[0] === 35379) return Math.floor({{35379}} * 50188) + 20188;
-                              else if (arguments[0] === 35658) return Math.floor({{35658}} * 36) + 1000;
-                              else if (arguments[0] === 35660) return {{35660}};
-                              else if (arguments[0] === 35661) return {{35661}};                  
-                              else if (arguments[0] === 36349) return {{36349}};
-                              else if (arguments[0] === 33902) return {{33902}};
-                              else if (arguments[0] === 33901) return {{33901}};
-                              else if (arguments[0] === 37446) return "{{37446}}";
-                              else if (arguments[0] === 7938) return "{{7938}}";
-                              else if (arguments[0] === 35724) return "{{35724}}";
-                              //
-                              return getParameter.apply(this, arguments);
-                            }, configurable: true, writable: true
-                          });
-                        }
-                      }
-                    }
-                  };  
-                  config.spoof.webgl.buffer(WebGLRenderingContext);
-                  config.spoof.webgl.buffer(WebGL2RenderingContext);
-                  config.spoof.webgl.parameter(WebGLRenderingContext);
-                  config.spoof.webgl.parameter(WebGL2RenderingContext);
-                  console.log('==fakeWebglFingerPrint==');
-                })(frame);
-            } else {
-                frame['MunAnti_evbONQiZwfG_done'] = true;
-                //console.log(frame);
-            }
-        };
-        self['MunAnti_evbONQiZwfG_func'](window);
-        ["HTMLIFrameElement","HTMLFrameElement"].forEach(function(el) {
-            var wind = self[el].prototype.__lookupGetter__('contentWindow'),
-                cont = self[el].prototype.__lookupGetter__('contentDocument');
-
-            Object.defineProperties(self[el].prototype,{
-                contentWindow:{
-                    get:function(){
-                        if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return wind.apply(this);
-
-                        let frame = wind.apply(this);
-                        if (frame) self['MunAnti_evbONQiZwfG_func'](frame);
-
-                        return frame;
-                    }
-                },
-                contentDocument:{
-                    get:function(){
-                        if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return cont.apply(this);
-
-                        let frame = cont.apply(this);
-                        if (frame) self['MunAnti_evbONQiZwfG_func'](frame);
-
-                        return frame;
-                    }
-                }
-            });
-        });   
-      '''
-      inject_data['network'] = '''
-        self['MunAnti_mGqvslHkDLh_func'] = function(frame){
+      });
+    '''
+    inject_data['rects'] = '''
+      self['MunAnti_uwNeadmCrYP_func'] = function(frame){
           if (frame === null) {
-            console.error("Frame is null");
-            return;
+              console.error("Frame is null");
+              return;
           }
 
-          if (!frame['MunAnti_mGqvslHkDLh_done']) {
-            (function(frame, settings){
-              if (!frame.navigator || !frame.NetworkInformation){
-                return;
-              }
+          if (!frame['MunAnti_uwNeadmCrYP_done']) {
+              (function(frame){
+                function doUpdateProp(obj, prop, newVal){
+                    let props = Object.getOwnPropertyDescriptor(obj, prop) || {configurable:true};
+                    props["value"] = newVal;
+                    props["configurable"] = true;
+                    Object.defineProperty(obj, prop, props);
 
-              function doUpdateProp(obj, prop, newVal){
-                  let props = Object.getOwnPropertyDescriptor(obj, prop) || {configurable:true};
+                    return props;
+                }
 
-                  props["value"] = newVal;
-                  props["configurable"] = true;
-                  Object.defineProperty(obj, prop, props);
+                // Generate offset test
+                let off = Math.floor(Math.random()*100)/100; //{{rects}};
+                console.log('=====off',off)
+                function updatedRect(old,round,overwrite){
+                    function genOffset(round,val){
+                        return val + (round ? Math.round(off) : off);
+                    }
+                    let temp = overwrite === true ? old : new DOMRect();
 
-                  return props;
-              }
-              var rand = function(max){
-                  return Math.floor(Math.random()*max);
-              };
-              var randArr = function(arr){
-                  return arr[Math.floor(Math.random() * arr.length)];
-              };
+                    temp.top 	= genOffset(round,old.top);
+                    temp.right	= genOffset(round,old.right);
+                    temp.bottom = genOffset(round,old.bottom);
+                    temp.left 	= genOffset(round,old.left);
+                    temp.width 	= genOffset(round,old.width);
+                    temp.height = genOffset(round,old.height);
+                    temp.x 		= genOffset(round,old.x);
+                    temp.y 		= genOffset(round,old.y);
 
-              let NetworkInformation = function(){
-                  this.downlink = rand(10);
-                  this.downlinkMax = Infinity;
-                  this.effectiveType = "4g"; // randArr(["4g","3g","2g"]);
-                  this.rtt = randArr([50,75,100,125,150]);
-                  this.saveData = false;
-                  this.type = randArr(["wifi","ethernet","other"]);
+                    return temp;
+                }
 
-                  this.onchange = null;
-                  this.ontypechange = null;
+                function getClientRectsProtection(el){
+                    if (window.location.host === "docs.google.com") return;
 
-                  this.__proto__ = frame.NetworkInformation;
-              };
-              let fakeNet = new NetworkInformation();
+                    let clientRects = frame[el].prototype.getClientRects;
+                    doUpdateProp(frame[el].prototype,"getClientRects",function(){
+                        let rects = clientRects.apply(this,arguments);
+                        let krect = Object.keys(rects);
 
-              fakeNet.addEventListener = function(){};
+                        let DOMRectList = function(){};
+                        let list = new DOMRectList();
+                        list.length = krect.length;
+                        for (let i = 0;i<list.length;i++){
+                            if (krect[i] === "length") continue;
+                            list[i] = updatedRect(rects[krect[i]],false,false);
+                        }
 
-              doUpdateProp(frame.navigator,"connection", fakeNet);
+                        //window.top.postMessage("trace-protection::ran::clientrects::" + el + "get", '*');
+                        return list;
+                    });
+                    doUpdateProp(frame[el].prototype.getClientRects, "toString",function(){
+                        //window.top.postMessage("trace-protection::ran::clientrects::" + el + "getstring", '*');
+                        return "getClientRects() { [native code] }";
+                    });
+                    console.log('==getClientRectsProtection==')
+                }
+                function getBoundingClientRectsProtection(el){
+                    let boundingRects = frame[el].prototype.getBoundingClientRect;
+                    doUpdateProp(frame[el].prototype,"getBoundingClientRect",function(){
+                        let rect = boundingRects.apply(this,arguments);
+                        if (this === undefined || this === null) return rect;
+
+                        //window.top.postMessage("trace-protection::ran::clientrectsbounding::" + el + "get", '*');
+
+                        return updatedRect(rect,true,true);
+                    });
+                    doUpdateProp(frame[el].prototype.getBoundingClientRect, "toString",function(){
+                        //window.top.postMessage("trace-protection::ran::clientrectsbounding::" + el + "getstring", '*');
+                        return "getBoundingClientRect() { [native code] }";
+                    });
+                    console.log('==getBoundingClientRectsProtection==')
+                }
+
+                ["Element","Range"].forEach(function(el){
+                    // Check for broken frames
+                    if (frame[el] === undefined) return;
+
+                    // getClientRects
+                    getClientRectsProtection(el);
+
+                    // getBoundingClientRect
+                    getBoundingClientRectsProtection(el);
+                });
             })(frame);
           } else {
-            frame['MunAnti_mGqvslHkDLh_done'] = true;
-            //console.log(frame);
-            }
-          };
+              frame['MunAnti_uwNeadmCrYP_done'] = true;
+              //console.log(frame);
+          }
+      };
 
-          //console.log(window);
-          //console.log(self);
-          self['MunAnti_mGqvslHkDLh_func'](window);
-          //self['MunAnti_mGqvslHkDLh_func'](self);
+      //console.log(window);
+      //console.log(self);
+      self['MunAnti_uwNeadmCrYP_func'](window);
+      //self['MunAnti_uwNeadmCrYP_func'](self);
 
-          ["HTMLIFrameElement","HTMLFrameElement"].forEach(function(el) {
-              var wind = self[el].prototype.__lookupGetter__('contentWindow'),
-                  cont = self[el].prototype.__lookupGetter__('contentDocument');
+      ["HTMLIFrameElement","HTMLFrameElement"].forEach(function(el) {
+          var wind = self[el].prototype.__lookupGetter__('contentWindow'),
+              cont = self[el].prototype.__lookupGetter__('contentDocument');
 
-              Object.defineProperties(self[el].prototype,{
-                  contentWindow:{
-                      get:function(){
-                          if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return wind.apply(this);
+          Object.defineProperties(self[el].prototype,{
+              contentWindow:{
+                  get:function(){
+                      if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return wind.apply(this);
 
-                          let frame = wind.apply(this);
-                          if (frame) self['MunAnti_mGqvslHkDLh_func'](frame);
+                      let frame = wind.apply(this);
+                      if (frame) self['MunAnti_uwNeadmCrYP_func'](frame);
 
-                          return frame;
-                      }
-                  },
-                  contentDocument:{
-                      get:function(){
-                          if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return cont.apply(this);
+                      return frame;
+                  }
+              },
+              contentDocument:{
+                  get:function(){
+                      if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return cont.apply(this);
 
-                          let frame = cont.apply(this);
-                          if (frame) self['MunAnti_mGqvslHkDLh_func'](frame);
+                      let frame = cont.apply(this);
+                      if (frame) self['MunAnti_uwNeadmCrYP_func'](frame);
 
-                          return frame;
+                      return frame;
                   }
               }
-            });
-        });
-      '''
-      inject_data['fonts'] = '''
-        self['MunAnti_xYjGlskqmzJ_func'] = function(frame){
-            if (frame === null) {
+          });
+      });
+    '''
+    inject_data['webrtc'] = '''
+      (function disableWebrtc() {
+        if (typeof window.MediaStreamTrack !== "undefined") window.MediaStreamTrack = undefined;
+        if (typeof window.RTCPeerConnection !== "undefined") window.RTCPeerConnection = undefined;
+        if (typeof window.RTCSessionDescription !== "undefined") window.RTCSessionDescription = undefined;
+        if (typeof window.webkitMediaStreamTrack !== "undefined") window.webkitMediaStreamTrack = undefined;
+        if (typeof window.webkitRTCPeerConnection !== "undefined") window.webkitRTCPeerConnection = undefined;
+        if (typeof window.webkitRTCSessionDescription !== "undefined") window.webkitRTCSessionDescription = undefined;
+      })();
+      console.log('==disableWebrtc=='); 
+    '''
+    inject_data['battery'] = '''
+      self['MunAnti_aRzfnOcyerY_func'] = function(frame){
+        if (frame === null) {
                 console.error("Frame is null");
                 return;
             }
 
-            if (!frame['MunAnti_xYjGlskqmzJ_done']) {
-                (function(frame) {
-                  var rand = {
-                    "noise": function () {
-                      var SIGN = Math.random() < Math.random() ? -1 : 1;
-                      return Math.floor(Math.random() + SIGN * Math.random());
-                    },
-                    "sign": function () {
-                      const tmp = [-1, -1, -1, -1, -1, -1, +1, -1, -1, -1];
-                      const index = Math.floor(Math.random() * tmp.length);
-                      return tmp[index];
-                    }
-                  };
-                  //
-                  console.log('rand.sign()==',)
-                  Object.defineProperty(HTMLElement.prototype, "offsetHeight", {
-                    get () {
-                      const height = Math.floor(this.getBoundingClientRect().height);
-                      const valid = height && rand.sign() === 1;
-                      const result = valid ? height + rand.noise() : height;
-                      //
-                      if (valid && result !== height) {
-                        window.top.postMessage("font-fingerprint-defender-alert", '*');
-                      }
-                      //
-                      return result;
-                    }, configurable: true
-                  });
-                  //
-                  Object.defineProperty(HTMLElement.prototype, "offsetWidth", {
-                    get () {
-                      const width = Math.floor(this.getBoundingClientRect().width);
-                      const valid = width && rand.sign() === 1;
-                      const result = valid ? width + rand.noise() : width;
+            if (!frame['MunAnti_aRzfnOcyerY_done']) {
+                (function(frame, settings) {
+        if (!frame.navigator){
+            return;
+        }
 
-                      return result;
-                    }, configurable: true
-                  });
-                  //
-                  console.log('==fakeFonts=='); 
-                })(frame);
-            } else {
-                frame['MunAnti_xYjGlskqmzJ_done'] = true;
-                //console.log(frame);
-            }
-        };
+        // Random 2 dp value
+        let setting_level = Math.floor(Math.random()*100)/100;
 
-        self['MunAnti_xYjGlskqmzJ_func'](window);
+        function doUpdateProp(obj, prop, newVal){
+            let props = Object.getOwnPropertyDescriptor(obj, prop) || {configurable:true};
 
-        ["HTMLIFrameElement","HTMLFrameElement"].forEach(function(el) {
-            var wind = self[el].prototype.__lookupGetter__('contentWindow'),
-                cont = self[el].prototype.__lookupGetter__('contentDocument');
+            props["value"] = newVal;
+            props["configurable"] = true;
+            Object.defineProperty(obj, prop, props);
 
-            Object.defineProperties(self[el].prototype,{
-                contentWindow:{
-                    get:function(){
-                        if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return wind.apply(this);
+            return props;
+        }
 
-                        let frame = wind.apply(this);
-                        if (frame) self['MunAnti_xYjGlskqmzJ_func'](frame);
+        // To test: navigator.getBattery().then(a=>console.log(a));
 
-                        return frame;
-                    }
-                },
-                contentDocument:{
-                    get:function(){
-                        if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return cont.apply(this);
+        let BatteryPromise = new Promise(function(resolve, reject){
+            let BatteryManager = function(){
+                this.charging = true;
+                this.chargingTime = Infinity;
+                this.dischargingTime = Infinity;
+                this.level = setting_level;
 
-                        let frame = cont.apply(this);
-                        if (frame) self['MunAnti_xYjGlskqmzJ_func'](frame);
+                this.onchargingchange = null;
+                this.onchargingtimechange = null;
+                this.ondischargingtimechange = null;
+                this.onlevelchange = null;
 
-                        return frame;
-                    }
-                }
-            });
+                //window.top.postMessage("trace-protection::ran::battery::main", '*');
+            };
+
+            resolve(new BatteryManager())
         });
-      '''
-      inject_data['rects'] = '''
-        self['MunAnti_uwNeadmCrYP_func'] = function(frame){
-            if (frame === null) {
-                console.error("Frame is null");
-                return;
-            }
 
-            if (!frame['MunAnti_uwNeadmCrYP_done']) {
-                (function(frame){
-                  function doUpdateProp(obj, prop, newVal){
-                      let props = Object.getOwnPropertyDescriptor(obj, prop) || {configurable:true};
-                      props["value"] = newVal;
-                      props["configurable"] = true;
-                      Object.defineProperty(obj, prop, props);
-
-                      return props;
-                  }
-
-                  // Generate offset
-                  let off = Math.floor(Math.random()*100)/100; //{{rects}};
-                  console.log('=====off',off)
-                  function updatedRect(old,round,overwrite){
-                      function genOffset(round,val){
-                          return val + (round ? Math.round(off) : off);
-                      }
-                      let temp = overwrite === true ? old : new DOMRect();
-
-                      temp.top 	= genOffset(round,old.top);
-                      temp.right	= genOffset(round,old.right);
-                      temp.bottom = genOffset(round,old.bottom);
-                      temp.left 	= genOffset(round,old.left);
-                      temp.width 	= genOffset(round,old.width);
-                      temp.height = genOffset(round,old.height);
-                      temp.x 		= genOffset(round,old.x);
-                      temp.y 		= genOffset(round,old.y);
-
-                      return temp;
-                  }
-
-                  function getClientRectsProtection(el){
-                      if (window.location.host === "docs.google.com") return;
-
-                      let clientRects = frame[el].prototype.getClientRects;
-                      doUpdateProp(frame[el].prototype,"getClientRects",function(){
-                          let rects = clientRects.apply(this,arguments);
-                          let krect = Object.keys(rects);
-
-                          let DOMRectList = function(){};
-                          let list = new DOMRectList();
-                          list.length = krect.length;
-                          for (let i = 0;i<list.length;i++){
-                              if (krect[i] === "length") continue;
-                              list[i] = updatedRect(rects[krect[i]],false,false);
-                          }
-
-                          //window.top.postMessage("trace-protection::ran::clientrects::" + el + "get", '*');
-                          return list;
-                      });
-                      doUpdateProp(frame[el].prototype.getClientRects, "toString",function(){
-                          //window.top.postMessage("trace-protection::ran::clientrects::" + el + "getstring", '*');
-                          return "getClientRects() { [native code] }";
-                      });
-                      console.log('==getClientRectsProtection==')
-                  }
-                  function getBoundingClientRectsProtection(el){
-                      let boundingRects = frame[el].prototype.getBoundingClientRect;
-                      doUpdateProp(frame[el].prototype,"getBoundingClientRect",function(){
-                          let rect = boundingRects.apply(this,arguments);
-                          if (this === undefined || this === null) return rect;
-
-                          //window.top.postMessage("trace-protection::ran::clientrectsbounding::" + el + "get", '*');
-
-                          return updatedRect(rect,true,true);
-                      });
-                      doUpdateProp(frame[el].prototype.getBoundingClientRect, "toString",function(){
-                          //window.top.postMessage("trace-protection::ran::clientrectsbounding::" + el + "getstring", '*');
-                          return "getBoundingClientRect() { [native code] }";
-                      });
-                      console.log('==getBoundingClientRectsProtection==')
-                  }
-
-                  ["Element","Range"].forEach(function(el){
-                      // Check for broken frames
-                      if (frame[el] === undefined) return;
-
-                      // getClientRects
-                      getClientRectsProtection(el);
-
-                      // getBoundingClientRect
-                      getBoundingClientRectsProtection(el);
-                  });
-              })(frame);
-            } else {
-                frame['MunAnti_uwNeadmCrYP_done'] = true;
+        doUpdateProp(frame.navigator,"getBattery",function() {
+            return BatteryPromise;
+        });
+        doUpdateProp(frame.navigator.getBattery,"toString","function getBattery() { [native code] }");
+        })(frame);
+        } else {
+                frame['MunAnti_aRzfnOcyerY_done'] = true;
                 //console.log(frame);
             }
         };
 
         //console.log(window);
         //console.log(self);
-        self['MunAnti_uwNeadmCrYP_func'](window);
-        //self['MunAnti_uwNeadmCrYP_func'](self);
+        self['MunAnti_aRzfnOcyerY_func'](window);
+        //self['MunAnti_aRzfnOcyerY_func'](self);
 
         ["HTMLIFrameElement","HTMLFrameElement"].forEach(function(el) {
             var wind = self[el].prototype.__lookupGetter__('contentWindow'),
@@ -1107,7 +1208,7 @@ def get_inject_info(request):
                         if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return wind.apply(this);
 
                         let frame = wind.apply(this);
-                        if (frame) self['MunAnti_uwNeadmCrYP_func'](frame);
+                        if (frame) self['MunAnti_aRzfnOcyerY_func'](frame);
 
                         return frame;
                     }
@@ -1117,118 +1218,16 @@ def get_inject_info(request):
                         if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return cont.apply(this);
 
                         let frame = cont.apply(this);
-                        if (frame) self['MunAnti_uwNeadmCrYP_func'](frame);
+                        if (frame) self['MunAnti_aRzfnOcyerY_func'](frame);
 
                         return frame;
                     }
                 }
             });
         });
-      '''
-      inject_data['webrtc'] = '''
-        (function disableWebrtc() {
-          if (typeof window.MediaStreamTrack !== "undefined") window.MediaStreamTrack = undefined;
-          if (typeof window.RTCPeerConnection !== "undefined") window.RTCPeerConnection = undefined;
-          if (typeof window.RTCSessionDescription !== "undefined") window.RTCSessionDescription = undefined;
-          if (typeof window.webkitMediaStreamTrack !== "undefined") window.webkitMediaStreamTrack = undefined;
-          if (typeof window.webkitRTCPeerConnection !== "undefined") window.webkitRTCPeerConnection = undefined;
-          if (typeof window.webkitRTCSessionDescription !== "undefined") window.webkitRTCSessionDescription = undefined;
-        })();
-        console.log('==disableWebrtc=='); 
-      '''
-      inject_data['battery'] = '''
-        self['MunAnti_aRzfnOcyerY_func'] = function(frame){
-          if (frame === null) {
-                  console.error("Frame is null");
-                  return;
-              }
-
-              if (!frame['MunAnti_aRzfnOcyerY_done']) {
-                  (function(frame, settings) {
-          if (!frame.navigator){
-              return;
-          }
-
-          // Random 2 dp value
-          let setting_level = Math.floor(Math.random()*100)/100;
-
-          function doUpdateProp(obj, prop, newVal){
-              let props = Object.getOwnPropertyDescriptor(obj, prop) || {configurable:true};
-
-              props["value"] = newVal;
-              props["configurable"] = true;
-              Object.defineProperty(obj, prop, props);
-
-              return props;
-          }
-
-          // To test: navigator.getBattery().then(a=>console.log(a));
-
-          let BatteryPromise = new Promise(function(resolve, reject){
-              let BatteryManager = function(){
-                  this.charging = true;
-                  this.chargingTime = Infinity;
-                  this.dischargingTime = Infinity;
-                  this.level = setting_level;
-
-                  this.onchargingchange = null;
-                  this.onchargingtimechange = null;
-                  this.ondischargingtimechange = null;
-                  this.onlevelchange = null;
-
-                  //window.top.postMessage("trace-protection::ran::battery::main", '*');
-              };
-
-              resolve(new BatteryManager())
-          });
-
-          doUpdateProp(frame.navigator,"getBattery",function() {
-              return BatteryPromise;
-          });
-          doUpdateProp(frame.navigator.getBattery,"toString","function getBattery() { [native code] }");
-          })(frame);
-          } else {
-                  frame['MunAnti_aRzfnOcyerY_done'] = true;
-                  //console.log(frame);
-              }
-          };
-
-          //console.log(window);
-          //console.log(self);
-          self['MunAnti_aRzfnOcyerY_func'](window);
-          //self['MunAnti_aRzfnOcyerY_func'](self);
-
-          ["HTMLIFrameElement","HTMLFrameElement"].forEach(function(el) {
-              var wind = self[el].prototype.__lookupGetter__('contentWindow'),
-                  cont = self[el].prototype.__lookupGetter__('contentDocument');
-
-              Object.defineProperties(self[el].prototype,{
-                  contentWindow:{
-                      get:function(){
-                          if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return wind.apply(this);
-
-                          let frame = wind.apply(this);
-                          if (frame) self['MunAnti_aRzfnOcyerY_func'](frame);
-
-                          return frame;
-                      }
-                  },
-                  contentDocument:{
-                      get:function(){
-                          if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return cont.apply(this);
-
-                          let frame = cont.apply(this);
-                          if (frame) self['MunAnti_aRzfnOcyerY_func'](frame);
-
-                          return frame;
-                      }
-                  }
-              });
-          });
-      '''
-      
+    '''
     
-    return successResponse({'data':inject_data})
+    return successResponse({'data':json.dumps(inject_data)})
 
 
 @api_view(['GET', 'POST', 'PUT'])

@@ -250,9 +250,14 @@ def get_inject_info(request):
 
 
     '''
+    inject_data['UserAgent'] = '''
+    (function fakeUserAgent() {
+      Object.defineProperty(navigator, 'userAgent', {   value: '{{UserAgent}}',   configurable: true });
+    })();
+    '''
     inject_data['vendor'] = '''
       (function fakeVendor() {
-      Object.defineProperty(navigator, 'vendor', {   value: '{{vendor}}',   configurable: true });
+      Object.defineProperty(navigator, 'vendor', {   value: '{{vendor}}', configurable: true });
     })();     
     '''
     inject_data['MaxTouchPoints'] = '''
@@ -260,11 +265,6 @@ def get_inject_info(request):
       Object.defineProperty(navigator, 'maxTouchPoints', {   value: {{MaxTouchPoints}},   configurable: true });
     })();
     '''
-    inject_data['UserAgent'] = '''
-      (function fakeUserAgent() {
-        Object.defineProperty(navigator, 'userAgent', {   value: '{{UserAgent}}',   configurable: true });
-      })();
-      '''
     inject_data['audio'] = '''
     (function fakeAudioFinger() {
       const context = {
@@ -276,14 +276,14 @@ def get_inject_info(request):
               const results_1 = getChannelData.apply(this, arguments);
               if (context.BUFFER !== results_1) {
                 context.BUFFER = results_1;
-   
+
                 let obj2 = {{audio_content}};
                 for (const key of Object.keys(obj2)) {
                     results_1[key] = obj2[key]
                 }
               }
               return results_1;
-            }
+            }, configurable: true, writable: true
           });
         },
         "createAnalyser": function (e) {
@@ -301,11 +301,11 @@ def get_inject_info(request):
                     arguments[0][index] = new_value
                   }
                   return results_3;
-                }
+                }, configurable: true, writable: true
               });
               //
               return results_2;
-            }
+            }, configurable: true, writable: true
           });
         }
       };
@@ -316,51 +316,9 @@ def get_inject_info(request):
       context.createAnalyser(OfflineAudioContext);
       console.log('==fakeAudioFinger==',AudioBuffer);
     })();
-    const iframes = [...window.top.document.querySelectorAll("iframe[sandbox]")];
-    for (var i = 0; i < iframes.length; i++) {
-      if (iframes[i].contentWindow) {
-        if (iframes[i].contentWindow.AudioBuffer) {
-          if (iframes[i].contentWindow.AudioBuffer.prototype) {
-            if (iframes[i].contentWindow.AudioBuffer.prototype.getChannelData) {
-              iframes[i].contentWindow.AudioBuffer.prototype.getChannelData = AudioBuffer.prototype.getChannelData;
-            }
-          }
-        }
-
-        if (iframes[i].contentWindow.AudioContext) {
-          if (iframes[i].contentWindow.AudioContext.prototype) {
-            if (iframes[i].contentWindow.AudioContext.prototype.__proto__) {
-              if (iframes[i].contentWindow.AudioContext.prototype.__proto__.createAnalyser) {
-                iframes[i].contentWindow.AudioContext.prototype.__proto__.createAnalyser = AudioContext.prototype.__proto__.createAnalyser;
-              }
-            }
-          }
-        }
-
-        if (iframes[i].contentWindow.OfflineAudioContext) {
-          if (iframes[i].contentWindow.OfflineAudioContext.prototype) {
-            if (iframes[i].contentWindow.OfflineAudioContext.prototype.__proto__) {
-              if (iframes[i].contentWindow.OfflineAudioContext.prototype.__proto__.createAnalyser) {
-                iframes[i].contentWindow.OfflineAudioContext.prototype.__proto__.createAnalyser = OfflineAudioContext.prototype.__proto__.createAnalyser;
-              }
-            }
-          }
-        }
-
-        if (iframes[i].contentWindow.OfflineAudioContext) {
-          if (iframes[i].contentWindow.OfflineAudioContext.prototype) {
-            if (iframes[i].contentWindow.OfflineAudioContext.prototype.__proto__) {
-              if (iframes[i].contentWindow.OfflineAudioContext.prototype.__proto__.getChannelData) {
-                iframes[i].contentWindow.OfflineAudioContext.prototype.__proto__.getChannelData = OfflineAudioContext.prototype.__proto__.getChannelData;
-              }
-            }
-          }
-        }
-      }
-    }
     '''
     inject_data['canvas'] = '''
-    (function fakeCanvasFingerPrint() {
+      (function fakeCanvasFingerPrint() {
         const toBlob = HTMLCanvasElement.prototype.toBlob;
         const toDataURL = HTMLCanvasElement.prototype.toDataURL;
         const getImageData = CanvasRenderingContext2D.prototype.getImageData;
@@ -394,7 +352,7 @@ def get_inject_info(request):
         let ctxArr = [];
         let ctxInf = [];    
         let rawGetContext = HTMLCanvasElement.prototype.getContext
-     
+
         Object.defineProperty(HTMLCanvasElement.prototype, "getContext", {
             "value": function () {
                 let result = rawGetContext.apply(this, arguments);
@@ -403,19 +361,19 @@ def get_inject_info(request):
                     ctxInf.push({})
                 }
                 return result;
-            }
+            }, configurable: true
         });
-     
+
         Object.defineProperty(HTMLCanvasElement.prototype.constructor, "length", {
-            "value": 1
+            "value": 1, configurable: true, writable: true
         });
-     
+
         Object.defineProperty(HTMLCanvasElement.prototype.constructor, "toString", {
-            "value": () => "function getContext() { [native code] }"
+            "value": () => "function getContext() { [native code] }", configurable: true, writable: true
         });
-     
+
         Object.defineProperty(CanvasRenderingContext2D.prototype.constructor, "name", {
-            "value": "getContext"
+            "value": "getContext", configurable: true
         });
         let rawArc = CanvasRenderingContext2D.prototype.arc
         Object.defineProperty(CanvasRenderingContext2D.prototype, "arc", {
@@ -423,19 +381,19 @@ def get_inject_info(request):
                 let ctxIdx = ctxArr.indexOf(this);
                 ctxInf[ctxIdx].useArc = true;
                 return rawArc.apply(this, arguments);
-            }
+            }, configurable: true, writable: true
         });
-     
+
         Object.defineProperty(CanvasRenderingContext2D.prototype.arc, "length", {
-            "value": 5
+            "value": 5, configurable: true, writable: true
         });
-     
+
         Object.defineProperty(CanvasRenderingContext2D.prototype.arc, "toString", {
-            "value": () => "function arc() { [native code] }"
+            "value": () => "function arc() { [native code] }", configurable: true, writable: true
         });
-     
+
         Object.defineProperty(CanvasRenderingContext2D.prototype.arc, "name", {
-            "value": "arc"
+            "value": "arc", configurable: true, writable: true
         });    
         const rawFillText = CanvasRenderingContext2D.prototype.fillText;
         Object.defineProperty(CanvasRenderingContext2D.prototype, "fillText", {
@@ -443,75 +401,76 @@ def get_inject_info(request):
                 let ctxIdx = ctxArr.indexOf(this);
                 ctxInf[ctxIdx].useFillText = true;
                 return rawFillText.apply(this, arguments);
-            }
+            }, configurable: true, writable: true
         });
-     
+
         Object.defineProperty(CanvasRenderingContext2D.prototype.fillText, "length", {
-            "value": 4
+            "value": 4, configurable: true, writable: true
         });
-     
+
         Object.defineProperty(CanvasRenderingContext2D.prototype.fillText, "toString", {
-            "value": () => "function fillText() { [native code] }"
+            "value": () => "function fillText() { [native code] }", configurable: true, writable: true
         });
-     
+
         Object.defineProperty(CanvasRenderingContext2D.prototype.fillText, "name", {
-            "value": "fillText"
+            "value": "fillText", configurable: true, writable: true
         }); 
         //
         Object.defineProperty(HTMLCanvasElement.prototype, "toBlob", {
             "value": function () {
               noisify(this, this.getContext("2d"));
               return toBlob.apply(this, arguments);
-            }
+            }, configurable: true, writable: true
         });
         Object.defineProperty(HTMLCanvasElement.prototype.toBlob, "length", {
-            "value": 1
+            "value": 1, configurable: true, writable: true
         });
-     
+
         Object.defineProperty(HTMLCanvasElement.prototype.toBlob, "toString", {
-            "value": () => "function toBlob() { [native code] }"
+            "value": () => "function toBlob() { [native code] }", configurable: true, writable: true
         });
-     
+
         Object.defineProperty(HTMLCanvasElement.prototype.toBlob, "name", {
-            "value": "toBlob"
+            "value": "toBlob", configurable: true, writable: true
         });  
         //
         Object.defineProperty(HTMLCanvasElement.prototype, "toDataURL", {
             "value": function () {
               noisify(this, this.getContext("2d"));
               return toDataURL.apply(this, arguments);
-            }
+            }, configurable: true, writable: true
         });
         Object.defineProperty(HTMLCanvasElement.prototype.toDataURL, "length", {
-            "value": 0
+            "value": 0, configurable: true, writable: true
         });
-     
+
         Object.defineProperty(HTMLCanvasElement.prototype.toDataURL, "toString", {
-            "value": () => "function toDataURL() { [native code] }"
+            "value": () => "function toDataURL() { [native code] }", configurable: true, writable: true
         });
-     
+
         Object.defineProperty(HTMLCanvasElement.prototype.toDataURL, "name", {
-            "value": "toDataURL"
+            "value": "toDataURL", configurable: true, writable: true
         });
         //
         Object.defineProperty(CanvasRenderingContext2D.prototype, "getImageData", {
             "value": function () {
               noisify(this.canvas, this);
               return getImageData.apply(this, arguments);
-            }
+            }, configurable: true, writable: true
         });
         Object.defineProperty(CanvasRenderingContext2D.prototype.getImageData, "length", {
-            "value": 4
+            "value": 4, configurable: true, writable: true
         });
-     
+
         Object.defineProperty(CanvasRenderingContext2D.prototype.getImageData, "toString", {
-            "value": () => "function getImageData() { [native code] }"
+            "value": () => "function getImageData() { [native code] }", configurable: true, writable: true
         });
-     
+
         Object.defineProperty(CanvasRenderingContext2D.prototype.getImageData, "name", {
-            "value": "getImageData"
+            "value": "getImageData", configurable: true, writable: true
         });
-    })();    
+      })(); 
+
     '''
     inject_data['time_zone'] = '''
     ( function fakeTimeZone() {
@@ -709,252 +668,573 @@ def get_inject_info(request):
     })();    
     '''
     inject_data['webgl'] = '''
-     (function fakeWebglFingerPrint() {
-      var config = {
-        "random": {
-          "value": function () {
-            return Math.random();
-          },
-          "item": function (e) {
-            var rand = e.length * config.random.value();
-            return e[Math.floor(rand)];
-          },
-          "number": function (power) {
-            var tmp = [];
-            for (var i = 0; i < power.length; i++) {
-              tmp.push(Math.pow(2, power[i]));
-            }
-            /*  */
-            return config.random.item(tmp);
-          },
-          "int": function (power) {
-            var tmp = [];
-            for (var i = 0; i < power.length; i++) {
-              var n = Math.pow(2, power[i]);
-              tmp.push(new Int32Array([n, n]));
-            }
-            /*  */
-            return config.random.item(tmp);
-          },
-          "float": function (power) {
-            var tmp = [];
-            for (var i = 0; i < power.length; i++) {
-              var n = Math.pow(2, power[i]);
-              tmp.push(new Float32Array([1, n]));
-            }
-            /*  */
-            return config.random.item(tmp);
+      self['MunAnti_evbONQiZwfG_func'] = function(frame){
+          if (frame === null) {
+              console.error("Frame is null");
+              return;
           }
-        },
-        "spoof": {
-          "webgl": {
-            "buffer": function (target) {
-              var proto = target.prototype ? target.prototype : target.__proto__;
-              const bufferData = proto.bufferData;
-              Object.defineProperty(proto, "bufferData", {
-                "value": function () {
-                  var index = Math.floor({{gl_index}} * arguments[1].length);
-                  var noise = arguments[1][index] !== undefined ? 0.1 * {{gl_noise}} * arguments[1][index] : 0;
-                  //
-                  arguments[1][index] = arguments[1][index] + noise;
-                  //
-                  return bufferData.apply(this, arguments);
-                }
-              });
-            },
-            "parameter": function (target) {
-              var proto = target.prototype ? target.prototype : target.__proto__;
-              const getParameter = proto.getParameter;
-              Object.defineProperty(proto, "getParameter", {
-                "value": function () {
-                  //window.top.postMessage("webgl-fingerprint-defender-alert", '*');
-                  //
-                  if (arguments[0] === 3415) return 0;
-                  else if (arguments[0] === 3414) return 24;
-                  else if (arguments[0] === 3410) return 8;
-                  else if (arguments[0] === 3411) return 8;
-                  else if (arguments[0] === 3412) return 8;
-                  else if (arguments[0] === 3413) return 8;
-                  else if (arguments[0] === 3415) return 8;
-                  else if (arguments[0] === 35375) return 24;
-                  else if (arguments[0] === 35374) return 24;
-                  else if (arguments[0] === 35380) return 4;
-                  else if (arguments[0] === 34045) return 12;
-                  else if (arguments[0] === 36348) return 32;
-                  else if (arguments[0] === 35371) return 12;
-                  else if (arguments[0] === 37154) return 64;
-                  else if (arguments[0] === 35659) return 128;
-                  else if (arguments[0] === 35978) return 64;
-                  else if (arguments[0] === 35979) return 4;
-                  else if (arguments[0] === 35968) return 64;
-                  else if (arguments[0] === 34852) return 8;
-                  else if (arguments[0] === 36063) return 8;
-                  else if (arguments[0] === 36183) return 4;
-                  else if (arguments[0] === 7936) return "WebKit";
-                  else if (arguments[0] === 37445) return "{{37445}}";
-                  else if (arguments[0] === 7937) return "WebKit WebGL";
-                  else if (arguments[0] === 3379) return {{3379}};
-                  else if (arguments[0] === 36347) return {{36347}};
-                  else if (arguments[0] === 34076) return {{34076}};
-                  else if (arguments[0] === 34024) return {{34024}};
-                  else if (arguments[0] === 3386) return {{3386}};
-                  else if (arguments[0] === 3413) return {{3413}};
-                  else if (arguments[0] === 3412) return {{3412}};
-                  else if (arguments[0] === 3411) return {{3411}};
-                  else if (arguments[0] === 3410) return {{3410}};
-                  else if (arguments[0] === 34047) return {{34047}};
-                  else if (arguments[0] === 34930) return {{34930}};
-                  else if (arguments[0] === 34921) return {{34921}};
-                  else if (arguments[0] === 34324) return Math.floor({{34324}} * 6100) + 8192;
-                  else if (arguments[0] === 35376) return Math.floor({{35376}} * 36384) + 10384;
-                  else if (arguments[0] === 35377) return Math.floor({{35377}} * 50188) + 20188;
-                  else if (arguments[0] === 35379) return Math.floor({{35379}} * 50188) + 20188;
-                  else if (arguments[0] === 35658) return Math.floor({{35658}} * 36) + 1000;
-                  else if (arguments[0] === 35660) return {{35660}};
-                  else if (arguments[0] === 35661) return {{35661}};                  
-                  else if (arguments[0] === 36349) return {{36349}};
-                  else if (arguments[0] === 33902) return {{33902}};
-                  else if (arguments[0] === 33901) return {{33901}};
-                  else if (arguments[0] === 37446) return "{{37446}}";
-                  else if (arguments[0] === 7938) return "{{7938}}";
-                  else if (arguments[0] === 35724) return "{{35724}}";
-                  //
-                  return getParameter.apply(this, arguments);
-                }
-              });
-            }
+
+          if (!frame['MunAnti_evbONQiZwfG_done']) {
+              (function(frame, settings) {
+                var config = {
+                  "random": {
+                    "value": function () {
+                      return Math.random();
+                    },
+                    "item": function (e) {
+                      var rand = e.length * config.random.value();
+                      return e[Math.floor(rand)];
+                    },
+                    "number": function (power) {
+                      var tmp = [];
+                      for (var i = 0; i < power.length; i++) {
+                        tmp.push(Math.pow(2, power[i]));
+                      }
+                      /*  */
+                      return config.random.item(tmp);
+                    },
+                    "int": function (power) {
+                      var tmp = [];
+                      for (var i = 0; i < power.length; i++) {
+                        var n = Math.pow(2, power[i]);
+                        tmp.push(new Int32Array([n, n]));
+                      }
+                      /*  */
+                      return config.random.item(tmp);
+                    },
+                    "float": function (power) {
+                      var tmp = [];
+                      for (var i = 0; i < power.length; i++) {
+                        var n = Math.pow(2, power[i]);
+                        tmp.push(new Float32Array([1, n]));
+                      }
+                      /*  */
+                      return config.random.item(tmp);
+                    }
+                  },
+                  "spoof": {
+                    "webgl": {
+                      "buffer": function (target) {
+                        var proto = target.prototype ? target.prototype : target.__proto__;
+                        const bufferData = proto.bufferData;
+                        Object.defineProperty(proto, "bufferData", {
+                          "value": function () {
+                            var index = Math.floor({{gl_index}} * arguments[1].length);
+                            var noise = arguments[1][index] !== undefined ? 0.1 * {{gl_noise}} * arguments[1][index] : 0;
+                            //
+                            arguments[1][index] = arguments[1][index] + noise;
+                            //
+                            return bufferData.apply(this, arguments);
+                          }, configurable: true, writable: true
+                        });
+                      },
+                      "parameter": function (target) {
+                        var proto = target.prototype ? target.prototype : target.__proto__;
+                        const getParameter = proto.getParameter;
+                        Object.defineProperty(proto, "getParameter", {
+                          "value": function () {
+                            //window.top.postMessage("webgl-fingerprint-defender-alert", '*');
+                            //
+                            if (arguments[0] === 3415) return 0;
+                            else if (arguments[0] === 3414) return 24;
+                            else if (arguments[0] === 3410) return 8;
+                            else if (arguments[0] === 3411) return 8;
+                            else if (arguments[0] === 3412) return 8;
+                            else if (arguments[0] === 3413) return 8;
+                            else if (arguments[0] === 3415) return 8;
+                            else if (arguments[0] === 35375) return 24;
+                            else if (arguments[0] === 35374) return 24;
+                            else if (arguments[0] === 35380) return 4;
+                            else if (arguments[0] === 34045) return 12;
+                            else if (arguments[0] === 36348) return 32;
+                            else if (arguments[0] === 35371) return 12;
+                            else if (arguments[0] === 37154) return 64;
+                            else if (arguments[0] === 35659) return 128;
+                            else if (arguments[0] === 35978) return 64;
+                            else if (arguments[0] === 35979) return 4;
+                            else if (arguments[0] === 35968) return 64;
+                            else if (arguments[0] === 34852) return 8;
+                            else if (arguments[0] === 36063) return 8;
+                            else if (arguments[0] === 36183) return 4;
+                            else if (arguments[0] === 7936) return "WebKit";
+                            else if (arguments[0] === 37445) return "{{37445}}";
+                            else if (arguments[0] === 7937) return "WebKit WebGL";
+                            else if (arguments[0] === 3379) return {{3379}};
+                            else if (arguments[0] === 36347) return {{36347}};
+                            else if (arguments[0] === 34076) return {{34076}};
+                            else if (arguments[0] === 34024) return {{34024}};
+                            else if (arguments[0] === 3386) return {{3386}};
+                            else if (arguments[0] === 3413) return {{3413}};
+                            else if (arguments[0] === 3412) return {{3412}};
+                            else if (arguments[0] === 3411) return {{3411}};
+                            else if (arguments[0] === 3410) return {{3410}};
+                            else if (arguments[0] === 34047) return {{34047}};
+                            else if (arguments[0] === 34930) return {{34930}};
+                            else if (arguments[0] === 34921) return {{34921}};
+                            else if (arguments[0] === 34324) return Math.floor({{34324}} * 6100) + 8192;
+                            else if (arguments[0] === 35376) return Math.floor({{35376}} * 36384) + 10384;
+                            else if (arguments[0] === 35377) return Math.floor({{35377}} * 50188) + 20188;
+                            else if (arguments[0] === 35379) return Math.floor({{35379}} * 50188) + 20188;
+                            else if (arguments[0] === 35658) return Math.floor({{35658}} * 36) + 1000;
+                            else if (arguments[0] === 35660) return {{35660}};
+                            else if (arguments[0] === 35661) return {{35661}};                  
+                            else if (arguments[0] === 36349) return {{36349}};
+                            else if (arguments[0] === 33902) return {{33902}};
+                            else if (arguments[0] === 33901) return {{33901}};
+                            else if (arguments[0] === 37446) return "{{37446}}";
+                            else if (arguments[0] === 7938) return "{{7938}}";
+                            else if (arguments[0] === 35724) return "{{35724}}";
+                            //
+                            return getParameter.apply(this, arguments);
+                          }, configurable: true, writable: true
+                        });
+                      }
+                    }
+                  }
+                };  
+                config.spoof.webgl.buffer(WebGLRenderingContext);
+                config.spoof.webgl.buffer(WebGL2RenderingContext);
+                config.spoof.webgl.parameter(WebGLRenderingContext);
+                config.spoof.webgl.parameter(WebGL2RenderingContext);
+                console.log('==fakeWebglFingerPrint==');
+              })(frame);
+          } else {
+              frame['MunAnti_evbONQiZwfG_done'] = true;
+              //console.log(frame);
           }
-        }
-      };  
-      config.spoof.webgl.buffer(WebGLRenderingContext);
-      config.spoof.webgl.buffer(WebGL2RenderingContext);
-      config.spoof.webgl.parameter(WebGLRenderingContext);
-      config.spoof.webgl.parameter(WebGL2RenderingContext);
-      console.log('==fakeWebglFingerPrint==');
-    })();   
+      };
+      self['MunAnti_evbONQiZwfG_func'](window);
+      ["HTMLIFrameElement","HTMLFrameElement"].forEach(function(el) {
+          var wind = self[el].prototype.__lookupGetter__('contentWindow'),
+              cont = self[el].prototype.__lookupGetter__('contentDocument');
+
+          Object.defineProperties(self[el].prototype,{
+              contentWindow:{
+                  get:function(){
+                      if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return wind.apply(this);
+
+                      let frame = wind.apply(this);
+                      if (frame) self['MunAnti_evbONQiZwfG_func'](frame);
+
+                      return frame;
+                  }
+              },
+              contentDocument:{
+                  get:function(){
+                      if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return cont.apply(this);
+
+                      let frame = cont.apply(this);
+                      if (frame) self['MunAnti_evbONQiZwfG_func'](frame);
+
+                      return frame;
+                  }
+              }
+          });
+      });   
     '''
     inject_data['network'] = '''
-      (function FakeNetwork() {
-        var nothingtest = 1;
-        var nothingtest2 = 1; 
-        function processFunctions(scope) {
-          var nothingtest3 = 1;
-          nothingtest = nothingtest + 1;
-          nothingtest2 = nothingtest2 + 1;
-          nothingtest3 = nothingtest3 + 1;
-        if (nothingtest2 < 3000) {
-          scope.Object.defineProperty(navigator.connection, "downlink", {enumerable: true, configurable: true, get: function() {
-            return [4.9,4.9,4.05,7.15,6.15,8.15,4.15,6.15,5.15,4.9,4.9,4.9,4.9,4.9,4.9,4.9,5,5,8.05,3.3,3.9,4.9,5.15,5.4,5.15,4.15,7.1,7.15,7.3,8,8.15,4.55,6.5,6.95,6.2,4.15][Math.floor(Math.random() * 36)];
-          }});
-            scope.Object.defineProperty(navigator.connection, "effectiveType", {enumerable: true, configurable: true, get: function() {
-            return '4g';
-          }});
-            scope.Object.defineProperty(navigator.connection, "rtt", {enumerable: true, configurable: true, get: function() {
-            return [50,150,100,100,150,150,150,150,100,100,100,100,100,150,150][Math.floor(Math.random() * 15)];
-          }});
-            scope.Object.defineProperty(navigator.connection, "saveData", {enumerable: true, configurable: true, get: function() {
-            return false;
-          }});
-              
-          } else {
-          }				
+      self['MunAnti_mGqvslHkDLh_func'] = function(frame){
+        if (frame === null) {
+          console.error("Frame is null");
+          return;
         }
-        processFunctions(window);
-          var iwin = HTMLIFrameElement.prototype.__lookupGetter__('contentWindow'), idoc = HTMLIFrameElement.prototype.__lookupGetter__('contentDocument');
-          Object.defineProperties(HTMLIFrameElement.prototype, {
-            contentWindow: {
-              get: function() {
-                var frame = iwin.apply(this);
-                if (this.src && this.src.indexOf('//') != -1 && location.host != this.src.split('/')[2]) return frame;
-                try { frame.HTMLCanvasElement } catch (err) { /* do nothing*/ }
-                try { processFunctions(frame); } catch (err) { /* do nothing*/ }
-                return frame;
-              }
-            },
-            contentDocument: {
-              get: function() {
-                if (this.src && this.src.indexOf('//') != -1 && location.host != this.src.split('/')[2]) return idoc.apply(this);
-                var frame = iwin.apply(this);
-                try { frame.HTMLCanvasElement } catch (err) { /* do nothing*/ }
-                processFunctions(frame);
-                return idoc.apply(this);
-              }
+
+        if (!frame['MunAnti_mGqvslHkDLh_done']) {
+          (function(frame, settings){
+            if (!frame.navigator || !frame.NetworkInformation){
+              return;
             }
-        });
-        console.log('==fakeNetwork==');  
-      }());
+
+            function doUpdateProp(obj, prop, newVal){
+                let props = Object.getOwnPropertyDescriptor(obj, prop) || {configurable:true};
+
+                props["value"] = newVal;
+                props["configurable"] = true;
+                Object.defineProperty(obj, prop, props);
+
+                return props;
+            }
+            var rand = function(max){
+                return Math.floor(Math.random()*max);
+            };
+            var randArr = function(arr){
+                return arr[Math.floor(Math.random() * arr.length)];
+            };
+
+            let NetworkInformation = function(){
+                this.downlink = rand(10);
+                this.downlinkMax = Infinity;
+                this.effectiveType = "4g"; // randArr(["4g","3g","2g"]);
+                this.rtt = randArr([50,75,100,125,150]);
+                this.saveData = false;
+                this.type = randArr(["wifi","ethernet","other"]);
+
+                this.onchange = null;
+                this.ontypechange = null;
+
+                this.__proto__ = frame.NetworkInformation;
+            };
+            let fakeNet = new NetworkInformation();
+
+            fakeNet.addEventListener = function(){};
+
+            doUpdateProp(frame.navigator,"connection", fakeNet);
+          })(frame);
+        } else {
+          frame['MunAnti_mGqvslHkDLh_done'] = true;
+          //console.log(frame);
+          }
+        };
+
+        //console.log(window);
+        //console.log(self);
+        self['MunAnti_mGqvslHkDLh_func'](window);
+        //self['MunAnti_mGqvslHkDLh_func'](self);
+
+        ["HTMLIFrameElement","HTMLFrameElement"].forEach(function(el) {
+            var wind = self[el].prototype.__lookupGetter__('contentWindow'),
+                cont = self[el].prototype.__lookupGetter__('contentDocument');
+
+            Object.defineProperties(self[el].prototype,{
+                contentWindow:{
+                    get:function(){
+                        if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return wind.apply(this);
+
+                        let frame = wind.apply(this);
+                        if (frame) self['MunAnti_mGqvslHkDLh_func'](frame);
+
+                        return frame;
+                    }
+                },
+                contentDocument:{
+                    get:function(){
+                        if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return cont.apply(this);
+
+                        let frame = cont.apply(this);
+                        if (frame) self['MunAnti_mGqvslHkDLh_func'](frame);
+
+                        return frame;
+                }
+            }
+          });
+      });
     '''
     inject_data['fonts'] = '''
-    (function fakeFonts() {
-      var rand = {
-        "noise": function () {
-          var SIGN = Math.random() < Math.random() ? -1 : 1;
-          return Math.floor(Math.random() + SIGN * Math.random());
-        },
-        "sign": function () {
-          const tmp = [-1, -1, -1, -1, -1, -1, +1, -1, -1, -1];
-          const index = Math.floor(Math.random() * tmp.length);
-          return tmp[index];
-        }
-      };
-      //
-      console.log('rand.sign()==',)
-      Object.defineProperty(HTMLElement.prototype, "offsetHeight", {
-        get () {
-          const height = Math.floor(this.getBoundingClientRect().height);
-          const valid = height && rand.sign() === 1;
-          const result = valid ? height + rand.noise() : height;
-          //
-          if (valid && result !== height) {
-            window.top.postMessage("font-fingerprint-defender-alert", '*');
+      self['MunAnti_xYjGlskqmzJ_func'] = function(frame){
+          if (frame === null) {
+              console.error("Frame is null");
+              return;
           }
-          //
-          return result;
-        }
-      });
-      //
-      Object.defineProperty(HTMLElement.prototype, "offsetWidth", {
-        get () {
-          const width = Math.floor(this.getBoundingClientRect().width);
-          const valid = width && rand.sign() === 1;
-          const result = valid ? width + rand.noise() : width;
 
-          return result;
-        }
+          if (!frame['MunAnti_xYjGlskqmzJ_done']) {
+              (function(frame) {
+                var rand = {
+                  "noise": function () {
+                    var SIGN = Math.random() < Math.random() ? -1 : 1;
+                    return Math.floor(Math.random() + SIGN * Math.random());
+                  },
+                  "sign": function () {
+                    const tmp = [-1, -1, -1, -1, -1, -1, +1, -1, -1, -1];
+                    const index = Math.floor(Math.random() * tmp.length);
+                    return tmp[index];
+                  }
+                };
+                //
+                console.log('rand.sign()==',)
+                Object.defineProperty(HTMLElement.prototype, "offsetHeight", {
+                  get () {
+                    const height = Math.floor(this.getBoundingClientRect().height);
+                    const valid = height && rand.sign() === 1;
+                    const result = valid ? height + rand.noise() : height;
+                    //
+                    if (valid && result !== height) {
+                      window.top.postMessage("font-fingerprint-defender-alert", '*');
+                    }
+                    //
+                    return result;
+                  }, configurable: true
+                });
+                //
+                Object.defineProperty(HTMLElement.prototype, "offsetWidth", {
+                  get () {
+                    const width = Math.floor(this.getBoundingClientRect().width);
+                    const valid = width && rand.sign() === 1;
+                    const result = valid ? width + rand.noise() : width;
+
+                    return result;
+                  }, configurable: true
+                });
+                //
+                console.log('==fakeFonts=='); 
+              })(frame);
+          } else {
+              frame['MunAnti_xYjGlskqmzJ_done'] = true;
+              //console.log(frame);
+          }
+      };
+
+      self['MunAnti_xYjGlskqmzJ_func'](window);
+
+      ["HTMLIFrameElement","HTMLFrameElement"].forEach(function(el) {
+          var wind = self[el].prototype.__lookupGetter__('contentWindow'),
+              cont = self[el].prototype.__lookupGetter__('contentDocument');
+
+          Object.defineProperties(self[el].prototype,{
+              contentWindow:{
+                  get:function(){
+                      if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return wind.apply(this);
+
+                      let frame = wind.apply(this);
+                      if (frame) self['MunAnti_xYjGlskqmzJ_func'](frame);
+
+                      return frame;
+                  }
+              },
+              contentDocument:{
+                  get:function(){
+                      if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return cont.apply(this);
+
+                      let frame = cont.apply(this);
+                      if (frame) self['MunAnti_xYjGlskqmzJ_func'](frame);
+
+                      return frame;
+                  }
+              }
+          });
       });
-      //
-      console.log('==fakeFonts==');     
-    })();    
     '''
     inject_data['rects'] = '''
-    (function fakeClientRects() {
-      var _nativegetClientRects = Element.prototype.getClientRects; 
-      Element.prototype['getClientRects'] = function() { 
-      return [{
-              'top': 0,
-              'bottom': 0,
-              'left': 0,
-              'right': 0,
-              'height': 0,
-              'width': 0
-          }];
+      self['MunAnti_uwNeadmCrYP_func'] = function(frame){
+          if (frame === null) {
+              console.error("Frame is null");
+              return;
+          }
+
+          if (!frame['MunAnti_uwNeadmCrYP_done']) {
+              (function(frame){
+                function doUpdateProp(obj, prop, newVal){
+                    let props = Object.getOwnPropertyDescriptor(obj, prop) || {configurable:true};
+                    props["value"] = newVal;
+                    props["configurable"] = true;
+                    Object.defineProperty(obj, prop, props);
+
+                    return props;
+                }
+
+                // Generate offset test
+                let off = Math.floor(Math.random()*100)/100; //{{rects}};
+                console.log('=====off',off)
+                function updatedRect(old,round,overwrite){
+                    function genOffset(round,val){
+                        return val + (round ? Math.round(off) : off);
+                    }
+                    let temp = overwrite === true ? old : new DOMRect();
+
+                    temp.top 	= genOffset(round,old.top);
+                    temp.right	= genOffset(round,old.right);
+                    temp.bottom = genOffset(round,old.bottom);
+                    temp.left 	= genOffset(round,old.left);
+                    temp.width 	= genOffset(round,old.width);
+                    temp.height = genOffset(round,old.height);
+                    temp.x 		= genOffset(round,old.x);
+                    temp.y 		= genOffset(round,old.y);
+
+                    return temp;
+                }
+
+                function getClientRectsProtection(el){
+                    if (window.location.host === "docs.google.com") return;
+
+                    let clientRects = frame[el].prototype.getClientRects;
+                    doUpdateProp(frame[el].prototype,"getClientRects",function(){
+                        let rects = clientRects.apply(this,arguments);
+                        let krect = Object.keys(rects);
+
+                        let DOMRectList = function(){};
+                        let list = new DOMRectList();
+                        list.length = krect.length;
+                        for (let i = 0;i<list.length;i++){
+                            if (krect[i] === "length") continue;
+                            list[i] = updatedRect(rects[krect[i]],false,false);
+                        }
+
+                        //window.top.postMessage("trace-protection::ran::clientrects::" + el + "get", '*');
+                        return list;
+                    });
+                    doUpdateProp(frame[el].prototype.getClientRects, "toString",function(){
+                        //window.top.postMessage("trace-protection::ran::clientrects::" + el + "getstring", '*');
+                        return "getClientRects() { [native code] }";
+                    });
+                    console.log('==getClientRectsProtection==')
+                }
+                function getBoundingClientRectsProtection(el){
+                    let boundingRects = frame[el].prototype.getBoundingClientRect;
+                    doUpdateProp(frame[el].prototype,"getBoundingClientRect",function(){
+                        let rect = boundingRects.apply(this,arguments);
+                        if (this === undefined || this === null) return rect;
+
+                        //window.top.postMessage("trace-protection::ran::clientrectsbounding::" + el + "get", '*');
+
+                        return updatedRect(rect,true,true);
+                    });
+                    doUpdateProp(frame[el].prototype.getBoundingClientRect, "toString",function(){
+                        //window.top.postMessage("trace-protection::ran::clientrectsbounding::" + el + "getstring", '*');
+                        return "getBoundingClientRect() { [native code] }";
+                    });
+                    console.log('==getBoundingClientRectsProtection==')
+                }
+
+                ["Element","Range"].forEach(function(el){
+                    // Check for broken frames
+                    if (frame[el] === undefined) return;
+
+                    // getClientRects
+                    getClientRectsProtection(el);
+
+                    // getBoundingClientRect
+                    getBoundingClientRectsProtection(el);
+                });
+            })(frame);
+          } else {
+              frame['MunAnti_uwNeadmCrYP_done'] = true;
+              //console.log(frame);
+          }
       };
-      console.log('==fakeClientRects==');     
-    })();
-    '''  
+
+      //console.log(window);
+      //console.log(self);
+      self['MunAnti_uwNeadmCrYP_func'](window);
+      //self['MunAnti_uwNeadmCrYP_func'](self);
+
+      ["HTMLIFrameElement","HTMLFrameElement"].forEach(function(el) {
+          var wind = self[el].prototype.__lookupGetter__('contentWindow'),
+              cont = self[el].prototype.__lookupGetter__('contentDocument');
+
+          Object.defineProperties(self[el].prototype,{
+              contentWindow:{
+                  get:function(){
+                      if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return wind.apply(this);
+
+                      let frame = wind.apply(this);
+                      if (frame) self['MunAnti_uwNeadmCrYP_func'](frame);
+
+                      return frame;
+                  }
+              },
+              contentDocument:{
+                  get:function(){
+                      if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return cont.apply(this);
+
+                      let frame = cont.apply(this);
+                      if (frame) self['MunAnti_uwNeadmCrYP_func'](frame);
+
+                      return frame;
+                  }
+              }
+          });
+      });
+    '''
     inject_data['webrtc'] = '''
-        (function disableWebrtc() {
-          if (typeof window.MediaStreamTrack !== "undefined") window.MediaStreamTrack = undefined;
-          if (typeof window.RTCPeerConnection !== "undefined") window.RTCPeerConnection = undefined;
-          if (typeof window.RTCSessionDescription !== "undefined") window.RTCSessionDescription = undefined;
-          if (typeof window.webkitMediaStreamTrack !== "undefined") window.webkitMediaStreamTrack = undefined;
-          if (typeof window.webkitRTCPeerConnection !== "undefined") window.webkitRTCPeerConnection = undefined;
-          if (typeof window.webkitRTCSessionDescription !== "undefined") window.webkitRTCSessionDescription = undefined;
-        })();
-        console.log('==disableWebrtc=='); 
-      '''
-          
-    
+      (function disableWebrtc() {
+        if (typeof window.MediaStreamTrack !== "undefined") window.MediaStreamTrack = undefined;
+        if (typeof window.RTCPeerConnection !== "undefined") window.RTCPeerConnection = undefined;
+        if (typeof window.RTCSessionDescription !== "undefined") window.RTCSessionDescription = undefined;
+        if (typeof window.webkitMediaStreamTrack !== "undefined") window.webkitMediaStreamTrack = undefined;
+        if (typeof window.webkitRTCPeerConnection !== "undefined") window.webkitRTCPeerConnection = undefined;
+        if (typeof window.webkitRTCSessionDescription !== "undefined") window.webkitRTCSessionDescription = undefined;
+      })();
+      console.log('==disableWebrtc=='); 
+    '''
+    inject_data['battery'] = '''
+      self['MunAnti_aRzfnOcyerY_func'] = function(frame){
+        if (frame === null) {
+                console.error("Frame is null");
+                return;
+            }
+
+            if (!frame['MunAnti_aRzfnOcyerY_done']) {
+                (function(frame, settings) {
+        if (!frame.navigator){
+            return;
+        }
+
+        // Random 2 dp value
+        let setting_level = Math.floor(Math.random()*100)/100;
+
+        function doUpdateProp(obj, prop, newVal){
+            let props = Object.getOwnPropertyDescriptor(obj, prop) || {configurable:true};
+
+            props["value"] = newVal;
+            props["configurable"] = true;
+            Object.defineProperty(obj, prop, props);
+
+            return props;
+        }
+
+        // To test: navigator.getBattery().then(a=>console.log(a));
+
+        let BatteryPromise = new Promise(function(resolve, reject){
+            let BatteryManager = function(){
+                this.charging = true;
+                this.chargingTime = Infinity;
+                this.dischargingTime = Infinity;
+                this.level = setting_level;
+
+                this.onchargingchange = null;
+                this.onchargingtimechange = null;
+                this.ondischargingtimechange = null;
+                this.onlevelchange = null;
+
+                //window.top.postMessage("trace-protection::ran::battery::main", '*');
+            };
+
+            resolve(new BatteryManager())
+        });
+
+        doUpdateProp(frame.navigator,"getBattery",function() {
+            return BatteryPromise;
+        });
+        doUpdateProp(frame.navigator.getBattery,"toString","function getBattery() { [native code] }");
+        })(frame);
+        } else {
+                frame['MunAnti_aRzfnOcyerY_done'] = true;
+                //console.log(frame);
+            }
+        };
+
+        //console.log(window);
+        //console.log(self);
+        self['MunAnti_aRzfnOcyerY_func'](window);
+        //self['MunAnti_aRzfnOcyerY_func'](self);
+
+        ["HTMLIFrameElement","HTMLFrameElement"].forEach(function(el) {
+            var wind = self[el].prototype.__lookupGetter__('contentWindow'),
+                cont = self[el].prototype.__lookupGetter__('contentDocument');
+
+            Object.defineProperties(self[el].prototype,{
+                contentWindow:{
+                    get:function(){
+                        if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return wind.apply(this);
+
+                        let frame = wind.apply(this);
+                        if (frame) self['MunAnti_aRzfnOcyerY_func'](frame);
+
+                        return frame;
+                    }
+                },
+                contentDocument:{
+                    get:function(){
+                        if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return cont.apply(this);
+
+                        let frame = cont.apply(this);
+                        if (frame) self['MunAnti_aRzfnOcyerY_func'](frame);
+
+                        return frame;
+                    }
+                }
+            });
+        });
+    '''
     
     return successResponse({'data':inject_data})
 

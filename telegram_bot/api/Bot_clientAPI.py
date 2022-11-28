@@ -63,11 +63,20 @@ def get_browser_profiles(request):
 @signature_test()
 @user_passes_test(banned_check)
 def get_accounts_emails(request):
+    account_type = request.GET.get('account_type')
+    action = request.GET.get('action')
     list_objects = AccountsEmails.objects.filter(owner=request.user).order_by('-id')
-
+    if account_type:
+      if action == 'create_account':
+        list_objects = list_objects.exclude(account_data__type__value=account_type).filter(status=0)
+        pks = list_objects.values_list('pk', flat=True)
+        random_pk = choice(pks)
+        list_objects = AccountsEmails.objects.filter(pk=random_pk)
+        list_objects.update(status=3)
+      else:
+        list_objects = list_objects.filter(account_data__type__value=account_type)
     accounts_data = AccountsEmailsSerializer(list_objects, many=True)
 
-    ##
     return successResponse({'data':accounts_data.data})
   
 @api_view(['GET', 'POST', 'PUT'])

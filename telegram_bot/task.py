@@ -283,20 +283,25 @@ def import_account_data():
     dict_ssn={}
     result = f.read()
     for line in result.split('\n'):
+        print(line)
         line_split = line.split('|')
         if line_split:
-            data = {}
-            data['first_name'] = line_split[2].strip()
-            data['last_name'] = line_split[3].strip()
-            data['address1'] = line_split[4].strip()
-            data['city'] = line_split[5].strip()
-            data['state'] = line_split[6].strip()
-            data['zipcode'] = line_split[7].strip()
-            data['ssn'] = line_split[9].strip()
-            data['dob'] = line_split[10].strip()
-            if line_split[9].strip() not in dict_ssn:
-                list_create.append(AccountsData(**data))
-                dict_ssn[line_split[9].strip()] = 1
+            try:
+                data = {}
+                data['first_name'] = line_split[2].strip()
+                data['last_name'] = line_split[3].strip()
+                data['address1'] = line_split[4].strip()
+                data['city'] = line_split[5].strip()
+                data['state'] = line_split[6].strip()
+                data['zipcode'] = line_split[7].strip()
+                data['ssn'] = line_split[9].strip()
+                data['dob'] = line_split[10].strip()
+                if line_split[9].strip() not in dict_ssn:
+                    list_create.append(AccountsData(**data))
+                    dict_ssn[line_split[9].strip()] = 1
+            except Exception as e:
+                print(e)
+                continue
     if list_create:
         AccountsData.objects.bulk_create(list_create)
 # if __name__ == '__main__':

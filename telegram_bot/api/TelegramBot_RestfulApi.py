@@ -61,7 +61,7 @@ class AccountsDataSerializer(serializers.ModelSerializer):
 		model = AccountsData
 		fields = ('id', 'created', 'modified', 'created_by','customer',
 				'modified_by', 'type', 'owner',
-				'note', 'fisrt_name', 'last_name',
+				'note', 'first_name', 'last_name',
 				'address1', 'address2',
 				'city','state',
     			'zipcode','dob',
@@ -70,6 +70,7 @@ class AccountsDataSerializer(serializers.ModelSerializer):
           )
 	customer = serializers.SlugRelatedField(slug_field='username', read_only=True);
 	owner = serializers.SlugRelatedField(slug_field='username', read_only=True);
+
 class AccountsEmailsSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = AccountsEmails

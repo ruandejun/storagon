@@ -68,13 +68,13 @@ def get_accounts_emails(request):
     list_objects = AccountsEmails.objects.filter(owner=request.user).order_by('-id')
     if account_type:
       if action == 'create_account':
-        list_objects = list_objects.exclude(account_data__type__value=account_type).filter(status=0)
+        list_objects = list_objects.exclude(accounts_emails_set__type__value=account_type).filter(status=0)
         pks = list_objects.values_list('pk', flat=True)
         random_pk = choice(pks)
         list_objects = AccountsEmails.objects.filter(pk=random_pk)
         list_objects.update(status=3)
       else:
-        list_objects = list_objects.filter(account_data__type__value=account_type)
+        list_objects = list_objects.filter(accounts_emails_set__type__value=account_type)
     accounts_data = AccountsEmailsSerializer(list_objects, many=True)
 
     return successResponse({'data':accounts_data.data})
@@ -111,7 +111,7 @@ def update_accounts_emails(request):
       accounts_emails_obj.update(**update_post['update_data'])
       accounts_emails_obj = AccountsEmails.objects.get(
           pk=update_post['id'], profile_owner=request.user)
-      accounts_emails_data = MunProxiesSerializer(accounts_emails_obj)
+      accounts_emails_data = AccountsEmailsSerializer(accounts_emails_obj)
     return successResponse({'data':accounts_emails_data.data})
   
 
@@ -170,21 +170,56 @@ def add_accounts_created(request):
 @user_passes_test(banned_check)
 def get_accounts_data(request):
     
-    if request.GET['action'] == 'refesh':
-        list_objects = AccountsData.objects.filter(owner=None)
-        if request.GET['state']:
+    if request.GET.get('action') == 'fresh_data':
+        list_objects = AccountsData.objects.filter(owner=None, status=0)
+        if request.GET.get('state'):
             list_objects = list_objects.objects.filter(state=request.GET['state'])
-        elif request.GET['city']:
+        if request.GET.get('city'):
             list_objects = list_objects.objects.filter(city=request.GET['city'])
+        if request.Get.get('account_type'):
+            list_objects = list_objects.objects.filter(account_data_created_set__type__value=request.GET['account_type'])
+        if request.Get.get('email_type'):
+            list_objects = list_objects.objects.filter(account_data_emails_set__type__value=request.GET['email_type']) 
+            
         pks = list_objects.objects.values_list('pk', flat=True)
         random_pk = choice(pks)
-        random_obj = list_objects.objects.get(pk=random_pk)
-        accounts_data = AccountsDataSerializer(random_obj)
+        random_obj = list_objects.objects.filter(pk=random_pk)
+        accounts_data = AccountsDataSerializer(random_obj, many=True)
+        random_obj.update(status=3)
     else:
         list_objects = AccountsData.objects.filter(owner=request.user)
         accounts_data = AccountsDataSerializer(list_objects, many=True)
     return successResponse({'data':accounts_data.data})
-  
+
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
+def add_accounts_data(request):
+    list_playload = json.loads(request.body)
+    list_create = []
+    for line in list_playload:
+      list_create.append(AccountsData(**line))
+    if list_create:
+        AccountsData.objects.bulk_create(list_create)
+    return successResponse() 
+
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
+def update_accounts_data(request):
+    if request.method == 'GET':
+        return successResponse({"ok": "Get request processed"})
+    update_post = json.loads(request.body)
+    accounts_emails_obj = AccountsData.objects.filter(pk=update_post['id'], owner=request.user)
+    if accounts_emails_obj.exists():
+      accounts_emails_obj.update(**update_post['update_data'])
+      accounts_emails_obj = AccountsData.objects.get(
+          pk=update_post['id'], profile_owner=request.user)
+      accounts_emails_data = AccountsDataSerializer(accounts_emails_obj)
+    return successResponse({'data':accounts_emails_data.data})
+
 
 
 @api_view(['GET', 'POST', 'PUT'])

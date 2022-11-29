@@ -5,7 +5,7 @@ from storagon import settings
 from telebot import types
 from servermain.models import AccountBalance, AccountCurrency
 from django.contrib.auth.models import User
-from telegram_bot.models import MunAnti, UserTelegram, AccountsSelling
+from telegram_bot.models import AccountsData, MunAnti, UserTelegram, AccountsSelling
 from storagon.enum import *
 from servermain.controllers import UserController
 from telegram_bot.api.TelegramBot_RestfulApi import AccountsSellingSerializer
@@ -275,7 +275,30 @@ def createCoinBaseAddress(name="BTC"):
     print('created',created)
 
     return created
-
+def import_account_data():
+    print('==import_account_data==')
+    # | 1 | Thomas | Neumann | 321 BERKLEY PL | STAUNTON | VA | 24401 | 540-255-7790 | 461791163 | Aug  8 1973 12:00AM | tan5f@virginia.edu | University Of Virginia | 0.00 | 434-243-2833
+    f = open('account_data.txt', 'r')
+    list_create = []
+    dict_ssn={}
+    result = f.read()
+    for line in result.split('\n'):
+        line_split = line.split('|')
+        if line_split:
+            data = {}
+            data['first_name'] = line_split[2].strip()
+            data['last_name'] = line_split[3].strip()
+            data['address1'] = line_split[4].strip()
+            data['city'] = line_split[5].strip()
+            data['state'] = line_split[6].strip()
+            data['zipcode'] = line_split[7].strip()
+            data['ssn'] = line_split[9].strip()
+            data['dob'] = line_split[10].strip()
+            if line_split[9].strip() not in dict_ssn:
+                list_create.append(AccountsData(**data))
+                dict_ssn[line_split[9].strip()] = 1
+    if list_create:
+        AccountsData.objects.bulk_create(list_create)
 # if __name__ == '__main__':
 #     # get_tbk_coupon('python')
 #     print('===task===')

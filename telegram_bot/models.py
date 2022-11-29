@@ -246,7 +246,6 @@ class AccountsData(models.Model):
     modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True, db_index=True)
 
     created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
-    
     modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)
 
     customer = models.ForeignKey(User, verbose_name=_("customer"), related_name="accounts_data_customer_set", null=True,
@@ -261,7 +260,7 @@ class AccountsData(models.Model):
     
     note = models.TextField(verbose_name=_("note"), blank=True, null=True)
     
-    fisrt_name = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    first_name = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     
     last_name = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     
@@ -316,7 +315,6 @@ class AccountsEmails(models.Model):
 
     customer = models.ForeignKey(User, verbose_name=_("customer"), related_name="accounts_emails_customer_set", null=True,
                                  blank=True, on_delete=models.PROTECT)
-    
     accounts_data = models.ForeignKey(AccountsData, verbose_name=_("account_data"), related_name="account_data_emails_set", null=True,
                                  blank=True, on_delete=models.PROTECT)
     

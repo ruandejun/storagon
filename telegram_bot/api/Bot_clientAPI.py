@@ -180,9 +180,9 @@ def get_accounts_data(request):
         if request.GET.get('email_type'):
             list_objects = list_objects.filter(account_data_emails_set__type__value=request.GET['email_type']) 
             
-        pks = list_objects.objects.values_list('pk', flat=True)
+        pks = list_objects.values_list('pk', flat=True)
         random_pk = choice(pks)
-        random_obj = list_objects.objects.filter(pk=random_pk)
+        random_obj = AccountsData.objects.filter(pk=random_pk)
         accounts_data = AccountsDataSerializer(random_obj, many=True)
         random_obj.update(status=3)
     else:

@@ -278,7 +278,7 @@ def createCoinBaseAddress(name="BTC"):
 def import_account_data():
     print('==import_account_data==')
     # | 1 | Thomas | Neumann | 321 BERKLEY PL | STAUNTON | VA | 24401 | 540-255-7790 | 461791163 | Aug  8 1973 12:00AM | tan5f@virginia.edu | University Of Virginia | 0.00 | 434-243-2833
-    f = open('account_data.txt', 'r')
+    f = open('account_data.txt', 'r', encoding="ISO-8859-1")
     list_create = []
     dict_ssn={}
     result = f.read()

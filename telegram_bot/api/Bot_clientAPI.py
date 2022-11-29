@@ -168,17 +168,16 @@ def add_accounts_created(request):
 @login_required_ajax()
 @signature_test()
 @user_passes_test(banned_check)
-def get_accounts_data(request):
-    
-    if request.GET.get('action') == 'fresh_data':
+def get_accounts_data(request):  
+    if request.GET.get('action') == 'create_accounts':
         list_objects = AccountsData.objects.filter(owner=None, status=0)
         if request.GET.get('state'):
             list_objects = list_objects.objects.filter(state=request.GET['state'])
         if request.GET.get('city'):
             list_objects = list_objects.objects.filter(city=request.GET['city'])
-        if request.Get.get('account_type'):
+        if request.GET.get('account_type'):
             list_objects = list_objects.objects.filter(account_data_created_set__type__value=request.GET['account_type'])
-        if request.Get.get('email_type'):
+        if request.GET.get('email_type'):
             list_objects = list_objects.objects.filter(account_data_emails_set__type__value=request.GET['email_type']) 
             
         pks = list_objects.objects.values_list('pk', flat=True)

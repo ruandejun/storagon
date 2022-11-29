@@ -176,9 +176,9 @@ def get_accounts_data(request):
         if request.GET.get('city'):
             list_objects = list_objects.filter(city=request.GET['city'])
         if request.GET.get('account_type'):
-            list_objects = list_objects.filter(account_data_created_set__type__value=request.GET['account_type'])
+            list_objects = list_objects.exclude(account_data_created_set__type__value=request.GET['account_type'])
         if request.GET.get('email_type'):
-            list_objects = list_objects.filter(account_data_emails_set__type__value=request.GET['email_type']) 
+            list_objects = list_objects.exclude(account_data_emails_set__type__value=request.GET['email_type']) 
             
         pks = list_objects.values_list('pk', flat=True)
         random_pk = choice(pks)

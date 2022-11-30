@@ -67,7 +67,7 @@ def get_accounts_emails(request):
     action = request.GET.get('action')
     list_objects = AccountsEmails.objects.filter(owner=request.user).order_by('-id')
     if account_type:
-      if action == 'create_account':
+      if action == 'create_accounts':
         list_objects = list_objects.exclude(accounts_emails_set__type__value=account_type).filter(status=0)
         pks = list_objects.values_list('pk', flat=True)
         random_pk = choice(pks)

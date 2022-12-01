@@ -152,11 +152,27 @@ def add_accounts_created(request):
     email = accounts_playload['email']  
     password = accounts_playload['password']
     type = accounts_playload['type']
+    if 'email_id' in accounts_playload:
+      email_id = accounts_playload['email_id']
+    else:
+      email_id = ''
+    if 'data_id' in accounts_playload:
+      data_id = accounts_playload['data_id']
+    else:
+      data_id = ''
     profile_objects = BrowserProfiles.objects.filter(pk=profile_id)
     if not profile_objects.exists():
         return errorResponse('Profile not found', 400) 
     account_type, created = AccountsType.objects.get_or_create(value=type.lower())
     accounts_data = AccountsCreated(email=email, password=password, browser_profiles=profile_objects[0], type=account_type, owner=request.user)
+    if data_id:
+      data_objects = AccountsData.objects.filter(pk=data_id)
+      if data_objects.exists:
+        accounts_data.accounts_data = data_objects[0]
+    if email_id:
+      email_objects = AccountsEmails.objects.filter(pk=email_id)
+      if email_objects.exists:
+        accounts_data.accounts_emails = email_objects[0]      
     accounts_data.save()
     accounts_data.refresh_from_db()
     data_serializer = AccountsCreatedSerializer(accounts_data, many=False)

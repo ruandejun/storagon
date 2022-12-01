@@ -281,7 +281,7 @@ class AccountsData(models.Model):
     price = models.DecimalField(verbose_name=_("price"), default=decimal.Decimal(0), max_digits=MONEY_MAX_DIGITS,
                                 decimal_places=MONEY_DECIMAL_PLACES, validators=[MinValueValidator(0)], db_index=True)
 
-    signup_ip = models.CharField(blank=True, null=True, max_length=999, db_index=True)
+    signup_ip = models.TextField(verbose_name=_("signup_ip"), blank=True, null=True)
 
     status = models.PositiveSmallIntegerField(choices=AccountStatus.ChoiceList(), default=AccountStatus.normal,
                                                    db_index=True)

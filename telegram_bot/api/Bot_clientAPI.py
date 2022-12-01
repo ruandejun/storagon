@@ -176,7 +176,7 @@ def add_accounts_created(request):
     if 'phone_number' in accounts_playload:
       accounts_data.phone_number = accounts_playload['phone_number']
     if 'signup_ip' in accounts_playload:
-      accounts_data.signup_ip = accounts_playload['signup_ip']
+      accounts_data.signup_ip = str(accounts_playload['signup_ip'])
     accounts_data.save()
     accounts_data.refresh_from_db()
     data_serializer = AccountsCreatedSerializer(accounts_data, many=False)

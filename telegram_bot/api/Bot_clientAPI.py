@@ -73,6 +73,12 @@ def get_accounts_emails(request):
         random_pk = choice(pks)
         list_objects = AccountsEmails.objects.filter(pk=random_pk)
         list_objects.update(status=3)
+      elif action == 'list_signup_emails':
+        list_objects = list_objects.exclude(accounts_emails_set__type__value=account_type).filter(status=0)
+        # pks = list_objects.values_list('pk', flat=True)
+        # random_pk = choice(pks)
+        # list_objects = AccountsEmails.objects.filter(pk=random_pk)
+        # list_objects.update(status=3)  
       else:
         list_objects = list_objects.filter(accounts_emails_set__type__value=account_type)
     accounts_data = AccountsEmailsSerializer(list_objects, many=True)

@@ -20,6 +20,7 @@ urlpatterns = [
 	url(r'^remove_mun_proxies/', remove_mun_proxies, name='remove_mun_proxies'),
 	url(r'^remove_profiles/', remove_profiles, name='remove_profiles'),
 	url(r'^remove_accounts/', remove_accounts, name='remove_accounts'),
+	url(r'^remove_emails/', remove_emails, name='remove_emails'),
 	url(r'^get_browser_profiles/', get_browser_profiles, name='get_browser_profiles'),
 	url(r'^get_mun_proxies/', get_mun_proxies, name='get_mun_proxies'),
 	url(r'^get_accounts_emails/', get_accounts_emails, name='get_accounts_emails'),

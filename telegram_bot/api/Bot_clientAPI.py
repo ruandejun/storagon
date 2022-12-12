@@ -336,7 +336,7 @@ def get_inject_info(request):
               const results_1 = getChannelData.apply(this, arguments);
               if (context.BUFFER !== results_1) {
                 context.BUFFER = results_1;
-
+  
                 let obj2 = {{audio_content}};
                 for (const key of Object.keys(obj2)) {
                     results_1[key] = obj2[key]
@@ -412,7 +412,7 @@ def get_inject_info(request):
         let ctxArr = [];
         let ctxInf = [];    
         let rawGetContext = HTMLCanvasElement.prototype.getContext
-
+    
         Object.defineProperty(HTMLCanvasElement.prototype, "getContext", {
             "value": function () {
                 let result = rawGetContext.apply(this, arguments);
@@ -423,15 +423,15 @@ def get_inject_info(request):
                 return result;
             }, configurable: true
         });
-
+    
         Object.defineProperty(HTMLCanvasElement.prototype.constructor, "length", {
             "value": 1, configurable: true, writable: true
         });
-
+    
         Object.defineProperty(HTMLCanvasElement.prototype.constructor, "toString", {
             "value": () => "function getContext() { [native code] }", configurable: true, writable: true
         });
-
+    
         Object.defineProperty(CanvasRenderingContext2D.prototype.constructor, "name", {
             "value": "getContext", configurable: true
         });
@@ -443,15 +443,15 @@ def get_inject_info(request):
                 return rawArc.apply(this, arguments);
             }, configurable: true, writable: true
         });
-
+    
         Object.defineProperty(CanvasRenderingContext2D.prototype.arc, "length", {
             "value": 5, configurable: true, writable: true
         });
-
+    
         Object.defineProperty(CanvasRenderingContext2D.prototype.arc, "toString", {
             "value": () => "function arc() { [native code] }", configurable: true, writable: true
         });
-
+    
         Object.defineProperty(CanvasRenderingContext2D.prototype.arc, "name", {
             "value": "arc", configurable: true, writable: true
         });    
@@ -463,15 +463,15 @@ def get_inject_info(request):
                 return rawFillText.apply(this, arguments);
             }, configurable: true, writable: true
         });
-
+    
         Object.defineProperty(CanvasRenderingContext2D.prototype.fillText, "length", {
             "value": 4, configurable: true, writable: true
         });
-
+    
         Object.defineProperty(CanvasRenderingContext2D.prototype.fillText, "toString", {
             "value": () => "function fillText() { [native code] }", configurable: true, writable: true
         });
-
+    
         Object.defineProperty(CanvasRenderingContext2D.prototype.fillText, "name", {
             "value": "fillText", configurable: true, writable: true
         }); 
@@ -485,11 +485,11 @@ def get_inject_info(request):
         Object.defineProperty(HTMLCanvasElement.prototype.toBlob, "length", {
             "value": 1, configurable: true, writable: true
         });
-
+    
         Object.defineProperty(HTMLCanvasElement.prototype.toBlob, "toString", {
             "value": () => "function toBlob() { [native code] }", configurable: true, writable: true
         });
-
+    
         Object.defineProperty(HTMLCanvasElement.prototype.toBlob, "name", {
             "value": "toBlob", configurable: true, writable: true
         });  
@@ -503,11 +503,11 @@ def get_inject_info(request):
         Object.defineProperty(HTMLCanvasElement.prototype.toDataURL, "length", {
             "value": 0, configurable: true, writable: true
         });
-
+    
         Object.defineProperty(HTMLCanvasElement.prototype.toDataURL, "toString", {
             "value": () => "function toDataURL() { [native code] }", configurable: true, writable: true
         });
-
+    
         Object.defineProperty(HTMLCanvasElement.prototype.toDataURL, "name", {
             "value": "toDataURL", configurable: true, writable: true
         });
@@ -521,11 +521,11 @@ def get_inject_info(request):
         Object.defineProperty(CanvasRenderingContext2D.prototype.getImageData, "length", {
             "value": 4, configurable: true, writable: true
         });
-
+    
         Object.defineProperty(CanvasRenderingContext2D.prototype.getImageData, "toString", {
             "value": () => "function getImageData() { [native code] }", configurable: true, writable: true
         });
-
+    
         Object.defineProperty(CanvasRenderingContext2D.prototype.getImageData, "name", {
             "value": "getImageData", configurable: true, writable: true
         });
@@ -728,471 +728,406 @@ def get_inject_info(request):
     })();    
     '''
     inject_data['webgl'] = '''
-      self['MunAnti_evbONQiZwfG_func'] = function(frame){
-          if (frame === null) {
-              console.error("Frame is null");
-              return;
-          }
-
-          if (!frame['MunAnti_evbONQiZwfG_done']) {
-              (function(frame, settings) {
-                var config = {
-                  "random": {
-                    "value": function () {
-                      return Math.random();
-                    },
-                    "item": function (e) {
-                      var rand = e.length * config.random.value();
-                      return e[Math.floor(rand)];
-                    },
-                    "number": function (power) {
-                      var tmp = [];
-                      for (var i = 0; i < power.length; i++) {
-                        tmp.push(Math.pow(2, power[i]));
-                      }
-                      /*  */
-                      return config.random.item(tmp);
-                    },
-                    "int": function (power) {
-                      var tmp = [];
-                      for (var i = 0; i < power.length; i++) {
-                        var n = Math.pow(2, power[i]);
-                        tmp.push(new Int32Array([n, n]));
-                      }
-                      /*  */
-                      return config.random.item(tmp);
-                    },
-                    "float": function (power) {
-                      var tmp = [];
-                      for (var i = 0; i < power.length; i++) {
-                        var n = Math.pow(2, power[i]);
-                        tmp.push(new Float32Array([1, n]));
-                      }
-                      /*  */
-                      return config.random.item(tmp);
-                    }
-                  },
-                  "spoof": {
-                    "webgl": {
-                      "buffer": function (target) {
-                        var proto = target.prototype ? target.prototype : target.__proto__;
-                        const bufferData = proto.bufferData;
-                        Object.defineProperty(proto, "bufferData", {
-                          "value": function () {
-                            var index = Math.floor({{gl_index}} * arguments[1].length);
-                            var noise = arguments[1][index] !== undefined ? 0.1 * {{gl_noise}} * arguments[1][index] : 0;
-                            //
-                            arguments[1][index] = arguments[1][index] + noise;
-                            //
-                            return bufferData.apply(this, arguments);
-                          }, configurable: true, writable: true
-                        });
-                      },
-                      "parameter": function (target) {
-                        var proto = target.prototype ? target.prototype : target.__proto__;
-                        const getParameter = proto.getParameter;
-                        Object.defineProperty(proto, "getParameter", {
-                          "value": function () {
-                            //window.top.postMessage("webgl-fingerprint-defender-alert", '*');
-                            //
-                            if (arguments[0] === 3415) return 0;
-                            else if (arguments[0] === 3414) return 24;
-                            else if (arguments[0] === 3410) return 8;
-                            else if (arguments[0] === 3411) return 8;
-                            else if (arguments[0] === 3412) return 8;
-                            else if (arguments[0] === 3413) return 8;
-                            else if (arguments[0] === 3415) return 8;
-                            else if (arguments[0] === 35375) return 24;
-                            else if (arguments[0] === 35374) return 24;
-                            else if (arguments[0] === 35380) return 4;
-                            else if (arguments[0] === 34045) return 12;
-                            else if (arguments[0] === 36348) return 32;
-                            else if (arguments[0] === 35371) return 12;
-                            else if (arguments[0] === 37154) return 64;
-                            else if (arguments[0] === 35659) return 128;
-                            else if (arguments[0] === 35978) return 64;
-                            else if (arguments[0] === 35979) return 4;
-                            else if (arguments[0] === 35968) return 64;
-                            else if (arguments[0] === 34852) return 8;
-                            else if (arguments[0] === 36063) return 8;
-                            else if (arguments[0] === 36183) return 4;
-                            else if (arguments[0] === 7936) return "WebKit";
-                            else if (arguments[0] === 37445) return "{{37445}}";
-                            else if (arguments[0] === 7937) return "WebKit WebGL";
-                            else if (arguments[0] === 3379) return {{3379}};
-                            else if (arguments[0] === 36347) return {{36347}};
-                            else if (arguments[0] === 34076) return {{34076}};
-                            else if (arguments[0] === 34024) return {{34024}};
-                            else if (arguments[0] === 3386) return {{3386}};
-                            else if (arguments[0] === 3413) return {{3413}};
-                            else if (arguments[0] === 3412) return {{3412}};
-                            else if (arguments[0] === 3411) return {{3411}};
-                            else if (arguments[0] === 3410) return {{3410}};
-                            else if (arguments[0] === 34047) return {{34047}};
-                            else if (arguments[0] === 34930) return {{34930}};
-                            else if (arguments[0] === 34921) return {{34921}};
-                            else if (arguments[0] === 34324) return Math.floor({{34324}} * 6100) + 8192;
-                            else if (arguments[0] === 35376) return Math.floor({{35376}} * 36384) + 10384;
-                            else if (arguments[0] === 35377) return Math.floor({{35377}} * 50188) + 20188;
-                            else if (arguments[0] === 35379) return Math.floor({{35379}} * 50188) + 20188;
-                            else if (arguments[0] === 35658) return Math.floor({{35658}} * 36) + 1000;
-                            else if (arguments[0] === 35660) return {{35660}};
-                            else if (arguments[0] === 35661) return {{35661}};                  
-                            else if (arguments[0] === 36349) return {{36349}};
-                            else if (arguments[0] === 33902) return {{33902}};
-                            else if (arguments[0] === 33901) return {{33901}};
-                            else if (arguments[0] === 37446) return "{{37446}}";
-                            else if (arguments[0] === 7938) return "{{7938}}";
-                            else if (arguments[0] === 35724) return "{{35724}}";
-                            //
-                            return getParameter.apply(this, arguments);
-                          }, configurable: true, writable: true
-                        });
-                      }
-                    }
-                  }
-                };  
-                config.spoof.webgl.buffer(WebGLRenderingContext);
-                config.spoof.webgl.buffer(WebGL2RenderingContext);
-                config.spoof.webgl.parameter(WebGLRenderingContext);
-                config.spoof.webgl.parameter(WebGL2RenderingContext);
-                console.log('==fakeWebglFingerPrint==');
-              })(frame);
-          } else {
-              frame['MunAnti_evbONQiZwfG_done'] = true;
-              //console.log(frame);
-          }
-      };
-      self['MunAnti_evbONQiZwfG_func'](window);
-      ["HTMLIFrameElement","HTMLFrameElement"].forEach(function(el) {
-          var wind = self[el].prototype.__lookupGetter__('contentWindow'),
-              cont = self[el].prototype.__lookupGetter__('contentDocument');
-
-          Object.defineProperties(self[el].prototype,{
-              contentWindow:{
-                  get:function(){
-                      if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return wind.apply(this);
-
-                      let frame = wind.apply(this);
-                      if (frame) self['MunAnti_evbONQiZwfG_func'](frame);
-
-                      return frame;
-                  }
-              },
-              contentDocument:{
-                  get:function(){
-                      if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return cont.apply(this);
-
-                      let frame = cont.apply(this);
-                      if (frame) self['MunAnti_evbONQiZwfG_func'](frame);
-
-                      return frame;
-                  }
+      (function fakeWebgl() {
+        var config = {
+          "random": {
+            "value": function () {
+              return Math.random();
+            },
+            "item": function (e) {
+              var rand = e.length * config.random.value();
+              return e[Math.floor(rand)];
+            },
+            "number": function (power) {
+              var tmp = [];
+              for (var i = 0; i < power.length; i++) {
+                tmp.push(Math.pow(2, power[i]));
               }
-          });
-      });   
+              /*  */
+              return config.random.item(tmp);
+            },
+            "int": function (power) {
+              var tmp = [];
+              for (var i = 0; i < power.length; i++) {
+                var n = Math.pow(2, power[i]);
+                tmp.push(new Int32Array([n, n]));
+              }
+              /*  */
+              return config.random.item(tmp);
+            },
+            "float": function (power) {
+              var tmp = [];
+              for (var i = 0; i < power.length; i++) {
+                var n = Math.pow(2, power[i]);
+                tmp.push(new Float32Array([1, n]));
+              }
+              /*  */
+              return config.random.item(tmp);
+            }
+          },
+          "spoof": {
+            "webgl": {
+              "buffer": function (target) {
+                var proto = target.prototype ? target.prototype : target.__proto__;
+                const bufferData = proto.bufferData;
+                Object.defineProperty(proto, "bufferData", {
+                  "value": function () {
+                    var index = Math.floor({{gl_index}} * arguments[1].length);
+                    var noise = arguments[1][index] !== undefined ? 0.1 * {{gl_noise}} * arguments[1][index] : 0;
+                    //
+                    arguments[1][index] = arguments[1][index] + noise;
+                    //
+                    return bufferData.apply(this, arguments);
+                  }, configurable: true, writable: true
+                });
+              },
+              "parameter": function (target) {
+                var proto = target.prototype ? target.prototype : target.__proto__;
+                const getParameter = proto.getParameter;
+                Object.defineProperty(proto, "getParameter", {
+                  "value": function () {
+                    //window.top.postMessage("webgl-fingerprint-defender-alert", '*');
+                    //
+                    if (arguments[0] === 3415) return {{3412}};
+                    else if (arguments[0] === 3414) return {{3412}};
+                    else if (arguments[0] === 3415) return {{3412}};
+                    else if (arguments[0] === 35375) return {{3412}};
+                    else if (arguments[0] === 35374) return {{3412}};
+                    else if (arguments[0] === 35380) return {{3412}};
+                    else if (arguments[0] === 34045) return {{3412}};
+                    else if (arguments[0] === 36348) return {{3412}};
+                    else if (arguments[0] === 35371) return {{3412}};
+                    else if (arguments[0] === 37154) return {{3412}};
+                    else if (arguments[0] === 35659) return {{3412}};
+                    else if (arguments[0] === 35978) return {{3412}};
+                    else if (arguments[0] === 35979) return {{3412}};
+                    else if (arguments[0] === 35968) return {{3412}};
+                    else if (arguments[0] === 34852) return {{3412}};
+                    else if (arguments[0] === 36063) return {{3412}};
+                    else if (arguments[0] === 36183) return {{3412}};
+                    else if (arguments[0] === 7936) return "WebKit";
+                    else if (arguments[0] === 37445) return "{{37445}}";
+                    else if (arguments[0] === 7937) return "WebKit WebGL";
+                    else if (arguments[0] === 3379) return {{3379}};
+                    else if (arguments[0] === 36347) return {{36347}};
+                    else if (arguments[0] === 34076) return {{34076}};
+                    else if (arguments[0] === 34024) return {{34024}};
+                    else if (arguments[0] === 3386) return {{3386}};
+                    else if (arguments[0] === 3413) return {{3413}};
+                    else if (arguments[0] === 3412) return {{3412}};
+                    else if (arguments[0] === 3411) return {{3411}};
+                    else if (arguments[0] === 3410) return {{3410}};
+                    else if (arguments[0] === 34047) return {{34047}};
+                    else if (arguments[0] === 34930) return {{34930}};
+                    else if (arguments[0] === 34921) return {{34921}};
+                    else if (arguments[0] === 34324) return Math.floor({{34324}} * 6100) + 8192;
+                    else if (arguments[0] === 35376) return Math.floor({{35376}} * 36384) + 10384;
+                    else if (arguments[0] === 35377) return Math.floor({{35377}} * 50188) + 20188;
+                    else if (arguments[0] === 35379) return Math.floor({{35379}} * 50188) + 20188;
+                    else if (arguments[0] === 35658) return Math.floor({{35658}} * 36) + 1000;
+                    else if (arguments[0] === 35660) return {{35660}};
+                    else if (arguments[0] === 35661) return {{35661}};                  
+                    else if (arguments[0] === 36349) return {{36349}};
+                    else if (arguments[0] === 33902) return {{33902}};
+                    else if (arguments[0] === 33901) return {{33901}};
+                    else if (arguments[0] === 37446) return "{{37446}}";
+                    else if (arguments[0] === 7938) return "{{7938}}";
+                    else if (arguments[0] === 35724) return "{{35724}}";
+                    //
+                    return getParameter.apply(this, arguments);
+                  }, configurable: true, writable: true
+                });
+              }
+            }
+          }
+        };  
+        config.spoof.webgl.buffer(WebGLRenderingContext);
+        config.spoof.webgl.buffer(WebGL2RenderingContext);
+        config.spoof.webgl.parameter(WebGLRenderingContext);
+        config.spoof.webgl.parameter(WebGL2RenderingContext);
+        console.log('==fakeWebglFingerPrint==');
+      })();
+
     '''
     inject_data['network'] = '''
-      self['MunAnti_mGqvslHkDLh_func'] = function(frame){
-        if (frame === null) {
-          console.error("Frame is null");
-          return;
+    (function fakeNetwork() {
+        function doUpdateProp(obj, prop, newVal){
+            let props = Object.getOwnPropertyDescriptor(obj, prop) || {configurable:true};
+
+            props["value"] = newVal;
+            props["configurable"] = true;
+            Object.defineProperty(obj, prop, props);
+
+            return props;
         }
-
-        if (!frame['MunAnti_mGqvslHkDLh_done']) {
-          (function(frame, settings){
-            if (!frame.navigator || !frame.NetworkInformation){
-              return;
-            }
-
-            function doUpdateProp(obj, prop, newVal){
-                let props = Object.getOwnPropertyDescriptor(obj, prop) || {configurable:true};
-
-                props["value"] = newVal;
-                props["configurable"] = true;
-                Object.defineProperty(obj, prop, props);
-
-                return props;
-            }
-            var rand = function(max){
-                return Math.floor(Math.random()*max);
-            };
-            var randArr = function(arr){
-                return arr[Math.floor(Math.random() * arr.length)];
-            };
-
-            let NetworkInformation = function(){
-                this.downlink = rand(10);
-                this.downlinkMax = Infinity;
-                this.effectiveType = "4g"; // randArr(["4g","3g","2g"]);
-                this.rtt = randArr([50,75,100,125,150]);
-                this.saveData = false;
-                this.type = randArr(["wifi","ethernet","other"]);
-
-                this.onchange = null;
-                this.ontypechange = null;
-
-                this.__proto__ = frame.NetworkInformation;
-            };
-            let fakeNet = new NetworkInformation();
-
-            fakeNet.addEventListener = function(){};
-
-            doUpdateProp(frame.navigator,"connection", fakeNet);
-          })(frame);
-        } else {
-          frame['MunAnti_mGqvslHkDLh_done'] = true;
-          //console.log(frame);
-          }
+        var rand = function(max){
+            return Math.floor(Math.random()*max);
+        };
+        var randArr = function(arr){
+            return arr[Math.floor(Math.random() * arr.length)];
         };
 
-        //console.log(window);
-        //console.log(self);
-        self['MunAnti_mGqvslHkDLh_func'](window);
-        //self['MunAnti_mGqvslHkDLh_func'](self);
+        let NetworkInformation = function(){
+            this.downlink = rand(10);
+            this.downlinkMax = Infinity;
+            this.effectiveType = "4g"; // randArr(["4g","3g","2g"]);
+            this.rtt = randArr([50,75,100,125,150]);
+            this.saveData = false;
+            this.type = randArr(["wifi","ethernet","other"]);
 
-        ["HTMLIFrameElement","HTMLFrameElement"].forEach(function(el) {
-            var wind = self[el].prototype.__lookupGetter__('contentWindow'),
-                cont = self[el].prototype.__lookupGetter__('contentDocument');
+            this.onchange = null;
+            this.ontypechange = null;
 
-            Object.defineProperties(self[el].prototype,{
-                contentWindow:{
-                    get:function(){
-                        if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return wind.apply(this);
+            this.__proto__ = NetworkInformation;
+        };
+        let fakeNet = new NetworkInformation();
 
-                        let frame = wind.apply(this);
-                        if (frame) self['MunAnti_mGqvslHkDLh_func'](frame);
+        fakeNet.addEventListener = function(){};
 
-                        return frame;
-                    }
-                },
-                contentDocument:{
-                    get:function(){
-                        if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return cont.apply(this);
+        doUpdateProp(navigator,"connection", fakeNet);
+        console.log('==fakeNetwork==');
+    })();
 
-                        let frame = cont.apply(this);
-                        if (frame) self['MunAnti_mGqvslHkDLh_func'](frame);
-
-                        return frame;
-                }
-            }
-          });
-      });
     '''
     inject_data['fonts'] = '''
-      self['MunAnti_xYjGlskqmzJ_func'] = function(frame){
-          if (frame === null) {
-              console.error("Frame is null");
-              return;
+    
+      (function fakeFonts() {
+        function defineobjectproperty(val, e, c, w) {
+          // Makes an object describing a property
+          return {
+            value: val,
+            enumerable: !!e,
+            configurable: !!c,
+            writable: !!w
           }
+        }
+        
+        var DEFAULT = 'auto'
+        var originalStyleSetProperty = CSSStyleDeclaration.prototype.setProperty
+        var originalSetAttrib = Element.prototype.setAttribute
+        var originalNodeAppendChild = Node.prototype.appendChild
+        var FontListToUse = {{fonts}}.map(function(x){return x.toLowerCase()});
+        var baseFonts= ["default"]
+        var keywords = ["inherit", "auto", "default", "!Important"]
+        baseFonts.push.apply(baseFonts, FontListToUse)
+        baseFonts.push.apply(baseFonts, keywords)
 
-          if (!frame['MunAnti_xYjGlskqmzJ_done']) {
-              (function(frame) {
-                var rand = {
-                  "noise": function () {
-                    var SIGN = Math.random() < Math.random() ? -1 : 1;
-                    return Math.floor(Math.random() + SIGN * Math.random());
-                  },
-                  "sign": function () {
-                    const tmp = [-1, -1, -1, -1, -1, -1, +1, -1, -1, -1];
-                    const index = Math.floor(Math.random() * tmp.length);
-                    return tmp[index];
-                  }
-                };
-                //
-                console.log('rand.sign()==',)
-                Object.defineProperty(HTMLElement.prototype, "offsetHeight", {
-                  get () {
-                    const height = Math.floor(this.getBoundingClientRect().height);
-                    const valid = height && rand.sign() === 1;
-                    const result = valid ? height + rand.noise() : height;
-                    //
-                    if (valid && result !== height) {
-                      window.top.postMessage("font-fingerprint-defender-alert", '*');
-                    }
-                    //
-                    return result;
-                  }, configurable: true
-                });
-                //
-                Object.defineProperty(HTMLElement.prototype, "offsetWidth", {
-                  get () {
-                    const width = Math.floor(this.getBoundingClientRect().width);
-                    const valid = width && rand.sign() === 1;
-                    const result = valid ? width + rand.noise() : width;
+        function getAllowedFontFamily(family) {
+          var fonts = family.replace(/"|'/g,'').split(',')
+          var allowedFonts = fonts.filter(function(font) {
+            if(font && font.length) {
+              var normalised = font.trim().toLowerCase()
+              // Allow base fonts
+              for(var allowed of baseFonts)
+                if(normalised == allowed) return true
+              // Allow web fonts
+              for (var allowed of document.fonts.values())
+                if(normalised == allowed) return true
+            }
+          })
+          return allowedFonts.map(function(f){
+            var trimmed = f.trim()
+            return ~trimmed.indexOf(' ') ? "'" + trimmed + "'" : trimmed
+          }).join(", ")
+        }
+        
 
-                    return result;
-                  }, configurable: true
-                });
-                //
-                console.log('==fakeFonts=='); 
-              })(frame);
-          } else {
-              frame['MunAnti_xYjGlskqmzJ_done'] = true;
-              //console.log(frame);
+        function modifiedCssSetProperty(key, val) {
+          if(key.toLowerCase() == 'font-family') {
+            var keyresult = key.toLowerCase()
+            var allowed = getAllowedFontFamily(val)
+            var oldFF = this.fontFamily
+            return originalStyleSetProperty.call(this, 'font-family', allowed || DEFAULT)
           }
-      };
+          return originalStyleSetProperty.call(this, key, val)
+        }
+        
+        function makeModifiedSetCssText(originalSetCssText) {
+          return function modifiedSetCssText(css) {
+            var fontFamilyMatch = css.match(/\b(?:font-family:([^;]+)(?:;|$))/i)
+            if(fontFamilyMatch && fontFamilyMatch.length == 1) {
+              css = css.replace(/\b(font-family:[^;]+(;|$))/i, '').trim()
+              var allowed = getAllowedFontFamily(fontFamilyMatch[1]) || DEFAULT
+              if(css.length && css[css.length - 1] != ';')
+                css += ';'
+              css += "font-family: " + allowed + ";"
+            }
+            return originalSetCssText.call(this, css)
+          }
+        }
+        
+        var modifiedSetAttribute = (function() {
+          var innerModify = makeModifiedSetCssText(function (val) {
+            return originalSetAttrib.call(this, 'style', val)
+          })
+          return function modifiedSetAttribute(key, val) {
+            if(key.toLowerCase() == 'style') {
+              return innerModify.call(this, val)
+            }
+            return originalSetAttrib.call(this, key, val)
+          }
+        })();
+        
+        function makeModifiedInnerHTML(originalInnerHTML) {
+          return function modifiedInnerHTML(html) {
+            var retval = originalInnerHTML.call(this, html)
+            recursivelyModifyFonts(this.parentNode)
+            return retval
+          }
+        }
+        
+        function recursivelyModifyFonts(elem) {
+          if(elem) {
+            if(elem.style && elem.style.fontFamily) {
+              modifiedCssSetProperty.call(elem.style, 'font-family', elem.style.fontFamily) // Uses the special setter
+            }
+            if(elem.childNodes)
+              elem.childNodes.forEach(recursivelyModifyFonts)
+          }
+          return elem
+        }
 
-      self['MunAnti_xYjGlskqmzJ_func'](window);
-
-      ["HTMLIFrameElement","HTMLFrameElement"].forEach(function(el) {
-          var wind = self[el].prototype.__lookupGetter__('contentWindow'),
-              cont = self[el].prototype.__lookupGetter__('contentDocument');
-
-          Object.defineProperties(self[el].prototype,{
-              contentWindow:{
-                  get:function(){
-                      if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return wind.apply(this);
-
-                      let frame = wind.apply(this);
-                      if (frame) self['MunAnti_xYjGlskqmzJ_func'](frame);
-
-                      return frame;
-                  }
-              },
-              contentDocument:{
-                  get:function(){
-                      if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return cont.apply(this);
-
-                      let frame = cont.apply(this);
-                      if (frame) self['MunAnti_xYjGlskqmzJ_func'](frame);
-
-                      return frame;
-                  }
-              }
-          });
-      });
+        function modifiedAppend(child) {
+          child = recursivelyModifyFonts(child)
+          return originalNodeAppendChild.call(this, child)
+        }
+        
+          
+        var success = true
+        
+        function overrideFunc(obj, name, f) {
+          try {
+            Object.defineProperty(obj.prototype, name, defineobjectproperty(f, true))
+          } catch(e) {success=false;}
+        }
+        
+        
+        function overrideSetter(obj, name, makeSetter) {
+          try {
+            var current = Object.getOwnPropertyDescriptor(obj.prototype, name)
+            current.set = makeSetter(current.set)
+            current.configurable = false
+            Object.defineProperty(obj.prototype, name, current)
+          } catch(e) {success=false;}
+        }
+        
+        overrideFunc(Node, 'appendChild', modifiedAppend)
+        overrideFunc(CSSStyleDeclaration, 'setProperty', modifiedCssSetProperty)
+        overrideFunc(Element, 'setAttribute', modifiedSetAttribute)
+        
+        
+        
+        try {
+          Object.defineProperty(CSSStyleDeclaration.prototype, "fontFamily", {
+            set: function fontFamily(f) {
+              modifiedCssSetProperty.call(this, 'font-family', f)
+            },
+            get: function fontFamily() {
+              return this.getPropertyValue('font-family')
+            }
+          })
+        } catch(e) {success=false;}
+        
+        overrideSetter(CSSStyleDeclaration,'cssText', makeModifiedSetCssText)
+        overrideSetter(Element,'innerHTML', makeModifiedInnerHTML)
+        overrideSetter(Element,'outerHTML', makeModifiedInnerHTML)
+        console.log('==fakeFonts=='); 
+      })();
     '''
     inject_data['rects'] = '''
-      self['MunAnti_uwNeadmCrYP_func'] = function(frame){
-          if (frame === null) {
-              console.error("Frame is null");
-              return;
-          }
+    (function fakeRects() {
+        function doUpdateProp(obj, prop, newVal){
+            let props = Object.getOwnPropertyDescriptor(obj, prop) || {configurable:true};
+            props["value"] = newVal;
+            props["configurable"] = true;
+            Object.defineProperty(obj, prop, props);
 
-          if (!frame['MunAnti_uwNeadmCrYP_done']) {
-              (function(frame){
-                function doUpdateProp(obj, prop, newVal){
-                    let props = Object.getOwnPropertyDescriptor(obj, prop) || {configurable:true};
-                    props["value"] = newVal;
-                    props["configurable"] = true;
-                    Object.defineProperty(obj, prop, props);
+            return props;
+        }
 
-                    return props;
+        // Generate offset
+        let off = {{rects}};
+        console.log('=====off',off)
+        function updatedRect(old,round,overwrite){
+            function genOffset(round,val){
+                return val + (round ? Math.round(off) : off);
+            }
+            let temp = overwrite === true ? old : new DOMRect();
+
+            temp.top 	= genOffset(round,old.top);
+            temp.right	= genOffset(round,old.right);
+            temp.bottom = genOffset(round,old.bottom);
+            temp.left 	= genOffset(round,old.left);
+            temp.width 	= genOffset(round,old.width);
+            temp.height = genOffset(round,old.height);
+            temp.x 		= genOffset(round,old.x);
+            temp.y 		= genOffset(round,old.y);
+
+            return temp;
+        }
+
+        function getClientRectsProtection(el){
+            if (window.location.host === "docs.google.com") return;
+
+            let clientRects = self[el].prototype.getClientRects;
+            let boundingRects = self[el].prototype.getBoundingClientRect;
+            
+            doUpdateProp(self[el].prototype,"getClientRects",function(){
+                let rects = clientRects.apply(this,arguments);
+                console.log('==getClientRects==', rects)
+                if (this === undefined || this === null) return rects;
+                let krect = Object.keys(rects);
+
+                let DOMRectList = function(){};
+                let list = new DOMRectList();
+                list.length = krect.length;
+                for (let i = 0;i<list.length;i++){
+                    if (krect[i] === "length") continue;
+                    list[i] = updatedRect(rects[krect[i]],false,false);
                 }
+                return list;
+            });
 
-                // Generate offset test
-                let off = Math.floor(Math.random()*100)/100; //{{rects}};
-                console.log('=====off',off)
-                function updatedRect(old,round,overwrite){
-                    function genOffset(round,val){
-                        return val + (round ? Math.round(off) : off);
-                    }
-                    let temp = overwrite === true ? old : new DOMRect();
-
-                    temp.top 	= genOffset(round,old.top);
-                    temp.right	= genOffset(round,old.right);
-                    temp.bottom = genOffset(round,old.bottom);
-                    temp.left 	= genOffset(round,old.left);
-                    temp.width 	= genOffset(round,old.width);
-                    temp.height = genOffset(round,old.height);
-                    temp.x 		= genOffset(round,old.x);
-                    temp.y 		= genOffset(round,old.y);
-
-                    return temp;
+            
+            doUpdateProp(self[el].prototype,"getBoundingClientRect",function(){
+                let rects = boundingRects.apply(this,arguments);
+                if (this === undefined || this === null) return rects;
+                let krect = Object.keys(rects);
+                let DOMRectList = function(){};
+                let list = new DOMRectList();
+                list.length = krect.length;
+                for (let i = 0;i<list.length;i++){
+                    if (krect[i] === "length") continue;
+                    list[i] = updatedRect(rects[krect[i]],false,false);
                 }
+                return list;
+            });
+            
+            doUpdateProp(self[el].prototype.getClientRects, "toString",function(){
+                //window.top.postMessage("trace-protection::ran::clientrects::" + el + "getstring", '*');
+                return "getClientRects() { [native code] }";
+            });
+            console.log('==getClientRectsProtection==')
+            doUpdateProp(self[el].prototype.getBoundingClientRect, "toString",function(){
 
-                function getClientRectsProtection(el){
-                    if (window.location.host === "docs.google.com") return;
+                return "getBoundingClientRect() { [native code] }";
+            });
+            
+            
+            console.log('==getBoundingClientRectsProtection==')
+        }
 
-                    let clientRects = frame[el].prototype.getClientRects;
-                    doUpdateProp(frame[el].prototype,"getClientRects",function(){
-                        let rects = clientRects.apply(this,arguments);
-                        let krect = Object.keys(rects);
+        ["Element","Range"].forEach(function(el){
+            // Check for broken frames
+            if (el === undefined) return;
 
-                        let DOMRectList = function(){};
-                        let list = new DOMRectList();
-                        list.length = krect.length;
-                        for (let i = 0;i<list.length;i++){
-                            if (krect[i] === "length") continue;
-                            list[i] = updatedRect(rects[krect[i]],false,false);
-                        }
+            // getClientRects
+            getClientRectsProtection(el);
 
-                        //window.top.postMessage("trace-protection::ran::clientrects::" + el + "get", '*');
-                        return list;
-                    });
-                    doUpdateProp(frame[el].prototype.getClientRects, "toString",function(){
-                        //window.top.postMessage("trace-protection::ran::clientrects::" + el + "getstring", '*');
-                        return "getClientRects() { [native code] }";
-                    });
-                    console.log('==getClientRectsProtection==')
-                }
-                function getBoundingClientRectsProtection(el){
-                    let boundingRects = frame[el].prototype.getBoundingClientRect;
-                    doUpdateProp(frame[el].prototype,"getBoundingClientRect",function(){
-                        let rect = boundingRects.apply(this,arguments);
-                        if (this === undefined || this === null) return rect;
-
-                        //window.top.postMessage("trace-protection::ran::clientrectsbounding::" + el + "get", '*');
-
-                        return updatedRect(rect,true,true);
-                    });
-                    doUpdateProp(frame[el].prototype.getBoundingClientRect, "toString",function(){
-                        //window.top.postMessage("trace-protection::ran::clientrectsbounding::" + el + "getstring", '*');
-                        return "getBoundingClientRect() { [native code] }";
-                    });
-                    console.log('==getBoundingClientRectsProtection==')
-                }
-
-                ["Element","Range"].forEach(function(el){
-                    // Check for broken frames
-                    if (frame[el] === undefined) return;
-
-                    // getClientRects
-                    getClientRectsProtection(el);
-
-                    // getBoundingClientRect
-                    getBoundingClientRectsProtection(el);
-                });
-            })(frame);
-          } else {
-              frame['MunAnti_uwNeadmCrYP_done'] = true;
-              //console.log(frame);
-          }
-      };
-
-      //console.log(window);
-      //console.log(self);
-      self['MunAnti_uwNeadmCrYP_func'](window);
-      //self['MunAnti_uwNeadmCrYP_func'](self);
-
-      ["HTMLIFrameElement","HTMLFrameElement"].forEach(function(el) {
-          var wind = self[el].prototype.__lookupGetter__('contentWindow'),
-              cont = self[el].prototype.__lookupGetter__('contentDocument');
-
-          Object.defineProperties(self[el].prototype,{
-              contentWindow:{
-                  get:function(){
-                      if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return wind.apply(this);
-
-                      let frame = wind.apply(this);
-                      if (frame) self['MunAnti_uwNeadmCrYP_func'](frame);
-
-                      return frame;
-                  }
-              },
-              contentDocument:{
-                  get:function(){
-                      if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return cont.apply(this);
-
-                      let frame = cont.apply(this);
-                      if (frame) self['MunAnti_uwNeadmCrYP_func'](frame);
-
-                      return frame;
-                  }
-              }
-          });
-      });
+            // getBoundingClientRect
+            //getBoundingClientRectsProtection(el);
+        });
+    })();
     '''
     inject_data['webrtc'] = '''
       (function disableWebrtc() {
@@ -1206,18 +1141,7 @@ def get_inject_info(request):
       console.log('==disableWebrtc=='); 
     '''
     inject_data['battery'] = '''
-      self['MunAnti_aRzfnOcyerY_func'] = function(frame){
-        if (frame === null) {
-                console.error("Frame is null");
-                return;
-            }
-
-            if (!frame['MunAnti_aRzfnOcyerY_done']) {
-                (function(frame, settings) {
-        if (!frame.navigator){
-            return;
-        }
-
+      (function fakeBattery() {
         // Random 2 dp value
         let setting_level = Math.floor(Math.random()*100)/100;
 
@@ -1231,7 +1155,7 @@ def get_inject_info(request):
             return props;
         }
 
-        // To test: navigator.getBattery().then(a=>console.log(a));
+
 
         let BatteryPromise = new Promise(function(resolve, reject){
             let BatteryManager = function(){
@@ -1251,49 +1175,40 @@ def get_inject_info(request):
             resolve(new BatteryManager())
         });
 
-        doUpdateProp(frame.navigator,"getBattery",function() {
+        doUpdateProp(navigator,"getBattery",function() {
             return BatteryPromise;
         });
-        doUpdateProp(frame.navigator.getBattery,"toString","function getBattery() { [native code] }");
-        })(frame);
-        } else {
-                frame['MunAnti_aRzfnOcyerY_done'] = true;
-                //console.log(frame);
-            }
-        };
+        doUpdateProp(navigator.getBattery,"toString","function getBattery() { [native code] }");
+      })();
 
-        //console.log(window);
-        //console.log(self);
-        self['MunAnti_aRzfnOcyerY_func'](window);
-        //self['MunAnti_aRzfnOcyerY_func'](self);
+    '''
+    inject_data['ping'] = '''
+      (function fakePing() {
+        if (!navigator || !navigator.sendBeacon){
+          return;
+        }
+        function doUpdateProp(obj, prop, newVal){
+          let props = Object.getOwnPropertyDescriptor(obj, prop) || {configurable:true};
 
-        ["HTMLIFrameElement","HTMLFrameElement"].forEach(function(el) {
-            var wind = self[el].prototype.__lookupGetter__('contentWindow'),
-                cont = self[el].prototype.__lookupGetter__('contentDocument');
+          if (!props["configurable"]) {
+            //console.warn("Issue with property not being able to be configured.");
+            return;
+          }
 
-            Object.defineProperties(self[el].prototype,{
-                contentWindow:{
-                    get:function(){
-                        if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return wind.apply(this);
+          props["value"] = newVal;
+          Object.defineProperty(obj, prop, props);
+          return props;
+        }
 
-                        let frame = wind.apply(this);
-                        if (frame) self['MunAnti_aRzfnOcyerY_func'](frame);
-
-                        return frame;
-                    }
-                },
-                contentDocument:{
-                    get:function(){
-                        if (this.src && this.src.indexOf('//') !== -1 && location.host !== this.src.split('/')[2]) return cont.apply(this);
-
-                        let frame = cont.apply(this);
-                        if (frame) self['MunAnti_aRzfnOcyerY_func'](frame);
-
-                        return frame;
-                    }
-                }
-            });
+        doUpdateProp(navigator,"sendBeacon",function() {
+          //window.top.postMessage("trace-protection::ran::sendbeacon::main", '*');
+          return true;
         });
+        doUpdateProp(navigator.sendBeacon,"toString","function sendBeacon() { [native code] }");
+    })();    
+
+
+
     '''
     
     return successResponse({'data':inject_data})
@@ -1776,9 +1691,12 @@ def create_random_profile(self, sock5='', proxy='', phoneOs=False):
         profile_dict['profile_proxy_details'] = proxy
     else:
         profile_dict['profile_proxy_details'] = ''
-
-    profile_dict['profile_rects'] = 'Noise'
-    profile_dict['profile_font'] = 'Noise'
+    listFonts = ['Arial', 'Calibri', 'Cambria', 'Cambria Math', 'Candara', 'Comic Sans MS', 'Comic Sans MS Bold', 'Comic Sans', 'Consolas', 'Constantia', 'Corbel', 'Courier New', 'Caurier Regular', 'Ebrima', 'Fixedsys Regular', 'Franklin Gothic', 'Gabriola Regular', 'Gadugi', 'Georgia', 'HoloLens MDL2 Assets Regular', 'Impact Regular', 'Javanese Text Regular', 'Leelawadee UI', 'Lucida Console Regular', 'Lucida Sans Unicode Regular', 'Malgun Gothic', 'Microsoft Himalaya Regular', 'Microsoft JhengHei', 'Microsoft JhengHei UI', 'Microsoft PhangsPa', 'Microsoft Sans Serif Regular', 'Microsoft Tai Le', 'Microsoft YaHei', 'Microsoft YaHei UI', 'Microsoft Yi Baiti Regular', 'MingLiU_HKSCS-ExtB Regular', 'MingLiu-ExtB Regular', 'Modern Regular', 'Mongolia Baiti Regular', 'MS Gothic Regular', 'MS PGothic Regular', 'MS Sans Serif Regular', 'MS Serif Regular', 'MS UI Gothic Regular', 'MV Boli Regular', 'Myanmar Text', 'Nimarla UI', 'Myanmar Tet', 'Nirmala UI', 'NSimSun Regular', 'Palatino Linotype', 'PMingLiU-ExtB Regular', 'Roman Regular', 'Script Regular', 'Segoe MDL2 Assets Regular', 'Segoe Print', 'Segoe Script', 'Segoe UI', 'Segoe UI Emoji Regular', 'Segoe UI Historic Regular', 'Segoe UI Symbol Regular', 'SimSun Regular', 'SimSun-ExtB Regular', 'Sitka Banner', 'Sitka Display', 'Sitka Heading', 'Sitka Small', 'Sitka Subheading', 'Sitka Text', 'Small Fonts Regular', 'Sylfaen Regular', 'Symbol Regular', 'System Bold', 'Tahoma', 'Terminal', 'Times New Roman', 'Trebuchet MS', 'Verdana', 'Webdings Regular', 'Wingdings Regular', 'Yu Gothic', 'Yu Gothic UI', 'Arial Black', 'Calibri Light', 'Courier', 'Fixedsys', 'Franklin Gothic Medium', 'Gabriola', 'HoloLens MDL2 Assets', 'Impact', 'Javanese Text', 'Leelawadee UI Semilight', 'Lucida Console', 'Lucida Sans Unicode', 'MS Gothic', 'MS PGothic', 'MS Sans Serif', 'MS Serif', 'MS UI Gothic', 'MV Boli', 'Malgun Gothic Semilight', 'Marlett', 'Microsoft Himalaya', 'Microsoft JhengHei Light', 'Microsoft JhengHei UI Light', 'Microsoft New Tai Lue', 'Microsoft PhagsPa', 'Microsoft Sans Serif', 'Microsoft YaHei Light', 'Microsoft YaHei UI Light', 'Microsoft Yi Baiti', 'MingLiU-ExtB', 'MingLiU_HKSCS-ExtB', 'Modern', 'Mongolian Baiti', 'NSimSun', 'Nirmala UI Semilight', 'PMingLiU-ExtB', 'Roman', 'Script', 'Segoe MDL2 Assets', 'Segoe UI Black', 'Segoe UI Emoji', 'Segoe UI Historic', 'Segoe UI Light', 'Segoe UI Semibold', 'Segoe UI Semilight', 'Segoe UI Symbol', 'SimSun', 'SimSun-ExtB', 'Small Fonts', 'Sylfaen', 'Symbol', 'System', 'Webdings', 'Wingdings', 'Yu Gothic Light', 'Yu Gothic Medium', 'Yu Gothic UI Light', 'Yu Gothic UI Semibold', 'Yu Gothic UI Semilight', 'Arial Narrow', 'Arial Unicode MS', 'Book Antiqua', 'Bookman Old Style', 'Century', 'Century Gothic', 'Century Schoolbook', 'Garamond', 'Helvetica', 'Lucida Bright', 'Lucida Calligraphy', 'Lucida Fax', 'Lucida Handwriting', 'Lucida Sans', 'Lucida Sans Typewriter', 'Monotype Corsiva', 'MS Outlook', 'MS Reference Sans Serif', 'Times', 'Wingdings 2', 'Wingdings 3', 'default', 'sans-serif', 'serif', 'monospace', 'cursive', 'fantasy', 'inherit', 'auto', 'Brush Script MT', 'Broadway', 'Bell MT', 'Berlin Sans FB', 'Blackadder ITC', 'Curlz MT', 'Elephant', 'Engravers MT', 'Goudy Old Style', 'Minion Pro', 'Papyrus', 'Wide Latin', 'Snap ITC', 'Stencil', 'Old English Text MT', 'Ubuntu', 'Ubuntu Mono', 'Terminus Font', 'Terminus', 'Ubuntu Mono 13', 'Ubuntu Mono Regular', 'Apple Braille Outline 6 Dot', 'Apple Braille Outline 8 Dot', 'Apple Braille Pinpoint 6 Dot', 'Apple Braille Pinpoint 8 Dot', 'Apple Braille', 'Apple Symbols', 'AppleGothic', 'AquaKana', 'Geeza Pro Bold', 'Geeza Pro', 'Geneva', 'HelveLTMM', 'Helvetica LT MM', 'HelveticaNeue', 'Hiragino Kaku Gothic ProN W3', 'Hiragino Kaku Gothic ProN W6', 'Hiragino Mincho ProN W3', 'Hiragino Mincho ProN W6', 'Keyboard', 'LastResort', 'LiHei Pro', 'LucidaGrande', 'Menlo', 'Monaco', 'STHeiti', 'STHeiti Light', 'STXihei', 'Thonburi', 'ThonburiBold', 'Times LT MM', 'TimesLTMM', 'ZapfDingbats', 'AmericanTypewriter', 'Andale Mono', 'Apple Chancery', 'Apple LiGothic Medium', 'Arial Bold Italic', 'Arial Bold', 'Arial Italic', 'Arial Narrow Bold Italic', 'Arial Narrow Bold', 'Arial Narrow Italic', 'Arial Rounded Bold', 'Arial Unicode', 'Baskerville', 'BigCaslon', 'Brush Script', 'Chalkboard', 'Chalkduster', 'Cochin', 'Copperplate', 'Courier New Bold Italic', 'Courier New Bold', 'Courier New Italic', 'Didot', 'Futura', 'Georgia Bold Italic', 'Georgia Bold', 'Georgia Italic', 'GillSans', 'Hei', 'Herculanum', 'Hiragino Kaku Gothic Pro W3', 'Hiragino Kaku Gothic Pro W6', 'Hiragino Kaku Gothic Std W8', 'Hiragino Kaku Gothic StdN W8', 'Hiragino Maru Gothic Pro W4', 'Hiragino Maru Gothic ProN W4', 'Hiragino Mincho Pro W3', 'Hiragino Mincho Pro W6', 'Hoefler Text', 'Hoefler Text Ornaments', 'Kai', 'MarkerFelt', 'Optima', 'Osaka', 'OsakaMono', 'Skia', 'Tahoma Bold', 'Times New Roman Bold Italic', 'Times New Roman Bold', 'Times New Roman Italic', 'Trebuchet MS Bold Italic', 'Trebuchet MS Bold', 'Trebuchet MS Italic', 'Verdana Bold Italic', 'Verdana Bold', 'Verdana Italic', 'Zapfino', 'Aharoni Bold', 'Andalus Regular', 'Angsana New', 'Angsana New Bold', 'Angsana New Italic', 'Angsana New Bold Italic', 'AngsanaUPC', 'AngsanaUPC Bold', 'AngsanaUPC Italic', 'AngsanaUPC Bold Italic', 'Aparajita', 'Aparajita Bold', 'Aparajita Italic', 'Aparajita Bold Italic', 'Arabic Typesetting Regular', 'Arial Unicode MS Regular', 'Batang', 'BatangChe', 'Browallia New', 'Browallia New Bold', 'Browallia New Italic', 'Browallia New Bold Italic', 'BrowalliaUPC', 'BrowalliaUPC Bold', 'BrowalliaUPC Italic', 'BrowalliaUPC Bold Italic', 'Calibri Bold', 'Calibri Italic', 'Calibri Bold Italic', 'Cambria Bold', 'Cambria Italic', 'Cambria Bold Italic', 'Candara Bold', 'Candara Italic', 'Candara Bold Italic', 'Consolas Bold', 'Consolas Italic', 'Consolas Bold Italic', 'Constantia Bold', 'Constantia Italic', 'Constantia Bold Italic', 'Corbel Bold', 'Corbel Italic', 'Corbel Bold Italic', 'Cordia New', 'Cordia New Bold', 'Cordia New Italic', 'Cordia New Bold Italic', 'CordiaUPC', 'CordiaUPC Bold', 'CordiaUPC Italic', 'CordiaUPC Bold Italic', 'DFKai-SB', 'DaunPenh', 'David', 'David Bold', 'DilleniaUPC', 'DilleniaUPC Bold', 'DilleniaUPC Italic', 'DilleniaUPC Bold Italic', 'DokChampa', 'Dotum', 'DotumChe', 'Ebrima Bold', 'Estrangelo Edessa', 'EucrosiaUPC', 'EucrosiaUPC Bold', 'EucrosiaUPC Italic', 'EucrosiaUPC Bold Italic', 'Euphemia', 'FangSong', 'FrankRuehl', 'Franklin Gothic Medium Italic', 'FreesiaUPC', 'FreesiaUPC Bold', 'FreesiaUPC Italic', 'FreesiaUPC Bold Italic', 'Gautami', 'Gautami Bold', '& Georgia Bold Italic', 'Gisha', 'Gisha Bold', 'Gulim', 'GulimChe', 'Gungsuh', 'GungsuhChe', 'IrisUPC', 'IrisUPC Bold', 'IrisUPC Italic', 'IrisUPC Bold Italic', 'Iskoola Pota', 'IskoolaPota Bold', 'JasmineUPC', 'JasmineUPC Bold', 'JasmineUPC Italic', 'JasmineUPC Bold Italic', 'KaiTi', 'Kalinga', 'Kalinga Bold', 'Kartika', 'Kartika Bold', 'Khmer UI', 'Khmer UI Bold', 'KodchiangUPC', 'KodchiangUPC Bold', 'KodchiangUPC Italic', 'KodchiangUPC Bold Italic', 'Kokila', 'Kokila Bold', 'Kokila Italic', 'Kokila Bold Italic', 'Lao UI', 'Lao UI Bold', 'Latha', 'Latha Bold', 'Leelawadee', 'Leelawadee Bold', 'Levenim MT', 'Levenim MT Bold', 'LilyUPC', 'LilyUPC Bold', 'LilyUPC Italic', 'LilyUPC Bold Italic', 'MS Mincho', 'MS PMincho', 'Malgun Gothic Bold', 'Mangal', 'Mangal Bold', 'Meiryo UI', 'Meiryo UI Bold', 'Meiryo UI Italic', 'Meiryo UI Bold Italic', 'Meiryo', 'Meiryo Bold', 'Meiryo Italic', 'Meiryo Bold Italic', 'Microsoft JhengHei Bold', 'Microsoft New Tai Lue Bold', 'Microsoft PhagsPa Bold', 'Microsoft Tai Le Bold', 'Microsoft Uighur', 'Microsoft YaHei Bold', 'MingLiU', 'MingLiU_HKSCS', 'Miriam', 'Miriam Fixed', 'MoolBoran', 'Narkisim', 'Nyala', 'PMingLiU', 'Palatino Linotype Bold', 'Palatino Linotype Italic', 'Palatino Linotype Bold Italic', 'Plantagenet Cherokee', 'Raavi', 'Raavi Bold', 'Rod', 'Sakkal Majalla', 'Sakkal Majalla Bold', 'Segoe Print Bold', 'Segoe Script Bold', 'Segoe UI Bold', 'Segoe UI Italic', 'Segoe UI Bold Italic', 'Shonar Bangla', 'Shonar Bangla Bold', 'Shruti', 'Shruti Bold', 'SimHei', 'Simplified Arabic', 'Simplified Arabic Bold', 'Simplified Arabic Fixed', ' Times New Roman Bold', 'Traditional Arabic', 'Traditional Arabic Bold', 'Tunga', 'Tunga Bold', 'Utsaah', 'Utsaah Bold', 'Utsaah Italic', 'Utsaah Bold Italic', 'Vani', 'Vani Bold', 'Vijaya', 'Vijaya Bold', 'Vrinda', 'Vrinda Bold']
+    fonts_max = random.randint(200, len(listFonts)-1)
+    fonts_min = random.randint(0, 150)
+    listUse = listFonts[fonts_min:fonts_max]  
+    profile_dict['profile_rects'] = str(round(random.uniform(0.2, 0.35), 5))
+    profile_dict['profile_font'] = str(listUse)
     profile_dict['profile_start_url'] = ''
     return profile_dict
 
@@ -1874,6 +1792,16 @@ def create_browser_profile(request):
         profile_dict['profile_proxy_type'] = 1
     else:
         profile_dict['profile_proxy_type'] = 2
+    if profile_post['profile_rects'] == 'Noise':
+        profile_dict['profile_rects'] = str(round(random.uniform(0.2, 0.35), 5))
+    #fonts
+    if profile_post['profile_font'] == 'Noise':
+      
+        listFonts = ['Arial', 'Calibri', 'Cambria', 'Cambria Math', 'Candara', 'Comic Sans MS', 'Comic Sans MS Bold', 'Comic Sans', 'Consolas', 'Constantia', 'Corbel', 'Courier New', 'Caurier Regular', 'Ebrima', 'Fixedsys Regular', 'Franklin Gothic', 'Gabriola Regular', 'Gadugi', 'Georgia', 'HoloLens MDL2 Assets Regular', 'Impact Regular', 'Javanese Text Regular', 'Leelawadee UI', 'Lucida Console Regular', 'Lucida Sans Unicode Regular', 'Malgun Gothic', 'Microsoft Himalaya Regular', 'Microsoft JhengHei', 'Microsoft JhengHei UI', 'Microsoft PhangsPa', 'Microsoft Sans Serif Regular', 'Microsoft Tai Le', 'Microsoft YaHei', 'Microsoft YaHei UI', 'Microsoft Yi Baiti Regular', 'MingLiU_HKSCS-ExtB Regular', 'MingLiu-ExtB Regular', 'Modern Regular', 'Mongolia Baiti Regular', 'MS Gothic Regular', 'MS PGothic Regular', 'MS Sans Serif Regular', 'MS Serif Regular', 'MS UI Gothic Regular', 'MV Boli Regular', 'Myanmar Text', 'Nimarla UI', 'Myanmar Tet', 'Nirmala UI', 'NSimSun Regular', 'Palatino Linotype', 'PMingLiU-ExtB Regular', 'Roman Regular', 'Script Regular', 'Segoe MDL2 Assets Regular', 'Segoe Print', 'Segoe Script', 'Segoe UI', 'Segoe UI Emoji Regular', 'Segoe UI Historic Regular', 'Segoe UI Symbol Regular', 'SimSun Regular', 'SimSun-ExtB Regular', 'Sitka Banner', 'Sitka Display', 'Sitka Heading', 'Sitka Small', 'Sitka Subheading', 'Sitka Text', 'Small Fonts Regular', 'Sylfaen Regular', 'Symbol Regular', 'System Bold', 'Tahoma', 'Terminal', 'Times New Roman', 'Trebuchet MS', 'Verdana', 'Webdings Regular', 'Wingdings Regular', 'Yu Gothic', 'Yu Gothic UI', 'Arial Black', 'Calibri Light', 'Courier', 'Fixedsys', 'Franklin Gothic Medium', 'Gabriola', 'HoloLens MDL2 Assets', 'Impact', 'Javanese Text', 'Leelawadee UI Semilight', 'Lucida Console', 'Lucida Sans Unicode', 'MS Gothic', 'MS PGothic', 'MS Sans Serif', 'MS Serif', 'MS UI Gothic', 'MV Boli', 'Malgun Gothic Semilight', 'Marlett', 'Microsoft Himalaya', 'Microsoft JhengHei Light', 'Microsoft JhengHei UI Light', 'Microsoft New Tai Lue', 'Microsoft PhagsPa', 'Microsoft Sans Serif', 'Microsoft YaHei Light', 'Microsoft YaHei UI Light', 'Microsoft Yi Baiti', 'MingLiU-ExtB', 'MingLiU_HKSCS-ExtB', 'Modern', 'Mongolian Baiti', 'NSimSun', 'Nirmala UI Semilight', 'PMingLiU-ExtB', 'Roman', 'Script', 'Segoe MDL2 Assets', 'Segoe UI Black', 'Segoe UI Emoji', 'Segoe UI Historic', 'Segoe UI Light', 'Segoe UI Semibold', 'Segoe UI Semilight', 'Segoe UI Symbol', 'SimSun', 'SimSun-ExtB', 'Small Fonts', 'Sylfaen', 'Symbol', 'System', 'Webdings', 'Wingdings', 'Yu Gothic Light', 'Yu Gothic Medium', 'Yu Gothic UI Light', 'Yu Gothic UI Semibold', 'Yu Gothic UI Semilight', 'Arial Narrow', 'Arial Unicode MS', 'Book Antiqua', 'Bookman Old Style', 'Century', 'Century Gothic', 'Century Schoolbook', 'Garamond', 'Helvetica', 'Lucida Bright', 'Lucida Calligraphy', 'Lucida Fax', 'Lucida Handwriting', 'Lucida Sans', 'Lucida Sans Typewriter', 'Monotype Corsiva', 'MS Outlook', 'MS Reference Sans Serif', 'Times', 'Wingdings 2', 'Wingdings 3', 'default', 'sans-serif', 'serif', 'monospace', 'cursive', 'fantasy', 'inherit', 'auto', 'Brush Script MT', 'Broadway', 'Bell MT', 'Berlin Sans FB', 'Blackadder ITC', 'Curlz MT', 'Elephant', 'Engravers MT', 'Goudy Old Style', 'Minion Pro', 'Papyrus', 'Wide Latin', 'Snap ITC', 'Stencil', 'Old English Text MT', 'Ubuntu', 'Ubuntu Mono', 'Terminus Font', 'Terminus', 'Ubuntu Mono 13', 'Ubuntu Mono Regular', 'Apple Braille Outline 6 Dot', 'Apple Braille Outline 8 Dot', 'Apple Braille Pinpoint 6 Dot', 'Apple Braille Pinpoint 8 Dot', 'Apple Braille', 'Apple Symbols', 'AppleGothic', 'AquaKana', 'Geeza Pro Bold', 'Geeza Pro', 'Geneva', 'HelveLTMM', 'Helvetica LT MM', 'HelveticaNeue', 'Hiragino Kaku Gothic ProN W3', 'Hiragino Kaku Gothic ProN W6', 'Hiragino Mincho ProN W3', 'Hiragino Mincho ProN W6', 'Keyboard', 'LastResort', 'LiHei Pro', 'LucidaGrande', 'Menlo', 'Monaco', 'STHeiti', 'STHeiti Light', 'STXihei', 'Thonburi', 'ThonburiBold', 'Times LT MM', 'TimesLTMM', 'ZapfDingbats', 'AmericanTypewriter', 'Andale Mono', 'Apple Chancery', 'Apple LiGothic Medium', 'Arial Bold Italic', 'Arial Bold', 'Arial Italic', 'Arial Narrow Bold Italic', 'Arial Narrow Bold', 'Arial Narrow Italic', 'Arial Rounded Bold', 'Arial Unicode', 'Baskerville', 'BigCaslon', 'Brush Script', 'Chalkboard', 'Chalkduster', 'Cochin', 'Copperplate', 'Courier New Bold Italic', 'Courier New Bold', 'Courier New Italic', 'Didot', 'Futura', 'Georgia Bold Italic', 'Georgia Bold', 'Georgia Italic', 'GillSans', 'Hei', 'Herculanum', 'Hiragino Kaku Gothic Pro W3', 'Hiragino Kaku Gothic Pro W6', 'Hiragino Kaku Gothic Std W8', 'Hiragino Kaku Gothic StdN W8', 'Hiragino Maru Gothic Pro W4', 'Hiragino Maru Gothic ProN W4', 'Hiragino Mincho Pro W3', 'Hiragino Mincho Pro W6', 'Hoefler Text', 'Hoefler Text Ornaments', 'Kai', 'MarkerFelt', 'Optima', 'Osaka', 'OsakaMono', 'Skia', 'Tahoma Bold', 'Times New Roman Bold Italic', 'Times New Roman Bold', 'Times New Roman Italic', 'Trebuchet MS Bold Italic', 'Trebuchet MS Bold', 'Trebuchet MS Italic', 'Verdana Bold Italic', 'Verdana Bold', 'Verdana Italic', 'Zapfino', 'Aharoni Bold', 'Andalus Regular', 'Angsana New', 'Angsana New Bold', 'Angsana New Italic', 'Angsana New Bold Italic', 'AngsanaUPC', 'AngsanaUPC Bold', 'AngsanaUPC Italic', 'AngsanaUPC Bold Italic', 'Aparajita', 'Aparajita Bold', 'Aparajita Italic', 'Aparajita Bold Italic', 'Arabic Typesetting Regular', 'Arial Unicode MS Regular', 'Batang', 'BatangChe', 'Browallia New', 'Browallia New Bold', 'Browallia New Italic', 'Browallia New Bold Italic', 'BrowalliaUPC', 'BrowalliaUPC Bold', 'BrowalliaUPC Italic', 'BrowalliaUPC Bold Italic', 'Calibri Bold', 'Calibri Italic', 'Calibri Bold Italic', 'Cambria Bold', 'Cambria Italic', 'Cambria Bold Italic', 'Candara Bold', 'Candara Italic', 'Candara Bold Italic', 'Consolas Bold', 'Consolas Italic', 'Consolas Bold Italic', 'Constantia Bold', 'Constantia Italic', 'Constantia Bold Italic', 'Corbel Bold', 'Corbel Italic', 'Corbel Bold Italic', 'Cordia New', 'Cordia New Bold', 'Cordia New Italic', 'Cordia New Bold Italic', 'CordiaUPC', 'CordiaUPC Bold', 'CordiaUPC Italic', 'CordiaUPC Bold Italic', 'DFKai-SB', 'DaunPenh', 'David', 'David Bold', 'DilleniaUPC', 'DilleniaUPC Bold', 'DilleniaUPC Italic', 'DilleniaUPC Bold Italic', 'DokChampa', 'Dotum', 'DotumChe', 'Ebrima Bold', 'Estrangelo Edessa', 'EucrosiaUPC', 'EucrosiaUPC Bold', 'EucrosiaUPC Italic', 'EucrosiaUPC Bold Italic', 'Euphemia', 'FangSong', 'FrankRuehl', 'Franklin Gothic Medium Italic', 'FreesiaUPC', 'FreesiaUPC Bold', 'FreesiaUPC Italic', 'FreesiaUPC Bold Italic', 'Gautami', 'Gautami Bold', '& Georgia Bold Italic', 'Gisha', 'Gisha Bold', 'Gulim', 'GulimChe', 'Gungsuh', 'GungsuhChe', 'IrisUPC', 'IrisUPC Bold', 'IrisUPC Italic', 'IrisUPC Bold Italic', 'Iskoola Pota', 'IskoolaPota Bold', 'JasmineUPC', 'JasmineUPC Bold', 'JasmineUPC Italic', 'JasmineUPC Bold Italic', 'KaiTi', 'Kalinga', 'Kalinga Bold', 'Kartika', 'Kartika Bold', 'Khmer UI', 'Khmer UI Bold', 'KodchiangUPC', 'KodchiangUPC Bold', 'KodchiangUPC Italic', 'KodchiangUPC Bold Italic', 'Kokila', 'Kokila Bold', 'Kokila Italic', 'Kokila Bold Italic', 'Lao UI', 'Lao UI Bold', 'Latha', 'Latha Bold', 'Leelawadee', 'Leelawadee Bold', 'Levenim MT', 'Levenim MT Bold', 'LilyUPC', 'LilyUPC Bold', 'LilyUPC Italic', 'LilyUPC Bold Italic', 'MS Mincho', 'MS PMincho', 'Malgun Gothic Bold', 'Mangal', 'Mangal Bold', 'Meiryo UI', 'Meiryo UI Bold', 'Meiryo UI Italic', 'Meiryo UI Bold Italic', 'Meiryo', 'Meiryo Bold', 'Meiryo Italic', 'Meiryo Bold Italic', 'Microsoft JhengHei Bold', 'Microsoft New Tai Lue Bold', 'Microsoft PhagsPa Bold', 'Microsoft Tai Le Bold', 'Microsoft Uighur', 'Microsoft YaHei Bold', 'MingLiU', 'MingLiU_HKSCS', 'Miriam', 'Miriam Fixed', 'MoolBoran', 'Narkisim', 'Nyala', 'PMingLiU', 'Palatino Linotype Bold', 'Palatino Linotype Italic', 'Palatino Linotype Bold Italic', 'Plantagenet Cherokee', 'Raavi', 'Raavi Bold', 'Rod', 'Sakkal Majalla', 'Sakkal Majalla Bold', 'Segoe Print Bold', 'Segoe Script Bold', 'Segoe UI Bold', 'Segoe UI Italic', 'Segoe UI Bold Italic', 'Shonar Bangla', 'Shonar Bangla Bold', 'Shruti', 'Shruti Bold', 'SimHei', 'Simplified Arabic', 'Simplified Arabic Bold', 'Simplified Arabic Fixed', ' Times New Roman Bold', 'Traditional Arabic', 'Traditional Arabic Bold', 'Tunga', 'Tunga Bold', 'Utsaah', 'Utsaah Bold', 'Utsaah Italic', 'Utsaah Bold Italic', 'Vani', 'Vani Bold', 'Vijaya', 'Vijaya Bold', 'Vrinda', 'Vrinda Bold']
+        fonts_max = random.randint(200, len(listFonts)-1)
+        fonts_min = random.randint(0, 150)
+        listUse = listFonts[fonts_min:fonts_max]  
+        profile_dict['profile_font'] = str(listUse)
     #audio
     if profile_post['profile_audio'] == 'Noise':
         list_length = 44100

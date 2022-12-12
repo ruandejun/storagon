@@ -203,7 +203,7 @@ class BrowserProfiles(models.Model):
     profile_cpu = models.CharField(verbose_name=_("profile_cpu"),blank=True, null=True, max_length=255, db_index=True, default='')
     profile_canvas = models.CharField(verbose_name=_("profile_canvas"),blank=True, null=True, max_length=255, db_index=True, default='')
     profile_rects = models.CharField(verbose_name=_("profile_rects"),blank=True, null=True, max_length=255, db_index=True, default='')
-    profile_font = models.CharField(verbose_name=_("profile_font"),blank=True, null=True, max_length=255, db_index=True, default='')
+    profile_font = models.TextField(verbose_name=_("profile_font"), blank=True, null=True, default='')
     profile_start_url = models.CharField(verbose_name=_("profile_start_url"),blank=True, null=True, max_length=255, db_index=True, default='')
     profile_audio = models.TextField(verbose_name=_("profile_audio"), blank=True, null=True, default='')
     profile_webgl = models.TextField(verbose_name=_("profile_webgl"), blank=True, null=True, default='')

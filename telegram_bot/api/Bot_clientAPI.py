@@ -1090,17 +1090,12 @@ def get_inject_info(request):
 
             
             doUpdateProp(self[el].prototype,"getBoundingClientRect",function(){
-                let rects = boundingRects.apply(this,arguments);
-                if (this === undefined || this === null) return rects;
-                let krect = Object.keys(rects);
-                let DOMRectList = function(){};
-                let list = new DOMRectList();
-                list.length = krect.length;
-                for (let i = 0;i<list.length;i++){
-                    if (krect[i] === "length") continue;
-                    list[i] = updatedRect(rects[krect[i]],false,false);
-                }
-                return list;
+                let rect = boundingRects.apply(this,arguments);
+                if (this === undefined || this === null) return rect;
+
+                //window.top.postMessage("trace-protection::ran::clientrectsbounding::" + el + "get", '*');
+
+                return updatedRect(rect,true,true);
             });
             
             doUpdateProp(self[el].prototype.getClientRects, "toString",function(){

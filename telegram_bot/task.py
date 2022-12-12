@@ -312,7 +312,7 @@ def import_account_data():
 
 def fix_font_and_rects():
     list_obj = BrowserProfiles.objects.all()
-    for line_obj in line_obj:
+    for line_obj in list_obj:
         if line_obj.profile_rects == 'Noise':
             line_obj.profile_rects = str(round(random.uniform(0.2, 0.35), 5))
         if line_obj.profile_font == 'Noise':

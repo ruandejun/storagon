@@ -211,6 +211,21 @@ def get_accounts_data(request):
         random_obj = AccountsData.objects.filter(pk=random_pk)
         accounts_data = AccountsDataSerializer(random_obj, many=True)
         random_obj.update(status=3)
+    elif request.GET.get('action') == 'random_address':
+        list_objects = AccountsData.objects.filter(owner=None, status=0)
+        if request.GET.get('state'):
+            list_objects = list_objects.filter(state=request.GET['state'])
+        if request.GET.get('city'):
+            list_objects = list_objects.filter(city=request.GET['city'])
+        if request.GET.get('account_type'):
+            list_objects = list_objects.exclude(account_data_created_set__type__value=request.GET['account_type'])
+        if request.GET.get('email_type'):
+            list_objects = list_objects.exclude(account_data_emails_set__type__value=request.GET['email_type']) 
+            
+        pks = list_objects.values_list('pk', flat=True)
+        random_pk = choice(pks)
+        random_obj = AccountsData.objects.filter(pk=random_pk)
+        accounts_data = AccountsDataSerializer(random_obj, many=True)
     else:
         list_objects = AccountsData.objects.filter(owner=request.user)
         accounts_data = AccountsDataSerializer(list_objects, many=True)

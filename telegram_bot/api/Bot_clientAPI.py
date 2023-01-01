@@ -160,11 +160,25 @@ def get_link_checkout(request):
 @signature_test()
 @user_passes_test(banned_check)
 def add_link_checkout(request):
+    list_create = []
     list_playload = json.loads(request.body)
     accountObj, created = AccountsType.objects.get_or_create(value=list_playload['type'], label=list_playload['type'])
-    list_create = []
-    for line in list_playload['data']:
-        list_create.append(LinkCheckout(url=line, type=accountObj))
+    checkFailedStatus = LinkCheckout.objects.filter(Status=LinkStatus.failed, type=accountObj)
+    if checkFailedStatus.exists():
+        for line in list_playload['data']:
+            checkFailedStatus = LinkCheckout.objects.filter(Status=LinkStatus.failed, type=accountObj)
+            if not LinkCheckout.objects.filter(url=line).exists() and checkFailedStatus.exists():
+                linkObj = checkFailedStatus[0]
+                linkObj.url = line
+                linkObj.status = LinkStatus.working
+                linkObj.save()  
+            if not checkFailedStatus.exists():
+                list_create.append(LinkCheckout(url=line, type=accountObj))
+            LinkCheckout.refresh_from_db()
+    else:
+        for line in list_playload['data']:
+            if not LinkCheckout.objects.filter(url=line).exists():
+                list_create.append(LinkCheckout(url=line, type=accountObj))
     if list_create:
         LinkCheckout.objects.bulk_create(list_create)
     return successResponse()  

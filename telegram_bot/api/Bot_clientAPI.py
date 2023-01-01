@@ -140,11 +140,20 @@ def get_mun_proxies(request):
 @signature_test()
 @user_passes_test(banned_check)
 def get_accounts_created(request):
-    list_objects = AccountsCreated.objects.filter(owner=request.user).order_by('-id')
+    if request.GET.get('action') == 'random':
+        list_objects = AccountsCreated.objects.filter(owner=None, status=0)
+        if request.GET.get('type'):
+            list_objects = list_objects.filter(type__value=request.GET['type'])
+  
+        pks = list_objects.values_list('pk', flat=True)
+        random_pk = choice(pks)
+        random_obj = AccountsCreated.objects.filter(pk=random_pk)
+        accounts_data = AccountsCreatedSerializer(random_obj, many=True) 
+    else:
+        list_objects = AccountsCreated.objects.filter(owner=request.user).order_by('-id')
 
-    accounts_data = AccountsCreatedSerializer(list_objects, many=True)
+        accounts_data = AccountsCreatedSerializer(list_objects, many=True)
 
-    ##
     return successResponse({'data':accounts_data.data})
   
 @api_view(['GET', 'POST', 'PUT'])

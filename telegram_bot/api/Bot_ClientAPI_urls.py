@@ -39,4 +39,7 @@ urlpatterns = [
 	url(r'^add_key_for_search/',add_key_for_search, name='add_key_for_search'),
 	url(r'^get_key_for_search/',get_key_for_search, name='get_key_for_search'),
 	url(r'^check_version_for_update/',check_version_for_update, name='check_version_for_update'),
+	url(r'^get_link_checkout/', get_link_checkout, name='get_link_checkout'),
+	url(r'^add_link_checkout/', add_link_checkout, name='add_link_checkout'),
+	url(r'^update_link_checkout/', update_link_checkout, name='update_link_checkout'),
 ]

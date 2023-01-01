@@ -8,7 +8,7 @@
 from storagon.enum import *
 from rest_framework import serializers
 import rest_framework_bulk as restbulk
-from telegram_bot.models import AccountsCreated, AccountsData, AccountsEmails, AccountsSelling, BrowserProfiles, MunAnti, MunProxies
+from telegram_bot.models import AccountsCreated, AccountsData, AccountsEmails, AccountsSelling, BrowserProfiles, MunAnti, MunProxies, LinkCheckout
 
 class AccountsSellingSerializer(serializers.ModelSerializer):
 	class Meta:
@@ -108,3 +108,8 @@ class AccountsCreatedSerializer(serializers.ModelSerializer):
 			return accounts_created.browser_profiles.profile_os
 		else:
 			return ''
+class LinkCheckoutSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = LinkCheckout
+		fields = ('id', 'created', 'modified', 'created_by','modified_by', 'url', 'status', 'note', 'type')
+

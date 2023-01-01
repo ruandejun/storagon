@@ -117,6 +117,10 @@ class SessionStatus(EnumBase):
 	completed = 2
 	failed = 3
 
+class LinkStatus(EnumBase):
+	working = 0
+	completed = 1
+	failed = 2
 
 class FileMode(EnumBase):
 	normal = 0

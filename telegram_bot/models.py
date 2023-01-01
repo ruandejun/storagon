@@ -103,6 +103,27 @@ class MunProxies(models.Model):
     def __str__(self):
         return str(self.socks_port)
 
+class LinkCheckout(models.Model):
+    class Meta:
+        verbose_name = _("LinkCheckout")
+        verbose_name_plural = _("LinkCheckout")
+
+    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True, db_index=True)
+    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True, db_index=True)
+
+    created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
+    modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)  
+    url = models.TextField(verbose_name=_("url"), blank=True, null=True, default='')
+    note = models.TextField(verbose_name=_("note"), blank=True, null=True, default='')
+    status = models.PositiveSmallIntegerField(choices=LinkStatus.ChoiceList(), default=LinkStatus.working,
+                                                   db_index=True)    
+    type = models.ForeignKey(AccountsType, verbose_name=_("type"),
+                             related_name="link_type_set", null=True,
+                             blank=True, on_delete=models.PROTECT)
+    def __str__(self):
+        return str(self.url)
+
+
 class MunAnti(models.Model):
     class Meta:
         verbose_name = _("MunAnti")

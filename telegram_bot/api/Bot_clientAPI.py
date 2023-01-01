@@ -134,7 +134,58 @@ def get_mun_proxies(request):
     return successResponse({'data':object_data.data})
   
   
- 
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
+def get_link_checkout(request):
+    if request.GET.get('action') == 'random':
+        list_objects = LinkCheckout.objects.filter(status=0)
+        if request.GET.get('type'):
+            list_objects = list_objects.filter(type__value=request.GET['type'])
+  
+        pks = list_objects.values_list('pk', flat=True)
+        random_pk = choice(pks)
+        random_obj = LinkCheckout.objects.filter(pk=random_pk)
+        accounts_data = LinkCheckoutSerializer(random_obj, many=True) 
+    else:
+        list_objects = LinkCheckout.objects.filter(status=0).order_by('-id')
+
+        accounts_data = LinkCheckoutSerializer(list_objects, many=True)
+
+    return successResponse({'data':accounts_data.data}) 
+
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
+def add_link_checkout(request):
+    list_playload = json.loads(request.body)
+    list_create = []
+    for line in list_playload:
+      accountObj, created = AccountsType.objects.get_or_create(value=line['type'], label=line['type'])
+      list_create.append(LinkCheckout(url=line['url'], type=accountObj))
+    if list_create:
+        LinkCheckout.objects.bulk_create(list_create)
+    return successResponse()  
+
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
+def update_link_checkout(request):
+    if request.method == 'GET':
+        return successResponse({"ok": "Get request processed"})
+    update_post = json.loads(request.body)
+    link_checkout_obj = LinkCheckout.objects.filter(pk=update_post['id'])
+    if link_checkout_obj.exists():
+      link_checkout_obj.update(**update_post['update_data'])
+      link_checkout_obj = LinkCheckout.objects.get(
+          pk=update_post['id'])
+      link_checkout_data = LinkCheckoutSerializer(link_checkout_obj)
+    return successResponse({'data':link_checkout_data.data})
+
+
 @api_view(['GET', 'POST', 'PUT'])
 @login_required_ajax()
 @signature_test()

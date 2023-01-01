@@ -322,12 +322,15 @@ def import_created_account(account_type):
                 data = {}
                 data['email'] = line_split[0].strip()
                 data['password'] = line_split[1].strip()
-                list_create.append(AccountsCreated(email=line_split[0].strip(), password=line_split[1].strip(), type=typeobj))
+                objFileter = AccountsCreated.objects.filter(email=line_split[0].strip())
+                if not objFileter.exists():
+                    list_create.append(AccountsCreated(email=line_split[0].strip(), password=line_split[1].strip(), type=typeobj))
             except Exception as e:
                 print(e)
                 continue
     if list_create:
-        AccountsCreated.objects.bulk_create(list_create)        
+        AccountsCreated.objects.bulk_create(list_create)     
+    print('==created==', len(list_create))   
 # if __name__ == '__main__':
 #     # get_tbk_coupon('python')
 #     print('===task===')

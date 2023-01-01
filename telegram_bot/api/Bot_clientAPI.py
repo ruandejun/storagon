@@ -161,10 +161,10 @@ def get_link_checkout(request):
 @user_passes_test(banned_check)
 def add_link_checkout(request):
     list_playload = json.loads(request.body)
+    accountObj, created = AccountsType.objects.get_or_create(value=list_playload['type'], label=list_playload['type'])
     list_create = []
-    for line in list_playload:
-      accountObj, created = AccountsType.objects.get_or_create(value=line['type'], label=line['type'])
-      list_create.append(LinkCheckout(url=line['url'], type=accountObj))
+    for line in list_playload['data']:
+        list_create.append(LinkCheckout(url=line, type=accountObj))
     if list_create:
         LinkCheckout.objects.bulk_create(list_create)
     return successResponse()  

@@ -191,12 +191,12 @@ def update_link_checkout(request):
     if request.method == 'GET':
         return successResponse({"ok": "Get request processed"})
     update_post = json.loads(request.body)
-    link_checkout_obj = LinkCheckout.objects.filter(pk=update_post['id'])
+    link_checkout_obj = LinkCheckout.objects.filter(url=update_post['url'])
     if link_checkout_obj.exists():
-      link_checkout_obj.update(**update_post['update_data'])
-      link_checkout_obj = LinkCheckout.objects.get(
-          pk=update_post['id'])
-      link_checkout_data = LinkCheckoutSerializer(link_checkout_obj)
+        link_checkout_obj.update(**update_post['update_data'])
+        link_checkout_obj = LinkCheckout.objects.get(
+            pk=update_post['url'])
+        link_checkout_data = LinkCheckoutSerializer(link_checkout_obj)
     return successResponse({'data':link_checkout_data.data})
 
 

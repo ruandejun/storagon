@@ -5,7 +5,7 @@ from storagon import settings
 from telebot import types
 from servermain.models import AccountBalance, AccountCurrency
 from django.contrib.auth.models import User
-from telegram_bot.models import AccountsData, MunAnti, UserTelegram, AccountsSelling, BrowserProfiles
+from telegram_bot.models import AccountsData, MunAnti, UserTelegram, AccountsSelling, BrowserProfiles, AccountsCreated, AccountsType
 from storagon.enum import *
 from servermain.controllers import UserController
 from telegram_bot.api.TelegramBot_RestfulApi import AccountsSellingSerializer
@@ -305,6 +305,29 @@ def import_account_data():
                 continue
     if list_create:
         AccountsData.objects.bulk_create(list_create)
+        
+def import_created_account(account_type):
+    print('==import_created_account==')
+    # | 1 | Thomas | Neumann | 321 BERKLEY PL | STAUNTON | VA | 24401 | 540-255-7790 | 461791163 | Aug  8 1973 12:00AM | tan5f@virginia.edu | University Of Virginia | 0.00 | 434-243-2833
+    typeobj, created = AccountsType.objects.get_or_create(value=account_type, label=account_type)
+    f = open('account.txt', 'r', encoding="utf8")
+    list_create = []
+    dict_ssn={}
+    result = f.read()
+    for line in result.split('\n'):
+        print(line)
+        line_split = line.split('|')
+        if line_split:
+            try:
+                data = {}
+                data['email'] = line_split[0].strip()
+                data['password'] = line_split[1].strip()
+                list_create.append(AccountsCreated(email=line_split[0].strip(), password=line_split[1].strip(), type=typeobj))
+            except Exception as e:
+                print(e)
+                continue
+    if list_create:
+        AccountsCreated.objects.bulk_create(list_create)        
 # if __name__ == '__main__':
 #     # get_tbk_coupon('python')
 #     print('===task===')

@@ -163,10 +163,10 @@ def add_link_checkout(request):
     list_create = []
     list_playload = json.loads(request.body)
     accountObj, created = AccountsType.objects.get_or_create(value=list_playload['type'], label=list_playload['type'])
-    checkFailedStatus = LinkCheckout.objects.filter(Status=LinkStatus.failed, type=accountObj)
+    checkFailedStatus = LinkCheckout.objects.filter(status=LinkStatus.failed, type__value=list_playload['type'])
     if checkFailedStatus.exists():
         for line in list_playload['data']:
-            checkFailedStatus = LinkCheckout.objects.filter(Status=LinkStatus.failed, type=accountObj)
+            checkFailedStatus = LinkCheckout.objects.filter(status=LinkStatus.failed, type__value=list_playload['type'])
             if not LinkCheckout.objects.filter(url=line).exists() and checkFailedStatus.exists():
                 linkObj = checkFailedStatus[0]
                 linkObj.url = line

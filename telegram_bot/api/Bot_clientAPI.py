@@ -1990,17 +1990,25 @@ def get_create_function(request):
     return successResponse({'data':profile_data.data})   
   
 def get_tool_setting(request):
+  
     list_objects = UserCreateFunction.objects.filter(
             user=request.user)
+    if list_objects.exists():
+        create_datas = UserCreateFunctionSerializer(list_objects) 
+        create_data = create_datas.data
+    else:
+        create_data = []
     
-    create_data = UserCreateFunctionSerializer(list_objects) 
-    
-    list_objects = UserCheckFunction.objects.filter(
+    check_objects = UserCheckFunction.objects.filter(
             user=request.user)
+    if check_objects.exists():
+        check_datas = UserCheckFunctionSerializer(check_objects)
+        check_data = check_datas.data
+    else:
+        check_data = []
+      
     
-    check_data = UserCheckFunctionSerializer(list_objects)
-    
-    return successResponse({'create_data':create_data.data, 'check_data':check_data.data}) 
+    return successResponse({'create_data':create_data, 'check_data':check_data}) 
   
 
     

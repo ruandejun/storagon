@@ -122,7 +122,39 @@ class LinkCheckout(models.Model):
                              blank=True, on_delete=models.PROTECT)
     def __str__(self):
         return str(self.url)
+    
+class UserCheckFunction(models.Model):
+    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
+    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True) 
+    user = models.ForeignKey(User, related_name='check_function', on_delete=models.DO_NOTHING)
+    value = models.CharField(verbose_name=_("value"), max_length=255)
+    label = models.CharField(verbose_name=_("label"), max_length=255)
+    note = models.TextField(verbose_name=_("note"), blank=True, null=True, default='')
+    status = models.PositiveSmallIntegerField(choices=AccountStatus.ChoiceList(), default=AccountStatus.normal,
+                                                   db_index=True)      
+    def __unicode__(self): return self.value
+    
+class UserCreateFunction(models.Model):
+    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
+    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
+    user = models.ForeignKey(User, related_name='create_function', on_delete=models.DO_NOTHING)
+    value = models.CharField(verbose_name=_("value"), max_length=255)
+    label = models.CharField(verbose_name=_("label"), max_length=255)
+    note = models.TextField(verbose_name=_("note"), blank=True, null=True, default='')
+    status = models.PositiveSmallIntegerField(choices=AccountStatus.ChoiceList(), default=AccountStatus.normal,
+                                                   db_index=True)      
+    def __unicode__(self): return self.value    
 
+class UserHwid(models.Model):
+    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
+    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
+    user = models.ForeignKey(User, related_name='hwid', on_delete=models.DO_NOTHING)
+    value = models.CharField(verbose_name=_("value"), max_length=255)
+    note = models.TextField(verbose_name=_("note"), blank=True, null=True, default='')
+    status = models.PositiveSmallIntegerField(choices=AccountStatus.ChoiceList(), default=AccountStatus.normal,
+                                                   db_index=True)      
+    def __unicode__(self): return self.value    
+    
 
 class MunAnti(models.Model):
     class Meta:
@@ -135,6 +167,7 @@ class MunAnti(models.Model):
     update_url = models.CharField(max_length=9999, db_index=True)   
     def __str__(self):
         return str(self.version)
+    
 class AccountsSelling(models.Model):
     class Meta:
         verbose_name = _("AccountsSelling")

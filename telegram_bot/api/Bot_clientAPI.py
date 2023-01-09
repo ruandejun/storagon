@@ -1963,3 +1963,44 @@ def create_browser_profile(request):
     ##
     return successResponse({'data':profile_data.data})
 
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
+def get_check_function(request):
+
+    list_objects = UserCheckFunction.objects.filter(
+            user=request.user)
+    
+    profile_data = UserCheckFunctionSerializer(list_objects)
+    
+    return successResponse({'data':profile_data.data}) 
+  
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
+def get_create_function(request):
+
+    list_objects = UserCreateFunction.objects.filter(
+            user=request.user)
+    
+    profile_data = UserCreateFunctionSerializer(list_objects)
+    
+    return successResponse({'data':profile_data.data})   
+  
+def get_tool_setting(request):
+    list_objects = UserCreateFunction.objects.filter(
+            user=request.user)
+    
+    create_data = UserCreateFunctionSerializer(list_objects) 
+    
+    list_objects = UserCheckFunction.objects.filter(
+            user=request.user)
+    
+    check_data = UserCheckFunctionSerializer(list_objects)
+    
+    return successResponse({'create_data':create_data.data, 'check_data':check_data.data}) 
+  
+
+    

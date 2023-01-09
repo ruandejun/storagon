@@ -5,7 +5,7 @@ from storagon import settings
 from telebot import types
 from servermain.models import AccountBalance, AccountCurrency
 from django.contrib.auth.models import User
-from telegram_bot.models import AccountsData, MunAnti, UserTelegram, AccountsSelling, BrowserProfiles, AccountsCreated, AccountsType
+from telegram_bot.models import AccountsData, MunAnti, UserTelegram, AccountsSelling, BrowserProfiles, AccountsCreated, AccountsType, UserHwid, UserCreateFunction, UserCheckFunction
 from storagon.enum import *
 from servermain.controllers import UserController
 from telegram_bot.api.TelegramBot_RestfulApi import AccountsSellingSerializer
@@ -169,9 +169,9 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
         cmd = text.lstrip("/").strip()
         extra_text = ''
         if cmd.find(' ') != -1:
-            new_cmd = cmd.split(' ')[0]
-            extra_text = cmd.split(' ')[1]
-            cmd = new_cmd.strip()
+            new_cmds = cmd.split(' ')
+            cmd = new_cmds[0].strip()
+            extra_text = new_cmds[1].strip()
             
         print('cmd==', cmd, text)
         if cmd == "listing":
@@ -214,6 +214,48 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                 mun_obj = MunAnti.objects.create(version=extra_text.strip())
                 msg = 'New version %s already updated!' % (extra_text)
                 send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
+        elif cmd == 'addhwid':
+            print('==set addhwid==')
+            if str(chat_id) == '892844098':
+                mun_obj, created = UserHwid.objects.get_or_create(value=extra_text.strip(), user=user)
+                msg = 'Your hwid %s already updated!' % (extra_text)
+                send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
+            else:
+                hwid_objs = UserHwid.objects.filter(user=user)
+                if not hwid_objs.exists():
+                    mun_obj, created = UserHwid.objects.get_or_create(value=extra_text.strip(), user=user)  
+                    msg = 'Your hwid %s already updated!' % (extra_text)
+                    send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
+                else:
+                    hwid_obj = hwid_objs.first()
+                    hwid_obj.value = extra_text.strip()
+                    hwid_obj.save()
+        elif cmd == 'addcheck':
+            print('==set addcheck==')
+            if str(chat_id) == '892844098':
+                if cmd.find(' ') != -1:
+                    new_cmds = cmd.split(' ')
+                    cmd = new_cmds[0].strip()
+                    user_id = new_cmds[1].strip()
+                    function_add = new_cmds[2].strip()
+                    userObj = User.objects.get(username=user_id)
+                    mun_obj, created = UserCheckFunction.objects.get_or_create(value=function_add.strip(), label=function_add.strip(), user=userObj)
+                    msg = 'Your check function %s already updated!' % (function_add)
+                    send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
+        elif cmd == 'addcreate':
+            print('==set addcreate==')
+            if str(chat_id) == '892844098':
+                if cmd.find(' ') != -1:
+                    new_cmds = cmd.split(' ')
+                    cmd = new_cmds[0].strip()
+                    user_id = new_cmds[1].strip()
+                    function_add = new_cmds[2].strip()
+                    userObj = User.objects.get(username=user_id)
+                    mun_obj, created = UserCreateFunction.objects.get_or_create(value=function_add.strip(), label=function_add.strip(), user=userObj)
+                    msg = 'Your create function %s already updated!' % (function_add)
+                    send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id )              
+                    
+                              
         elif cmd == 'version' or cmd == 'v':
             print('==get version==')
             obj_last = MunAnti.objects.last()

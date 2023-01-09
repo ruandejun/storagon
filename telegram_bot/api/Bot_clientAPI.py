@@ -1988,7 +1988,10 @@ def get_create_function(request):
     profile_data = UserCreateFunctionSerializer(list_objects)
     
     return successResponse({'data':profile_data.data})   
-  
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)  
 def get_tool_setting(request):
   
     list_objects = UserCreateFunction.objects.filter(

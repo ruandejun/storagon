@@ -22,6 +22,7 @@ def telegram_bot(request):
     if request.method == 'GET':
         return successResponse({"ok": "Get request processed"})
     t_data = json.loads(request.body)
+    print(t_data)
     if 'message' in t_data:
         t_message = t_data["message"]
         t_chat = t_message["chat"]
@@ -38,7 +39,7 @@ def telegram_bot(request):
         chat_id = from_user['id']
         data = t_message['data']
         t_message_id = t_reply_to_message["message_id"]
-        print(from_user['id'],data)
+        # print(from_user['id'],data)
         check_cmd_telegram.delay(chat_id,message_id=t_message_id,callback_query=data)
 
 

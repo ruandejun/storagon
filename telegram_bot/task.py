@@ -220,9 +220,16 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
         elif cmd == 'addhwid':
             print('==set addhwid==')
             if str(chat_id) == '892844098':
-                mun_obj, created = UserHwid.objects.get_or_create(value=extra_text.strip(), user=user)
-                msg = 'Your hwid %s already updated!' % (extra_text)
-                send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
+                if extra_text.find(' ') != -1:
+                    new_cmds = extra_text.split(' ')
+                    user_id = new_cmds[0].strip()
+                    # user_id = new_cmds[1].strip()
+                    function_add = extra_text.split(user_id)[-1].strip()
+                    userObj = User.objects.get(username=user_id)
+                    print(cmd, user_id, function_add)
+                    mun_obj, created = UserHwid.objects.get_or_create(value=function_add, user=userObj)
+                    msg = 'Your hwid %s already updated!' % (extra_text)
+                    send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
             else:
                 hwid_objs = UserHwid.objects.filter(user=user)
                 if not hwid_objs.exists():

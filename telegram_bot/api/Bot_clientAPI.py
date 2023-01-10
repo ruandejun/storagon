@@ -1973,7 +1973,7 @@ def get_check_function(request):
     list_objects = UserCheckFunction.objects.filter(
             user=request.user)
     
-    profile_data = UserCheckFunctionSerializer(list_objects)
+    profile_data = UserCheckFunctionSerializer(list_objects, many=True)
     
     return successResponse({'data':profile_data.data}) 
   
@@ -1986,7 +1986,7 @@ def get_create_function(request):
     list_objects = UserCreateFunction.objects.filter(
             user=request.user)
     
-    profile_data = UserCreateFunctionSerializer(list_objects)
+    profile_data = UserCreateFunctionSerializer(list_objects, many=True)
     
     return successResponse({'data':profile_data.data})   
 @api_view(['GET', 'POST', 'PUT'])
@@ -2007,7 +2007,7 @@ def get_tool_setting(request):
             list_objects = UserCreateFunction.objects.filter(
                     user=request.user)
             if list_objects.exists():
-                create_datas = UserCreateFunctionSerializer(list_objects) 
+                create_datas = UserCreateFunctionSerializer(list_objects, many=True) 
                 create_data = create_datas.data
             else:
                 create_data = []
@@ -2015,7 +2015,7 @@ def get_tool_setting(request):
             check_objects = UserCheckFunction.objects.filter(
                     user=request.user)
             if check_objects.exists():
-                check_datas = UserCheckFunctionSerializer(check_objects)
+                check_datas = UserCheckFunctionSerializer(check_objects, many=True)
                 check_data = check_datas.data
             else:
                 check_data = []
@@ -2025,7 +2025,7 @@ def get_tool_setting(request):
             list_objects = UserCreateFunction.objects.filter(
                     user=request.user)
             if list_objects.exists():
-                create_datas = UserCreateFunctionSerializer(list_objects) 
+                create_datas = UserCreateFunctionSerializer(list_objects, many=True) 
                 create_data = create_datas.data
             else:
                 create_data = []
@@ -2033,7 +2033,7 @@ def get_tool_setting(request):
             check_objects = UserCheckFunction.objects.filter(
                     user=request.user)
             if check_objects.exists():
-                check_datas = UserCheckFunctionSerializer(check_objects)
+                check_datas = UserCheckFunctionSerializer(check_objects, many=True)
                 check_data = check_datas.data
             else:
                 check_data = []

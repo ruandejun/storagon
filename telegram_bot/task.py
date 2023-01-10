@@ -218,8 +218,9 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                 msg = 'New version %s already updated!' % (extra_text)
                 send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
         elif cmd == 'addhwid':
-            print('==set addhwid==')
+            
             if str(chat_id) == '892844098':
+                print('==set addhwid==')
                 if extra_text.find(' ') != -1:
                     new_cmds = extra_text.split(' ')
                     user_id = new_cmds[0].strip()

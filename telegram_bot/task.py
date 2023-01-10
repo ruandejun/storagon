@@ -231,20 +231,23 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     hwid_obj.value = extra_text.strip()
                     hwid_obj.save()
         elif cmd == 'addcheck':
-            print('==set addcheck==')
+            
             if str(chat_id) == '892844098':
+                print('==set addcheck==')
                 if cmd.find(' ') != -1:
                     new_cmds = cmd.split(' ')
                     cmd = new_cmds[0].strip()
                     user_id = new_cmds[1].strip()
                     function_add = new_cmds[2].strip()
                     userObj = User.objects.get(username=user_id)
+                    print(cmd, user_id, function_add)
                     mun_obj, created = UserCheckFunction.objects.get_or_create(value=function_add.strip(), label=function_add.strip(), user=userObj)
                     msg = 'Your check function %s already updated!' % (function_add)
                     send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
         elif cmd == 'addcreate':
-            print('==set addcreate==')
+            
             if str(chat_id) == '892844098':
+                print('==set addcreate==')
                 if cmd.find(' ') != -1:
                     new_cmds = cmd.split(' ')
                     cmd = new_cmds[0].strip()

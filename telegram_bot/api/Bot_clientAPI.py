@@ -2001,7 +2001,7 @@ def get_tool_setting(request):
     if action == 'hwid':
         hwid = request.GET.get('hwid')
         hwid_objs = UserHwid.objects.filter(user=request.user)
-        print(hwid_objs[-1].value)
+        print(hwid_objs.last().value)
         hwid_obj_check = hwid_objs.filter(value=hwid)
         if hwid_obj_check.exists():
             list_objects = UserCreateFunction.objects.filter(

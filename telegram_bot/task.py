@@ -228,13 +228,13 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     userObj = User.objects.get(username=user_id)
                     print(cmd, user_id, function_add)
                     mun_obj, created = UserHwid.objects.get_or_create(value=function_add, user=userObj)
-                    msg = 'Your hwid %s already updated!' % (extra_text)
+                    msg = 'Your hwid %s already updated!' % (mun_obj.value)
                     send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
             else:
                 hwid_objs = UserHwid.objects.filter(user=user)
                 if not hwid_objs.exists():
                     mun_obj, created = UserHwid.objects.get_or_create(value=extra_text.strip(), user=user)  
-                    msg = 'Your hwid %s already updated!' % (extra_text)
+                    msg = 'Your hwid %s already updated!' % (mun_obj.value)
                     send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
                 else:
                     hwid_obj = hwid_objs.first()
@@ -252,7 +252,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     userObj = User.objects.get(username=user_id)
                     print(cmd, user_id, function_add)
                     mun_obj, created = UserCheckFunction.objects.get_or_create(value=function_add.strip(), label=function_add.strip(), user=userObj)
-                    msg = 'Your check function %s already updated!' % (function_add)
+                    msg = 'Your check function %s already updated!' % (mun_obj.value)
                     send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
         elif cmd == 'addcreate':
             
@@ -266,7 +266,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     userObj = User.objects.get(username=user_id)
                     print(cmd, user_id, function_add)
                     mun_obj, created = UserCreateFunction.objects.get_or_create(value=function_add.strip(), label=function_add.strip(), user=userObj)
-                    msg = 'Your create function %s already updated!' % (function_add)
+                    msg = 'Your create function %s already updated!' % (mun_obj.value)
                     send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id )              
                     
                               

@@ -1993,25 +1993,51 @@ def get_create_function(request):
 @signature_test()
 @user_passes_test(banned_check)  
 def get_tool_setting(request):
-  
-    list_objects = UserCreateFunction.objects.filter(
-            user=request.user)
-    if list_objects.exists():
-        create_datas = UserCreateFunctionSerializer(list_objects) 
-        create_data = create_datas.data
-    else:
-        create_data = []
-    
-    check_objects = UserCheckFunction.objects.filter(
-            user=request.user)
-    if check_objects.exists():
-        check_datas = UserCheckFunctionSerializer(check_objects)
-        check_data = check_datas.data
-    else:
-        check_data = []
-      
-    
-    return successResponse({'create_data':create_data, 'check_data':check_data}) 
+    hwid_status = False
+    check_data = []
+    create_data = []  
+    action = request.GET.get('action')
+    if action == 'hwid':
+        hwid = request.GET.get('hwid')
+        hwid_objs = UserHwid.objects.filter(user=request.user)
+        hwid_obj_check = hwid_objs.filter(value=hwid)
+        if hwid_obj_check.exists():
+            list_objects = UserCreateFunction.objects.filter(
+                    user=request.user)
+            if list_objects.exists():
+                create_datas = UserCreateFunctionSerializer(list_objects) 
+                create_data = create_datas.data
+            else:
+                create_data = []
+            
+            check_objects = UserCheckFunction.objects.filter(
+                    user=request.user)
+            if check_objects.exists():
+                check_datas = UserCheckFunctionSerializer(check_objects)
+                check_data = check_datas.data
+            else:
+                check_data = []
+            hwid_status = True
+        elif not hwid_objs.exists():
+            UserHwid.objects.get_or_create(value=hwid, user=request.user)
+            list_objects = UserCreateFunction.objects.filter(
+                    user=request.user)
+            if list_objects.exists():
+                create_datas = UserCreateFunctionSerializer(list_objects) 
+                create_data = create_datas.data
+            else:
+                create_data = []
+            
+            check_objects = UserCheckFunction.objects.filter(
+                    user=request.user)
+            if check_objects.exists():
+                check_datas = UserCheckFunctionSerializer(check_objects)
+                check_data = check_datas.data
+            else:
+                check_data = []
+            hwid_status = True            
+
+    return successResponse({'hwid': hwid_status,'create_data':create_data, 'check_data':check_data}) 
   
 
     

@@ -2001,7 +2001,7 @@ def get_tool_setting(request):
         hwid = request.GET.get('hwid')
         hwid_objs = UserHwid.objects.filter(user=request.user)
         hwid_obj_check = hwid_objs.filter(value=hwid)
-        if hwid_obj_check.exists():
+        if hwid_obj_check.exists() and UserProfile.getPlanID:
             list_objects = UserCreateFunction.objects.filter(
                     user=request.user)
             if list_objects.exists():
@@ -2018,8 +2018,8 @@ def get_tool_setting(request):
             else:
                 check_data = []
             hwid_status = True
-        elif not hwid_objs.exists():
-            UserHwid.objects.get_or_create(value=hwid, user=request.user)
+        elif not hwid_objs.exists() and UserProfile.getPlanID:
+            hwidobj, created = UserHwid.objects.get_or_create(value=hwid, user=request.user)
             list_objects = UserCreateFunction.objects.filter(
                     user=request.user)
             if list_objects.exists():

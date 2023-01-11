@@ -238,9 +238,12 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     msg = 'Your hwid %s already updated!' % (mun_obj.value)
                     send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
                 else:
-                    hwid_obj = hwid_objs.first()
-                    hwid_obj.value = extra_text.strip()
-                    hwid_obj.save()
+                    # hwid_obj = hwid_objs.first()
+                    # hwid_obj.value = extra_text.strip()
+                    # hwid_obj.save()
+                    mun_obj, created = UserHwid.objects.get_or_create(value=extra_text.strip(), user=user)  
+                    msg = 'Your hwid %s already updated!' % (mun_obj.value)
+                    send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id) 
         elif cmd == 'addcheck':
             
             if str(chat_id) == '892844098':

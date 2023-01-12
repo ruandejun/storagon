@@ -45,5 +45,4 @@ urlpatterns = [
 	url(r'^get_check_function/', get_check_function, name='get_check_function'),
 	url(r'^get_create_function/', get_create_function, name='get_create_function'),
 	url(r'^get_tool_setting/', get_tool_setting, name='get_tool_setting'),
-	url(r'^get_tool_setting/', get_files_map, name='get_files_map'),
 ]

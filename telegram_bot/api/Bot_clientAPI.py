@@ -195,9 +195,9 @@ def update_link_checkout(request):
     link_checkout_obj = LinkCheckout.objects.filter(url=update_post['url'])
     if link_checkout_obj.exists():
         link_checkout_obj.update(**update_post['update_data'])
-        link_checkout_obj = LinkCheckout.objects.get(
-            pk=update_post['url'])
-        link_checkout_data = LinkCheckoutSerializer(link_checkout_obj)
+        link_checkout_obj = LinkCheckout.objects.filter(
+            url=update_post['url'])
+        link_checkout_data = LinkCheckoutSerializer(link_checkout_obj, many=True)
     return successResponse({'data':link_checkout_data.data})
 
 
@@ -1989,6 +1989,22 @@ def get_create_function(request):
     profile_data = UserCreateFunctionSerializer(list_objects, many=True)
     
     return successResponse({'data':profile_data.data})   
+
+# @api_view(['GET', 'POST', 'PUT'])
+# @login_required_ajax()
+# @signature_test()
+# @user_passes_test(banned_check)
+# def get_files_map(request):
+
+#     files_map = {}
+#     files_map['chrome'] = {'version':'107.0.5304.88'}
+#     files_map['ffmpeg'] = ''
+#     files_map['ffplay'] = ''
+#     files_map['ffprobe'] = ''
+#     files_map['MunProxies'] = ''
+    
+#     return successResponse({'data':profile_data.data})     
+  
 @api_view(['GET', 'POST', 'PUT'])
 @login_required_ajax()
 @signature_test()

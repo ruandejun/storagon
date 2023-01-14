@@ -5,12 +5,12 @@ from storagon import settings
 from telebot import types
 from servermain.models import AccountBalance, AccountCurrency
 from django.contrib.auth.models import User
-from telegram_bot.models import AccountsData, MunAnti, UserTelegram, AccountsSelling, BrowserProfiles, AccountsCreated, AccountsType, UserHwid, UserCreateFunction, UserCheckFunction
+from telegram_bot.models import AccountsData, MunAnti, UserTelegram, AccountsSelling, BrowserProfiles, AccountsCreated, AccountsType, UserHwid, UserCreateFunction, UserCheckFunction, CheckerType, CreatorType
 from storagon.enum import *
 from servermain.controllers import UserController
-from telegram_bot.api.TelegramBot_RestfulApi import AccountsSellingSerializer
+from telegram_bot.api.TelegramBot_RestfulApi import AccountsSellingSerializer, CheckerTypeFunctionSerializer, CreatorTypeFunctionSerializer
 from rest_framework.authtoken.models import Token
-import random
+import random, math
 def send_telegram_notify_to_group(group_id,msg,reply_markup=None,reply_id=None):
     #token='1235501300:AAEWPcah92B1PvsdvTCSHdT12CCg4gq-qZo'
     token = settings.TELEGRAM_TOKEN
@@ -27,7 +27,52 @@ def edit_telegram_notify_to_group(chat_id,message_id,text,reply_markup=None):
     return edited_msg
 
 
-def creat_listing_markup(listing,type,page=0):
+def create_function_listing_markup(listing, action='',page=0):
+    backPage = page-1
+    nextPage = page+1
+    lastPage = -1
+    if backpage <=0:
+        backpage=0
+    
+    markup = types.InlineKeyboardMarkup()
+    i = 0
+    while i < len(listing):
+        line_function1 = listing[i]
+        line_function2 = listing[i+1]
+        callback_data1 = {'action': action, 'value': line_function1['value'], 'type':action}
+        callback_data2 = {'action': action, 'value': line_function2['value'], 'type':action}
+        inline_keyboard_function1 = types.InlineKeyboardButton(line_function1['value'], callback_data=str(callback_data1))
+        inline_keyboard_function2 = types.InlineKeyboardButton(line_function2['value'], callback_data=str(callback_data2))
+        markup.row(inline_keyboard_function1,inline_keyboard_function2)
+        i+=2
+        
+    callback_data_firstpage = {'action': action, 'value': 0, 'type':'set_page'}    
+    inline_keyboard_first_page = types.InlineKeyboardButton('First Page \U0001F51D', callback_data=str(callback_data_firstpage))
+        
+    callback_data_back_page = {'action': action, 'value': backPage, 'type':'set_page'}   
+    inline_keyboard_back_page = types.InlineKeyboardButton('Back \U00002B05', callback_data=str(callback_data_back_page))
+    
+    
+    callback_data_next_page = {'action': action, 'value': nextPage, 'type':'set_page'} 
+    inline_keyboard_next_page = types.InlineKeyboardButton('Next \U000027A1', callback_data=str(callback_data_next_page))
+    
+    
+    callback_data_last_page = {'action': action, 'value': lastPage, 'type':'set_page'}
+    inline_keyboard_last_page = types.InlineKeyboardButton('Last Page \U0001F51A', callback_data=str(callback_data_last_page))
+    markup.row(inline_keyboard_first_page,inline_keyboard_back_page,inline_keyboard_next_page,inline_keyboard_last_page)
+
+    
+    
+    inline_keyboard_menu = types.InlineKeyboardButton('Menu \U0001F3D8', callback_data='menu')
+    
+    callback_data_refresh = {'action': action, 'value': 'refresh', 'type':action} 
+
+    inline_keyboard_refesh = types.InlineKeyboardButton('Refresh \U0001F504', callback_data=str(callback_data_refresh))
+    inline_keyboard_deposit = types.InlineKeyboardButton('Deposit \U0001F4B3', callback_data='deposit')
+    markup.row(inline_keyboard_menu, inline_keyboard_refesh, inline_keyboard_deposit)
+    return markup
+
+def create_listing_markup(listing,type,page=0):
 
     markup = types.InlineKeyboardMarkup()
 
@@ -46,7 +91,8 @@ def creat_listing_markup(listing,type,page=0):
     inline_keyboard_deposit = types.InlineKeyboardButton('Deposit \U0001F4B3', callback_data='deposit')
     markup.row(inline_keyboard_menu, inline_keyboard_refesh, inline_keyboard_deposit)
     return markup
-def creat_deposit_markup():
+
+def create_deposit_markup():
 
     markup = types.InlineKeyboardMarkup()
 
@@ -58,7 +104,7 @@ def creat_deposit_markup():
 
 def create_html_show(type,balance,total,page,total_page,updated):
     html_show = '''
-<b>\U0001F47B MunBot %s accounts listing \U0001F47D</b>
+<b>\U0001F47B MunBot %s AIO automatic \U0001F47D</b>
 <b>Balance: </b><code>$%s \U0001F4B3</code>
 <b>Total: </b> <code>%s \U0001F6D2</code>
 <pre>Displaying page %s of %s. Last updated @ %s</pre>
@@ -159,11 +205,11 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     print('==create deposit==', account_address, account_id)
                     payment_method=value
                     html_show = create_html_deposit_details(current_banlance,payment_method,account_address,account_id)
-                    markup_button = creat_deposit_markup()
+                    markup_button = create_deposit_markup()
                     edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
         elif callback_query == 'deposit':
             html_show = create_html_deposit(0)
-            markup_button = creat_deposit_markup()
+            markup_button = create_deposit_markup()
             edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
     else:    
         cmd = text.lstrip("/").strip()
@@ -191,7 +237,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                 data = AccountsSellingSerializer(list_accounta_show, many=True).data
                 html_show = create_html_show('amazon', current_banlance, account_total, account_page, page_total, '2021-11-25 21:02')
 
-                markup_button = creat_listing_markup(data, 'amazon', page=1)
+                markup_button = create_listing_markup(data, 'amazon', page=1)
 
                 send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
             else:
@@ -200,7 +246,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                 send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
         elif cmd == 'deposit':
             html_show = create_html_deposit(0)
-            markup_button = creat_deposit_markup()
+            markup_button = create_deposit_markup()
             send_telegram_notify_to_group(chat_id, msg=html_show, reply_id=message_id, reply_markup=markup_button)
         elif cmd == 'token':
             print('==get token user==')
@@ -271,9 +317,22 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     print(cmd, user_id, function_add)
                     mun_obj, created = UserCreateFunction.objects.get_or_create(value=function_add.strip(), label=function_add.strip(), user=userObj)
                     msg = 'Your create function %s already updated!' % (mun_obj.value)
-                    send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id )              
+                    send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id )         
                     
-                              
+        elif cmd == 'addchecker':
+            if str(chat_id) == '892844098':
+                print('==set addchecker==')
+                function_add = extra_text.strip()
+                mun_obj, created = CheckerType.objects.get_or_create(value=function_add.strip(), label=function_add.strip())
+                msg = 'Your checker function %s already updated!' % (mun_obj.value)
+                send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id )        
+        elif cmd == 'addcreator':
+            if str(chat_id) == '892844098':
+                print('==set addchecker==')
+                function_add = extra_text.strip()
+                mun_obj, created = CreatorType.objects.get_or_create(value=function_add.strip(), label=function_add.strip())
+                msg = 'Your checker function %s already updated!' % (mun_obj.value)
+                send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id )                       
         elif cmd == 'version' or cmd == 'v':
             print('==get version==')
             obj_last = MunAnti.objects.last()
@@ -309,6 +368,47 @@ Password:%s
                 ''' % (chat_id, extra_text)
                 # send_message(msg, t_chat["id"])
                 send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
+        
+        elif cmd == 'checker':
+            print('==set checker==')
+            if not extra_text.strip():
+                checker_objs = CheckerType.objects.all()
+                limit = 10
+                account_page = 1
+                account_total = checker_objs.count()
+                page_total = math.ceil(float(account_total) / 10)
+                print(page_total)
+                list_accounta_show = list_account_objs[(account_page-1)*limit:account_page*limit]      
+                
+                listing_show = CheckerTypeFunctionSerializer(list_accounta_show, many=True)
+                html_show = create_html_show('Checker', current_banlance, checker_objs.count(), account_page, page_total, '2021-11-25 21:02')
+
+                markup_button = create_function_listing_markup(listing_show, 'checker', page=account_page)
+
+                send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
+            else:
+                checker_objs = CheckerType.objects.filter(value=extra_text.strip())
+                if checker_objs.exists():
+                    user_telegram.checker_type = checker_objs[0]
+                    user_telegram.save()
+                    msg = 'Your checker mode has been set as %s' % (extra_text.strip())
+                    send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
+                else:
+                    checker_objs = CheckerType.objects.all()
+                    limit = 10
+                    account_page = 1
+                    account_total = checker_objs.count()
+                    page_total = math.ceil(float(account_total) / 10)
+                    print(page_total)
+                    list_accounta_show = list_account_objs[(account_page-1)*limit:account_page*limit]      
+                    
+                    listing_show = CheckerTypeFunctionSerializer(list_accounta_show, many=True)
+                    html_show = create_html_show('Checker', current_banlance, checker_objs.count(), account_page, page_total, '2021-11-25 21:02')
+
+                    markup_button = create_function_listing_markup(listing_show, 'checker', page=account_page)
+
+                    send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)   
+
         # else:
         #     import math
         #     page_total = math.ceil(float(123) / 10)

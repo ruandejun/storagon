@@ -14,6 +14,40 @@ XRATE_MAX_DIGITS = getattr(settings, 'XRATE_MAX_DIGITS', 15)
 XRATE_DECIMAL_PLACES = getattr(settings, 'XRATE_DECIMAL_PLACES', 0)
 # Create your models here.
 
+class CheckerType(models.Model):
+    class Meta:
+        verbose_name = _("CheckerType")
+        verbose_name_plural = _("CheckerType")
+
+    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
+    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
+
+    value = models.CharField(verbose_name=_("value"), max_length=255, primary_key=True, unique=True)
+    label = models.CharField(verbose_name=_("label"), max_length=255)
+    default = models.BooleanField(verbose_name=_("default"), default=False, db_index=True)
+    status = models.PositiveSmallIntegerField(choices=AccountStatus.ChoiceList(), default=AccountStatus.normal,
+                                                   db_index=True)   
+    def __str__(self):
+        return str(self.label)    
+    
+class CreatorType(models.Model):
+    class Meta:
+        verbose_name = _("CreatorType")
+        verbose_name_plural = _("CreatorType")
+
+    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
+    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
+
+    value = models.CharField(verbose_name=_("value"), max_length=255, primary_key=True, unique=True)
+    label = models.CharField(verbose_name=_("label"), max_length=255)
+    default = models.BooleanField(verbose_name=_("default"), default=False, db_index=True)
+    
+    status = models.PositiveSmallIntegerField(choices=AccountStatus.ChoiceList(), default=AccountStatus.normal,
+                                                   db_index=True)   
+    def __str__(self):
+        return str(self.label)  
+
+
 class UserTelegram(models.Model):
     class Meta:
         verbose_name = _("User_Telegram")
@@ -31,9 +65,15 @@ class UserTelegram(models.Model):
     last_name = models.CharField(verbose_name=_("last_name"), blank=True, max_length=255)
 
     username = models.CharField(verbose_name=_("username"), blank=True, max_length=255)
+    
+    checker_type = models.ForeignKey(CheckerType, related_name='checker_type', on_delete=models.DO_NOTHING)
+    
+    creator_type = models.ForeignKey(CreatorType, related_name='creator_type', on_delete=models.DO_NOTHING)
 
     def __str__(self):
         return str(self.telegram_id)
+    
+
 
 class Status(models.Model):
     class Meta:

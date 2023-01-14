@@ -184,10 +184,11 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
     current_banlance = UserController.calculateUserBlance(account_balance_obj)
 
     
-
+    
     if callback_query:
+        print('callback_query==', callback_query)
         if callback_query.find('{') != -1:
-            callback_query_json = json.loads(callback_query)
+            callback_query_json = json.loads(json.dumps(callback_query))
             # edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
             {'action': 'checker', 'value': 'ccn gate 2', 'type': 'checker'}
             reply_action = callback_query_json['action']

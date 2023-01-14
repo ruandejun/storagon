@@ -1,5 +1,6 @@
 from ensurepip import version
 import re, telebot, ast
+from tkinter import N
 from celery import shared_task
 from storagon import settings
 from telebot import types
@@ -161,7 +162,7 @@ def get_deposit_address(user,name='BTC'):
 
 
 @shared_task
-def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, chat=None):
+def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, chat=None, document=None):
 
     userTelegram_objs = UserTelegram.objects.filter(telegram_id=chat_id)
     if not userTelegram_objs.exists():
@@ -183,8 +184,6 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
     account_balance_obj, created = AccountBalance.objects.get_or_create(user=user,balance_type=BalanceType.credit,currency=currency_obj)
     current_banlance = UserController.calculateUserBlance(account_balance_obj)
 
-    
-    
     if callback_query:
         print('callback_query==', callback_query)
         if callback_query.find('|') != -1:
@@ -208,7 +207,11 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
             html_show = create_html_deposit(0)
             markup_button = create_deposit_markup()
             edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
-    else:    
+    elif document:
+        msg = 'Loading your file: ' + document['file_name']
+        send_telegram_notify_to_group(
+            chat_id, msg=str(msg), reply_id=message_id)
+    elif text:    
         cmd = text.lstrip("/").strip()
         extra_text = ''
         if cmd.find(' ') != -1:
@@ -217,9 +220,9 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
             #cmd
             extra_text = cmd.split(first_cmd)[-1].strip()
             cmd = first_cmd
-
-            
-        print('cmd==', cmd, text)
+        elif not cmd:
+            print('===text===', user_telegram.checker_type)
+            print(text)
         if cmd == "listing":
             print('===listing===')
             list_account_objs = AccountsSelling.objects.filter(type__value='amazon', selling_status=SellingStatus.listed)

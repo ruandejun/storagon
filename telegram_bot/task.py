@@ -188,7 +188,8 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
     if callback_query:
         print('callback_query==', callback_query)
         if callback_query.find('{') != -1:
-            callback_query_json = json.loads(json.dumps(callback_query))
+            callback_query_json = json.loads(json.dumps(callback_query.strip()))
+            print('callback_query_json==', callback_query_json)
             # edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
             {'action': 'checker', 'value': 'ccn gate 2', 'type': 'checker'}
             reply_action = callback_query_json['action']

@@ -189,9 +189,9 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
         print('callback_query==', callback_query)
         if callback_query.find('{') != -1:
             callback_query_json = ast.literal_eval(callback_query.strip())
-            print('callback_query_json==', callback_query_json, type(callback_query_json))
+            
             # edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
-            {'action': 'checker', 'value': 'ccn gate 2', 'type': 'checker'}
+            # {'action': 'checker', 'value': 'ccn gate 2', 'type': 'checker'}
             reply_action = callback_query_json['action']
             reply_value = callback_query_json['value']
             reply_type = callback_query_json['type']
@@ -200,7 +200,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                 if checker_objs.exists():
                     user_telegram.checker_type = checker_objs[0]
                     user_telegram.save()
-                    msg = 'Your checker mode has been set as %s' % (extra_text.strip())
+                    msg = 'Your checker mode has been set as %s' % (reply_value.strip())
                     send_telegram_notify_to_group(chat_id, msg=str(msg))
                     
         elif callback_query == 'deposit':
@@ -379,7 +379,7 @@ Password:%s
                 
                 listing_show_sers = CheckerTypeFunctionSerializer(list_accounta_show, many=True)
                 
-                checker_last_obj = checker_objs.last()
+                checker_last_obj = checker_objs.first()
                 
                 html_show = create_html_show('Checker', current_banlance, checker_objs.count(), account_page, page_total, checker_last_obj.created.strftime("%d-%m-%Y %H:%M"))
 

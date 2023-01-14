@@ -24,7 +24,7 @@ class CheckerType(models.Model):
 
     value = models.CharField(verbose_name=_("value"), max_length=255, primary_key=True, unique=True)
     label = models.CharField(verbose_name=_("label"), max_length=255)
-    default = models.BooleanField(verbose_name=_("default"), default=False, db_index=True)
+
     status = models.PositiveSmallIntegerField(choices=AccountStatus.ChoiceList(), default=AccountStatus.normal,
                                                    db_index=True)   
     def __str__(self):
@@ -40,7 +40,7 @@ class CreatorType(models.Model):
 
     value = models.CharField(verbose_name=_("value"), max_length=255, primary_key=True, unique=True)
     label = models.CharField(verbose_name=_("label"), max_length=255)
-    default = models.BooleanField(verbose_name=_("default"), default=False, db_index=True)
+
     
     status = models.PositiveSmallIntegerField(choices=AccountStatus.ChoiceList(), default=AccountStatus.normal,
                                                    db_index=True)   

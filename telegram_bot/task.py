@@ -187,14 +187,15 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
     
     if callback_query:
         print('callback_query==', callback_query)
-        if callback_query.find('{') != -1:
-            callback_query_json = ast.literal_eval(callback_query.strip())
+        if callback_query.find('|') != -1:
+            # callback_query_json = ast.literal_eval(callback_query.strip())
             
             # edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
             # {'action': 'checker', 'value': 'ccn gate 2', 'type': 'checker'}
-            reply_action = callback_query_json['action']
-            reply_value = callback_query_json['value']
-            reply_type = callback_query_json['type']
+            callback_split = callback_query.split('|')
+            reply_action = callback_split[0].strip()
+            reply_value = callback_split[1].strip()
+            reply_type = callback_split[2].strip()
             if reply_action == 'set_checker':
                 checker_objs = CheckerType.objects.filter(value=reply_value.strip())
                 if checker_objs.exists():

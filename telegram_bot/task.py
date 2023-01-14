@@ -10,7 +10,7 @@ from storagon.enum import *
 from servermain.controllers import UserController
 from telegram_bot.api.TelegramBot_RestfulApi import AccountsSellingSerializer, CheckerTypeFunctionSerializer, CreatorTypeFunctionSerializer
 from rest_framework.authtoken.models import Token
-import random
+import random, json
 def send_telegram_notify_to_group(group_id,msg,reply_markup=None,reply_id=None):
     #token='1235501300:AAEWPcah92B1PvsdvTCSHdT12CCg4gq-qZo'
     token = settings.TELEGRAM_TOKEN
@@ -27,7 +27,7 @@ def edit_telegram_notify_to_group(chat_id,message_id,text,reply_markup=None):
     return edited_msg
 
 
-def create_function_listing_markup(listing, action='',page=0):
+def create_function_listing_markup(listing, listing_type='',page=0):
     backPage = page-1
     nextPage = page+1
     lastPage = -1
@@ -39,25 +39,25 @@ def create_function_listing_markup(listing, action='',page=0):
     while i < len(listing):
         line_function1 = listing[i]
         line_function2 = listing[i+1]
-        callback_data1 = {'action': action, 'value': line_function1['value'], 'type':action}
-        callback_data2 = {'action': action, 'value': line_function2['value'], 'type':action}
+        callback_data1 = {'action': 'set_checker', 'value': line_function1['value'], 'type':listing_type}
+        callback_data2 = {'action': 'set_checker', 'value': line_function2['value'], 'type':listing_type}
         inline_keyboard_function1 = types.InlineKeyboardButton(line_function1['value'], callback_data=str(callback_data1))
         inline_keyboard_function2 = types.InlineKeyboardButton(line_function2['value'], callback_data=str(callback_data2))
         markup.row(inline_keyboard_function1,inline_keyboard_function2)
         i+=2
         
-    callback_data_firstpage = {'action': action, 'value': 0, 'type':'set_page'}    
+    callback_data_firstpage = {'action': 'set_page', 'value': 0, 'type':listing_type}    
     inline_keyboard_first_page = types.InlineKeyboardButton('First Page \U0001F51D', callback_data=str(callback_data_firstpage))
         
-    callback_data_back_page = {'action': action, 'value': backPage, 'type':'set_page'}   
+    callback_data_back_page = {'action': 'set_page', 'value': backPage, 'type':listing_type}   
     inline_keyboard_back_page = types.InlineKeyboardButton('Back \U00002B05', callback_data=str(callback_data_back_page))
     
     
-    callback_data_next_page = {'action': action, 'value': nextPage, 'type':'set_page'} 
+    callback_data_next_page = {'action': 'set_page', 'value': nextPage, 'type':listing_type} 
     inline_keyboard_next_page = types.InlineKeyboardButton('Next \U000027A1', callback_data=str(callback_data_next_page))
     
     
-    callback_data_last_page = {'action': action, 'value': lastPage, 'type':'set_page'}
+    callback_data_last_page = {'action': 'set_page', 'value': lastPage, 'type':listing_type}
     inline_keyboard_last_page = types.InlineKeyboardButton('Last Page \U0001F51A', callback_data=str(callback_data_last_page))
     markup.row(inline_keyboard_first_page,inline_keyboard_back_page,inline_keyboard_next_page,inline_keyboard_last_page)
 
@@ -65,7 +65,7 @@ def create_function_listing_markup(listing, action='',page=0):
     
     inline_keyboard_menu = types.InlineKeyboardButton('Menu \U0001F3D8', callback_data='menu')
     
-    callback_data_refresh = {'action': action, 'value': 'refresh', 'type':action} 
+    callback_data_refresh = {'action': 'set_page', 'value': 'refresh', 'type':listing_type} 
 
     inline_keyboard_refesh = types.InlineKeyboardButton('Refresh \U0001F504', callback_data=str(callback_data_refresh))
     inline_keyboard_deposit = types.InlineKeyboardButton('Deposit \U0001F4B3', callback_data='deposit')
@@ -186,27 +186,21 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
     
 
     if callback_query:
-        if callback_query.find('|') != -1:
-            callback_split = callback_query.split('|')
-            action = callback_split[0].strip()
-            value = callback_split[1].strip()
-            print(callback_query)
-            if action == 'buy':
-                print('==buy==', value)
-            elif action == 'view':
-                print('==view==', value)
-            elif action == 'refesh':
-                print('==refesh==', value)
-            elif action == 'deposit':
-                # print('==create deposit==', value)
-                adddress_info = get_deposit_address(user, value)
-                if adddress_info:
-                    account_address, account_id = adddress_info
-                    print('==create deposit==', account_address, account_id)
-                    payment_method=value
-                    html_show = create_html_deposit_details(current_banlance,payment_method,account_address,account_id)
-                    markup_button = create_deposit_markup()
-                    edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
+        if callback_query.find('{') != -1:
+            callback_query_json = json.loads(callback_query)
+            # edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
+            {'action': 'checker', 'value': 'ccn gate 2', 'type': 'checker'}
+            reply_action = callback_query_json['action']
+            reply_value = callback_query_json['value']
+            reply_type = callback_query_json['type']
+            if reply_action == 'set_checker':
+                checker_objs = CheckerType.objects.filter(value=reply_value.strip())
+                if checker_objs.exists():
+                    user_telegram.checker_type = checker_objs[0]
+                    user_telegram.save()
+                    msg = 'Your checker mode has been set as %s' % (extra_text.strip())
+                    send_telegram_notify_to_group(chat_id, msg=str(msg))
+                    
         elif callback_query == 'deposit':
             html_show = create_html_deposit(0)
             markup_button = create_deposit_markup()

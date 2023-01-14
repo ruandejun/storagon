@@ -381,7 +381,7 @@ Password:%s
                 
                 checker_last_obj = checker_objs.first()
                 
-                html_show = create_html_show('Checker', current_banlance, checker_objs.count(), account_page, page_total, checker_last_obj.created.strftime("%d-%m-%Y %H:%M"))
+                html_show = create_html_show('Checker', current_banlance, checker_objs.count(), account_page, page_total, '')
 
                 markup_button = create_function_listing_markup(listing_show_sers.data, 'checker', page=account_page)
 

@@ -383,7 +383,7 @@ Password:%s
                 
                 html_show = create_html_show('Checker', current_banlance, checker_objs.count(), account_page, page_total, checker_last_obj.created.strftime("%d-%m-%Y %H:%M"))
 
-                markup_button = create_function_listing_markup(listing_show_sers.data, 'checker', page=account_page)
+                markup_button = create_function_listing_markup(listing_show_sers.data, listing_type='checker', page=account_page)
 
                 send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
             else:
@@ -409,7 +409,7 @@ Password:%s
                     
                     html_show = create_html_show('Checker', current_banlance, checker_objs.count(), account_page, page_total, checker_last_obj.created.strftime("%d-%m-%Y %H:%M"))
 
-                    markup_button = create_function_listing_markup(listing_show_sers.data, 'checker', page=account_page)
+                    markup_button = create_function_listing_markup(listing_show_sers.data, listing_type='checker', page=account_page)
 
                     send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
 

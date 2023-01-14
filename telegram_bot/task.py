@@ -31,8 +31,8 @@ def create_function_listing_markup(listing, action='',page=0):
     backPage = page-1
     nextPage = page+1
     lastPage = -1
-    if backpage <=0:
-        backpage=0
+    if backPage <=0:
+        backPage=0
     
     markup = types.InlineKeyboardMarkup()
     i = 0

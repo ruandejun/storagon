@@ -66,9 +66,9 @@ class UserTelegram(models.Model):
 
     username = models.CharField(verbose_name=_("username"), blank=True, max_length=255)
     
-    checker_type = models.ForeignKey(CheckerType, related_name='checker_type', on_delete=models.DO_NOTHING)
+    checker_type = models.ForeignKey(CheckerType, related_name='checker_type', blank=True, null=True, on_delete=models.DO_NOTHING)
     
-    creator_type = models.ForeignKey(CreatorType, related_name='creator_type', on_delete=models.DO_NOTHING)
+    creator_type = models.ForeignKey(CreatorType, related_name='creator_type', blank=True, null=True, on_delete=models.DO_NOTHING)
 
     def __str__(self):
         return str(self.telegram_id)

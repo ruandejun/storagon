@@ -126,10 +126,10 @@ class UserCreateFunctionSerializer(serializers.ModelSerializer):
 class CheckerTypeFunctionSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = CheckerType
-		fields = ('id', 'created', 'modified', 'value', 'status', 'label')  
+		fields = ('created', 'modified', 'value', 'status', 'label')  
   
 class CreatorTypeFunctionSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = CreatorType
-		fields = ('id', 'created', 'modified', 'value', 'status', 'label')  
+		fields = ('created', 'modified', 'value', 'status', 'label')  
 

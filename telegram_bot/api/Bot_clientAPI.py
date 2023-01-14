@@ -33,6 +33,7 @@ def telegram_bot(request):
             chat_id = t_chat["id"]
             check_cmd_telegram.delay(chat_id, t_message_id, text, chat=t_chat)
         if 'document' in t_message:
+            chat_id = t_chat["id"]
             document = t_message['document']
             check_cmd_telegram.delay(chat_id, message_id=t_message_id, chat=t_chat, document=document)
     elif 'callback_query' in t_data:

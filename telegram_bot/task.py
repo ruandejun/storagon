@@ -261,6 +261,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     check_task.file_unique_id = document['file_unique_id']
                     check_task.file_size = document['file_size']
                     check_task.document = File(f, name=document['file_unique_id'])
+                    check_task.user = user
                     check_task.save()
                     check_task.refresh_from_db()
                 msg = 'Loading your file: ' + document['file_name'] + 'file_id: '+ str(check_task.pk)   
@@ -479,6 +480,11 @@ Password:%s
 
                     send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
 
+        elif cmd == 'task':
+            check_task_objs = CheckerTask.objects.filter(user=user)
+            msg = 'You are having %s tasks' % (check_task_objs.count())
+            send_telegram_notify_to_group(
+                chat_id, msg=str(msg), reply_id=message_id)
         # else:
         #     import math
         #     page_total = math.ceil(float(123) / 10)

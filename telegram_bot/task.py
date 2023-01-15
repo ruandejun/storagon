@@ -6,13 +6,15 @@ from storagon import settings
 from telebot import types
 from servermain.models import AccountBalance, AccountCurrency
 from django.contrib.auth.models import User
-from telegram_bot.models import AccountsData, MunAnti, UserTelegram, AccountsSelling, BrowserProfiles, AccountsCreated, AccountsType, UserHwid, UserCreateFunction, UserCheckFunction, CheckerType, CreatorType
+from telegram_bot.models import AccountsData, MunAnti, UserTelegram, AccountsSelling, BrowserProfiles, AccountsCreated, AccountsType, UserHwid, UserCreateFunction, UserCheckFunction, CheckerType, CreatorType, CheckerTask
 from storagon.enum import *
 from servermain.controllers import UserController
 from telegram_bot.api.TelegramBot_RestfulApi import AccountsSellingSerializer, CheckerTypeFunctionSerializer, CreatorTypeFunctionSerializer
 from rest_framework.authtoken.models import Token
 import random, json, os, pathlib, functools, shutil
 from tqdm.auto import tqdm
+from pathlib import Path
+from django.core.files import File
 def send_telegram_notify_to_group(group_id,msg,reply_markup=None,reply_id=None):
     #token='1235501300:AAEWPcah92B1PvsdvTCSHdT12CCg4gq-qZo'
     token = settings.TELEGRAM_TOKEN
@@ -55,14 +57,16 @@ def download_file_from_telegram(fileInfo):
     # print('===file_info===',file_info)
     file_url = 'https://api.telegram.org/file/bot{0}/{1}'.format(token, file_info.file_path)
     file_path = download_file(file_url, fileInfo['file_unique_id'])
+    return file_path
     # print(file_url)
     # file = requests.get(file_url)
-    print(file_path)
-    f = open(file_path, 'r', encoding='utf-8')
-    result = f.read()
-    print('==result==',result)
+    # print(file_path)
+    # f = open(file_path, 'r', encoding='utf-8')
+    # result = f.read()
+
+    # print('==result==',result)
     # f.close()
-    os.remove(file_path)
+    # os.remove(file_path)
     # print('===file===',file_info)
 def create_function_listing_markup(listing, listing_type='',page=0):
     backPage = page-1
@@ -245,13 +249,24 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
             edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
     elif document:
         if user_telegram.checker_type:
-            if document['mime_type'] == 'text/plain':
-                download_file_from_telegram(document)
+            if document['mime_type'] == 'text/plain' and document['file_size'] <= 62500:
+                file_path = download_file_from_telegram(document)
                 msg = 'Loading your file: ' + document['file_name']
+                path_file = Path(file_path)
+                with path_file.open(mode='rb') as f:
+                    check_task = CheckerTask()
+                    check_task.checker_type = user_telegram.checker_type
+                    check_task.file_id = document['file_id']
+                    check_task.file_name = document['file_name']
+                    check_task.file_unique_id = document['file_unique_id']
+                    check_task.file_size = document['file_size']
+                    check_task.document = File(f, name=document['file_unique_id'])
+                    check_task.save()
                 send_telegram_notify_to_group(
                     chat_id, msg=str(msg), reply_id=message_id)
+
             else:
-                msg = 'You have to send the TXT file and not over 100 lines!'
+                msg = 'You have to send the TXT file and not over 50kb file!'
                 send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
 
         

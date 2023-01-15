@@ -57,7 +57,7 @@ def download_file_from_telegram(fileInfo):
     file_path = download_file(file_url, fileInfo['file_unique_id'])
     # print(file_url)
     # file = requests.get(file_url)
-    # print(file.text)
+    print(file_path)
     f = open(file_path, 'r', encoding='utf-8')
     result = f.read()
     print('==result==',result)

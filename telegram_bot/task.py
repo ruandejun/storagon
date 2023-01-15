@@ -12,7 +12,7 @@ from servermain.controllers import UserController
 from telegram_bot.api.TelegramBot_RestfulApi import AccountsSellingSerializer, CheckerTypeFunctionSerializer, CreatorTypeFunctionSerializer
 from rest_framework.authtoken.models import Token
 import random, json, os, pathlib, functools, shutil
-from tqdm.auto import tqdm
+# from tqdm.auto import tqdm
 def send_telegram_notify_to_group(group_id,msg,reply_markup=None,reply_id=None):
     #token='1235501300:AAEWPcah92B1PvsdvTCSHdT12CCg4gq-qZo'
     token = settings.TELEGRAM_TOKEN

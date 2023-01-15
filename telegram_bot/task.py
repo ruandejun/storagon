@@ -1,5 +1,5 @@
 from ensurepip import version
-import re, telebot, ast
+import re, telebot, ast, requests
 from tkinter import N
 from celery import shared_task
 from storagon import settings
@@ -27,7 +27,13 @@ def edit_telegram_notify_to_group(chat_id,message_id,text,reply_markup=None):
                           text=text, reply_markup=reply_markup, parse_mode='HTML')
     return edited_msg
 
-
+def download_file_from_telegram(fileInfo):
+    token = settings.TELEGRAM_TOKEN
+    bot = telebot.TeleBot(token)
+    file_info = bot.get_file(fileInfo['file_id'])
+    print('===file_info===',file_info)
+    file = requests.get('https://api.telegram.org/file/bot{0}/{1}'.format(token, file_info.file_path))
+    # print('===file===',file_info)
 def create_function_listing_markup(listing, listing_type='',page=0):
     backPage = page-1
     nextPage = page+1
@@ -208,9 +214,13 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
             markup_button = create_deposit_markup()
             edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
     elif document:
-        msg = 'Loading your file: ' + document['file_name']
-        send_telegram_notify_to_group(
-            chat_id, msg=str(msg), reply_id=message_id)
+        if user_telegram.checker_type:
+            download_file_from_telegram(document)
+            msg = 'Loading your file: ' + document['file_name']
+            send_telegram_notify_to_group(
+                chat_id, msg=str(msg), reply_id=message_id)
+
+        
     elif text:    
         cmd = text.lstrip("/").strip()
         extra_text = ''
@@ -223,6 +233,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
         elif not cmd:
             print('===text===', user_telegram.checker_type)
             print(text)
+
         if cmd == "listing":
             print('===listing===')
             list_account_objs = AccountsSelling.objects.filter(type__value='amazon', selling_status=SellingStatus.listed)

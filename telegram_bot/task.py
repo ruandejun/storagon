@@ -11,7 +11,8 @@ from storagon.enum import *
 from servermain.controllers import UserController
 from telegram_bot.api.TelegramBot_RestfulApi import AccountsSellingSerializer, CheckerTypeFunctionSerializer, CreatorTypeFunctionSerializer
 from rest_framework.authtoken.models import Token
-import random, json, os
+import random, json, os, pathlib, functools, shutil
+from tqdm.auto import tqdm
 def send_telegram_notify_to_group(group_id,msg,reply_markup=None,reply_id=None):
     #token='1235501300:AAEWPcah92B1PvsdvTCSHdT12CCg4gq-qZo'
     token = settings.TELEGRAM_TOKEN
@@ -27,20 +28,41 @@ def edit_telegram_notify_to_group(chat_id,message_id,text,reply_markup=None):
                           text=text, reply_markup=reply_markup, parse_mode='HTML')
     return edited_msg
 
+def download_file(url, local_filename):
+    # local_filename = url.split('/')[-1]
+
+    r = requests.get(url, stream=True, allow_redirects=True)
+    if r.status_code != 200:
+        r.raise_for_status()  # Will only raise for 4xx codes, so...
+        raise RuntimeError(f"Request to {url} returned status code {r.status_code}")
+    file_size = int(r.headers.get('Content-Length', 0))
+
+    path = pathlib.Path(local_filename).expanduser().resolve()
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    desc = "(Unknown total file size)" if file_size == 0 else ""
+    r.raw.read = functools.partial(r.raw.read, decode_content=True)  # Decompress if needed
+    with tqdm.wrapattr(r.raw, "read", total=file_size, desc=desc) as r_raw:
+        with path.open("wb") as f:
+            shutil.copyfileobj(r_raw, f)
+    return path   
+
+
 def download_file_from_telegram(fileInfo):
     token = settings.TELEGRAM_TOKEN
     bot = telebot.TeleBot(token)
     file_info = bot.get_file(fileInfo['file_id'])
-    print('===file_info===',file_info)
+    # print('===file_info===',file_info)
     file_url = 'https://api.telegram.org/file/bot{0}/{1}'.format(token, file_info.file_path)
-    print(file_url)
-    file = requests.get(file_url)
-    print(file.text)
-    # f = open(file_info.file_path, 'r', encoding='utf-8')
-    # result = f.read()
-    # print('==result==',result)
+    file_path = download_file(file_url, fileInfo['file_unique_id'])
+    # print(file_url)
+    # file = requests.get(file_url)
+    # print(file.text)
+    f = open(file_path, 'r', encoding='utf-8')
+    result = f.read()
+    print('==result==',result)
     # f.close()
-    # os.remove(file_info.file_path)
+    os.remove(file_path)
     # print('===file===',file_info)
 def create_function_listing_markup(listing, listing_type='',page=0):
     backPage = page-1

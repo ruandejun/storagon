@@ -251,7 +251,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
         if user_telegram.checker_type:
             if document['mime_type'] == 'text/plain' and document['file_size'] <= 62500:
                 file_path = download_file_from_telegram(document)
-                msg = 'Loading your file: ' + document['file_name']
+                
                 path_file = Path(file_path)
                 with path_file.open(mode='rb') as f:
                     check_task = CheckerTask()
@@ -262,6 +262,8 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     check_task.file_size = document['file_size']
                     check_task.document = File(f, name=document['file_unique_id'])
                     check_task.save()
+                    check_task.refresh_from_db()
+                msg = 'Loading your file: ' + document['file_name'] + 'file_id: '+ check_task.pk   
                 send_telegram_notify_to_group(
                     chat_id, msg=str(msg), reply_id=message_id)
 

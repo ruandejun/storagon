@@ -33,6 +33,7 @@ def download_file_from_telegram(fileInfo):
     file_info = bot.get_file(fileInfo['file_id'])
     print('===file_info===',file_info)
     file = requests.get('https://api.telegram.org/file/bot{0}/{1}'.format(token, file_info.file_path))
+    print(file)
     f = open(file_info.file_path, 'r', encoding='utf-8')
     result = f.read()
     print('==result==',result)

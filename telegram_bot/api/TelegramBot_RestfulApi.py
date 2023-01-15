@@ -8,7 +8,16 @@
 from storagon.enum import *
 from rest_framework import serializers
 import rest_framework_bulk as restbulk
-from telegram_bot.models import AccountsCreated, AccountsData, AccountsEmails, AccountsSelling, BrowserProfiles, MunAnti, MunProxies, LinkCheckout, UserCheckFunction, UserCreateFunction, UserHwid, CheckerType, CreatorType
+from telegram_bot.models import AccountsCreated, AccountsData, AccountsEmails, AccountsSelling, BrowserProfiles, MunAnti, MunProxies, LinkCheckout, UserCheckFunction, UserCreateFunction, UserHwid, CheckerType, CreatorType, CheckerTask
+
+
+
+
+class CheckerTaskSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = CheckerTask
+		fields = ('id', 'created', 'modified', 'download_url','file_name','file_id', 'file_unique_id', 'note', 'status'
+		)
 
 class AccountsSellingSerializer(serializers.ModelSerializer):
 	class Meta:

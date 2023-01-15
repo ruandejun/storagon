@@ -45,4 +45,6 @@ urlpatterns = [
 	url(r'^get_check_function/', get_check_function, name='get_check_function'),
 	url(r'^get_create_function/', get_create_function, name='get_create_function'),
 	url(r'^get_tool_setting/', get_tool_setting, name='get_tool_setting'),
+	url(r'^get_checker_task/', get_checker_task, name='get_checker_task'),
+	url(r'^update_checker_task/', update_checker_task, name='update_checker_task'),
 ]

@@ -75,6 +75,12 @@ class CheckerTask(models.Model):
     
     document = models.FileField(upload_to='checker_documents/%Y/%m/%d/')
 
+    @property
+    def download_url(self): 
+        if self.document:
+            return self.document.url
+        else: return ''
+
     def __str__(self):
         return str(self.url)
 

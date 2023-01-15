@@ -14,6 +14,9 @@ XRATE_MAX_DIGITS = getattr(settings, 'XRATE_MAX_DIGITS', 15)
 XRATE_DECIMAL_PLACES = getattr(settings, 'XRATE_DECIMAL_PLACES', 0)
 # Create your models here.
 
+
+
+
 class CheckerType(models.Model):
     class Meta:
         verbose_name = _("CheckerType")
@@ -47,6 +50,33 @@ class CreatorType(models.Model):
     def __str__(self):
         return str(self.label)  
 
+
+class CheckerTask(models.Model):
+    class Meta:
+        verbose_name = _("CheckerTask")
+        verbose_name_plural = _("CheckerTask")
+
+    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True, db_index=True)
+    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True, db_index=True)
+
+    created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
+    modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)  
+    user = models.ForeignKey(User, related_name='UserCheckerTask', blank=True, null=True, on_delete=models.DO_NOTHING)
+    file_name = models.CharField(verbose_name=_("file_name"), blank=True, null=True, max_length=255)
+    file_id = models.CharField(verbose_name=_("file_id"), blank=True, null=True, max_length=255)
+    file_unique_id = models.CharField(verbose_name=_("file_unique_id"), blank=True, null=True, max_length=255)
+    file_size = models.BigIntegerField(default=0, db_index=True)
+    url = models.TextField(verbose_name=_("url"), blank=True, null=True, default='')
+    note = models.TextField(verbose_name=_("note"), blank=True, null=True, default='')
+    status = models.PositiveSmallIntegerField(choices=LinkStatus.ChoiceList(), default=LinkStatus.working,
+                                                   db_index=True)    
+    
+    checker_type = models.ForeignKey(CheckerType, related_name='checker_type', blank=True, null=True, on_delete=models.DO_NOTHING)
+    
+    document = models.FileField(upload_to='checker_documents/%Y/%m/%d/')
+
+    def __str__(self):
+        return str(self.url)
 
 class UserTelegram(models.Model):
     class Meta:

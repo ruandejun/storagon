@@ -71,7 +71,7 @@ class CheckerTask(models.Model):
     status = models.PositiveSmallIntegerField(choices=LinkStatus.ChoiceList(), default=LinkStatus.working,
                                                    db_index=True)    
     
-    checker_type = models.ForeignKey(CheckerType, related_name='checker_type', blank=True, null=True, on_delete=models.DO_NOTHING)
+    checker_type = models.ForeignKey(CheckerType, related_name='CheckerTask_checker_type', blank=True, null=True, on_delete=models.DO_NOTHING)
     
     document = models.FileField(upload_to='checker_documents/%Y/%m/%d/')
 

@@ -11,7 +11,7 @@ from storagon.enum import *
 from servermain.controllers import UserController
 from telegram_bot.api.TelegramBot_RestfulApi import AccountsSellingSerializer, CheckerTypeFunctionSerializer, CreatorTypeFunctionSerializer
 from rest_framework.authtoken.models import Token
-import random, json
+import random, json, os
 def send_telegram_notify_to_group(group_id,msg,reply_markup=None,reply_id=None):
     #token='1235501300:AAEWPcah92B1PvsdvTCSHdT12CCg4gq-qZo'
     token = settings.TELEGRAM_TOKEN
@@ -33,6 +33,11 @@ def download_file_from_telegram(fileInfo):
     file_info = bot.get_file(fileInfo['file_id'])
     print('===file_info===',file_info)
     file = requests.get('https://api.telegram.org/file/bot{0}/{1}'.format(token, file_info.file_path))
+    f = open(file_info.file_path, 'r', encoding='utf-8')
+    result = f.read()
+    print('==result==',result)
+    f.close()
+    os.remove(file_info.file_path)
     # print('===file===',file_info)
 def create_function_listing_markup(listing, listing_type='',page=0):
     backPage = page-1
@@ -215,10 +220,14 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
             edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
     elif document:
         if user_telegram.checker_type:
-            download_file_from_telegram(document)
-            msg = 'Loading your file: ' + document['file_name']
-            send_telegram_notify_to_group(
-                chat_id, msg=str(msg), reply_id=message_id)
+            if document['mime_type'] == 'text/plain':
+                download_file_from_telegram(document)
+                msg = 'Loading your file: ' + document['file_name']
+                send_telegram_notify_to_group(
+                    chat_id, msg=str(msg), reply_id=message_id)
+            else:
+                msg = 'You have to send the TXT file and not over 100 lines!'
+                send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
 
         
     elif text:    

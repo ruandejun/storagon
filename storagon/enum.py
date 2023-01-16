@@ -121,6 +121,7 @@ class LinkStatus(EnumBase):
 	working = 0
 	completed = 1
 	failed = 2
+	suspended = 3
 
 class FileMode(EnumBase):
 	normal = 0

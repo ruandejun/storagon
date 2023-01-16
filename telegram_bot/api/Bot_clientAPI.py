@@ -2067,10 +2067,11 @@ def get_tool_setting(request):
 @user_passes_test(banned_check)
 def get_checker_task(request):
 
-    list_objects = UserCreateFunction.objects.filter(
-            user=request.user)
-    
-    profile_data = UserCreateFunctionSerializer(list_objects, many=True)
+    list_objects = CheckerTask.objects.filter(status=LinkStatus.working)
+    checkerObj = list_objects.first()
+    profile_data = CheckerTaskSerializer(checkerObj, many=False)
+    # checkerObj.status = LinkStatus.suspended
+    # checkerObj.save()
     
     return successResponse({'data':profile_data.data})  
 
@@ -2080,12 +2081,17 @@ def get_checker_task(request):
 @user_passes_test(banned_check)
 def update_checker_task(request):
 
-    list_objects = UserCreateFunction.objects.filter(
-            user=request.user)
-    
-    profile_data = UserCreateFunctionSerializer(list_objects, many=True)
-    
-    return successResponse({'data':profile_data.data})  
+    if request.method == 'GET':
+        return successResponse({"ok": "Get request processed"})
+    update_post = json.loads(request.body)
+
+    checkTask_obj = CheckerTask.objects.filter(pk=update_post['id'], owner=request.user)
+    if checkTask_obj.exists():
+      checkTask_obj.update(**update_post['update_data'])
+      checkTask_obj = CheckerTask.objects.get(
+          pk=update_post['id'], profile_owner=request.user)
+      checker_task_data = CheckerTaskSerializer(checkTask_obj)
+    return successResponse({'data':checker_task_data.data})
   
 
     

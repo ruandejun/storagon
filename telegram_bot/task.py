@@ -198,10 +198,10 @@ def create_deposit_markup():
 def create_html_show(type='',balance='',total='',page='',total_page='',updated='', status=''):
     html_show = '''
 <b>\U0001F47B MunBot %s AIO automatic \U0001F47D</b>
-<b>Balance: </b><code>$%s \U0001F4B3</code>
+<b>Balance: </b> <code>$%s \U0001F4B3</code>
 <b>Total: </b> <code>%s \U0001F6D2</code>
-<b>Notification: </b> <i>%s<i/>
-<pre>Displaying page %s of %s. Last updated @ %s</pre>
+<b>Notification: </b> <i>%s</i>
+<pre>Displaying page %s of %s. Last updated @%s</pre>
     ''' % (type,balance,total,status,page,total_page,updated)
     return html_show
 

@@ -315,8 +315,9 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     check_task.user = user
                     check_task.save()
                     check_task.refresh_from_db()
-                    
-                    html_show = create_html_show('Checker status', current_banlance, checker_objs.count(), account_page, page_total, checker_last_obj.created.strftime("%d-%m-%Y %H:%M"))
+                    result = f.read()
+                    checker_count = len(result.split('\n'))
+                    html_show = create_html_show('Checker status', current_banlance, checker_count, account_page, page_total, checker_last_obj.created.strftime("%d-%m-%Y %H:%M"))
 
                     markup_button = create_checker_markup(check_task.pk,listing_type='checker_status')
 

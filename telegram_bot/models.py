@@ -77,9 +77,9 @@ class CheckerTask(models.Model):
     
     document = models.FileField(upload_to='checker_documents/%Y/%m/%d/')
     
-    document_valid = models.FileField(upload_to='checker_documents_valid/%Y/%m/%d/')
-    document_invalid = models.FileField(upload_to='checker_documents_invalid/%Y/%m/%d/')
-    document_unknown = models.FileField(upload_to='checker_documents_unknown/%Y/%m/%d/')
+    document_valid = models.FileField(upload_to='checker_documents_valid/%Y/%m/%d/', blank=True, null=True)
+    document_invalid = models.FileField(upload_to='checker_documents_invalid/%Y/%m/%d/', blank=True, null=True)
+    document_unknown = models.FileField(upload_to='checker_documents_unknown/%Y/%m/%d/', blank=True, null=True)
     
     @property
     def download_url(self): 

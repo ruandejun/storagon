@@ -195,13 +195,14 @@ def create_deposit_markup():
     markup.row(inline_keyboard_btc, inline_keyboard_eth, inline_keyboard_ltc)
     return markup
 
-def create_html_show(type,balance,total,page,total_page,updated):
+def create_html_show(type='',balance='',total='',page='',total_page='',updated='', status=''):
     html_show = '''
 <b>\U0001F47B MunBot %s AIO automatic \U0001F47D</b>
 <b>Balance: </b><code>$%s \U0001F4B3</code>
 <b>Total: </b> <code>%s \U0001F6D2</code>
+<b>Notification: </b> <i>%s<i/>
 <pre>Displaying page %s of %s. Last updated @ %s</pre>
-    ''' % (type,balance,total,page,total_page,updated)
+    ''' % (type,balance,total,status,page,total_page,updated)
     return html_show
 
 def create_html_deposit(balance):
@@ -292,8 +293,27 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                 if checker_objs.exists():
                     user_telegram.checker_type = checker_objs[0]
                     user_telegram.save()
-                    msg = 'Your checker mode has been set as %s' % (reply_value.strip())
-                    send_telegram_notify_to_group(chat_id, msg=str(msg))
+                    status_text = 'Your checker mode has been set as %s' % (reply_value.strip())
+                    checker_objs = CheckerType.objects.all()
+                    limit = 10
+                    account_page = 1
+                    account_total = checker_objs.count()
+                    import math
+                    page_total = math.ceil(float(account_total) / 10)
+                    print(page_total)
+                    list_accounta_show = checker_objs[(account_page-1)*limit:account_page*limit]      
+                    
+                    listing_show_sers = CheckerTypeFunctionSerializer(list_accounta_show, many=True)
+                    
+                    checker_last_obj = checker_objs.first()
+                    
+                    html_show = create_html_show('Checker', current_banlance, checker_objs.count(), account_page, page_total, checker_last_obj.created.strftime("%d-%m-%Y %H:%M"), status=status_text)
+
+                    markup_button = create_function_listing_markup(listing_show_sers.data, listing_type='checker', page=account_page)
+
+                    send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
+                    
+                    # edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
                     
         elif callback_query == 'deposit':
             html_show = create_html_deposit(0)
@@ -330,7 +350,10 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     markup_button = create_checker_markup(check_task.pk,listing_type='checker_status')
 
                     send_msg = send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
-                    print('send_msg==', send_msg)
+                    print('send_msg==', send_msg['message_id'])
+                    check_task.status_message_id = send_msg['message_id']
+                    check_task.save()
+                    edit_telegram_notify_to_group(chat_id, message_id=send_msg['message_id'], msg=html_show,reply_id=message_id, reply_markup=markup_button)
                 os.remove(path_file)
 
             else:

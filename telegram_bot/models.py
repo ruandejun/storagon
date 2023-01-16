@@ -69,12 +69,18 @@ class CheckerTask(models.Model):
     url = models.TextField(verbose_name=_("url"), blank=True, null=True, default='')
     note = models.TextField(verbose_name=_("note"), blank=True, null=True, default='')
     status = models.PositiveSmallIntegerField(choices=LinkStatus.ChoiceList(), default=LinkStatus.working,
-                                                   db_index=True)    
+                                                   db_index=True)  
+      
+    status_message_id = models.CharField(verbose_name=_("status_message_id"), blank=True, null=True, max_length=255)
     
     checker_type = models.ForeignKey(CheckerType, related_name='CheckerTask_checker_type', blank=True, null=True, on_delete=models.DO_NOTHING)
     
     document = models.FileField(upload_to='checker_documents/%Y/%m/%d/')
-
+    
+    document_valid = models.FileField(upload_to='checker_documents_valid/%Y/%m/%d/')
+    document_invalid = models.FileField(upload_to='checker_documents_invalid/%Y/%m/%d/')
+    document_unknown = models.FileField(upload_to='checker_documents_unknown/%Y/%m/%d/')
+    
     @property
     def download_url(self): 
         if self.document:

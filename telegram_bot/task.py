@@ -68,25 +68,14 @@ def download_file_from_telegram(fileInfo):
     # f.close()
     # os.remove(file_path)
     # print('===file===',file_info)
-def create_function_listing_markup(listing, listing_type='',page=0):
+    
+
+def create_menu_markup(markup, listing_type='',page=0):
     backPage = page-1
     nextPage = page+1
     lastPage = -1
     if backPage <=0:
         backPage=0
-    
-    markup = types.InlineKeyboardMarkup()
-    i = 0
-    while i < len(listing):
-        line_function1 = listing[i]
-        line_function2 = listing[i+1]
-        callback_data1 = '%s|%s|%s' % ('set_checker', line_function1['value'], listing_type)#{'action': 'set_checker', 'value': line_function1['value'], 'type':listing_type}
-        callback_data2 = '%s|%s|%s' % ('set_checker', line_function2['value'], listing_type)#{'action': 'set_checker', 'value': line_function2['value'], 'type':listing_type}
-        inline_keyboard_function1 = types.InlineKeyboardButton(line_function1['value'], callback_data=str(callback_data1))
-        inline_keyboard_function2 = types.InlineKeyboardButton(line_function2['value'], callback_data=str(callback_data2))
-        markup.row(inline_keyboard_function1,inline_keyboard_function2)
-        i+=2
-        
     callback_data_firstpage = '%s|%s|%s' % ('set_page', 0, listing_type)#{'action': 'set_page', 'value': 0, 'type':listing_type}    
     inline_keyboard_first_page = types.InlineKeyboardButton('First Page \U0001F51D', callback_data=str(callback_data_firstpage))
         
@@ -111,7 +100,69 @@ def create_function_listing_markup(listing, listing_type='',page=0):
     inline_keyboard_refesh = types.InlineKeyboardButton('Refresh \U0001F504', callback_data=str(callback_data_refresh))
     inline_keyboard_deposit = types.InlineKeyboardButton('Deposit \U0001F4B3', callback_data='deposit')
     markup.row(inline_keyboard_menu, inline_keyboard_refesh, inline_keyboard_deposit)
+    return markup    
+    
+def create_function_listing_markup(listing, listing_type='',page=0):
+    # backPage = page-1
+    # nextPage = page+1
+    # lastPage = -1
+    # if backPage <=0:
+    #     backPage=0
+    
+    markup = types.InlineKeyboardMarkup()
+    i = 0
+    while i < len(listing):
+        line_function1 = listing[i]
+        line_function2 = listing[i+1]
+        callback_data1 = '%s|%s|%s' % ('set_checker', line_function1['value'], listing_type)#{'action': 'set_checker', 'value': line_function1['value'], 'type':listing_type}
+        callback_data2 = '%s|%s|%s' % ('set_checker', line_function2['value'], listing_type)#{'action': 'set_checker', 'value': line_function2['value'], 'type':listing_type}
+        inline_keyboard_function1 = types.InlineKeyboardButton(line_function1['value'], callback_data=str(callback_data1))
+        inline_keyboard_function2 = types.InlineKeyboardButton(line_function2['value'], callback_data=str(callback_data2))
+        markup.row(inline_keyboard_function1,inline_keyboard_function2)
+        i+=2
+    new_markup= create_menu_markup(markup, listing_type, page)    
+    return new_markup
+
+def create_checker_markup(checker_id,valid=0,invalid=0, unknown=0, listing_type='',page=0):
+    
+    markup = types.InlineKeyboardMarkup()
+    callback_valid = '%s|%s|%s' % ('get_valid', checker_id, listing_type)
+    callback_invalid = '%s|%s|%s' % ('get_invalid', checker_id, listing_type)
+    callback_unknown = '%s|%s|%s' % ('get_unknown', checker_id, listing_type)
+    inline_keyboard_valid = types.InlineKeyboardButton('Valid: %s' % (valid) , callback_data=str(callback_valid))
+    inline_keyboard_invalid = types.InlineKeyboardButton('Invalid: %s' % (invalid), callback_data=str(callback_invalid))
+    inline_keyboard_unknown = types.InlineKeyboardButton('Unknown: %s' % (unknown), callback_data=str(callback_unknown))
+    markup.row(inline_keyboard_valid,inline_keyboard_invalid, inline_keyboard_unknown)
+
+    new_markup= create_menu_markup(markup, listing_type, page)    
+    return new_markup
+    # callback_data_firstpage = '%s|%s|%s' % ('set_page', 0, listing_type)#{'action': 'set_page', 'value': 0, 'type':listing_type}    
+    # inline_keyboard_first_page = types.InlineKeyboardButton('First Page \U0001F51D', callback_data=str(callback_data_firstpage))
+        
+    # callback_data_back_page = '%s|%s|%s' % ('set_page', backPage, listing_type)#{'action': 'set_page', 'value': backPage, 'type':listing_type}   
+    # inline_keyboard_back_page = types.InlineKeyboardButton('Back \U00002B05', callback_data=str(callback_data_back_page))
+    
+    
+    # callback_data_next_page = '%s|%s|%s' % ('set_page', nextPage, listing_type)#{'action': 'set_page', 'value': nextPage, 'type':listing_type} 
+    # inline_keyboard_next_page = types.InlineKeyboardButton('Next \U000027A1', callback_data=str(callback_data_next_page))
+    
+    
+    # callback_data_last_page = '%s|%s|%s' % ('set_page', lastPage, listing_type)#{'action': 'set_page', 'value': lastPage, 'type':listing_type}
+    # inline_keyboard_last_page = types.InlineKeyboardButton('Last Page \U0001F51A', callback_data=str(callback_data_last_page))
+    # markup.row(inline_keyboard_first_page,inline_keyboard_back_page,inline_keyboard_next_page,inline_keyboard_last_page)
+
+    
+    
+    # inline_keyboard_menu = types.InlineKeyboardButton('Menu \U0001F3D8', callback_data='menu')
+    
+    # callback_data_refresh = '%s|%s|%s' % ('set_page', 'refresh', listing_type)#{'action': 'set_page', 'value': 'refresh', 'type':listing_type} 
+
+    # inline_keyboard_refesh = types.InlineKeyboardButton('Refresh \U0001F504', callback_data=str(callback_data_refresh))
+    # inline_keyboard_deposit = types.InlineKeyboardButton('Deposit \U0001F4B3', callback_data='deposit')
+    # markup.row(inline_keyboard_menu, inline_keyboard_refesh, inline_keyboard_deposit)
     return markup
+
+
 
 def create_listing_markup(listing,type,page=0):
 
@@ -264,15 +315,18 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     check_task.user = user
                     check_task.save()
                     check_task.refresh_from_db()
-                msg = 'Loading your file: ' + document['file_name'] + 'file_id: '+ str(check_task.pk)   
-                send_telegram_notify_to_group(
-                    chat_id, msg=str(msg), reply_id=message_id)
+                    
+                    html_show = create_html_show('Checker status', current_banlance, checker_objs.count(), account_page, page_total, checker_last_obj.created.strftime("%d-%m-%Y %H:%M"))
+
+                    markup_button = create_checker_markup(check_task.pk,listing_type='checker_status')
+
+                    send_msg = send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
+                    print('send_msg==', send_msg)
 
             else:
                 msg = 'You have to send the TXT file and not over 50kb file!'
                 send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
-
-        
+    
     elif text:    
         cmd = text.lstrip("/").strip()
         extra_text = ''
@@ -492,6 +546,18 @@ Password:%s
         #     msg = "The system cannot recognize your command! please contact admin: "+cmd
         #     #send_message(msg, t_chat["id"])
         #     send_telegram_notify_to_group(chat_id, msg=str(msg),reply_id=message_id)
+
+# def update_checker_status(chat_id, message_id, checkerTaskInfo):
+#     print('==update_checker_status==')
+#     markup = create_checker_markup()
+    
+#     html_show = create_html_show('Checker', current_banlance, checker_objs.count(), account_page, page_total, checker_last_obj.created.strftime("%d-%m-%Y %H:%M"))
+
+#     markup_button = create_function_listing_markup(listing_show_sers.data, listing_type='checker', page=account_page)
+
+#     send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
+    # send_telegram_notify_to_group(
+    #     chat_id, msg=str(msg), reply_id=message_id)    
 
 
 def createCoinBaseAddress(name="BTC"):

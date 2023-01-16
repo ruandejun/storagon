@@ -15,6 +15,7 @@ import random, json, os, pathlib, functools, shutil
 from tqdm.auto import tqdm
 from pathlib import Path
 from django.core.files import File
+import datetime
 def send_telegram_notify_to_group(group_id,msg,reply_markup=None,reply_id=None):
     #token='1235501300:AAEWPcah92B1PvsdvTCSHdT12CCg4gq-qZo'
     token = settings.TELEGRAM_TOKEN
@@ -315,13 +316,16 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     check_task.user = user
                     check_task.save()
                     check_task.refresh_from_db()
+                    
                 with path_file.open(mode='r') as f:
                     result = f.read()
                     checker_split = result.split('\n')
                     list_valid = [line for line in checker_split if line.find('|') != -1]
                     # checker_count = len(result.split('\n'))
-                    
-                    html_show = create_html_show('Checker status', current_banlance, len(list_valid), account_page, page_total, checker_last_obj.created.strftime("%d-%m-%Y %H:%M"))
+                    import math
+                    page_total = math.ceil(float(len(list_valid)) / 10)
+                    print(page_total)                   
+                    html_show = create_html_show('Checker status', current_banlance, len(list_valid), 1, 1, datetime.datetime.now().strftime("%d-%m-%Y %H:%M"))
 
                     markup_button = create_checker_markup(check_task.pk,listing_type='checker_status')
 

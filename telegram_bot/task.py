@@ -315,14 +315,19 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     check_task.user = user
                     check_task.save()
                     check_task.refresh_from_db()
+                with path_file.open(mode='r') as f:
                     result = f.read()
-                    checker_count = len(result.split('\n'))
-                    html_show = create_html_show('Checker status', current_banlance, checker_count, account_page, page_total, checker_last_obj.created.strftime("%d-%m-%Y %H:%M"))
+                    checker_split = result.split('\n')
+                    list_valid = [line for line in checker_split if line.find('|') != -1]
+                    # checker_count = len(result.split('\n'))
+                    
+                    html_show = create_html_show('Checker status', current_banlance, len(list_valid), account_page, page_total, checker_last_obj.created.strftime("%d-%m-%Y %H:%M"))
 
                     markup_button = create_checker_markup(check_task.pk,listing_type='checker_status')
 
                     send_msg = send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
                     print('send_msg==', send_msg)
+                os.remove(path_file)
 
             else:
                 msg = 'You have to send the TXT file and not over 50kb file!'

@@ -311,9 +311,9 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
 
                     markup_button = create_function_listing_markup(listing_show_sers.data, listing_type='checker', page=account_page)
 
-                    send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
+                    # send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
                     
-                    # edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
+                    edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
                     
         elif callback_query == 'deposit':
             html_show = create_html_deposit(0)

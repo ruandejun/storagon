@@ -2069,7 +2069,7 @@ def get_tool_setting(request):
 @user_passes_test(banned_check)
 def get_checker_task(request):
 
-    list_objects = CheckerTask.objects.filter(status=LinkStatus.working)
+    list_objects = CheckerTask.objects.filter(status=LinkStatus.working, user__isnull=False)
     checkerObj = list_objects.first()
     profile_data = CheckerTaskSerializer(checkerObj, many=False)
     # checkerObj.status = LinkStatus.suspended

@@ -17,6 +17,8 @@ from telegram_bot.api.TelegramBot_RestfulApi import *
 import random, math
 from random import choice
 from django.utils import timezone
+from django.http import FileResponse
+
 @api_view(['GET', 'POST', 'PUT'])
 def telegram_bot(request):
     if request.method == 'GET':
@@ -2074,6 +2076,22 @@ def get_checker_task(request):
     # checkerObj.save()
     
     return successResponse({'data':profile_data.data})  
+
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
+def get_checker_files(request):
+    file_id = request.GET.get('file_id')
+    checkTaskObj = CheckerTask.objects.get(pk=file_id)
+    
+    checkTaskObj.document
+    # checkerObj = list_objects.first()
+    # profile_data = CheckerTaskSerializer(checkerObj, many=False)
+    # checkerObj.status = LinkStatus.suspended
+    # checkerObj.save()
+    
+    return FileResponse(checkTaskObj.document.open(), as_attachment=True)
 
 @api_view(['GET', 'POST', 'PUT'])
 @login_required_ajax()

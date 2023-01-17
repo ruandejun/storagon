@@ -18,7 +18,8 @@ import random, math
 from random import choice
 from django.utils import timezone
 from django.http import FileResponse
-
+from servermain.models import AccountBalance, AccountCurrency
+from servermain.controllers import UserController
 @api_view(['GET', 'POST', 'PUT'])
 def telegram_bot(request):
     if request.method == 'GET':
@@ -2074,8 +2075,14 @@ def get_checker_task(request):
     profile_data = CheckerTaskSerializer(checkerObj, many=False)
     # checkerObj.status = LinkStatus.suspended
     # checkerObj.save()
+    user = checkerObj.user
+    userTelegram_objs = UserTelegram.objects.filter(user=user)
+    user_telegram = userTelegram_objs.first()
+    currency_obj, created = AccountCurrency.objects.get_or_create(code='USD', label='USD')
+    account_balance_obj, created = AccountBalance.objects.get_or_create(user=user,balance_type=BalanceType.credit,currency=currency_obj)
+    current_banlance = UserController.calculateUserBlance(account_balance_obj)
     
-    return successResponse({'data':profile_data.data})  
+    return successResponse({'data':profile_data.data, 'user':{'current_banlance': current_banlance,'username':user.username, 'telegram_id': user_telegram.telegram_id}})  
 
 @api_view(['GET', 'POST', 'PUT'])
 @login_required_ajax()

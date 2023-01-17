@@ -144,8 +144,33 @@ class CheckerInvalid(models.Model):
     checker_type = models.ForeignKey(CheckerType, related_name='CheckerInvalid_checker_type', blank=True, null=True, on_delete=models.DO_NOTHING)
     
     def __str__(self):
-        return str(self.url)
+        return str(self.details)
+class CheckerUnknown(models.Model):
+    class Meta:
+        verbose_name = _("CheckerUnknown")
+        verbose_name_plural = _("CheckerUnknown")
+
+    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True, db_index=True)
     
+    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True, db_index=True)
+
+    created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
+    
+    modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)  
+    
+    user = models.ForeignKey(User, related_name='UserCheckerUnknown', blank=True, null=True, on_delete=models.DO_NOTHING)
+    
+    details = models.TextField(verbose_name=_("details"), blank=True, null=True, default='')
+    
+    status = models.PositiveSmallIntegerField(choices=LinkStatus.ChoiceList(), default=LinkStatus.working,
+                                                   db_index=True)    
+    
+    checker_task = models.ForeignKey(CheckerTask, related_name='CheckerTaskCheckerUnknown', blank=True, null=True, on_delete=models.DO_NOTHING)
+    
+    checker_type = models.ForeignKey(CheckerType, related_name='CheckerUnknown_checker_type', blank=True, null=True, on_delete=models.DO_NOTHING)
+    
+    def __str__(self):
+        return str(self.details)    
     
 
 class UserTelegram(models.Model):

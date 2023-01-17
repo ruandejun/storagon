@@ -453,10 +453,11 @@ ATTENDANCE_TRACK_TIME_BETWEEN_SUBMIT = 3*3600 # 3 hours
 FILE_MANAGER_ROOT_FOLDER = 'download' #must be inside MEDIA_ROOT dir
 
 # invidvidual settings
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'assets', 'media')
+MEDIA_URL = '/media/'
 # serverfile Settings
-SERVER_MAIN_URL = 'https://nhaphanguc.com'
+SERVER_MAIN_URL = 'https://munlogin.vip'
 SERVER_FILE_ID = 1
 # ROOT_URLCONF = 'storagon.urls_serverFile'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

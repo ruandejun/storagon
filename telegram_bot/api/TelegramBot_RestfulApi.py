@@ -16,9 +16,13 @@ from telegram_bot.models import AccountsCreated, AccountsData, AccountsEmails, A
 class CheckerTaskSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = CheckerTask
-		fields = ('id', 'created', 'modified', 'download_url','file_name','file_id', 'file_unique_id', 'note', 'status'
+		fields = ('id', 'created', 'modified', 'download_url','file_name','file_id', 'file_unique_id', 'note', 'status', 'checker_type', 'user', 'telegram_id'
 		)
+	checker_type = serializers.SlugRelatedField(slug_field='value', read_only=True)
 
+	user = serializers.SlugRelatedField(slug_field='username', read_only=True)
+
+ 
 class AccountsSellingSerializer(serializers.ModelSerializer):
 	class Meta:
 		model=AccountsSelling

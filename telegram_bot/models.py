@@ -50,7 +50,6 @@ class CreatorType(models.Model):
     def __str__(self):
         return str(self.label)  
 
-
 class CheckerTask(models.Model):
     class Meta:
         verbose_name = _("CheckerTask")
@@ -85,10 +84,69 @@ class CheckerTask(models.Model):
     def download_url(self): 
         if self.document:
             return self.document.url
-        else: return ''
 
+    @property
+    def telegram_id(self):
+        if self.user:
+            return self.user.user_telegram.telegram_id
     def __str__(self):
         return str(self.url)
+
+class CheckerValid(models.Model):
+    class Meta:
+        verbose_name = _("CheckerValid")
+        verbose_name_plural = _("CheckerValid")
+
+    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True, db_index=True)
+    
+    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True, db_index=True)
+
+    created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
+    
+    modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)  
+    
+    user = models.ForeignKey(User, related_name='UserCheckerValid', blank=True, null=True, on_delete=models.DO_NOTHING)
+    
+    details = models.TextField(verbose_name=_("details"), blank=True, null=True, default='')
+    
+    status = models.PositiveSmallIntegerField(choices=LinkStatus.ChoiceList(), default=LinkStatus.working,
+                                                   db_index=True)    
+    
+    checker_task = models.ForeignKey(CheckerTask, related_name='CheckerTaskCheckerValid', blank=True, null=True, on_delete=models.DO_NOTHING)
+    
+    checker_type = models.ForeignKey(CheckerType, related_name='CheckerValid_checker_type', blank=True, null=True, on_delete=models.DO_NOTHING)
+    
+    def __str__(self):
+        return str(self.details)
+
+class CheckerInvalid(models.Model):
+    class Meta:
+        verbose_name = _("CheckerInvalid")
+        verbose_name_plural = _("CheckerInvalid")
+
+    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True, db_index=True)
+    
+    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True, db_index=True)
+
+    created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
+    
+    modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)  
+    
+    user = models.ForeignKey(User, related_name='UserCheckerInvalid', blank=True, null=True, on_delete=models.DO_NOTHING)
+    
+    details = models.TextField(verbose_name=_("details"), blank=True, null=True, default='')
+    
+    status = models.PositiveSmallIntegerField(choices=LinkStatus.ChoiceList(), default=LinkStatus.working,
+                                                   db_index=True)    
+    
+    checker_task = models.ForeignKey(CheckerTask, related_name='CheckerTaskCheckerInvalid', blank=True, null=True, on_delete=models.DO_NOTHING)
+    
+    checker_type = models.ForeignKey(CheckerType, related_name='CheckerInvalid_checker_type', blank=True, null=True, on_delete=models.DO_NOTHING)
+    
+    def __str__(self):
+        return str(self.url)
+    
+    
 
 class UserTelegram(models.Model):
     class Meta:
@@ -115,8 +173,6 @@ class UserTelegram(models.Model):
     def __str__(self):
         return str(self.telegram_id)
     
-
-
 class Status(models.Model):
     class Meta:
         verbose_name = _("Status")
@@ -305,6 +361,7 @@ class AccountsSelling(models.Model):
 
     def __str__(self):
         return self.type
+
 class BrowserProfiles(models.Model):
     class Meta:
         verbose_name = _("BrowserProfiles")

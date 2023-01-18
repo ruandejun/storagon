@@ -60,7 +60,7 @@ class CheckerTask(models.Model):
 
     created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
     modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)  
-    user = models.ForeignKey(User, related_name='UserCheckerTask', blank=True, null=True, on_delete=models.DO_NOTHING)
+    owner = models.ForeignKey(User, related_name='UserCheckerTask', blank=True, null=True, on_delete=models.DO_NOTHING)
     file_name = models.CharField(verbose_name=_("file_name"), blank=True, null=True, max_length=255)
     file_id = models.CharField(verbose_name=_("file_id"), blank=True, null=True, max_length=255)
     file_unique_id = models.CharField(verbose_name=_("file_unique_id"), blank=True, null=True, max_length=255)
@@ -105,7 +105,7 @@ class CheckerValid(models.Model):
     
     modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)  
     
-    user = models.ForeignKey(User, related_name='UserCheckerValid', blank=True, null=True, on_delete=models.DO_NOTHING)
+    owner = models.ForeignKey(User, related_name='UserCheckerValid', blank=True, null=True, on_delete=models.DO_NOTHING)
     
     details = models.TextField(verbose_name=_("details"), blank=True, null=True, default='')
     
@@ -132,7 +132,7 @@ class CheckerInvalid(models.Model):
     
     modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)  
     
-    user = models.ForeignKey(User, related_name='UserCheckerInvalid', blank=True, null=True, on_delete=models.DO_NOTHING)
+    owner = models.ForeignKey(User, related_name='UserCheckerInvalid', blank=True, null=True, on_delete=models.DO_NOTHING)
     
     details = models.TextField(verbose_name=_("details"), blank=True, null=True, default='')
     
@@ -158,7 +158,7 @@ class CheckerUnknown(models.Model):
     
     modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)  
     
-    user = models.ForeignKey(User, related_name='UserCheckerUnknown', blank=True, null=True, on_delete=models.DO_NOTHING)
+    owner = models.ForeignKey(User, related_name='UserCheckerUnknown', blank=True, null=True, on_delete=models.DO_NOTHING)
     
     details = models.TextField(verbose_name=_("details"), blank=True, null=True, default='')
     

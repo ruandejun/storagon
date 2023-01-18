@@ -2118,5 +2118,43 @@ def update_checker_task(request):
       checker_task_data = CheckerTaskSerializer(checkTask_obj)
     return successResponse({'data':checker_task_data.data})
   
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
+def add_checker_valid(request):
+    accounts_playload = json.loads(request.body)
+    list_update = accounts_playload['list_update']
+    
+    objs = [
+    
+    CheckerValid(
+        owner_id=line['checker_owner'],
+        details=line['details'],
+        checker_task_id=line['checker_task'],
+        checker_type_id=line['checker_type']
+      ) for line in list_update
+    ]
+    msg = CheckerValid.objects.bulk_create(objs)
+    return successResponse()   
+  
+@api_view(['GET', 'POST', 'PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
+def add_checker_invalid(request):
+    accounts_playload = json.loads(request.body)
+    list_update = accounts_playload['list_update']
+    objs = [
+    CheckerInvalid(
+        owner=line['checker_owner'],
+        details=line['details'],
+        checker_task_id=line['checker_task'],
+        checker_type_id=line['checker_type']
+      ) for line in list_update
+    ]
+    msg = CheckerInvalid.objects.bulk_create(objs)
+    return successResponse()     
+  
 
     

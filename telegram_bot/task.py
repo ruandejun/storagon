@@ -6,7 +6,7 @@ from storagon import settings
 
 from servermain.models import AccountBalance, AccountCurrency
 from django.contrib.auth.models import User
-from telegram_bot.models import AccountsData, MunAnti, UserTelegram, AccountsSelling, BrowserProfiles, AccountsCreated, AccountsType, UserHwid, UserCreateFunction, UserCheckFunction, CheckerType, CreatorType, CheckerTask
+from telegram_bot.models import *
 from storagon.enum import *
 from servermain.controllers import UserController
 from telegram_bot.api.TelegramBot_RestfulApi import AccountsSellingSerializer, CheckerTypeFunctionSerializer, CreatorTypeFunctionSerializer
@@ -336,7 +336,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     check_task.file_unique_id = document['file_unique_id']
                     check_task.file_size = document['file_size']
                     check_task.document = File(f, name=document['file_unique_id'])
-                    check_task.user = user
+                    check_task.owner = user
                     check_task.save()
                     check_task.refresh_from_db()
                     

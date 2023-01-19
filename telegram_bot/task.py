@@ -353,6 +353,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     markup_button = create_checker_markup(check_task.pk,listing_type='checker_status')
 
                     send_msg = send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
+                    print(send_msg)
                     print('send_msg==', send_msg['message_id'])
                     check_task.status_message_id = send_msg['message_id']
                     check_task.save()

@@ -354,8 +354,8 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
 
                     send_msg = send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
                     print(send_msg)
-                    print('send_msg==', send_msg['message_id'])
-                    check_task.status_message_id = send_msg['message_id']
+                    print('send_msg==', send_msg.message_id)
+                    check_task.status_message_id = send_msg.message_id
                     check_task.save()
                     # edit_telegram_notify_to_group(chat_id, message_id=send_msg['message_id'], msg=html_show,reply_id=message_id, reply_markup=markup_button)
                 os.remove(path_file)

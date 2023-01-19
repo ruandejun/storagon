@@ -2071,18 +2071,21 @@ def get_tool_setting(request):
 def get_checker_task(request):
 
     list_objects = CheckerTask.objects.filter(status=LinkStatus.working, owner__isnull=False, status_message_id__isnull=False)
-    checkerObj = list_objects.first()
-    profile_data = CheckerTaskSerializer(checkerObj, many=False)
-    # checkerObj.status = LinkStatus.suspended
-    # checkerObj.save()
-    user = checkerObj.owner
-    userTelegram_objs = UserTelegram.objects.filter(user=user)
-    user_telegram = userTelegram_objs.first()
-    currency_obj, created = AccountCurrency.objects.get_or_create(code='USD', label='USD')
-    account_balance_obj, created = AccountBalance.objects.get_or_create(user=user,balance_type=BalanceType.credit,currency=currency_obj)
-    current_banlance = UserController.calculateUserBlance(account_balance_obj)
-    
-    return successResponse({'data':profile_data.data, 'user':{'current_banlance': current_banlance,'username':user.username, 'telegram_id': user_telegram.telegram_id}})  
+    if list_objects.exists():
+        checkerObj = list_objects.first()
+        profile_data = CheckerTaskSerializer(checkerObj, many=False)
+        # checkerObj.status = LinkStatus.suspended
+        # checkerObj.save()
+        user = checkerObj.owner
+        userTelegram_objs = UserTelegram.objects.filter(user=user)
+        user_telegram = userTelegram_objs.first()
+        currency_obj, created = AccountCurrency.objects.get_or_create(code='USD', label='USD')
+        account_balance_obj, created = AccountBalance.objects.get_or_create(user=user,balance_type=BalanceType.credit,currency=currency_obj)
+        current_banlance = UserController.calculateUserBlance(account_balance_obj)
+        
+        return successResponse({'data':profile_data.data, 'user':{'current_banlance': current_banlance,'username':user.username, 'telegram_id': user_telegram.telegram_id}})  
+    else:
+        return successResponse({'data':[]})  
 
 @api_view(['GET', 'POST', 'PUT'])
 @login_required_ajax()

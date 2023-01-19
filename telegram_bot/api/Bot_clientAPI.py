@@ -2071,8 +2071,11 @@ def get_tool_setting(request):
 @signature_test()
 @user_passes_test(banned_check)
 def get_checker_task(request):
-
-    list_objects = CheckerTask.objects.filter(status=LinkStatus.working, owner__isnull=False, status_message_id__isnull=False)
+    checker_id = request.GET.get('id')
+    if checker_id:
+        list_objects = CheckerTask.objects.filter(pk=checker_id)
+    else:
+        list_objects = CheckerTask.objects.filter(status=LinkStatus.working, owner__isnull=False, status_message_id__isnull=False)
     if list_objects.exists():
         checkerObj = list_objects.first()
         profile_data = CheckerTaskSerializer(checkerObj, many=False)

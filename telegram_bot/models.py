@@ -85,8 +85,6 @@ class CheckerTask(models.Model):
     display_value = models.PositiveSmallIntegerField(choices=PageValue.ChoiceList(), default=PageValue.valid,
                                                    db_index=True) 
 
-
-
     @property
     def download_url(self): 
         if self.document:

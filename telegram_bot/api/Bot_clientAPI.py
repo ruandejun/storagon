@@ -2074,8 +2074,8 @@ def get_checker_task(request):
     if list_objects.exists():
         checkerObj = list_objects.first()
         profile_data = CheckerTaskSerializer(checkerObj, many=False)
-        # checkerObj.status = LinkStatus.suspended
-        # checkerObj.save()
+        checkerObj.status = LinkStatus.suspended
+        checkerObj.save()
         user = checkerObj.owner
         userTelegram_objs = UserTelegram.objects.filter(user=user)
         user_telegram = userTelegram_objs.first()

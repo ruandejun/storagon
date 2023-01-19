@@ -147,21 +147,23 @@ def get_mun_proxies(request):
 @signature_test()
 @user_passes_test(banned_check)
 def get_link_checkout(request):
+    data_show = []
     if request.GET.get('action') == 'random':
         list_objects = LinkCheckout.objects.filter(status=0)
         if request.GET.get('type'):
             list_objects = list_objects.filter(type__value=request.GET['type'])
-  
-        pks = list_objects.values_list('pk', flat=True)
-        random_pk = choice(pks)
-        random_obj = LinkCheckout.objects.filter(pk=random_pk)
-        accounts_data = LinkCheckoutSerializer(random_obj, many=True) 
+        if list_objects.exists():
+            pks = list_objects.values_list('pk', flat=True)
+            random_pk = choice(pks)
+            random_obj = LinkCheckout.objects.filter(pk=random_pk)
+            accounts_data = LinkCheckoutSerializer(random_obj, many=True) 
+            data_show = accounts_data.data
     else:
         list_objects = LinkCheckout.objects.filter(status=0).order_by('-id')
 
         accounts_data = LinkCheckoutSerializer(list_objects, many=True)
-
-    return successResponse({'data':accounts_data.data}) 
+        data_show = accounts_data.data
+    return successResponse({'data':data_show}) 
 
 @api_view(['GET', 'POST', 'PUT'])
 @login_required_ajax()
@@ -2074,9 +2076,9 @@ def get_checker_task(request):
     if list_objects.exists():
         checkerObj = list_objects.first()
         profile_data = CheckerTaskSerializer(checkerObj, many=False)
+        user = checkerObj.owner
         checkerObj.status = LinkStatus.suspended
         checkerObj.save()
-        user = checkerObj.owner
         userTelegram_objs = UserTelegram.objects.filter(user=user)
         user_telegram = userTelegram_objs.first()
         currency_obj, created = AccountCurrency.objects.get_or_create(code='USD', label='USD')

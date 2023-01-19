@@ -347,8 +347,9 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     # checker_count = len(result.split('\n'))
                     import math
                     page_total = math.ceil(float(len(list_valid)) / 10)
-                    print(page_total)                   
-                    html_show = create_html_show('Checker status', current_banlance, len(list_valid), 1, 1, datetime.datetime.now().strftime("%d-%m-%Y %H:%M"))
+                    # print(page_total)  
+                    status_text = 'Waiting for worker...'                 
+                    html_show = create_html_show('Checker '+ str(user_telegram.checker_type.value), current_banlance, len(list_valid), 1, 1, datetime.datetime.now().strftime("%d-%m-%Y %H:%M"), status=status_text)
 
                     markup_button = create_checker_markup(check_task.pk,listing_type='checker_status')
 

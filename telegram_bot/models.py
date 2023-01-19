@@ -65,7 +65,7 @@ class CheckerTask(models.Model):
     file_id = models.CharField(verbose_name=_("file_id"), blank=True, null=True, max_length=255)
     file_unique_id = models.CharField(verbose_name=_("file_unique_id"), blank=True, null=True, max_length=255)
     file_size = models.BigIntegerField(default=0, db_index=True)
-    url = models.TextField(verbose_name=_("url"), blank=True, null=True, default='')
+    details = models.TextField(verbose_name=_("details"), blank=True, null=True, default='')
     note = models.TextField(verbose_name=_("note"), blank=True, null=True, default='')
     status = models.PositiveSmallIntegerField(choices=LinkStatus.ChoiceList(), default=LinkStatus.working,
                                                    db_index=True)  
@@ -80,15 +80,19 @@ class CheckerTask(models.Model):
     document_invalid = models.FileField(upload_to='checker_documents_invalid/%Y/%m/%d/', blank=True, null=True)
     document_unknown = models.FileField(upload_to='checker_documents_unknown/%Y/%m/%d/', blank=True, null=True)
     
+    display_page = models.PositiveSmallIntegerField(default=1, db_index=True)
+
+    display_value = models.PositiveSmallIntegerField(choices=PageValue.ChoiceList(), default=PageValue.valid,
+                                                   db_index=True) 
+
+
+
     @property
     def download_url(self): 
         if self.document:
             return self.document.url
 
-    @property
-    def telegram_id(self):
-        if self.user:
-            return self.user.user_telegram.telegram_id
+
     def __str__(self):
         return str(self.url)
 

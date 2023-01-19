@@ -122,7 +122,10 @@ class LinkStatus(EnumBase):
 	completed = 1
 	failed = 2
 	suspended = 3
-
+class PageValue(EnumBase):
+	valid = 0
+	invalid = 1
+	unknown = 2
 class FileMode(EnumBase):
 	normal = 0
 	premiumOnly = 1

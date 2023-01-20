@@ -2139,7 +2139,7 @@ def add_checker_valid(request):
     CheckerValid(
         owner_username=User.objects.get(username=line['checker_owner']),
         details=line['details'],
-        checker_task_value=CheckerTask.objects.get(value=line['checker_task']),
+        checker_task_id=line['checker_task'],
         checker_type_value=CheckerType.objects.get(value=line['checker_type'])
       ) for line in list_update
     ]
@@ -2157,7 +2157,7 @@ def add_checker_invalid(request):
     CheckerInvalid(
         owner_username=User.objects.get(username=line['checker_owner']),
         details=line['details'],
-        checker_task_value=CheckerTask.objects.get(value=line['checker_task']),
+        checker_task_id=line['checker_task'],
         checker_type_value=CheckerType.objects.get(value=line['checker_type'])
       ) for line in list_update
     ]

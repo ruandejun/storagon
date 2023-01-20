@@ -48,4 +48,6 @@ urlpatterns = [
 	url(r'^get_checker_task/', get_checker_task, name='get_checker_task'),
 	url(r'^get_checker_files/', get_checker_files, name='get_checker_files'),
 	url(r'^update_checker_task/', update_checker_task, name='update_checker_task'),
+	url(r'^add_checker_valid/', add_checker_valid, name='add_checker_valid'),
+	url(r'^add_checker_invalid/', add_checker_invalid, name='add_checker_invalid'),
 ]

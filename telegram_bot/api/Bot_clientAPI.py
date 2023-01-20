@@ -2155,7 +2155,7 @@ def add_checker_invalid(request):
     list_update = accounts_playload['list_update']
     objs = [
     CheckerInvalid(
-        owner=line['checker_owner'],
+        owner_id=line['checker_owner'],
         details=line['details'],
         checker_task_id=line['checker_task'],
         checker_type_id=line['checker_type']

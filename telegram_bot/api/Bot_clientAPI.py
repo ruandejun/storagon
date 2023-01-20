@@ -2137,7 +2137,7 @@ def add_checker_valid(request):
     objs = [
     
     CheckerValid(
-        owner_username=User.object.get(username=line['checker_owner']),
+        owner_username=User.objects.get(username=line['checker_owner']),
         details=line['details'],
         checker_task_value=CheckerTask.objects.get(value=line['checker_task']),
         checker_type_value=CheckerType.objects.get(value=line['checker_type'])
@@ -2155,7 +2155,7 @@ def add_checker_invalid(request):
     list_update = accounts_playload['data']
     objs = [
     CheckerInvalid(
-        owner_username=User.object.get(username=line['checker_owner']),
+        owner_username=User.objects.get(username=line['checker_owner']),
         details=line['details'],
         checker_task_value=CheckerTask.objects.get(value=line['checker_task']),
         checker_type_value=CheckerType.objects.get(value=line['checker_type'])

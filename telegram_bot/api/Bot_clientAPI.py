@@ -2122,7 +2122,7 @@ def update_checker_task(request):
     if checkTask_obj.exists():
         checkTask_obj.update(**update_post['update_data'])
         checkTask_obj = CheckerTask.objects.get(
-            pk=update_post['id'], profile_owner=request.user)
+            pk=update_post['id'])
         checker_task_data = CheckerTaskSerializer(checkTask_obj)
     return successResponse({'data':checker_task_data.data})
   

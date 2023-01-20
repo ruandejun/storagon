@@ -2137,7 +2137,7 @@ def add_checker_valid(request):
     objs = [
     
     CheckerValid(
-        owner__username=line['checker_owner'],
+        owner_username=line['checker_owner'],
         details=line['details'],
         checker_task_value=line['checker_task'],
         checker_type_value=line['checker_type']

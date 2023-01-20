@@ -2132,15 +2132,15 @@ def update_checker_task(request):
 @user_passes_test(banned_check)
 def add_checker_valid(request):
     accounts_playload = json.loads(request.body)
-    list_update = accounts_playload['list_update']
+    list_update = accounts_playload['data']
     
     objs = [
     
     CheckerValid(
-        owner_id=line['checker_owner'],
+        owner__username=line['checker_owner'],
         details=line['details'],
-        checker_task_id=line['checker_task'],
-        checker_type_id=line['checker_type']
+        checker_task__value=line['checker_task'],
+        checker_type__value=line['checker_type']
       ) for line in list_update
     ]
     msg = CheckerValid.objects.bulk_create(objs)
@@ -2152,13 +2152,13 @@ def add_checker_valid(request):
 @user_passes_test(banned_check)
 def add_checker_invalid(request):
     accounts_playload = json.loads(request.body)
-    list_update = accounts_playload['list_update']
+    list_update = accounts_playload['data']
     objs = [
     CheckerInvalid(
-        owner_id=line['checker_owner'],
+        owner__username=line['checker_owner'],
         details=line['details'],
-        checker_task_id=line['checker_task'],
-        checker_type_id=line['checker_type']
+        checker_task__value=line['checker_task'],
+        checker_type__value=line['checker_type']
       ) for line in list_update
     ]
     msg = CheckerInvalid.objects.bulk_create(objs)

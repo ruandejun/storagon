@@ -2118,12 +2118,12 @@ def update_checker_task(request):
         return successResponse({"ok": "Get request processed"})
     update_post = json.loads(request.body)
 
-    checkTask_obj = CheckerTask.objects.filter(pk=update_post['id'], owner=request.user)
+    checkTask_obj = CheckerTask.objects.filter(pk=update_post['id'])
     if checkTask_obj.exists():
-      checkTask_obj.update(**update_post['update_data'])
-      checkTask_obj = CheckerTask.objects.get(
-          pk=update_post['id'], profile_owner=request.user)
-      checker_task_data = CheckerTaskSerializer(checkTask_obj)
+        checkTask_obj.update(**update_post['update_data'])
+        checkTask_obj = CheckerTask.objects.get(
+            pk=update_post['id'], profile_owner=request.user)
+        checker_task_data = CheckerTaskSerializer(checkTask_obj)
     return successResponse({'data':checker_task_data.data})
   
 @api_view(['GET', 'POST', 'PUT'])

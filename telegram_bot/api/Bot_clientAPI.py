@@ -2072,10 +2072,16 @@ def get_tool_setting(request):
 @user_passes_test(banned_check)
 def get_checker_task(request):
     checker_id = request.GET.get('id')
-    if checker_id:
-        list_objects = CheckerTask.objects.filter(pk=checker_id)
+    if request.user.is_staff:
+        if checker_id:
+            list_objects = CheckerTask.objects.filter(pk=checker_id)
+        else:
+            list_objects = CheckerTask.objects.filter(status=LinkStatus.working, owner__isnull=False, status_message_id__isnull=False)
     else:
-        list_objects = CheckerTask.objects.filter(status=LinkStatus.working, owner__isnull=False, status_message_id__isnull=False)
+        if checker_id:
+            list_objects = CheckerTask.objects.filter(pk=checker_id, owner=request.user)
+        else:
+            list_objects = CheckerTask.objects.filter(status=LinkStatus.working, owner__isnull=False, status_message_id__isnull=False, owner=request.user)        
     if list_objects.exists():
         checkerObj = list_objects.first()
         profile_data = CheckerTaskSerializer(checkerObj, many=False)
@@ -2117,8 +2123,10 @@ def update_checker_task(request):
     if request.method == 'GET':
         return successResponse({"ok": "Get request processed"})
     update_post = json.loads(request.body)
-
-    checkTask_obj = CheckerTask.objects.filter(pk=update_post['id'])
+    if request.user.is_staff:
+        checkTask_obj = CheckerTask.objects.filter(pk=update_post['id'])
+    else:
+        checkTask_obj = CheckerTask.objects.filter(pk=update_post['id'], owner=request.user)
     if checkTask_obj.exists():
         checkTask_obj.update(**update_post['update_data'])
         checkTask_obj = CheckerTask.objects.get(

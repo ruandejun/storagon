@@ -378,7 +378,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                             i+=1  
                         plant_text = '\n'.join('<code>'+str(x)+'</code>' for x in list_display)
                         status_text = 'Checked %s/%s Left %s: %s valid, %s invalid.' % (len(list_display_valid)+len(list_display_invalid), checktask_obj.total_value, checktask_obj.total_value-(len(list_display_valid)+len(list_display_invalid)), len(list_display_valid), len(list_display_invalid))
-                        html_show = create_html_show('Checker '+ checktask_obj.checker_type, current_banlance, checktask_obj.total_value, display_page, page_total, datetime.datetime.now().strftime("%d-%m-%Y %H:%M"), status=status_text, plant_text=plant_text, displaying_page='Invalid')
+                        html_show = create_html_show('Checker '+ checktask_obj.checker_type.value, current_banlance, checktask_obj.total_value, display_page, page_total, datetime.datetime.now().strftime("%d-%m-%Y %H:%M"), status=status_text, plant_text=plant_text, displaying_page='Invalid')
 
                         markup_button = create_checker_markup(reply_value,listing_type='checker_status', valid=len(list_display_valid), invalid=len(list_display_invalid))
                         try:

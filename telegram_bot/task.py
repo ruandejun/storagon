@@ -360,8 +360,8 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                         invalid_result = '\n'.join('<code>'+str(x.details)+'</code>' for x in list_invalid_objs)                        
                     if invalid_result:
 
-                        list_display_valid = valid_result.split('\n')  
-                        list_display_invalid = invalid_result.split('\n')  
+                        list_display_valid = valid_result.strip().split('\n')  
+                        list_display_invalid = invalid_result.strip().split('\n')  
                         
                         if reply_action == 'get_invalid':
                             list_display_result = list_display_invalid

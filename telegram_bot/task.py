@@ -350,41 +350,46 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                         valid_result = f.read()
                     else:
                         list_valid_objs = CheckerValid.objects.filter(checker_task_id=int(reply_value))
-                        valid_result = '\n'.join('<code>'+str(x.details)+'</code>' for x in list_valid_objs)
+                        if list_valid_objs.exists():
+                            valid_result = '\n'.join('<code>'+str(x.details)+'</code>' for x in list_valid_objs)
+                        else:
+                            valid_result = ''
                         
                     if document_invalid:
                         f = document_valid.open('r')
                         invalid_result = f.read()
                     else:
                         list_invalid_objs = CheckerInvalid.objects.filter(checker_task_id=int(reply_value))
-                        invalid_result = '\n'.join('<code>'+str(x.details)+'</code>' for x in list_invalid_objs)                        
-                    if invalid_result:
-
-                        list_display_valid = valid_result.strip().split('\n')  
-                        list_display_invalid = invalid_result.strip().split('\n')  
-                        
-                        if reply_action == 'get_invalid':
-                            list_display_result = list_display_invalid
-                            display_page = checktask_obj.display_page_invalid
+                        if list_invalid_objs.exists():
+                            invalid_result = '\n'.join('<code>'+str(x.details)+'</code>' for x in list_invalid_objs) 
                         else:
-                            list_display_result = list_display_valid
-                            display_page = checktask_obj.display_page_valid
-                        import math
-                        page_total = math.ceil(float(len(list_display_result)) / 50)
-                        list_display = []
-                        i = (display_page-1)*50
-                        while i < len(list_display_result) and len(list_display) < 50:
-                            list_display.append(list_display_result[i])
-                            i+=1  
-                        plant_text = '\n'.join('<code>'+str(x)+'</code>' for x in list_display)
-                        status_text = 'Checked %s/%s Left %s: %s valid, %s invalid.' % (len(list_display_valid)+len(list_display_invalid), checktask_obj.total_value, checktask_obj.total_value-(len(list_display_valid)+len(list_display_invalid)), len(list_display_valid), len(list_display_invalid))
-                        html_show = create_html_show('Checker '+ checktask_obj.checker_type.value, current_banlance, checktask_obj.total_value, display_page, page_total, datetime.datetime.now().strftime("%d-%m-%Y %H:%M"), status=status_text, plant_text=plant_text, displaying_page='Invalid')
+                            invalid_result = ''                       
 
-                        markup_button = create_checker_markup(reply_value,listing_type='checker_status', valid=len(list_display_valid), invalid=len(list_display_invalid))
-                        try:
-                            send_msg = edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)	
-                        except Exception as e:
-                            print(e)                    
+                    list_display_valid = valid_result.strip().split('\n')
+                    list_display_invalid = invalid_result.strip().split('\n')  
+                    
+                    if reply_action == 'get_invalid':
+                        list_display_result = list_display_invalid
+                        display_page = checktask_obj.display_page_invalid
+                    else:
+                        list_display_result = list_display_valid
+                        display_page = checktask_obj.display_page_valid
+                    import math
+                    page_total = math.ceil(float(len(list_display_result)) / 50)
+                    list_display = []
+                    i = (display_page-1)*50
+                    while i < len(list_display_result) and len(list_display) < 50:
+                        list_display.append(list_display_result[i])
+                        i+=1  
+                    plant_text = '\n'.join('<code>'+str(x)+'</code>' for x in list_display)
+                    status_text = 'Checked %s/%s Left %s: %s valid, %s invalid.' % (len(list_display_valid)+len(list_display_invalid), checktask_obj.total_value, checktask_obj.total_value-(len(list_display_valid)+len(list_display_invalid)), len(list_display_valid), len(list_display_invalid))
+                    html_show = create_html_show('Checker '+ checktask_obj.checker_type.value, current_banlance, checktask_obj.total_value, display_page, page_total, datetime.datetime.now().strftime("%d-%m-%Y %H:%M"), status=status_text, plant_text=plant_text, displaying_page='Invalid')
+
+                    markup_button = create_checker_markup(reply_value,listing_type='checker_status', valid=len(list_display_valid), invalid=len(list_display_invalid))
+                    try:
+                        send_msg = edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)	
+                    except Exception as e:
+                        print(e)                    
                 
                     
         elif callback_query == 'deposit':

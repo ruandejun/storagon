@@ -341,7 +341,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
             elif reply_action == 'get_invalid' or reply_action == 'get_valid':
                 checktask_objs = CheckerTask.objects.filter(pk=int(reply_value))
-                if checktask_objs.exist():
+                if checktask_objs.exists():
                     checktask_obj = checktask_objs.first()
                     document_valid = checktask_obj.document_valid
                     document_invalid = checktask_obj.document_invalid

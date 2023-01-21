@@ -339,7 +339,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     # send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
                     
                     edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
-            elif reply_action == 'get_invalid':
+            elif reply_action == 'get_invalid' or reply_action == 'get_valid':
                 checktask_objs = CheckerTask.objects.filter(pk=int(reply_value))
                 if check_task_objs.exist():
                     checktask_obj = checktask_objs.first()
@@ -362,12 +362,18 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
 
                         list_display_valid = valid_result.split('\n')  
                         list_display_invalid = invalid_result.split('\n')  
-                        display_page = checktask_obj.display_page
-                        page_total = math.ceil(float(len(list_display_valid)) / 50)
+                        
+                        if reply_action == 'get_invalid':
+                            list_display_result = list_display_invalid
+                            display_page = checktask_obj.display_page_invalid
+                        else:
+                            list_display_result = list_display_valid
+                            display_page = checktask_obj.display_page_valid
+                        page_total = math.ceil(float(len(list_display_result)) / 50)
                         list_display = []
                         i = (display_page-1)*50
-                        while i < len(list_display_invalid) and len(list_display) < 50:
-                            list_display.append(list_display_invalid[i])
+                        while i < len(list_display_result) and len(list_display) < 50:
+                            list_display.append(list_display_result[i])
                             i+=1  
                         plant_text = '\n'.join('<code>'+str(x)+'</code>' for x in list_display)
                         status_text = 'Checked %s/%s Left %s: %s valid, %s invalid.' % (len(list_display_valid)+len(list_display_invalid), checktask_obj.total_value, checktask_obj.total_value-(len(list_display_valid)+len(list_display_invalid)), len(list_display_valid), len(list_display_invalid))

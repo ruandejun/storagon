@@ -80,8 +80,10 @@ class CheckerTask(models.Model):
     document_invalid = models.FileField(upload_to='checker_documents_invalid/%Y/%m/%d/', blank=True, null=True)
     document_unknown = models.FileField(upload_to='checker_documents_unknown/%Y/%m/%d/', blank=True, null=True)
     
-    display_page = models.PositiveSmallIntegerField(default=1, db_index=True)
+    display_page_valid = models.PositiveSmallIntegerField(default=1, db_index=True)
 
+    display_page_invalid = models.PositiveSmallIntegerField(default=1, db_index=True)
+    
     total_value = models.PositiveSmallIntegerField(default=1, db_index=True)
     
     display_value = models.PositiveSmallIntegerField(choices=PageValue.ChoiceList(), default=PageValue.valid,

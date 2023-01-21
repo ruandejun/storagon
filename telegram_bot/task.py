@@ -349,14 +349,14 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                         f = document_valid.open('r')
                         valid_result = f.read()
                     else:
-                        list_valid_objs = CheckerValid.objects.filter(check_task__id=int(reply_value))
+                        list_valid_objs = CheckerValid.objects.filter(checker_task_id=int(reply_value))
                         valid_result = '\n'.join('<code>'+str(x.details)+'</code>' for x in list_valid_objs)
                         
                     if document_invalid:
                         f = document_valid.open('r')
                         invalid_result = f.read()
                     else:
-                        list_invalid_objs = CheckerInvalid.objects.filter(check_task__id=int(reply_value))
+                        list_invalid_objs = CheckerInvalid.objects.filter(checker_task_id=int(reply_value))
                         invalid_result = '\n'.join('<code>'+str(x.details)+'</code>' for x in list_invalid_objs)                        
                     if invalid_result:
 

@@ -20,6 +20,7 @@ from django.utils import timezone
 from django.http import FileResponse
 from servermain.models import AccountBalance, AccountCurrency
 from servermain.controllers import UserController
+{'update_id': 562174823, 'callback_query': {'id': '3834736202297820393', 'from': {}, 'message': {'message_id': 1016, 'from': {}, 'chat': {}, 'date': 1674262940, 'edit_date': 1674263448, 'reply_to_message': {}, 'text': '👻 MunBot Checker ccn gate 2 AIO automatic 👽\nBalance:  $0 💳\nTotal:  50 🛒\nNotification:  Finished 50/50 Left 0: 0 valid, 50 invalid.\n\nDisplaying page 1 of 1. Last updated @21-01-2023 11:10', 'entities': [{'offset': 0, 'length': 45, 'type': 'bold'}, {'offset': 46, 'length': 9, 'type': 'bold'}, {'offset': 56, 'length': 5, 'type': 'code'}, {'offset': 62, 'length': 7, 'type': 'bold'}, {'offset': 70, 'length': 5, 'type': 'code'}, {'offset': 76, 'length': 14, 'type': 'bold'}, {'offset': 91, 'length': 43, 'type': 'bold'}, {'offset': 91, 'length': 43, 'type': 'italic'}, {'offset': 136, 'length': 54, 'type': 'pre'}], 'reply_markup': {'inline_keyboard': [[{'text': 'Valid: 0', 'callback_data': 'get_valid|199|checker_status'}, {'text': 'Invalid: 50', 'callback_data': 'get_invalid|199|checker_status'}, {'text': 'Unknown: 0', 'callback_data': 'get_unknown|199|checker_status'}], [{'text': 'First Page 🔝', 'callback_data': 'set_page|0|checker_status'}, {'text': 'Back ⬅', 'callback_data': 'set_page|0|checker_status'}, {'text': 'Next ➡', 'callback_data': 'set_page|1|checker_status'}, {'text': 'Last Page 🔚', 'callback_data': 'set_page|-1|checker_status'}], [{'text': 'Stop 🚫', 'callback_data': 'stop|stop|checker_status'}, {'text': 'ReCheck 🔄', 'callback_data': 'recheck|recheck|checker_status'}, {'text': 'Deposit 💳', 'callback_data': 'deposit'}]]}}, 'chat_instance': '-5312026064123414057', 'data': 'get_invalid|199|checker_status'}}
 @api_view(['GET', 'POST', 'PUT'])
 def telegram_bot(request):
     if request.method == 'GET':
@@ -46,8 +47,9 @@ def telegram_bot(request):
         chat_id = from_user['id']
         data = t_message['data']
         t_message_id = t_reply_to_message["message_id"]
+        original_text = t_message.get('text')
         # print(from_user['id'],data)
-        check_cmd_telegram.delay(chat_id,message_id=t_message_id,callback_query=data)
+        check_cmd_telegram.delay(chat_id,message_id=t_message_id,callback_query=data,original_text=original_text)
 
 
     return successResponse({"ok": "POST request processed"})

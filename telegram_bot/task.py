@@ -84,31 +84,53 @@ def create_checker_markup(checker_id,valid=0,invalid=0, unknown=0, listing_type=
 
     new_markup= create_menu_markup(markup, listing_type, page)    
     return new_markup
-    # callback_data_firstpage = '%s|%s|%s' % ('set_page', 0, listing_type)#{'action': 'set_page', 'value': 0, 'type':listing_type}    
-    # inline_keyboard_first_page = types.InlineKeyboardButton('First Page \U0001F51D', callback_data=str(callback_data_firstpage))
+
+def create_checker_markup(checker_id,valid=0,invalid=0, unknown=0, listing_type='',page=0):
+    
+    markup = types.InlineKeyboardMarkup()
+    callback_valid = '%s|%s|%s' % ('get_valid', checker_id, listing_type)
+    callback_invalid = '%s|%s|%s' % ('get_invalid', checker_id, listing_type)
+    callback_unknown = '%s|%s|%s' % ('get_unknown', checker_id, listing_type)
+    inline_keyboard_valid = types.InlineKeyboardButton('Valid: %s' % (valid) , callback_data=str(callback_valid))
+    inline_keyboard_invalid = types.InlineKeyboardButton('Invalid: %s' % (invalid), callback_data=str(callback_invalid))
+    inline_keyboard_unknown = types.InlineKeyboardButton('Unknown: %s' % (unknown), callback_data=str(callback_unknown))
+    markup.row(inline_keyboard_valid,inline_keyboard_invalid, inline_keyboard_unknown)
+    new_markup = create_page_navigation_markup(markup, listing_type, page)
+    new_markup= create_checker_menu_markup(markup, listing_type, page)    
+    return new_markup
+
+def create_page_navigation_markup(markup, listing_type='',page=0):
+    backPage = page-1
+    nextPage = page+1
+    lastPage = -1
+    if backPage <=0:
+        backPage=0
+    callback_data_firstpage = '%s|%s|%s' % ('set_page', 0, listing_type)#{'action': 'set_page', 'value': 0, 'type':listing_type}    
+    inline_keyboard_first_page = types.InlineKeyboardButton('First Page \U0001F51D', callback_data=str(callback_data_firstpage))
         
-    # callback_data_back_page = '%s|%s|%s' % ('set_page', backPage, listing_type)#{'action': 'set_page', 'value': backPage, 'type':listing_type}   
-    # inline_keyboard_back_page = types.InlineKeyboardButton('Back \U00002B05', callback_data=str(callback_data_back_page))
+    callback_data_back_page = '%s|%s|%s' % ('set_page', backPage, listing_type)#{'action': 'set_page', 'value': backPage, 'type':listing_type}   
+    inline_keyboard_back_page = types.InlineKeyboardButton('Back \U00002B05', callback_data=str(callback_data_back_page))
     
     
-    # callback_data_next_page = '%s|%s|%s' % ('set_page', nextPage, listing_type)#{'action': 'set_page', 'value': nextPage, 'type':listing_type} 
-    # inline_keyboard_next_page = types.InlineKeyboardButton('Next \U000027A1', callback_data=str(callback_data_next_page))
+    callback_data_next_page = '%s|%s|%s' % ('set_page', nextPage, listing_type)#{'action': 'set_page', 'value': nextPage, 'type':listing_type} 
+    inline_keyboard_next_page = types.InlineKeyboardButton('Next \U000027A1', callback_data=str(callback_data_next_page))
     
     
-    # callback_data_last_page = '%s|%s|%s' % ('set_page', lastPage, listing_type)#{'action': 'set_page', 'value': lastPage, 'type':listing_type}
-    # inline_keyboard_last_page = types.InlineKeyboardButton('Last Page \U0001F51A', callback_data=str(callback_data_last_page))
-    # markup.row(inline_keyboard_first_page,inline_keyboard_back_page,inline_keyboard_next_page,inline_keyboard_last_page)
+    callback_data_last_page = '%s|%s|%s' % ('set_page', lastPage, listing_type)#{'action': 'set_page', 'value': lastPage, 'type':listing_type}
+    inline_keyboard_last_page = types.InlineKeyboardButton('Last Page \U0001F51A', callback_data=str(callback_data_last_page))
+    markup.row(inline_keyboard_first_page,inline_keyboard_back_page,inline_keyboard_next_page,inline_keyboard_last_page)
+    return markup
+    
+def create_checker_menu_markup(markup, listing_type='',page=0):	
+    callback_data_stop = '%s|%s|%s' % ('stop', 'stop', listing_type)
+    inline_keyboard_menu = types.InlineKeyboardButton('Stop \U0001F6AB', callback_data=str(callback_data_stop))
+    
+    callback_data_refresh = '%s|%s|%s' % ('recheck', 'recheck', listing_type)#{'action': 'set_page', 'value': 'refresh', 'type':listing_type} 
 
-    
-    
-    # inline_keyboard_menu = types.InlineKeyboardButton('Menu \U0001F3D8', callback_data='menu')
-    
-    # callback_data_refresh = '%s|%s|%s' % ('set_page', 'refresh', listing_type)#{'action': 'set_page', 'value': 'refresh', 'type':listing_type} 
-
-    # inline_keyboard_refesh = types.InlineKeyboardButton('Refresh \U0001F504', callback_data=str(callback_data_refresh))
-    # inline_keyboard_deposit = types.InlineKeyboardButton('Deposit \U0001F4B3', callback_data='deposit')
-    # markup.row(inline_keyboard_menu, inline_keyboard_refesh, inline_keyboard_deposit)
-    # return markup    
+    inline_keyboard_refesh = types.InlineKeyboardButton('ReCheck \U0001F504', callback_data=str(callback_data_refresh))
+    inline_keyboard_deposit = types.InlineKeyboardButton('Deposit \U0001F4B3', callback_data='deposit')
+    markup.row(inline_keyboard_menu, inline_keyboard_refesh, inline_keyboard_deposit)
+    return markup   
 
 def create_menu_markup(markup, listing_type='',page=0):
     backPage = page-1
@@ -197,15 +219,15 @@ def create_deposit_markup():
     markup.row(inline_keyboard_btc, inline_keyboard_eth, inline_keyboard_ltc)
     return markup
 
-def create_html_show(type='',balance='',total='',page='',total_page='',updated='', status='', plant_text=''):
+def create_html_show(type='',balance='',total='',page='',total_page='',updated='', status='', plant_text='',displaying_page='Displaying'):
     html_show = '''
 <b>\U0001F47B MunBot %s AIO automatic \U0001F47D</b>
 <b>Balance: </b> <code>$%s \U0001F4B3</code>
 <b>Total: </b> <code>%s \U0001F6D2</code>
 <b>Notification: </b> <i>%s</i>
 %s
-<pre>Displaying page %s of %s. Last updated @%s</pre>
-    ''' % (type, balance, total, status, plant_text, page, total_page, updated)
+<pre>%s page %s of %s. Last updated @%s</pre>
+    ''' % (type, balance, total, status, plant_text, displaying_page, page, total_page, updated)
     return html_show
 
 def create_html_deposit(balance):
@@ -258,7 +280,7 @@ def get_deposit_address(user,name='BTC'):
 
 
 @shared_task
-def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, chat=None, document=None):
+def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, chat=None, document=None, original_text=''):
 
     userTelegram_objs = UserTelegram.objects.filter(telegram_id=chat_id)
     if not userTelegram_objs.exists():
@@ -317,6 +339,46 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     # send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
                     
                     edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
+            elif reply_action == 'get_invalid':
+                checktask_objs = CheckerTask.objects.filter(pk=int(reply_value))
+                if check_task_objs.exist():
+                    checktask_obj = checktask_objs.first()
+                    document_valid = checktask_obj.document_valid
+                    document_invalid = checktask_obj.document_invalid
+                    if document_valid:
+                        f = document_valid.open('r')
+                        valid_result = f.read()
+                    else:
+                        list_valid_objs = CheckerValid.objects.filter(check_task__id=int(reply_value))
+                        valid_result = '\n'.join('<code>'+str(x.details)+'</code>' for x in list_valid_objs)
+                        
+                    if document_invalid:
+                        f = document_valid.open('r')
+                        invalid_result = f.read()
+                    else:
+                        list_invalid_objs = CheckerInvalid.objects.filter(check_task__id=int(reply_value))
+                        invalid_result = '\n'.join('<code>'+str(x.details)+'</code>' for x in list_invalid_objs)                        
+                    if invalid_result:
+
+                        list_display_valid = valid_result.split('\n')  
+                        list_display_invalid = invalid_result.split('\n')  
+                        display_page = checktask_obj.display_page
+                        page_total = math.ceil(float(len(list_display_valid)) / 50)
+                        list_display = []
+                        i = (display_page-1)*50
+                        while i < len(list_display_invalid) and len(list_display) < 50:
+                            list_display.append(list_display_invalid[i])
+                            i+=1  
+                        plant_text = '\n'.join('<code>'+str(x)+'</code>' for x in list_display)
+                        status_text = 'Checked %s/%s Left %s: %s valid, %s invalid.' % (len(list_display_valid)+len(list_display_invalid), checktask_obj.total_value, checktask_obj.total_value-(len(list_display_valid)+len(list_display_invalid)), len(list_display_valid), len(list_display_invalid))
+                        html_show = create_html_show('Checker '+ checktask_obj.checker_type, current_banlance, checktask_obj.total_value, display_page, page_total, datetime.datetime.now().strftime("%d-%m-%Y %H:%M"), status=status_text, plant_text=plant_text, displaying_page='Invalid')
+
+                        markup_button = create_checker_markup(reply_value,listing_type='checker_status', valid=len(list_display_valid), invalid=len(list_display_invalid))
+                        try:
+                            send_msg = edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)	
+                        except Exception as e:
+                            print(e)                    
+                
                     
         elif callback_query == 'deposit':
             html_show = create_html_deposit(0)
@@ -346,16 +408,17 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     list_valid = [line for line in checker_split if line.find('|') != -1]
                     # checker_count = len(result.split('\n'))
                     import math
-                    page_total = math.ceil(float(len(list_valid)) / 10)
+                    page_total = math.ceil(float(len(list_valid)) / 50)
                     # print(page_total)  
                     status_text = 'Waiting for worker...'                 
-                    html_show = create_html_show('Checker '+ str(user_telegram.checker_type.value), current_banlance, len(list_valid), 1, 1, datetime.datetime.now().strftime("%d-%m-%Y %H:%M"), status=status_text)
+                    html_show = create_html_show('Checker '+ str(user_telegram.checker_type.value), current_banlance, len(list_valid), 1, 1, datetime.datetime.now().strftime("%d-%m-%Y %H:%M"), status=status_text, displaying_page='Valid')
 
                     markup_button = create_checker_markup(check_task.pk,listing_type='checker_status')
 
                     send_msg = send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
                     print(send_msg)
                     print('send_msg==', send_msg.message_id)
+                    check_task.total_value = len(checker_split)
                     check_task.status_message_id = send_msg.message_id
                     check_task.save()
                     # edit_telegram_notify_to_group(chat_id, message_id=send_msg['message_id'], msg=html_show,reply_id=message_id, reply_markup=markup_button)

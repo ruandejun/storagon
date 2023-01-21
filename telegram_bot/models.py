@@ -82,6 +82,8 @@ class CheckerTask(models.Model):
     
     display_page = models.PositiveSmallIntegerField(default=1, db_index=True)
 
+    total_value = models.PositiveSmallIntegerField(default=1, db_index=True)
+    
     display_value = models.PositiveSmallIntegerField(choices=PageValue.ChoiceList(), default=PageValue.valid,
                                                    db_index=True) 
 

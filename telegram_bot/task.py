@@ -350,23 +350,26 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                         valid_result = f.read()
                     else:
                         list_valid_objs = CheckerValid.objects.filter(checker_task_id=int(reply_value))
-                        if list_valid_objs.exists():
-                            valid_result = '\n'.join('<code>'+str(x.details)+'</code>' for x in list_valid_objs)
-                        else:
-                            valid_result = ''
+                        
+                        valid_result = '\n'.join('<code>'+str(x.details)+'</code>' for x in list_valid_objs)
+
                         
                     if document_invalid:
                         f = document_valid.open('r')
                         invalid_result = f.read()
                     else:
                         list_invalid_objs = CheckerInvalid.objects.filter(checker_task_id=int(reply_value))
-                        if list_invalid_objs.exists():
-                            invalid_result = '\n'.join('<code>'+str(x.details)+'</code>' for x in list_invalid_objs) 
-                        else:
-                            invalid_result = ''                       
-
-                    list_display_valid = valid_result.strip().split('\n')
-                    list_display_invalid = invalid_result.strip().split('\n')  
+                        
+                        invalid_result = '\n'.join('<code>'+str(x.details)+'</code>' for x in list_invalid_objs) 
+                      
+                    if valid_result:
+                        list_display_valid = valid_result.strip().split('\n')
+                    else:
+                        list_display_valid = []
+                    if invalid_result:
+                        list_display_invalid = invalid_result.strip().split('\n')  
+                    else:
+                        list_display_invalid = []
                     
                     if reply_action == 'get_invalid':
                         list_display_result = list_display_invalid

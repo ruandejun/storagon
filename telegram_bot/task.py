@@ -71,6 +71,20 @@ def download_file_from_telegram(fileInfo):
     # f.close()
     # os.remove(file_path)
     # print('===file===',file_info)
+# def create_checker_markup(checker_id,valid=0,invalid=0, unknown=0, listing_type='',page=0):
+    
+#     markup = types.InlineKeyboardMarkup()
+#     callback_valid = '%s|%s|%s' % ('get_valid', checker_id, listing_type)
+#     callback_invalid = '%s|%s|%s' % ('get_invalid', checker_id, listing_type)
+#     callback_unknown = '%s|%s|%s' % ('get_unknown', checker_id, listing_type)
+#     inline_keyboard_valid = types.InlineKeyboardButton('Valid: %s' % (valid) , callback_data=str(callback_valid))
+#     inline_keyboard_invalid = types.InlineKeyboardButton('Invalid: %s' % (invalid), callback_data=str(callback_invalid))
+#     inline_keyboard_unknown = types.InlineKeyboardButton('Unknown: %s' % (unknown), callback_data=str(callback_unknown))
+#     markup.row(inline_keyboard_valid,inline_keyboard_invalid, inline_keyboard_unknown)
+
+#     new_markup= create_menu_markup(markup, listing_type, page)    
+#     return new_markup
+
 def create_checker_markup(checker_id,valid=0,invalid=0, unknown=0, listing_type='',page=0):
     
     markup = types.InlineKeyboardMarkup()
@@ -81,77 +95,51 @@ def create_checker_markup(checker_id,valid=0,invalid=0, unknown=0, listing_type=
     inline_keyboard_invalid = types.InlineKeyboardButton('Invalid: %s' % (invalid), callback_data=str(callback_invalid))
     inline_keyboard_unknown = types.InlineKeyboardButton('Unknown: %s' % (unknown), callback_data=str(callback_unknown))
     markup.row(inline_keyboard_valid,inline_keyboard_invalid, inline_keyboard_unknown)
-
-    new_markup= create_menu_markup(markup, listing_type, page)    
+    new_markup = create_page_navigation_markup(markup, listing_type, checker_id)
+    new_markup= create_checker_menu_markup(markup, listing_type, checker_id)    
     return new_markup
 
-def create_checker_markup(checker_id,valid=0,invalid=0, unknown=0, listing_type='',page=0):
-    
-    markup = types.InlineKeyboardMarkup()
-    callback_valid = '%s|%s|%s' % ('get_valid', checker_id, listing_type)
-    callback_invalid = '%s|%s|%s' % ('get_invalid', checker_id, listing_type)
-    callback_unknown = '%s|%s|%s' % ('get_unknown', checker_id, listing_type)
-    inline_keyboard_valid = types.InlineKeyboardButton('Valid: %s' % (valid) , callback_data=str(callback_valid))
-    inline_keyboard_invalid = types.InlineKeyboardButton('Invalid: %s' % (invalid), callback_data=str(callback_invalid))
-    inline_keyboard_unknown = types.InlineKeyboardButton('Unknown: %s' % (unknown), callback_data=str(callback_unknown))
-    markup.row(inline_keyboard_valid,inline_keyboard_invalid, inline_keyboard_unknown)
-    new_markup = create_page_navigation_markup(markup, listing_type, page)
-    new_markup= create_checker_menu_markup(markup, listing_type, page)    
-    return new_markup
-
-def create_page_navigation_markup(markup, listing_type='',page=0):
-    backPage = page-1
-    nextPage = page+1
-    lastPage = -1
-    if backPage <=0:
-        backPage=0
-    callback_data_firstpage = '%s|%s|%s' % ('set_page', 0, listing_type)#{'action': 'set_page', 'value': 0, 'type':listing_type}    
+def create_page_navigation_markup(markup, listing_type='',checker_id=''):
+    # backPage = page-1
+    # nextPage = page+1
+    # lastPage = -1
+    # if backPage <=0:
+    #     backPage=0
+    callback_data_firstpage = '%s|%s|%s' % ('first_page', checker_id, listing_type)#{'action': 'set_page', 'value': 0, 'type':listing_type}    
     inline_keyboard_first_page = types.InlineKeyboardButton('First Page \U0001F51D', callback_data=str(callback_data_firstpage))
         
-    callback_data_back_page = '%s|%s|%s' % ('set_page', backPage, listing_type)#{'action': 'set_page', 'value': backPage, 'type':listing_type}   
+    callback_data_back_page = '%s|%s|%s' % ('back_page', checker_id, listing_type)#{'action': 'set_page', 'value': backPage, 'type':listing_type}   
     inline_keyboard_back_page = types.InlineKeyboardButton('Back \U00002B05', callback_data=str(callback_data_back_page))
     
     
-    callback_data_next_page = '%s|%s|%s' % ('set_page', nextPage, listing_type)#{'action': 'set_page', 'value': nextPage, 'type':listing_type} 
+    callback_data_next_page = '%s|%s|%s' % ('next_page', checker_id, listing_type)#{'action': 'set_page', 'value': nextPage, 'type':listing_type} 
     inline_keyboard_next_page = types.InlineKeyboardButton('Next \U000027A1', callback_data=str(callback_data_next_page))
     
     
-    callback_data_last_page = '%s|%s|%s' % ('set_page', lastPage, listing_type)#{'action': 'set_page', 'value': lastPage, 'type':listing_type}
+    callback_data_last_page = '%s|%s|%s' % ('last_page', checker_id, listing_type)#{'action': 'set_page', 'value': lastPage, 'type':listing_type}
     inline_keyboard_last_page = types.InlineKeyboardButton('Last Page \U0001F51A', callback_data=str(callback_data_last_page))
     markup.row(inline_keyboard_first_page,inline_keyboard_back_page,inline_keyboard_next_page,inline_keyboard_last_page)
     return markup
     
-def create_checker_menu_markup(markup, listing_type='',page=0):	
-    callback_data_stop = '%s|%s|%s' % ('stop', 'stop', listing_type)
+def create_checker_menu_markup(markup, listing_type='',checker_id=''):	
+    callback_data_stop = '%s|%s|%s' % ('stop', checker_id, listing_type)
     inline_keyboard_menu = types.InlineKeyboardButton('Stop \U0001F6AB', callback_data=str(callback_data_stop))
     
-    callback_data_refresh = '%s|%s|%s' % ('recheck', 'recheck', listing_type)#{'action': 'set_page', 'value': 'refresh', 'type':listing_type} 
+    callback_data_refresh = '%s|%s|%s' % ('recheck', checker_id, listing_type)#{'action': 'set_page', 'value': 'refresh', 'type':listing_type} 
 
     inline_keyboard_refesh = types.InlineKeyboardButton('ReCheck \U0001F504', callback_data=str(callback_data_refresh))
     inline_keyboard_deposit = types.InlineKeyboardButton('Deposit \U0001F4B3', callback_data='deposit')
     markup.row(inline_keyboard_menu, inline_keyboard_refesh, inline_keyboard_deposit)
     return markup   
 
-def create_menu_markup(markup, listing_type='',page=0):
-    backPage = page-1
-    nextPage = page+1
-    lastPage = -1
-    if backPage <=0:
-        backPage=0
-    callback_data_firstpage = '%s|%s|%s' % ('set_page', 0, listing_type)#{'action': 'set_page', 'value': 0, 'type':listing_type}    
-    inline_keyboard_first_page = types.InlineKeyboardButton('First Page \U0001F51D', callback_data=str(callback_data_firstpage))
-        
-    callback_data_back_page = '%s|%s|%s' % ('set_page', backPage, listing_type)#{'action': 'set_page', 'value': backPage, 'type':listing_type}   
-    inline_keyboard_back_page = types.InlineKeyboardButton('Back \U00002B05', callback_data=str(callback_data_back_page))
-    
-    
-    callback_data_next_page = '%s|%s|%s' % ('set_page', nextPage, listing_type)#{'action': 'set_page', 'value': nextPage, 'type':listing_type} 
-    inline_keyboard_next_page = types.InlineKeyboardButton('Next \U000027A1', callback_data=str(callback_data_next_page))
-    
-    
-    callback_data_last_page = '%s|%s|%s' % ('set_page', lastPage, listing_type)#{'action': 'set_page', 'value': lastPage, 'type':listing_type}
-    inline_keyboard_last_page = types.InlineKeyboardButton('Last Page \U0001F51A', callback_data=str(callback_data_last_page))
-    markup.row(inline_keyboard_first_page,inline_keyboard_back_page,inline_keyboard_next_page,inline_keyboard_last_page)
+def create_menu_markup(markup, listing_type='',checker_id=''):
+    # backPage = page-1
+    # nextPage = page+1
+    # lastPage = -1
+    # if backPage <=0:
+    #     backPage=0
+    markup = create_page_navigation_markup(markup, listing_type='',checker_id='')
+
 
     
     
@@ -350,26 +338,23 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                         valid_result = f.read()
                     else:
                         list_valid_objs = CheckerValid.objects.filter(checker_task_id=int(reply_value))
-                        
-                        valid_result = '\n'.join('<code>'+str(x.details)+'</code>' for x in list_valid_objs)
-
+                        if list_valid_objs.exists():
+                            valid_result = '\n'.join('<code>'+str(x.details)+'</code>' for x in list_valid_objs)
+                        else:
+                            valid_result = ''
                         
                     if document_invalid:
                         f = document_valid.open('r')
                         invalid_result = f.read()
                     else:
                         list_invalid_objs = CheckerInvalid.objects.filter(checker_task_id=int(reply_value))
-                        
-                        invalid_result = '\n'.join('<code>'+str(x.details)+'</code>' for x in list_invalid_objs) 
-                      
-                    if valid_result:
-                        list_display_valid = valid_result.strip().split('\n')
-                    else:
-                        list_display_valid = []
-                    if invalid_result:
-                        list_display_invalid = invalid_result.strip().split('\n')  
-                    else:
-                        list_display_invalid = []
+                        if list_invalid_objs.exists():
+                            invalid_result = '\n'.join('<code>'+str(x.details)+'</code>' for x in list_invalid_objs) 
+                        else:
+                            invalid_result = ''                       
+
+                    list_display_valid = valid_result.strip().split('\n')
+                    list_display_invalid = invalid_result.strip().split('\n')  
                     
                     if reply_action == 'get_invalid':
                         list_display_result = list_display_invalid

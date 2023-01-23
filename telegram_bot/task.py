@@ -174,9 +174,6 @@ def create_function_listing_markup(listing, listing_type='',page=0):
     return new_markup
 
 
-
-
-
 def create_listing_markup(listing,type,page=0):
 
     markup = types.InlineKeyboardMarkup()
@@ -327,6 +324,22 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     # send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
                     
                     edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
+            # elif reply_action == 'next_page':
+            #     print('==next page==')
+            #     if reply_type == 'checker_status':
+                    
+            # elif reply_action == 'last_page':
+            #     print('==last page==')
+            #     if reply_type == 'checker_status':
+                
+            # elif reply_action == 'first_page':
+            #     print('==first page==')
+            #     if reply_type == 'checker_status':
+                
+            # elif reply_action == 'back_page':
+            #     print('==back page==')
+            #     if reply_type == 'checker_status':
+                    
             elif reply_action == 'get_invalid' or reply_action == 'get_valid':
                 checktask_objs = CheckerTask.objects.filter(pk=int(reply_value))
                 if checktask_objs.exists():

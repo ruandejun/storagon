@@ -138,7 +138,7 @@ def create_menu_markup(markup, listing_type='',checker_id=''):
     # lastPage = -1
     # if backPage <=0:
     #     backPage=0
-    markup = create_page_navigation_markup(markup, listing_type='',checker_id='')
+    markup = create_page_navigation_markup(markup, listing_type,checker_id)
 
 
     

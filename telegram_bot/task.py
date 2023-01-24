@@ -324,6 +324,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     # send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
                     
                     edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
+                    
             # elif reply_action == 'next_page':
             #     print('==next page==')
             #     if reply_type == 'checker_status':
@@ -339,11 +340,29 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
             # elif reply_action == 'back_page':
             #     print('==back page==')
             #     if reply_type == 'checker_status':
-                    
-            elif reply_action == 'get_invalid' or reply_action == 'get_valid':
+            if reply_type == 'checker_status':    
                 checktask_objs = CheckerTask.objects.filter(pk=int(reply_value))
                 if checktask_objs.exists():
                     checktask_obj = checktask_objs.first()
+                    # if reply_action == 'get_invalid' or reply_action == 'get_valid':
+                    if reply_action == 'get_invalid':
+                        checktask_obj.display_value = 1
+                        checktask_obj.save()
+                        checktask_obj.refresh_from_db()
+                    elif reply_action == 'get_valid':
+                        checktask_obj.display_value = 0
+                        checktask_obj.save()
+                        checktask_obj.refresh_from_db()
+                    elif reply_action == 'get_unknown':
+                        checktask_obj.display_value = 2
+                        checktask_obj.save()
+                        checktask_obj.refresh_from_db()   
+
+                                                 
+                    # else:
+                    #     checktask_obj.display_value = 2
+                    display_value = checktask_obj.display_value
+
                     document_valid = checktask_obj.document_valid
                     document_invalid = checktask_obj.document_invalid
                     if document_valid:
@@ -369,7 +388,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     list_display_valid = valid_result.strip().split('\n')
                     list_display_invalid = invalid_result.strip().split('\n')  
                     
-                    if reply_action == 'get_invalid':
+                    if display_value == 1:
                         list_display_result = list_display_invalid
                         display_page = checktask_obj.display_page_invalid
                     else:
@@ -377,6 +396,41 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                         display_page = checktask_obj.display_page_valid
                     import math
                     page_total = math.ceil(float(len(list_display_result)) / 50)
+                    if reply_action == 'next_page':
+                        print('==next page==')
+                        if display_value == 0:
+                            checktask_obj.display_page_valid = checktask_obj.display_page_valid+1
+                        elif display_page == 1:
+                            checktask_obj.display_page_invalid = checktask_obj.display_page_invalid+1
+                        else:
+                            checktask_obj.display_page_unknown  = checktask_obj.display_page_unknown+1   
+                        checktask_obj.save() 
+                        checktask_obj.refresh_from_db() 
+                    elif reply_action == 'last_page':
+                        print('==last page==')
+
+                        
+                    elif reply_action == 'first_page':
+                        print('==first page==')
+                        if display_value == 0:
+                            checktask_obj.display_page_valid = 1
+                        elif display_page == 1 :
+                            checktask_obj.display_page_invalid = 1
+                        else:
+                            checktask_obj.display_page_unknown  = 1
+                        checktask_obj.save() 
+                        checktask_obj.refresh_from_db()      
+                    elif reply_action == 'back_page':
+                        print('==back page==')                    
+                        if display_value == 0:
+                            checktask_obj.display_page_valid = checktask_obj.display_page_valid-1
+                        elif display_page == 1 :
+                            checktask_obj.display_page_invalid = checktask_obj.display_page_invalid-1
+                        else:
+                            checktask_obj.display_page_unknown  = checktask_obj.display_page_unknown-1   
+                        checktask_obj.save() 
+                        checktask_obj.refresh_from_db()                     
+                    
                     list_display = []
                     i = (display_page-1)*50
                     while i < len(list_display_result) and len(list_display) < 50:
@@ -390,9 +444,9 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     try:
                         send_msg = edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)	
                     except Exception as e:
-                        print(e)                    
-                
+                            print(e)                    
                     
+                        
         elif callback_query == 'deposit':
             html_show = create_html_deposit(0)
             markup_button = create_deposit_markup()

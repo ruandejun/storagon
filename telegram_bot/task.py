@@ -330,6 +330,10 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                 checktask_objs = CheckerTask.objects.filter(pk=int(reply_value))
                 if checktask_objs.exists():
                     checktask_obj = checktask_objs.first()
+                    if reply_action == 'stop':
+                        checktask_obj.status = 2
+                        checktask_obj.save()
+                        checktask_obj.refresh_from_db()
                     # if reply_action == 'get_invalid' or reply_action == 'get_valid':
                     if reply_action == 'get_invalid':
                         checktask_obj.display_value = 1

@@ -309,7 +309,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     account_page = 1
                     account_total = checker_objs.count()
                     import math
-                    page_total = math.ceil(float(account_total) / 10)
+                    page_total = math.ceil(float(account_total) / 50)
                     # print(page_total)
                     list_accounta_show = checker_objs[(account_page-1)*limit:account_page*limit]      
                     
@@ -325,21 +325,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     
                     edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
                     
-            # elif reply_action == 'next_page':
-            #     print('==next page==')
-            #     if reply_type == 'checker_status':
-                    
-            # elif reply_action == 'last_page':
-            #     print('==last page==')
-            #     if reply_type == 'checker_status':
-                
-            # elif reply_action == 'first_page':
-            #     print('==first page==')
-            #     if reply_type == 'checker_status':
-                
-            # elif reply_action == 'back_page':
-            #     print('==back page==')
-            #     if reply_type == 'checker_status':
+
             if reply_type == 'checker_status':    
                 checktask_objs = CheckerTask.objects.filter(pk=int(reply_value))
                 if checktask_objs.exists():
@@ -396,19 +382,42 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                         display_page = checktask_obj.display_page_valid
                     import math
                     page_total = math.ceil(float(len(list_display_result)) / 50)
+                    
                     if reply_action == 'next_page':
                         print('==next page==')
                         if display_value == 0:
-                            checktask_obj.display_page_valid = checktask_obj.display_page_valid+1
+                            if checktask_obj.display_page_valid+1 <= page_total:
+                                page_display = checktask_obj.display_page_valid+1
+                                checktask_obj.display_page_valid = page_display
+                            else:
+                                page_display = checktask_obj.display_page_valid
+                                
                         elif display_page == 1:
-                            checktask_obj.display_page_invalid = checktask_obj.display_page_invalid+1
+                            if checktask_obj.display_page_invalid+1 <= page_total:
+                                page_display = checktask_obj.display_page_invalid+1
+                                checktask_obj.display_page_invalid = checktask_obj.display_page_invalid+1
+                            else:
+                                page_display = checktask_obj.display_page_invalid
+                                
                         else:
-                            checktask_obj.display_page_unknown  = checktask_obj.display_page_unknown+1   
+                            if checktask_obj.display_page_unknown+1 <= page_total:
+                                page_display = checktask_obj.display_page_unknown+1
+                                checktask_obj.display_page_unknown = checktask_obj.display_page_unknown+1
+                            else:
+                                page_display = checktask_obj.display_page_unknown
+
                         checktask_obj.save() 
                         checktask_obj.refresh_from_db() 
                     elif reply_action == 'last_page':
                         print('==last page==')
-
+                        if display_value == 0:
+                            checktask_obj.display_page_valid = page_total
+                        elif display_page == 1 :
+                            checktask_obj.display_page_invalid = page_total
+                        else:
+                            checktask_obj.display_page_unknown  = page_total
+                        checktask_obj.save() 
+                        checktask_obj.refresh_from_db()  
                         
                     elif reply_action == 'first_page':
                         print('==first page==')
@@ -423,11 +432,26 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     elif reply_action == 'back_page':
                         print('==back page==')                    
                         if display_value == 0:
-                            checktask_obj.display_page_valid = checktask_obj.display_page_valid-1
-                        elif display_page == 1 :
-                            checktask_obj.display_page_invalid = checktask_obj.display_page_invalid-1
+                            if checktask_obj.display_page_valid-1 >= 1:
+                                page_display = checktask_obj.display_page_valid-1
+                                checktask_obj.display_page_valid = page_display
+                            else:
+                                page_display = 1
+                                
+                        elif display_page == 1:
+                            if checktask_obj.display_page_invalid-1 >= 1:
+                                page_display = checktask_obj.display_page_invalid-1
+                                checktask_obj.display_page_invalid = checktask_obj.display_page_invalid+1
+                            else:
+                                page_display = 1
+                                
                         else:
-                            checktask_obj.display_page_unknown  = checktask_obj.display_page_unknown-1   
+                            if checktask_obj.display_page_unknown-1 >= 1:
+                                page_display = checktask_obj.display_page_unknown-1
+                                checktask_obj.display_page_unknown = checktask_obj.display_page_unknown-1
+                            else:
+                                page_display = 1
+
                         checktask_obj.save() 
                         checktask_obj.refresh_from_db()                     
                     

@@ -388,7 +388,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     import math
                     page_total = math.ceil(float(len(list_display_result)) / 50)
                     if page_total <= 1:
-                        page_total == 1
+                        page_total = 1
                     
                     if reply_action == 'next_page':
                         print('==next page==')

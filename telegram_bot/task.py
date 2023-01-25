@@ -370,9 +370,14 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                             invalid_result = '\n'.join('<code>'+str(x.details)+'</code>' for x in list_invalid_objs) 
                         else:
                             invalid_result = ''                       
-
-                    list_display_valid = valid_result.strip().split('\n')
-                    list_display_invalid = invalid_result.strip().split('\n')  
+                    if valid_result:
+                        list_display_valid = valid_result.strip().split('\n')
+                    else:
+                        list_display_valid = []
+                    if invalid_result:
+                        list_display_invalid = invalid_result.strip().split('\n')  
+                    else:
+                        list_display_invalid = []
                     
                     if display_value == 1:
                         list_display_result = list_display_invalid
@@ -468,7 +473,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     try:
                         send_msg = edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)	
                     except Exception as e:
-                            print(e)                    
+                        print(e)                    
                     
                         
         elif callback_query == 'deposit':

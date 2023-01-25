@@ -370,11 +370,11 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                             invalid_result = '\n'.join('<code>'+str(x.details)+'</code>' for x in list_invalid_objs) 
                         else:
                             invalid_result = ''                       
-                    if valid_result:
+                    if valid_result.strip():
                         list_display_valid = valid_result.strip().split('\n')
                     else:
                         list_display_valid = []
-                    if invalid_result:
+                    if invalid_result.strip():
                         list_display_invalid = invalid_result.strip().split('\n')  
                     else:
                         list_display_invalid = []

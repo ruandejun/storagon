@@ -381,12 +381,14 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     
                     if display_value == 1:
                         list_display_result = list_display_invalid
-                        display_page = checktask_obj.display_page_invalid
+                        page_display = checktask_obj.display_page_invalid
                     else:
                         list_display_result = list_display_valid
-                        display_page = checktask_obj.display_page_valid
+                        page_display = checktask_obj.display_page_valid
                     import math
                     page_total = math.ceil(float(len(list_display_result)) / 50)
+                    if page_total <= 1:
+                        page_total == 1
                     
                     if reply_action == 'next_page':
                         print('==next page==')
@@ -397,7 +399,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                             else:
                                 page_display = checktask_obj.display_page_valid
                                 
-                        elif display_page == 1:
+                        elif display_value == 1:
                             if checktask_obj.display_page_invalid+1 <= page_total:
                                 page_display = checktask_obj.display_page_invalid+1
                                 checktask_obj.display_page_invalid = checktask_obj.display_page_invalid+1
@@ -417,7 +419,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                         print('==last page==')
                         if display_value == 0:
                             checktask_obj.display_page_valid = page_total
-                        elif display_page == 1 :
+                        elif display_value == 1 :
                             checktask_obj.display_page_invalid = page_total
                         else:
                             checktask_obj.display_page_unknown  = page_total
@@ -428,7 +430,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                         print('==first page==')
                         if display_value == 0:
                             checktask_obj.display_page_valid = 1
-                        elif display_page == 1 :
+                        elif display_value == 1 :
                             checktask_obj.display_page_invalid = 1
                         else:
                             checktask_obj.display_page_unknown  = 1
@@ -443,7 +445,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                             else:
                                 page_display = 1
                                 
-                        elif display_page == 1:
+                        elif display_value == 1:
                             if checktask_obj.display_page_invalid-1 >= 1:
                                 page_display = checktask_obj.display_page_invalid-1
                                 checktask_obj.display_page_invalid = checktask_obj.display_page_invalid+1
@@ -461,8 +463,8 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                         checktask_obj.refresh_from_db()                     
                     
                     list_display = []
-                    i = (display_page-1)*50
-                    while i < len(list_display_result) and len(list_display) < 50:
+                    i = (page_display-1)*50
+                    while i < len(list_display_result) and len(list_display) < 50 and i >=0:
                         list_display.append(list_display_result[i])
                         i+=1  
                     plant_text = '\n'.join('<code>'+str(x)+'</code>' for x in list_display)

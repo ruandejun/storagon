@@ -273,8 +273,8 @@ def create_coinbase_charge_wallet(telegram_id):
 
     # charge info
     charge_info = {
-        "name": 'Telegram deposit '+ telegram_id,
-        "description": telegram_id,
+        "name": 'Telegram deposit %s' % (telegram_id),
+        "description": str(telegram_id),
         'metadata': {'customer_id':telegram_id, 'customer_name':telegram_id},
         # "local_price": {
         #     "amount": "100.00",

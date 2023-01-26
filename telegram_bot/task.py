@@ -231,12 +231,12 @@ Funds will be added after 2 confirmations.
 def create_html_deposit_details(balance,payment_method, address, account_id):
     html_show = '''
 <b>\U0001F47B MunBot AIO automatic \U0001F47D</b>
-<b>Balance: </b><code>$%s \U0001F4B3</code>
+<b>Balance: </b>$<code>%s</code> \U0001F4B3
 Here is the details:-
 <code>Send crypto to the address shown below</code><a href="https://chart.googleapis.com/chart?chs=200x200&chld=%s&cht=qr&%s">.</a>
 Payment: %s
-Address: %s
-Charge ID: %s
+Address: <code>%s</code>
+Charge ID: <code>%s</code>
 
 1. Funds will be automatic convert to USD by your balance.
 2. Funds will be added after 2 confirmations.
@@ -537,7 +537,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     html_show = create_html_deposit_details(current_banlance, reply_type, wallet_result['usdt_address'], wallet_result['charge_id'])
                 else:
                     html_show = create_html_deposit_details(current_banlance, reply_type, wallet_result['usdc_address'], wallet_result['charge_id'])
-                edit_telegram_notify_to_group(chat_id, message_id, html_show)          
+                send_telegram_notify_to_group(chat_id, html_show)          
         elif callback_query == 'deposit':
             html_show = create_html_deposit(0)
             markup_button = create_deposit_markup()

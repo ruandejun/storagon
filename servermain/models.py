@@ -186,7 +186,7 @@ class CoinbaseCharges(models.Model):
                             )
     user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
     
-    note = models.CharField(verbose_name=_("note"), max_length=16)
+    note = models.TextField(verbose_name=_("note"), blank=True, null=True, default='')
     
     usdt_address = models.CharField(default='', verbose_name=_("usdt_address"), max_length=255, blank=True, null=True)
     

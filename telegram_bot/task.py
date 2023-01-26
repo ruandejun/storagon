@@ -286,7 +286,26 @@ def create_coinbase_charge_wallet(telegram_id):
 
     charge = client.charge.create(**charge_info)
     saved_charge_id = charge.id
-    return
+    data = {}
+    data['charge_id'] = saved_charge_id
+    data['usdt_address'] = charge.addresses['tether']
+    data['usdc_address'] = charge.addresses['usdc']
+    {
+    "apecoin": "0xff2bd195884b927b74ee311137bc886bd660294f",    
+    "bitcoin": "3BsBpnH5P4eE8joKv99oSWCH23KMNNn762",
+    "bitcoincash": "qp5qycz49ssw94sryf7de2xqz4qyyuh09vrh5ugs4t",
+    "dai": "0xff2bd195884b927b74ee311137bc886bd660294f",        
+    "dogecoin": "DQA1Wr6bfCLAughUBD3Z8LXyHbLxQnxv64",
+    "ethereum": "0xff2bd195884b927b74ee311137bc886bd660294f",   
+    "litecoin": "MNfcS2xYvFV4WdGWUtQXUubM8bdSPan9he",
+    "polygon": "0xff2bd195884b927b74ee311137bc886bd660294f",    
+    "pusdc": "0xff2bd195884b927b74ee311137bc886bd660294f",      
+    "pweth": "0xff2bd195884b927b74ee311137bc886bd660294f",      
+    "shibainu": "0xff2bd195884b927b74ee311137bc886bd660294f",
+    "tether": "0xff2bd195884b927b74ee311137bc886bd660294f",
+    "usdc": "0xff2bd195884b927b74ee311137bc886bd660294f"
+    }
+    return data
     # print(charge.addresses)
     # print(charge.pricing)
 

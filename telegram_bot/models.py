@@ -14,9 +14,6 @@ XRATE_MAX_DIGITS = getattr(settings, 'XRATE_MAX_DIGITS', 15)
 XRATE_DECIMAL_PLACES = getattr(settings, 'XRATE_DECIMAL_PLACES', 0)
 # Create your models here.
 
-
-
-
 class CheckerType(models.Model):
     class Meta:
         verbose_name = _("CheckerType")
@@ -326,7 +323,6 @@ class UserHwid(models.Model):
                                                    db_index=True)      
     def __unicode__(self): return self.value    
     
-
 class MunAnti(models.Model):
     class Meta:
         verbose_name = _("MunAnti")
@@ -681,7 +677,4 @@ class AccountsCreated(models.Model):
 
     def __str__(self):
         return self.email  
-    
-
-
     

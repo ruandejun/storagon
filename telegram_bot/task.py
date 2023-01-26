@@ -263,7 +263,7 @@ def get_deposit_address(user,name='USDT'):
     else:
         return (account_balance_obj.address, account_balance_obj.account_id)
 
-def create_charge_wallet(telegram_id):
+def create_coinbase_charge_wallet(telegram_id):
     from coinbase_commerce.client import Client
 
     API_KEY = "f0481c32-7320-4db9-bcf9-f55808e807ba"
@@ -286,6 +286,7 @@ def create_charge_wallet(telegram_id):
 
     charge = client.charge.create(**charge_info)
     saved_charge_id = charge.id
+    return
     # print(charge.addresses)
     # print(charge.pricing)
 

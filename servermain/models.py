@@ -186,14 +186,16 @@ class CoinbaseCharges(models.Model):
                             )
     user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
     
-    label = models.CharField(verbose_name=_("label"), max_length=16)
+    note = models.CharField(verbose_name=_("note"), max_length=16)
     
-    address = models.CharField(default='', verbose_name=_("address"), max_length=255)
+    usdt_address = models.CharField(default='', verbose_name=_("usdt_address"), max_length=255, blank=True, null=True)
     
-    bill_status = models.PositiveSmallIntegerField(choices=CoinbaseStatus.ChoiceList(), default=CoinbaseStatus.new, db_index=True)
+    usdc_address = models.CharField(default='', verbose_name=_("usdc_address"), max_length=255, blank=True, null=True)
+    
+    status = models.PositiveSmallIntegerField(choices=CoinbaseStatus.ChoiceList(), default=CoinbaseStatus.new, db_index=True)
 
     def __unicode__(self):
-        return "%s" % (self.address)
+        return "%s" % (self.charge_id)
     
 class Bill(models.Model):
     user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)

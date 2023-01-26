@@ -517,7 +517,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
             html_show = create_html_deposit(0)
             markup_button = create_deposit_markup()
             # edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
-            send_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
+            send_telegram_notify_to_group(chat_id, html_show, reply_markup=markup_button)
     elif document:
         if user_telegram.checker_type:
             if document['mime_type'] == 'text/plain' and document['file_size'] <= 62500:

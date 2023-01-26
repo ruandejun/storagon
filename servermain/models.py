@@ -175,9 +175,30 @@ class ServerFile(models.Model):
 
 # Payment
 
+
+class CoinbaseCharges(models.Model):
+    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
+    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
+    expires_at = models.DateTimeField(verbose_name=_("expires_at"), blank=True, null=True)
+    charge_id = models.CharField(verbose_name=_("charge_id"), max_length=255, primary_key=True, unique=True,
+                            help_text=_('Required. 3 uppercase characters.'),
+                            validators=[RegexValidator(r'^[A-Z]{3}$', _('Enter a valid currency code.'), 'invalid'), ]
+                            )
+    user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    
+    label = models.CharField(verbose_name=_("label"), max_length=16)
+    
+    address = models.CharField(default='', verbose_name=_("address"), max_length=255)
+    
+    bill_status = models.PositiveSmallIntegerField(choices=CoinbaseStatus.ChoiceList(), default=CoinbaseStatus.new, db_index=True)
+
+    def __unicode__(self):
+        return "%s" % (self.address)
+    
 class Bill(models.Model):
     user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
-    userFile = models.ForeignKey(UserFile, null=True, on_delete=models.SET_NULL)
+    userFile = models.ForeignKey(UserFile, blank=True, null=True, on_delete=models.SET_NULL)
+    coinbaseCharges = models.ForeignKey(CoinbaseCharges, blank=True, null=True, on_delete=models.SET_NULL)
     created_date = models.DateTimeField(auto_now_add=True, db_index=True)
 
     bill_status = models.PositiveSmallIntegerField(choices=BillStatus.ChoiceList(), default=BillStatus.ok, db_index=True)
@@ -189,8 +210,7 @@ class Bill(models.Model):
 
 
     def __unicode__(self): return "BillNo.%s(plan_%s)" % (self.id, self.plan_id)
-
-
+    
 class AccountCurrency(models.Model):
     created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
     modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
@@ -223,7 +243,7 @@ class TransactionLog(models.Model):
     created_date = models.DateTimeField(auto_now_add=True, db_index=True)
     transaction_type = models.PositiveSmallIntegerField(choices=TransactionType.ChoiceList(), default=TransactionType.agency, db_index=True)
     transaction_status = models.PositiveSmallIntegerField(choices=TransactionStatus.ChoiceList(), default=TransactionStatus.auto, db_index=True)
-    balance = models.ForeignKey('AccountBalance', null=True, on_delete=models.SET_NULL)
+    balance = models.ForeignKey(AccountBalance, null=True, on_delete=models.SET_NULL)
     amount = models.BigIntegerField(default=0, db_index=True)
 
     invoice_bill = models.ForeignKey(Bill, blank=True, null=True, on_delete=models.SET_NULL)

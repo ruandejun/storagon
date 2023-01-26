@@ -198,10 +198,10 @@ def create_deposit_markup():
 
     markup = types.InlineKeyboardMarkup()
 
-    inline_keyboard_btc = types.InlineKeyboardButton('BTC', callback_data='deposit|BTC')
-    inline_keyboard_eth = types.InlineKeyboardButton('ETH', callback_data='deposit|ETH')
-    inline_keyboard_ltc = types.InlineKeyboardButton('LTC', callback_data='deposit|LTC')
-    markup.row(inline_keyboard_btc, inline_keyboard_eth, inline_keyboard_ltc)
+    inline_keyboard_usdt = types.InlineKeyboardButton('USDT', callback_data='deposit|coinbase|USDT')
+    inline_keyboard_usdc = types.InlineKeyboardButton('USDC', callback_data='deposit|coinbase|USDC')
+
+    markup.row(inline_keyboard_usdt, inline_keyboard_usdc)
     return markup
 
 def create_html_show(type='',balance='',total='',page='',total_page='',updated='', status='', plant_text='',displaying_page='Displaying'):
@@ -217,12 +217,12 @@ def create_html_show(type='',balance='',total='',page='',total_page='',updated='
 
 def create_html_deposit(balance):
     html_show = '''
-<b>\U0001F47B MunBot automatic buying accounts \U0001F47D</b>
+<b>\U0001F47B MunBot AIO automatic \U0001F47D</b>
 <b>Balance: </b><code>$%s \U0001F4B3</code>
-Choose your deposit amount and the coin type
+Choose your deposit crypto type
 
 Payment modes supported are 
-BTC | ETH | LTC | More being added soon
+USDT | USDC | More being added soon
 
 Funds will be added after 2 confirmations.
     ''' % (balance)
@@ -230,7 +230,7 @@ Funds will be added after 2 confirmations.
 
 def create_html_deposit_details(balance,payment_method, address, account_id):
     html_show = '''
-<b>\U0001F47B MunBot automatic buying accounts \U0001F47D</b>
+<b>\U0001F47B MunBot AIO automatic \U0001F47D</b>
 <b>Balance: </b><code>$%s \U0001F4B3</code>
 Here is the details:-
 <code>Send crypto to the address shown below</code><a href="https://chart.googleapis.com/chart?chs=200x200&chld=%s&cht=qr&%s">.</a>
@@ -247,7 +247,7 @@ def get_or_create_user(username):
     User.objects.filter(username=username)
 
 
-def get_deposit_address(user,name='BTC'):
+def get_deposit_address(user,name='USDT'):
     currency_obj, created = AccountCurrency.objects.get_or_create(code=name, label=name)
     account_balance_obj, created = AccountBalance.objects.get_or_create(user=user,balance_type=BalanceType.credit,currency=currency_obj)
     # current_banlance = UserController.calculateUserBlance(account_balance_obj)
@@ -262,6 +262,35 @@ def get_deposit_address(user,name='BTC'):
             return
     else:
         return (account_balance_obj.address, account_balance_obj.account_id)
+
+def create_charge_wallet(telegram_id):
+    from coinbase_commerce.client import Client
+
+    API_KEY = "f0481c32-7320-4db9-bcf9-f55808e807ba"
+
+    # initialize client
+    client = Client(api_key=API_KEY)
+
+    # charge info
+    charge_info = {
+        "name": 'Telegram deposit '+ telegram_id,
+        "description": telegram_id,
+        'metadata': {'customer_id':telegram_id, 'customer_name':telegram_id},
+        # "local_price": {
+        #     "amount": "100.00",
+        #     "currency": "USD"
+        # },
+        "pricing_type": "no_price"
+
+    }
+
+    charge = client.charge.create(**charge_info)
+    saved_charge_id = charge.id
+    # print(charge.addresses)
+    # print(charge.pricing)
+
+    # print("Created charge {!r}".format(charge))
+    # print("#" * 100)
 
 
 @shared_task
@@ -481,7 +510,9 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                     except Exception as e:
                         print(e)                    
                     
-                        
+            if reply_action == 'deposit':
+                print('==create deposit wallet==')  
+                          
         elif callback_query == 'deposit':
             html_show = create_html_deposit(0)
             markup_button = create_deposit_markup()

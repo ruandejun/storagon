@@ -45,7 +45,18 @@ class BillStatus(EnumBase):
 	ok = 0
 	cancel = 1
 	fraud = 2
-
+ 
+class CoinbaseStatus(EnumBase):
+	new = 0
+	pending = 1
+	completed = 2
+	expired = 3
+	unresolved = 4
+	resolved = 5
+	cancelled = 6
+	pendingRefund = 7
+	refunded = 8
+ 
 class SellingStatus(EnumBase):
 	listed = 0
 	sold = 1

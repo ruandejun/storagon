@@ -153,6 +153,7 @@ class CheckerInvalid(models.Model):
     
     def __str__(self):
         return str(self.details)
+
 class CheckerUnknown(models.Model):
     class Meta:
         verbose_name = _("CheckerUnknown")
@@ -180,7 +181,6 @@ class CheckerUnknown(models.Model):
     def __str__(self):
         return str(self.details)    
     
-
 class UserTelegram(models.Model):
     class Meta:
         verbose_name = _("User_Telegram")

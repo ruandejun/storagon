@@ -531,8 +531,13 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                         print(e)                    
                     
             if reply_action == 'deposit':
-                print('==create deposit wallet==')  
-                          
+                print('==create deposit wallet==')
+                wallet_result = create_coinbase_charge_wallet(chat_id)
+                if reply_type == 'USDT':
+                    html_show = create_html_deposit_details(current_banlance, reply_type, wallet_result['usdt_address'], wallet_result['charge_id'])
+                else:
+                    html_show = create_html_deposit_details(current_banlance, reply_type, wallet_result['usdc_address'], wallet_result['charge_id'])
+                edit_telegram_notify_to_group(chat_id, message_id, html_show)          
         elif callback_query == 'deposit':
             html_show = create_html_deposit(0)
             markup_button = create_deposit_markup()

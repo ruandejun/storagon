@@ -64,7 +64,7 @@ def coinbase_bot(request):
         return successResponse({"ok": "Get request processed"})
     t_data = json.loads(request.body)
     print(t_data)
-    request_data = request.data.decode('utf-8')
+    request_data = request.data
     # webhook signature
     request_sig = request.headers.get('X-CC-Webhook-Signature', None)
 

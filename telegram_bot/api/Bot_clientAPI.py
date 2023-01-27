@@ -62,9 +62,9 @@ def coinbase_bot(request):
     WEBHOOK_SECRET = 'e2d8dfc2-c1d5-47c8-bfbe-c2d65e7fdca5'
     if request.method == 'GET':
         return successResponse({"ok": "Get request processed"})
-    t_data = json.loads(request.body)
-    print(t_data)
-    request_data = request.data
+    request_data = request.body
+    print(request_data)
+    # request_data = request.data
     # webhook signature
     request_sig = request.headers.get('X-CC-Webhook-Signature', None)
 

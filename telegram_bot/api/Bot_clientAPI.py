@@ -20,7 +20,8 @@ from django.utils import timezone
 from django.http import FileResponse
 from servermain.models import AccountBalance, AccountCurrency
 from servermain.controllers import UserController
-
+from coinbase_commerce.error import WebhookInvalidPayload, SignatureVerificationError
+from coinbase_commerce.webhook import Webhook
 
 @api_view(['GET', 'POST', 'PUT'])
 def telegram_bot(request):
@@ -57,11 +58,26 @@ def telegram_bot(request):
 
 @api_view(['GET', 'POST', 'PUT'])
 def coinbase_bot(request):
+    
+    WEBHOOK_SECRET = 'e2d8dfc2-c1d5-47c8-bfbe-c2d65e7fdca5'
     if request.method == 'GET':
         return successResponse({"ok": "Get request processed"})
     t_data = json.loads(request.body)
     print(t_data)
+    request_data = request.data.decode('utf-8')
+    # webhook signature
+    request_sig = request.headers.get('X-CC-Webhook-Signature', None)
 
+    try:
+        # signature verification and event object construction
+        event = Webhook.construct_event(request_data, request_sig, WEBHOOK_SECRET)
+    except (WebhookInvalidPayload, SignatureVerificationError) as e:
+        pass
+    else:
+        print("Received event: id={id}, type={type}".format(id=event.id, type=event.type))
+        
+        print(event)
+    # return 'success', 200
     return successResponse({"ok": "POST request processed"})
 
 
@@ -214,13 +230,15 @@ def update_link_checkout(request):
     if request.method == 'GET':
         return successResponse({"ok": "Get request processed"})
     update_post = json.loads(request.body)
-    link_checkout_obj = LinkCheckout.objects.filter(url=update_post['url'])
+    link_checkout_obj = LinkCheckout.objects.filter(url=update_post['url'].strip())
     if link_checkout_obj.exists():
         link_checkout_obj.update(**update_post['update_data'])
         link_checkout_obj = LinkCheckout.objects.filter(
             url=update_post['url'])
         link_checkout_data = LinkCheckoutSerializer(link_checkout_obj, many=True)
-    return successResponse({'data':link_checkout_data.data})
+        return successResponse({'data':link_checkout_data.data})
+    else:
+        return successResponse()
 
 
 @api_view(['GET', 'POST', 'PUT'])

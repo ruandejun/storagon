@@ -23,7 +23,7 @@ class Webhook(object):
         event = data.get('event')
         if not event:
             raise WebhookInvalidPayload('Invalid payload provided')
-        WebhookSignature.verify_sig_header(payload, sig_header, secret)
+        WebhookSignature.verify_sig_header(str(payload), sig_header, secret)
         return Event(data=event)
 
 

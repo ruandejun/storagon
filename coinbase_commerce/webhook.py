@@ -23,7 +23,7 @@ class Webhook(object):
         event = data.get('event')
         if not event:
             raise WebhookInvalidPayload('Invalid payload provided')
-        WebhookSignature.verify_sig_header(str(payload), sig_header, secret)
+        WebhookSignature.verify_sig_header(payload, sig_header, secret)
         return Event(data=event)
 
 
@@ -31,8 +31,8 @@ class WebhookSignature(object):
 
     @staticmethod
     def _compute_signature(payload, secret):
-        mac = hmac.new(secret,
-                       msg=payload,
+        mac = hmac.new(secret.encode('utf-8'),
+                       msg=payload.encode('utf-8'),
                        digestmod=sha256)
         return mac.hexdigest()
 

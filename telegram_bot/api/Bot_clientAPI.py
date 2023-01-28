@@ -81,8 +81,8 @@ def coinbase_bot(request):
             payments = event.data['payments']
             pricing = event.data['pricing']
             addresses = event.data['addresses']
-            print(metadata, payments, pricing, addresses)
-        print(event)
+            print('====',metadata, payments, pricing, addresses)
+        # print(event)
     # return 'success', 200
     return successResponse({"ok": "POST request processed"})
 

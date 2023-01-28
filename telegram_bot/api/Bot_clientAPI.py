@@ -75,7 +75,13 @@ def coinbase_bot(request):
         pass
     else:
         print("Received event: id={id}, type={type}".format(id=event.id, type=event.type))
-        
+        if event.type == 'charge:confirmed':
+            print('==charge:confirmed==')
+            metadata = event.data['metadata']
+            payments = event.data['payments']
+            pricing = event.data['pricing']
+            addresses = event.data['addresses']
+            print(metadata, payments, pricing, addresses)
         print(event)
     # return 'success', 200
     return successResponse({"ok": "POST request processed"})

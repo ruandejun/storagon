@@ -2122,7 +2122,6 @@ def get_checker_task(request):
             list_objects = CheckerTask.objects.filter(status=LinkStatus.working, owner__isnull=False, status_message_id__isnull=False, owner=request.user)        
     if list_objects.exists():
         checkerObj = list_objects.first()
-        list_objects.annotate
         profile_data = CheckerTaskSerializer(checkerObj, many=False)
         user = checkerObj.owner
         checkerObj.status = LinkStatus.suspended

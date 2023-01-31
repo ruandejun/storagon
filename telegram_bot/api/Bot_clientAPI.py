@@ -2150,21 +2150,17 @@ def get_checker_files(request):
     list_checker = file.read().split('\n')
     list_for_checker = []
     for line in list_checker:
-        print(checker_valid_objs.count(), checker_invalid_objs.count())
+        # print(checker_valid_objs.count(), checker_invalid_objs.count())
         check_valid_details = checker_valid_objs.filter(details=line.strip())
         check_invalid_details = checker_invalid_objs.filter(details=line.strip())
         if line.strip() and not check_valid_details.exists() and not check_invalid_details.exists():
             list_for_checker.append(line)
     if list_for_checker:
         string_checker = '\n'.join(x for x in list_for_checker)   
-        return HttpResponse(string_checker, content_type="text/plain")      
-            
-    # checkerObj = list_objects.first()
-    # profile_data = CheckerTaskSerializer(checkerObj, many=False)
-    # checkerObj.status = LinkStatus.suspended
-    # checkerObj.save()
-    
-    return FileResponse(checkTaskObj.document.open(), as_attachment=True)
+        return HttpResponse(string_checker, content_type="text/plain")   
+    else:
+        return HttpResponse('', content_type="text/plain")   
+
 
 @api_view(['GET', 'POST', 'PUT'])
 @login_required_ajax()
@@ -2201,7 +2197,7 @@ def add_checker_valid(request):
         details=line['details'],
         checker_task_id=line['checker_task'],
         checker_type=CheckerType.objects.get(value=line['checker_type'])
-      ) for line in list_update
+      ) for line in list_update if not CheckerValid.objects.filter(details=line['details']).exists()
     ]
     msg = CheckerValid.objects.bulk_create(objs)
     return successResponse()   
@@ -2219,7 +2215,7 @@ def add_checker_invalid(request):
         details=line['details'],
         checker_task_id=line['checker_task'],
         checker_type=CheckerType.objects.get(value=line['checker_type'])
-      ) for line in list_update
+      ) for line in list_update if not CheckerInvalid.objects.filter(details=line['details']).exists()
     ]
     msg = CheckerInvalid.objects.bulk_create(objs)
     return successResponse()     

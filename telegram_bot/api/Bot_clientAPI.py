@@ -22,7 +22,7 @@ from servermain.models import AccountBalance, AccountCurrency
 from servermain.controllers import UserController
 from coinbase_commerce.error import WebhookInvalidPayload, SignatureVerificationError
 from coinbase_commerce.webhook import Webhook
-
+from django.db import transaction
 @api_view(['GET', 'POST', 'PUT'])
 def telegram_bot(request):
     if request.method == 'GET':
@@ -2107,6 +2107,7 @@ def get_tool_setting(request):
 @login_required_ajax()
 @signature_test()
 @user_passes_test(banned_check)
+@transaction.atomic
 def get_checker_task(request):
     checker_id = request.GET.get('id')
     if request.user.is_staff:
@@ -2121,6 +2122,7 @@ def get_checker_task(request):
             list_objects = CheckerTask.objects.filter(status=LinkStatus.working, owner__isnull=False, status_message_id__isnull=False, owner=request.user)        
     if list_objects.exists():
         checkerObj = list_objects.first()
+        list_objects.annotate
         profile_data = CheckerTaskSerializer(checkerObj, many=False)
         user = checkerObj.owner
         checkerObj.status = LinkStatus.suspended

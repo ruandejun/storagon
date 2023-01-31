@@ -2197,7 +2197,7 @@ def add_checker_valid(request):
         details=line['details'],
         checker_task_id=line['checker_task'],
         checker_type=CheckerType.objects.get(value=line['checker_type'])
-      ) for line in list_update if not CheckerValid.objects.filter(details=line['details']).exists()
+      ) for line in list_update
     ]
     msg = CheckerValid.objects.bulk_create(objs)
     return successResponse()   
@@ -2215,7 +2215,7 @@ def add_checker_invalid(request):
         details=line['details'],
         checker_task_id=line['checker_task'],
         checker_type=CheckerType.objects.get(value=line['checker_type'])
-      ) for line in list_update if not CheckerInvalid.objects.filter(details=line['details']).exists()
+      ) for line in list_update
     ]
     msg = CheckerInvalid.objects.bulk_create(objs)
     return successResponse()     

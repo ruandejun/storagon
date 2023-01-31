@@ -2144,6 +2144,20 @@ def get_checker_files(request):
     checkTaskObj = CheckerTask.objects.get(pk=file_id)
     
     checkTaskObj.document
+    checker_invalid_objs = CheckerInvalid.objects.filter(checker_task=checkTaskObj)
+    checker_valid_objs = CheckerValid.objects.filter(checker_task=checkTaskObj)
+    file = checkTaskObj.document.open('r') 
+    list_checker = file.read().split('\n')
+    list_for_checker = []
+    for line in list_checker:
+        check_valid_details = checker_valid_objs.filter(details=line)
+        check_invalid_details = checker_invalid_objs.filter(details=line)
+        if line.strip() and not check_valid_details.exists() and not check_invalid_details.exists():
+            list_for_checker.append(line)
+    if list_for_checker:
+        string_checker = '\n'.join(x for x in list_for_checker)   
+        return HttpResponse(string_checker, content_type="text/plain")      
+            
     # checkerObj = list_objects.first()
     # profile_data = CheckerTaskSerializer(checkerObj, many=False)
     # checkerObj.status = LinkStatus.suspended

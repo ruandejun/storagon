@@ -383,6 +383,10 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
                         checktask_obj.status = 2
                         checktask_obj.save()
                         checktask_obj.refresh_from_db()
+                    elif reply_action == 'recheck':
+                        checktask_obj.status = LinkStatus.working
+                        checktask_obj.save()
+                        checktask_obj.refresh_from_db()                        
                     # if reply_action == 'get_invalid' or reply_action == 'get_valid':
                     if reply_action == 'get_invalid':
                         checktask_obj.display_value = 1

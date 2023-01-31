@@ -2150,8 +2150,9 @@ def get_checker_files(request):
     list_checker = file.read().split('\n')
     list_for_checker = []
     for line in list_checker:
-        check_valid_details = checker_valid_objs.filter(details=line)
-        check_invalid_details = checker_invalid_objs.filter(details=line)
+        print(checker_valid_objs.count(), checker_invalid_objs.count())
+        check_valid_details = checker_valid_objs.filter(details=line.strip())
+        check_invalid_details = checker_invalid_objs.filter(details=line.strip())
         if line.strip() and not check_valid_details.exists() and not check_invalid_details.exists():
             list_for_checker.append(line)
     if list_for_checker:

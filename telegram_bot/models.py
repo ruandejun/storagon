@@ -95,7 +95,7 @@ class CheckerTask(models.Model):
 
 
     def __str__(self):
-        return str(self.url)
+        return str(self.pk)
 
 class CheckerValid(models.Model):
     class Meta:

@@ -2113,14 +2113,14 @@ def get_checker_task(request):
     with transaction.atomic():
         if request.user.is_staff:
             if checker_id:
-                list_objects = CheckerTask.objects.filter(pk=checker_id)
+                list_objects = CheckerTask.objects.select_for_update().filter(pk=checker_id)
             else:
-                list_objects = CheckerTask.objects.filter(status=LinkStatus.working, owner__isnull=False, status_message_id__isnull=False)
+                list_objects = CheckerTask.objects.select_for_update().filter(status=LinkStatus.working, owner__isnull=False, status_message_id__isnull=False)
         else:
             if checker_id:
-                list_objects = CheckerTask.objects.filter(pk=checker_id, owner=request.user)
+                list_objects = CheckerTask.objects.select_for_update().filter(pk=checker_id, owner=request.user)
             else:
-                list_objects = CheckerTask.objects.filter(status=LinkStatus.working, owner__isnull=False, status_message_id__isnull=False, owner=request.user)        
+                list_objects = CheckerTask.objects.select_for_update().filter(status=LinkStatus.working, owner__isnull=False, status_message_id__isnull=False, owner=request.user)        
         if list_objects.exists():
             checkerObj = list_objects.first()
             profile_data = CheckerTaskSerializer(checkerObj, many=False)

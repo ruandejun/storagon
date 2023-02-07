@@ -676,7 +676,9 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
             if str(chat_id) == '892844098':
                 print('==rmlnv==')
                 link_checkout_obj = LinkCheckout.objects.all()  
-                link_checkout_obj.update(status=3)          
+                link_checkout_obj.update(status=3)       
+                msg = 'Your cmd %s already updated!' % (mun_obj.value)
+                send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)                   
         elif cmd == 'addcheck':
             
             if str(chat_id) == '892844098':

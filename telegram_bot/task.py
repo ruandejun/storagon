@@ -322,14 +322,14 @@ def create_coinbase_charge_wallet(telegram_id):
 
 
 def create_completion_openai(text):
-    prompt = "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly.\n\nHuman: Hello, who are you?\nAI: I am an AI created by OpenAI. How can I help you today?\nHuman: "
+    prompt = ""
 
     openai.api_key = 'sk-FakeOpenAIApiKeyForBypassingGitHubPushProtection'#env["OPENAI_API_KEY"]
     response = openai.Completion.create(
     model="text-davinci-003",
     prompt=prompt,
     temperature=0.9,
-    max_tokens=150,
+    max_tokens=1500,
     top_p=1,
     frequency_penalty=0,
     presence_penalty=0.6,

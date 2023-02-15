@@ -322,29 +322,27 @@ def create_coinbase_charge_wallet(telegram_id):
 
 
 def create_completion_openai(text):
+    prompt = "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly.\n\nHuman: Hello, who are you?\nAI: I am an AI created by OpenAI. How can I help you today?\nHuman: "
+
     openai.api_key = 'sk-FakeOpenAIApiKeyForBypassingGitHubPushProtection'#env["OPENAI_API_KEY"]
     response = openai.Completion.create(
-     engine = "text-davinci-002",
-    #   engine = "text-davinci-001",
-     #engine = "text-curie-001",
-     #engine = "text-babbage-001",
-     #engine = "text-ada-001",
-     #engine = "code-davinci-002",
-     #engine = "code-cushman-001",
-      prompt = '"""\n{}\n"""'.format(text),
-      temperature = 0,
-      max_tokens = 1200,
-      top_p = 1,
-      frequency_penalty = 0,
-      presence_penalty = 0,
-      stop = ['"""'])
-    return response 
+    model="text-davinci-003",
+    prompt=prompt,
+    temperature=0.9,
+    max_tokens=150,
+    top_p=1,
+    frequency_penalty=0,
+    presence_penalty=0.6,
+    stop=[" Human:", " AI:"]
+    )
+
+    return response.choices[0].text
 
 @shared_task
 def check_cmd_telegram_gpt(chat_id,message_id=None,text=None,callback_query=None, chat=None, document=None, original_text=''):
     if text:
         response = create_completion_openai(text)
-        send_telegram_notify_to_group_gpt(chat_id, msg=f'{response["choices"][0]["text"]}', reply_id=message_id)
+        send_telegram_notify_to_group_gpt(chat_id, msg=f'{response}', reply_id=message_id)
 
 @shared_task
 def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, chat=None, document=None, original_text=''):

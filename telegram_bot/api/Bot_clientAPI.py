@@ -11,7 +11,7 @@ from servermain.models import User, UserProfile
 from storagon.decorator import banned_check, login_required_ajax, signature_test
 from django.contrib.auth.decorators import user_passes_test
 from rest_framework.decorators import api_view
-from telegram_bot.task import check_cmd_telegram
+from telegram_bot.task import check_cmd_telegram, check_cmd_telegram_gpt
 from telegram_bot.models import *
 from telegram_bot.api.TelegramBot_RestfulApi import *
 import random, math

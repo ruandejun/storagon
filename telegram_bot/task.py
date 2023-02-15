@@ -322,19 +322,24 @@ def create_coinbase_charge_wallet(telegram_id):
 
 
 def create_completion_openai(text):
-    prompt = ""
+    prompt = '"""\n{}\n"""'.format(text)
 
     openai.api_key = 'sk-FakeOpenAIApiKeyForBypassingGitHubPushProtection'#env["OPENAI_API_KEY"]
     response = openai.Completion.create(
-    model="text-davinci-003",
-    prompt=prompt,
-    temperature=0.9,
-    max_tokens=1500,
-    top_p=1,
-    frequency_penalty=0,
-    presence_penalty=0.6,
-    stop=[" Human:", " AI:"]
-    )
+        engine = "text-davinci-003",
+        # engine = "text-davinci-001",
+        #engine = "text-curie-001",
+        #engine = "text-babbage-001",
+        #engine = "text-ada-001",
+        #engine = "code-davinci-002",
+        #engine = "code-cushman-001",
+        prompt = prompt,
+        temperature = 0.9,
+        max_tokens = 500,
+        top_p = 1,
+        frequency_penalty = 0,
+        presence_penalty = 0.6,
+        stop = ['"""'])
 
     return response.choices[0].text
 

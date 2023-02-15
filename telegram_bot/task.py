@@ -17,10 +17,18 @@ from pathlib import Path
 from telebot import types
 from django.core.files import File
 import datetime
+import openai
 
 def send_telegram_notify_to_group(group_id,msg,reply_markup=None,reply_id=None):
     #token='1235501300:AAEWPcah92B1PvsdvTCSHdT12CCg4gq-qZo'
     token = settings.TELEGRAM_TOKEN
+    bot = telebot.TeleBot(token)
+    send_msg = bot.send_message(group_id,'<b>'+msg+'</b>',reply_to_message_id=reply_id,reply_markup=reply_markup,parse_mode='HTML',disable_web_page_preview=False)
+    return send_msg
+
+def send_telegram_notify_to_group_gpt(group_id,msg,reply_markup=None,reply_id=None):
+    token='6099065217:AAFw2dDz6C4BfVmG-5MOYtYyksfk38PpheE'
+    # token = settings.TELEGRAM_TOKEN
     bot = telebot.TeleBot(token)
     send_msg = bot.send_message(group_id,'<b>'+msg+'</b>',reply_to_message_id=reply_id,reply_markup=reply_markup,parse_mode='HTML',disable_web_page_preview=False)
     return send_msg
@@ -312,6 +320,31 @@ def create_coinbase_charge_wallet(telegram_id):
     # print("Created charge {!r}".format(charge))
     # print("#" * 100)
 
+
+def create_completion_openai(text):
+    openai.api_key = 'sk-FakeOpenAIApiKeyForBypassingGitHubPushProtection'#env["OPENAI_API_KEY"]
+    response = openai.Completion.create(
+     #engine = "text-davinci-003",
+      engine = "text-davinci-001",
+     #engine = "text-curie-001",
+     #engine = "text-babbage-001",
+     #engine = "text-ada-001",
+     #engine = "code-davinci-002",
+     #engine = "code-cushman-001",
+      prompt = '"""\n{}\n"""'.format(text),
+      temperature = 0,
+      max_tokens = 1200,
+      top_p = 1,
+      frequency_penalty = 0,
+      presence_penalty = 0,
+      stop = ['"""'])
+    return response 
+
+@shared_task
+def check_cmd_telegram_gpt(chat_id,message_id=None,text=None,callback_query=None, chat=None, document=None, original_text=''):
+    if text:
+        response = create_completion_openai(text)
+        send_telegram_notify_to_group_gpt(chat_id, msg=f'```\n{response["choices"][0]["text"]}\n```', reply_id=message_id)
 
 @shared_task
 def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, chat=None, document=None, original_text=''):

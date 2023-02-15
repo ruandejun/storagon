@@ -9,6 +9,7 @@ from .Bot_clientAPI import *
 
 urlpatterns = [
 	url(r'^telegram_bot/', telegram_bot, name='telegram_bot'),
+	url(r'^telegram_gpt_bot/', telegram_gpt_bot, name='telegram_gpt_bot'),
 	url(r'^coinbase_bot/', coinbase_bot, name='coinbase_bot'),
 	url(r'^create_browser_profile/', create_browser_profile, name='create_browser_profile'),
 	url(r'^get_browser_profile_by_id/', get_browser_profile_by_id, name='get_browser_profile_by_id'),

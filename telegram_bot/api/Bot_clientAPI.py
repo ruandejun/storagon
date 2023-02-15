@@ -56,6 +56,40 @@ def telegram_bot(request):
 
     return successResponse({"ok": "POST request processed"})
 
+
+@api_view(['GET', 'POST', 'PUT'])
+def telegram_gpt_bot(request):
+    if request.method == 'GET':
+        return successResponse({"ok": "Get request processed"})
+    t_data = json.loads(request.body)
+    print(t_data)
+    if 'message' in t_data:
+        t_message = t_data["message"]
+        t_chat = t_message["chat"]
+        t_message_id = t_message["message_id"]
+        #print(t_data)
+        if 'text' in t_message:
+            text = t_message["text"].strip()
+            chat_id = t_chat["id"]
+            check_cmd_telegram_gpt.delay(chat_id, t_message_id, text, chat=t_chat)
+        if 'document' in t_message:
+            chat_id = t_chat["id"]
+            document = t_message['document']
+            check_cmd_telegram_gpt.delay(chat_id, message_id=t_message_id, chat=t_chat, document=document)
+    elif 'callback_query' in t_data:
+        t_message = t_data["callback_query"]
+        t_reply_to_message = t_message["message"]
+        from_user = t_message['from']
+        chat_id = from_user['id']
+        data = t_message['data']
+        t_message_id = t_reply_to_message["message_id"]
+        original_text = t_message.get('text')
+        # print(from_user['id'],data)
+        check_cmd_telegram_gpt.delay(chat_id,message_id=t_message_id,callback_query=data,original_text=original_text)
+
+
+    return successResponse({"ok": "POST request processed"})
+
 @api_view(['GET', 'POST', 'PUT'])
 def coinbase_bot(request):
     

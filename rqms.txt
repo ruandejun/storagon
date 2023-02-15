@@ -27,4 +27,5 @@ django-audit-log==0.7.0
 pycoinbase
 coinbase
 tqdm
+openai
 

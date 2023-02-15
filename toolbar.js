@@ -1,6 +1,6 @@
 var nhtqConfig = {
-    Domain : 'maidzo.vn',
-    apiDomain : 'https://maidzo.vn/',
+    Domain : 'shipway247.com',
+    apiDomain : 'https://shipway247.com/',
     apiaddtocart : 'page/add_items_cart_old/',
     apiexchangerate : 'page/exchange_rate/',
     cart : 'web_app/#/gio-hang/',
@@ -580,6 +580,9 @@ NHToolbar.prototype.renderItemInfoTmall = function()
 {
     var html = this.getItemInfoHTML(this.item);
     var originButtonParent = HTMLUtil.select('.tb-action.tm-clear');
+    if (originButtonParent == null){
+        var originButtonParent = HTMLUtil.select('div[class*="Actions--root"]');
+    }
     if (originButtonParent) {
         // Insert giao diện đặt hàng
         // originButtonParent.innerHTML = '';
@@ -589,7 +592,7 @@ NHToolbar.prototype.renderItemInfoTmall = function()
             div.innerHTML = html;
             originButtonParent.appendChild(div);
         // }
-        // J_isSku
+        // J_isSku doan nay la reupdate selected sku
         var instance = this;
         instance.timeoutResourceId = null;
         var jskuAElements = HTMLUtil.selectAll('.J_TSaleProp li a');
@@ -603,7 +606,7 @@ NHToolbar.prototype.renderItemInfoTmall = function()
                 };
             }
         }
-        //
+        // doan nay la reupdate selected sku
         var amountInput = HTMLUtil.select('.tb-amount-widget input[type=text]');
         var buttonUp = HTMLUtil.selectAll('.mui-amount-btn span');
         if (buttonUp !== null && buttonUp !== undefined && buttonUp.length > 0) {
@@ -956,12 +959,26 @@ NHToolbar.prototype.getItemInfoTaobao = function() {
 };
 NHToolbar.prototype.getItemInfoTmall = function() {
     var item = this.getItemStruct();
-    item.title = HTMLUtil.select('#detail .tb-detail-hd h1').innerText;
-    item.image = HTMLUtil.select('#detail .tb-booth img').src;
+    item.title = document.title;
+    item_image = HTMLUtil.select('#detail .tb-booth img');
+    if (item_image) {
+        item.image = item_image.src
+    }else {
+        item.image = HTMLUtil.select('img[class*="PicGallery--thumbnailPic"]').src;
+    }
     if (g_config !== undefined) {
         if (g_config.itemId !== undefined) {
             item.id = g_config.itemId;
         }
+        else{
+            console.log('===========new get==========');
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+            const itemId = urlParams.get('id')
+            item.id = itemId
+            console.log('===itemId===', itemId)
+        }
+        console.log('==g_config',g_config);
     }
 
     return item;
@@ -1067,6 +1084,19 @@ NHToolbar.prototype.getShopInfo = function() {
                 shop.name = decodeURIComponent(g_config.sellerNickName);
                 shop.url = 'https:' + g_config.shopUrl;
                 shop.id = shop.url.replace("http://", "").replace("https://", "").split("/")[0].split('.')[0];
+            }else {
+                console.log('===get shop info new===')
+                var shop_name = HTMLUtil.select('div[class*="ShopHeader--title"]')
+                if (shop_name !== null){
+                    shop.name = shop_name.innerText.trim()
+                }
+                
+                var shop_url = HTMLUtil.select('a[class*="ShopHeader--board"]')
+                if (shop_url !== null){
+                    shop.url = shop_url.getAttribute('href')
+                    shop.id = shop.url.replace("http://", "").replace("https://", "").split("/")[0].split('.')[0];
+                }
+
             }
         }
         if (shop.url) {
@@ -1247,7 +1277,7 @@ NHToolbar.prototype.updateSelectedSKU1688 = function() {
 			for (var i = 0; i < elements.length; i++) {
 				var element = elements[i];
 				var inputElements = HTMLUtil.select('.next-number-picker .next-input-group input', element)
-				if (inputElements != null){
+				if (inputElements !== null){
 					if (parseInt(inputElements.value) > 0){
 						//totalQuantity += parseInt(inputElements.value);
 						var nameElement = HTMLUtil.select('.sku-item-name', element)
@@ -1281,80 +1311,95 @@ NHToolbar.prototype.updateSelectedSKU1688 = function() {
 
 		var selectButton = HTMLUtil.select('.order-has-select-button');
 		var selectedElements = HTMLUtil.selectAll('.selected-item-wrapper');
-		
-		if (selectButton != null && selectedElements.length === 0){
-			selectButton.click();
-			var selectedElements = HTMLUtil.selectAll('.selected-item-wrapper');
-		}
+		if (selectButton !== null) {
+            if (selectButton != null && selectedElements.length === 0){
+                selectButton.click();
+                var selectedElements = HTMLUtil.selectAll('.selected-item-wrapper');
+            }
+    
+    
+            for (var i = 0; i < selectedElements.length; i++) {
+                var elementSelected = selectedElements[i];
+                var childrenName = HTMLUtil.select('.name', elementSelected);
+                var childrenWrappers = HTMLUtil.selectAll('.children-wrapper', elementSelected);
+                var itemName = childrenName.innerText;
+                if (Object.keys(myImageObj).length !== 0) {
+                    console.log('==childrenNameImage==');
+                    console.log(myImageObj[childrenName.innerText]);
+                    var itemImage = myImageObj[childrenName.innerText];				
+                } 
+                else {
+                    var itemImage = this.item.image;
+                } 
+    
+                for (var ii = 0; ii < childrenWrappers.length; ii++) {
+                    var childrenWrapper = childrenWrappers[ii];
+                    console.log('==childrenWrapper==',childrenWrapper);
+                    
+                    var childrenWrapperName = HTMLUtil.select('.children-wrapper-name', childrenWrapper);
+                    var itemWrapper = childrenWrapper.innerText;
+                    console.log('==childrenWrapperName==',childrenWrapperName.title);
+                    var itemProperties = childrenWrapperName.title
+                    var itemQuantity = itemWrapper.split('(').pop().trim().replace(')','')
+                    if (itemProperties.length === 0) {
+                        var itemNameProperties = itemName;	
+                    }
+                    else {
+                        var itemNameProperties = itemName +'&gt;'+itemProperties;
+                    }
+                    totalQuantity += parseInt(itemQuantity);
+                    console.log('==itemNameProperties==',itemNameProperties);
+                    let objItem = skuMap.find(o => o.specAttrs === itemNameProperties);
+                    if ('discountPrice' in objItem) {
+                        var itemPrice = parseFloat(objItem.discountPrice);
+                        var si = {
+                            'name':itemNameProperties.replace('&gt;','>'),
+                            'image':itemImage,
+                            'quantity':itemQuantity,
+                            'price':itemPrice,
+                            'price_vnd':this.rmbToVnd(itemPrice)
+                        };
+                        this.sku.push(si);					
+                    }
+                    else {
+                        var si = {
+                            'name':itemNameProperties.replace('&gt;','>'),
+                            'image':itemImage,
+                            'quantity':itemQuantity,
+                        };
+                        skuItems.push(si);					
+                    }
+                }	
+    
+            }
+            //hiden the selected wrap
+            var selectedElements = HTMLUtil.selectAll('.selected-item-wrapper');
+            if (selectButton != null && selectedElements.length !== 0){
+                selectButton.click();
+            }
 
+        } else {
+            
+            var inputElements = HTMLUtil.select('.sku-item-wrapper .next-number-picker .next-input-group input');
 
-		for (var i = 0; i < selectedElements.length; i++) {
-			var elementSelected = selectedElements[i];
-			var childrenName = HTMLUtil.select('.name', elementSelected);
-			var childrenWrappers = HTMLUtil.selectAll('.children-wrapper', elementSelected);
-			var itemName = childrenName.innerText;
-			if (Object.keys(myImageObj).length !== 0) {
-				console.log('==childrenNameImage==');
-				console.log(myImageObj[childrenName.innerText]);
-				var itemImage = myImageObj[childrenName.innerText];				
-			} 
-			else {
-				var itemImage = this.item.image;
-			} 
+            console.log('====no selected items====',parseInt(inputElements.value))
+            var si = {
+                'name':'',
+                'image':this.item.image,
+                'quantity':parseInt(inputElements.value),
+            };
+            skuItems.push(si);
+            totalQuantity += parseInt(inputElements.value);         
+        }
+        //check price_ranges
+        if (this.item.price_ranges != null && this.item.price_ranges.length > 0) {
+            for (var i = 0; i < this.item.price_ranges.length; i++) {
+                if (totalQuantity >= this.item.price_ranges[i].quantity_start) {
+                    price = this.item.price_ranges[i].price;
+                }
+            }
 
-			for (var ii = 0; ii < childrenWrappers.length; ii++) {
-				var childrenWrapper = childrenWrappers[ii];
-				console.log('==childrenWrapper==',childrenWrapper);
-				
-				var childrenWrapperName = HTMLUtil.select('.children-wrapper-name', childrenWrapper);
-				var itemWrapper = childrenWrapper.innerText;
-				console.log('==childrenWrapperName==',childrenWrapperName.title);
-				var itemProperties = childrenWrapperName.title
-				var itemQuantity = itemWrapper.split('(').pop().trim().replace(')','')
-				if (itemProperties.length === 0) {
-					var itemNameProperties = itemName;	
-				}
-				else {
-					var itemNameProperties = itemName +'&gt;'+itemProperties;
-				}
-				totalQuantity += parseInt(itemQuantity);
-				console.log('==itemNameProperties==',itemNameProperties);
-				let objItem = skuMap.find(o => o.specAttrs === itemNameProperties);
-				if ('discountPrice' in objItem) {
-					var itemPrice = parseFloat(objItem.discountPrice);
-					var si = {
-						'name':itemNameProperties.replace('&gt;','>'),
-						'image':itemImage,
-						'quantity':itemQuantity,
-						'price':itemPrice,
-						'price_vnd':this.rmbToVnd(itemPrice)
-					};
-					this.sku.push(si);					
-				}
-				else {
-					var si = {
-						'name':itemNameProperties.replace('&gt;','>'),
-						'image':itemImage,
-						'quantity':itemQuantity,
-					};
-					skuItems.push(si);					
-				}
-			}	
-
-		}
-		var selectedElements = HTMLUtil.selectAll('.selected-item-wrapper');
-		if (selectButton != null && selectedElements.length !== 0){
-			selectButton.click();
-		}
-		//check price_ranges
-		if (this.item.price_ranges != null && this.item.price_ranges.length > 0) {
-			for (var i = 0; i < this.item.price_ranges.length; i++) {
-				if (totalQuantity >= this.item.price_ranges[i].quantity_start) {
-					price = this.item.price_ranges[i].price;
-				}
-			}
-
-		} 
+        } 
 		// append to sku array;
 		for (var i = 0; i < skuItems.length; i++) {
 			var lineSku = skuItems[i];
@@ -1461,8 +1506,11 @@ NHToolbar.prototype.updateSelectedSKUTmall = function() {
     if (this.shop == null || this.shop.id == "") {
         this.shop = this.getShopInfo();
     }
-
-    this.selectedQuantity = parseInt(HTMLUtil.select('.tb-text.mui-amount-input').value);
+    selected_quantity = HTMLUtil.select('.tb-text.mui-amount-input')
+    if (selected_quantity == null){
+        selected_quantity =  HTMLUtil.select('.countWrapper .countValueForPC');
+    }
+    this.selectedQuantity = parseInt(selected_quantity.value);
     this.subtotal = 0;
 
     var price = 0;
@@ -1470,6 +1518,9 @@ NHToolbar.prototype.updateSelectedSKUTmall = function() {
     var priceElement = HTMLUtil.select('.tm-promo-price .tm-price');
     if (typeof priceElement === 'undefined' || priceElement === null) {
         priceElement = HTMLUtil.select('#J_StrPriceModBox .tm-price');
+        if (typeof priceElement === 'undefined' || priceElement === null) {
+            priceElement = HTMLUtil.select('span[class*="Price--priceText"]');
+        }
     }
 
     if (typeof priceElement !== 'undefined' && priceElement !== null) {
@@ -1481,9 +1532,17 @@ NHToolbar.prototype.updateSelectedSKUTmall = function() {
     // Selected SKU
     this.sku = [];
     var elementJSKU = HTMLUtil.selectAll('.tb-sku .tb-prop.tm-sale-prop');
-
+    console.log('====elementJSKU===', elementJSKU)
+    if (elementJSKU.length <= 0) {
+        var elementJSKU = HTMLUtil.selectAll('.skuValueName.selectSkuText');
+        console.log('====elementJSKU===', elementJSKU)
+    }
     if (elementJSKU !== null && elementJSKU.length > 0) {
         var selectedProperties = HTMLUtil.selectAll('.tb-sku .tb-prop .tb-selected a');
+        if (selectedProperties.length <= 0) {
+            var selectedProperties = HTMLUtil.selectAll('.skuValueName.selectSkuText');
+            console.log('====selectedProperties===', selectedProperties)
+        }
         if (selectedProperties !== null
             && selectedProperties !== undefined
             && selectedProperties.length == elementJSKU.length) {

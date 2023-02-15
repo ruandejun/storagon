@@ -344,7 +344,7 @@ def create_completion_openai(text):
 def check_cmd_telegram_gpt(chat_id,message_id=None,text=None,callback_query=None, chat=None, document=None, original_text=''):
     if text:
         response = create_completion_openai(text)
-        send_telegram_notify_to_group_gpt(chat_id, msg=f'```\n{response["choices"][0]["text"]}\n```', reply_id=message_id)
+        send_telegram_notify_to_group_gpt(chat_id, msg=f'{response["choices"][0]["text"]}', reply_id=message_id)
 
 @shared_task
 def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, chat=None, document=None, original_text=''):

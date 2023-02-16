@@ -339,7 +339,7 @@ def create_completion_openai(text):
         top_p = 1,
         frequency_penalty = 0,
         presence_penalty = 0.6,
-        stop = ['\n'])
+        stop = ['"""'])
 
     return response.choices[0].text
 

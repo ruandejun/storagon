@@ -327,7 +327,7 @@ def create_completion_openai(text):
     openai.api_key = 'sk-FakeOpenAIApiKeyForBypassingGitHubPushProtection'#env["OPENAI_API_KEY"]
     response = openai.Completion.create(
         # engine = "text-davinci-003",
-        engine = "text-davinci-002",
+        engine = "text-davinci-001",
         #engine = "text-curie-001",
         #engine = "text-babbage-001",
         #engine = "text-ada-001",
@@ -339,7 +339,7 @@ def create_completion_openai(text):
         top_p = 1,
         frequency_penalty = 0,
         presence_penalty = 0.6,
-        stop = ['"""'])
+        stop = ['\n'])
 
     return response.choices[0].text
 

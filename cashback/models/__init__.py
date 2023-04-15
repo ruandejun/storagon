@@ -9,12 +9,12 @@
 #
 
 
-from .logistic_models import *
-from .order_models import *
-from .payment_models import *
+# from .logistic_models import *
+# from .order_models import *
+# from .payment_models import *
 from .product_models import *
-from .staff_models import *
-from .customer_models import *
-from .shop_models import *
-from .ticketbox_models import *
-from .translate_models import *
+# from .staff_models import *
+# from .customer_models import *
+# from .shop_models import *
+# from .ticketbox_models import *
+# from .translate_models import *

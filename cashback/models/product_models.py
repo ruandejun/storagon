@@ -98,7 +98,7 @@ class Category(MPTTModel):
     class MPTTMeta:
         order_insertion_by = ['order_index']
 
-    parent = TreeForeignKey('self', null=True, blank=True, related_name='children', db_index=True)
+    parent = TreeForeignKey('self', null=True, blank=True, related_name='children', db_index=True, on_delete=models.DO_NOTHING)
 
     def __str__(self):
         return str("%s" % (self.label if self.label else self.code))

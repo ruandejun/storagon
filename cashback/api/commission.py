@@ -1,7 +1,6 @@
 import json, decimal, re, os, logging
 from rest_framework.decorators import api_view, permission_classes,authentication_classes
-from shop_module.models import order_models, payment_models, shop_models, logistic_models, product_models, \
-    CustomerProfile, Category, ProductOption, Vendor, UserProfile, customer_models, ticketbox_models
+from cashback.models import  payment_models, shop_models, product_models
 from rest_framework.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,

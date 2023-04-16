@@ -1,4 +1,4 @@
-Django
+Django==3.2.18
 django-suit
 django-suit-redactor
 django-cors-headers
@@ -20,7 +20,7 @@ blinker
 PyCrypto
 pyyaml
 python-memcached
-mysqlclient
+#mysqlclient==2.1.0
 PyMySQL
 psycopg2-binary
 munch==2.5.0
@@ -34,3 +34,8 @@ dnspython==1.15.0
 uwsgi
 pyTelegramBotAPI==4.2.0
 pymongo
+django-mptt
+tqdm
+openai
+Pillow
+topsdk==20.4.21.40

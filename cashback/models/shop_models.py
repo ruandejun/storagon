@@ -10,13 +10,13 @@
 
 
 import decimal
-from audit_log.models.fields import CreatingUserField, LastUserField
+# from audit_log.models.fields import CreatingUserField, LastUserField
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from ..constants.DefaultSettings import *
-from ..enums import *
-
+from storagon.enum import *
+from django.contrib.auth.models import User, Group
 
 class Currency(models.Model):
     class Meta:
@@ -99,8 +99,8 @@ class Vendor(models.Model):
 
     created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
     modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
-    created_by = CreatingUserField(verbose_name=_("created by"), related_name="created_%(app_label)s_%(class)s_set")
-    modified_by = LastUserField(verbose_name=_("modified by"), related_name="modified_%(app_label)s_%(class)s_set")
+    created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
+    modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)
     shopping_domain = models.CharField(verbose_name=_("shopping_domain"), blank=True, max_length=255, db_index=True)
     name = models.CharField(verbose_name=_("name"), max_length=255, db_index=True)
     label = models.CharField(verbose_name=_("label"), blank=True, max_length=255)

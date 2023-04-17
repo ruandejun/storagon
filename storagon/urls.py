@@ -13,6 +13,7 @@ urlpatterns = [
 	url(r'^tracker/', include('private_tracker.urls')),
 	url(r'', include('servermain.urls')),  # pass all other url request to servermain
 	url(r'^telegram/', include('telegram_bot.urls')),  # pass all other url request to servermain
+	url(r'^cashback/', include('cashback.urls')),  # pass all other url request to servermain
 ]
 
 

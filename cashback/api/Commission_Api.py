@@ -7,20 +7,168 @@ from rest_framework.status import (
     HTTP_200_OK
 )
 from django.db.models import Sum, F, Count, Q, FloatField, DecimalField, ExpressionWrapper
-from admin_angular_webapp.views import get_groups
+# from admin_angular_webapp.views import get_groups
 from rest_framework.response import Response
 from django.shortcuts import render
 from django.conf import settings
-from shop_module.task import get_commisstion_obj, taokouling_extract
-from admin_angular_webapp.api.Serializer import TransactionCommissionSerializer,Transaction1688Serializer,TransactionTaobaoSerializer
+# from shop_module.task import get_commisstion_obj, taokouling_extract
+from cashback.api.Serializer import TransactionCommissionSerializer,Transaction1688Serializer,TransactionTaobaoSerializer
 import aop.api
 import top.api
+from hashlib import sha1
+import hmac
+import time, requests
 
 appkey = settings.TAOBAO_APPKEY
 secret = settings.TAOBAO_SECRET
 adzone_id = settings.TAOBAO_ADZONE_ID
 
 
+def get_groups(user,request):
+    # from ipware import get_client_ip
+    # ip, is_routable = get_client_ip(request)
+    groups = []
+    if request.user.is_authenticated():
+        # company_ip = SystemConfigureController.getConfigure('company_ip')
+        # if company_ip.find(ip) != -1 or user.profile.administrator:
+        list_group = user.groups.all()
+
+        for line_group in list_group:
+            groups.append(line_group.name)
+    return groups
+
+def current_time():
+    return int(round(time.time() * 1000))
+
+def sign(key, value):
+    key = bytes(key, encoding='utf8')
+    value = bytes(value, encoding='utf8')
+    val = hmac.new(key, value, sha1).hexdigest()
+    return val.upper()
+
+def invoke(api, params):
+    # http://gw.open.1688.com/openapi/param2/1/com.alibaba.product/alibaba.product.get/8384550
+    url = 'param2/1/{}/{}'.format(api, app_key)
+
+    # 签名
+    pstr = ''
+    for key, value in params.items():
+        pstr += key
+        pstr += str(value)
+    # 通用参数
+    print(url)
+    print(pstr)
+    print(url + pstr)
+
+    sign_str = sign(app_secret, url + pstr)
+    print(sign_str)
+    base = {
+        # 签名
+        '_aop_signature': sign_str,
+    }
+
+    reqUrl = '{}/{}'.format(gw, url)
+
+    for key, value in params.items():
+        base[key] = str(value)
+
+    # 发起请求
+    # r = requests.post(url=reqUrl, data=base)
+    r = requests.get(url=reqUrl, params=base)
+    rs = r.json()
+    if 'exception' in rs:
+        raise RuntimeError(rs.get('error_message') + '\n error detail:' + r.text)
+
+    return rs
+
+class Api:
+    def __init__(self, namespace):
+        self.namespace = namespace
+
+    def call(self, api, params):
+        return invoke(self.namespace + '/' + api, params)
+
+class Get_link:
+    def __init__(self):
+        self.api = Api('com.alibaba.p4p')
+
+    def get(self, product_id):
+        '''
+           获取产品详情 https://open.1688.com/api/apidocdetail.htm?aopApiCategory=product_new&id=com.alibaba.product:alibaba.product.get-1
+           :param product_id:
+           :return:
+           '''
+
+        return self.api.call('alibaba.cps.genClickUrl', {
+            'mediaId': mediaId,
+            'mediaZoneId': mediaZoneId,
+            'objectValueList': product_id,
+            'type': '0'
+        })
+
+def get_1688_link(item_url):
+    # https://detail.1688.com/offer/595415883603.html?spm=a2615.7691456.autotrace-offerGeneral.1.4cae3fba1f8DzW
+    link_re = re.search('offer\/(\d+)\.html', item_url)
+    if link_re:
+        offer_id = link_re.group(1).strip()
+        product = Get_link()
+        # 替换成自己的产品id
+        info_link = product.get(offer_id)
+        print(info_link)
+        if str(info_link).find('error_message') != -1:
+            return
+
+        if info_link['result']:
+            link_1688 = info_link['result'][0]['longClickUrl']
+            return link_1688
+        else:
+            return
+
+# 获取淘宝客商品优惠券
+def get_material_optional(keyword,appkey,secret,adzone_id):
+    req = top.api.TbkDgMaterialOptionalRequest()
+    req.set_app_info(top.appinfo(appkey, secret))
+
+    # req.start_dsr = 10
+    req.page_size = 20
+    req.page_no = 1
+    req.platform = 1
+    # req.end_tk_rate = 1234
+    # req.start_tk_rate = 1234
+    # req.end_price = 10
+    # req.start_price = 10
+    req.is_overseas = 'false'
+    # req.is_tmall = false
+    # req.sort = "tk_rate_des"
+    # req.itemloc = "杭州"
+    # req.cat = "16,18"
+    req.q = keyword
+    # req.material_id = 2836
+    # req.has_coupon = false
+    # req.ip = "13.2.33.4"
+    req.adzone_id = adzone_id
+    # req.need_free_shipment = true
+    # req.need_prepay = true
+    # req.include_pay_rate_30 = true
+    # req.include_good_rate = true
+    # req.include_rfd_rate = true
+    # req.npx_level = 2
+    # req.end_ka_tk_rate = 1234
+    # req.start_ka_tk_rate = 1234
+    req.device_encrypt = "MD5"
+    req.device_value = "xxx"
+    req.device_type = "IMEI"
+    try:
+        resp = req.getResponse()
+        if len(resp['tbk_dg_material_optional_response']['result_list']['map_data']) == 1:
+            print('tbk_dg_material_optional_response==', resp)
+            return resp['tbk_dg_material_optional_response']['result_list']['map_data'][0]
+        else:
+            return
+        print(resp)
+    except Exception as e:
+
+        return
 
 @api_view(['GET','POST','PUT'])
 def thong_tin_chiet_khau(request,commission_id):
@@ -35,7 +183,7 @@ def thong_tin_chiet_khau(request,commission_id):
 
 
 @api_view(['POST'])
-def get_commisstion(request):
+def get_commission(request):
 
     if request.user.is_authenticated():
         username = request.user.username

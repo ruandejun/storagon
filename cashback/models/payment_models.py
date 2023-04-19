@@ -21,11 +21,27 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from ..constants.DefaultSettings import *
 from storagon.enum import *
-from .order_models import AlipayAccounts
+# from .order_models import AlipayAccounts
 
 
 # ================= Payment ====================
-
+class AlipayAccounts(models.Model):
+    class Meta:
+        verbose_name = _("AlipayAccounts")
+        verbose_name_plural = _("AlipayAccounts")
+    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
+    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
+    created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
+    
+    modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)
+    note = models.TextField(verbose_name=_("note"), blank=True, default='')  # payment note
+    value = models.CharField(verbose_name=_("value"), max_length=255, primary_key=True, unique=True)
+    amount = models.DecimalField(verbose_name=_("amount"), default=decimal.Decimal(0), max_digits=MONEY_MAX_DIGITS,
+                                 decimal_places=MONEY_DECIMAL_PLACES,
+                                 validators=[MinValueValidator(0)], db_index=True)
+    def __str__(self):
+        return str("%s" % (self.value))
+    
 class PaymentType(models.Model):
     class Meta:
         verbose_name = _("PaymentType")

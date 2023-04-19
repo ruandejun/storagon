@@ -203,7 +203,7 @@ def thong_tin_chiet_khau(request,commission_id):
 
 
 
-@api_view(['POST'])
+@api_view(['POST', 'GET'])
 def get_commission(request):
 
     if request.user.is_authenticated():
@@ -217,7 +217,7 @@ def get_commission(request):
     exchange_rate = list_currencies.exchange_rate
     html = {"user":None,"config":{"exchange_rate":exchange_rate,"service_cost_1688":"12","service_cost_taobao":"10","service_cost_tmall":"10"}}
     status['config'] = html
-    url = request.POST.get('key','')
+    url = request.GET.get('key','')
     if url:
         if not re.search(r'1688\.', url):
             get_taokouling = taokouling_extract(url)

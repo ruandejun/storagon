@@ -45,12 +45,17 @@ TAOBAO_APPKEY = '28313470'
 TAOBAO_SECRET = 'bcc56502f937ebee377ddac0036dff72'
 TAOBAO_ADZONE_ID = '110006400113'
 
-app_key_1688 = '9996942'
-app_secret_1688 = 'dGi4rAY67n3'
-access_token_1688 = 'd5e193bd-aa82-41e6-a252-4a889fe2e0b2'
-mediaId_1688 = '1351006'
-mediaZoneId_1688 = '1356006'
+# app_key_1688 = '9996942'
+# app_secret_1688 = 'dGi4rAY67n3'
+# access_token_1688 = 'd5e193bd-aa82-41e6-a252-4a889fe2e0b2'
+# mediaId_1688 = '1351006'
+# mediaZoneId_1688 = '1356006'
 
+APP_KEY_1688 = '9996942'
+APP_SECRET_1688 = 'dGi4rAY67n3'
+ACCESS_TOKEN_1688 = 'd5e193bd-aa82-41e6-a252-4a889fe2e0b2'
+MEDIAID_1688 = '1351006'
+MEDIAZONEID_1688 = '1356006'
 
 # BROKER_URL = 'redis://rediscache:6379/0'	# using resdis
 # CELERY_RESULT_BACKEND = 'redis://rediscache:6379/0'	# using resdis

@@ -1,4 +1,4 @@
-import json, decimal, re, os, logging
+import json, decimal, re, os, logging, datetime
 from rest_framework.decorators import api_view, permission_classes,authentication_classes
 from cashback.models import  payment_models, shop_models, product_models
 from rest_framework.status import (
@@ -7,21 +7,14 @@ from rest_framework.status import (
     HTTP_200_OK
 )
 from django.db.models import Sum, F, Count, Q, FloatField, DecimalField, ExpressionWrapper
-# from admin_angular_webapp.views import get_groups
 from rest_framework.response import Response
 from django.shortcuts import render
 from django.conf import settings
-# from shop_module.task import get_commisstion_obj, taokouling_extract
 from cashback.api.Serializer import TransactionCommissionSerializer,Transaction1688Serializer,TransactionTaobaoSerializer
-import aop.api
-import top.api
-from hashlib import sha1
-import hmac
-import time, requests
-
-appkey = settings.TAOBAO_APPKEY
-secret = settings.TAOBAO_SECRET
-adzone_id = settings.TAOBAO_ADZONE_ID
+import top.api, requests
+from http.cookiejar import CookieJar
+from cashback.api.Alibaba1688Api import *
+from cashback.api.TaobaoApi import *
 
 
 def get_groups(user,request):
@@ -37,138 +30,165 @@ def get_groups(user,request):
             groups.append(line_group.name)
     return groups
 
-def current_time():
-    return int(round(time.time() * 1000))
+def detect_url_commission(url):
+    if not re.search(r'1688\.', url):
+        get_taokouling = taokouling_extract(url)
+        if get_taokouling:
+            url = get_taokouling[0]
+            return url
+    if re.search('s\.click\.', url):
+        new_link = sclick_extract(url)
+        print('new_link', new_link)
+        if new_link:
+            full_str = new_link
+            return full_str
+    if re.search(r'qr\.1688', url):
+        new_link = alibaba_1688_extract(url)
+        print('new_link', new_link)
+        if new_link:
+            full_str = new_link
+            return full_str
+    if re.search('tb\.cn', url):
+        new_link = tbcn_extract(url)
+        if new_link:
+            full_str = new_link
+            return full_str
+    if re.search('taobao\.|tmall\.', url):
+        return url
+    if re.search('1688\.com', url):
+        return url
 
-def sign(key, value):
-    key = bytes(key, encoding='utf8')
-    value = bytes(value, encoding='utf8')
-    val = hmac.new(key, value, sha1).hexdigest()
-    return val.upper()
+def get_commission_obj(full_str,telegram_id=None,wechat_id=None,zalo_id=None,username=None):
+    data_item = {}
+    data_1688 = {}
+    data = {}
+    ext_1688 = ''
+    if telegram_id:
+        data['telegram_id'] = telegram_id
+        ext_1688 = telegram_id
+    if wechat_id:
+        data['wechat_id'] = wechat_id
+        ext_1688 = wechat_id
+    if zalo_id:
+        data['zalo_id'] = zalo_id
+        ext_1688 = zalo_id
+    if username:
+        data['customer'] = username
+        ext_1688 = username
+    print(full_str)
+    if re.search('s\.click\.', full_str):
+        new_link = sclick_extract(full_str)
+        print('new_link', new_link)
+        if new_link:
+            full_str = new_link
+    if re.search(r'qr\.1688', full_str):
+        new_link = alibaba_1688_extract(full_str)
+        print('new_link', new_link)
+        if new_link:
+            full_str = new_link
+    if re.search('tb\.cn', full_str):
+        new_link = tbcn_extract(full_str)
+        if new_link:
+            full_str = new_link
 
-def invoke(api, params):
-    # http://gw.open.1688.com/openapi/param2/1/com.alibaba.product/alibaba.product.get/8384550
-    url = 'param2/1/{}/{}'.format(api, app_key)
+    if re.search('taobao\.|tmall\.', full_str):
 
-    # 签名
-    pstr = ''
-    for key, value in params.items():
-        pstr += key
-        pstr += str(value)
-    # 通用参数
-    print(url)
-    print(pstr)
-    print(url + pstr)
-
-    sign_str = sign(app_secret, url + pstr)
-    print(sign_str)
-    base = {
-        # 签名
-        '_aop_signature': sign_str,
-    }
-
-    reqUrl = '{}/{}'.format(gw, url)
-
-    for key, value in params.items():
-        base[key] = str(value)
-
-    # 发起请求
-    # r = requests.post(url=reqUrl, data=base)
-    r = requests.get(url=reqUrl, params=base)
-    rs = r.json()
-    if 'exception' in rs:
-        raise RuntimeError(rs.get('error_message') + '\n error detail:' + r.text)
-
-    return rs
-
-class Api:
-    def __init__(self, namespace):
-        self.namespace = namespace
-
-    def call(self, api, params):
-        return invoke(self.namespace + '/' + api, params)
-
-class Get_link:
-    def __init__(self):
-        self.api = Api('com.alibaba.p4p')
-
-    def get(self, product_id):
-        '''
-           获取产品详情 https://open.1688.com/api/apidocdetail.htm?aopApiCategory=product_new&id=com.alibaba.product:alibaba.product.get-1
-           :param product_id:
-           :return:
-           '''
-
-        return self.api.call('alibaba.cps.genClickUrl', {
-            'mediaId': mediaId,
-            'mediaZoneId': mediaZoneId,
-            'objectValueList': product_id,
-            'type': '0'
-        })
-
-def get_1688_link(item_url):
-    # https://detail.1688.com/offer/595415883603.html?spm=a2615.7691456.autotrace-offerGeneral.1.4cae3fba1f8DzW
-    link_re = re.search('offer\/(\d+)\.html', item_url)
-    if link_re:
-        offer_id = link_re.group(1).strip()
-        product = Get_link()
-        # 替换成自己的产品id
-        info_link = product.get(offer_id)
-        print(info_link)
-        if str(info_link).find('error_message') != -1:
-            return
-
-        if info_link['result']:
-            link_1688 = info_link['result'][0]['longClickUrl']
-            return link_1688
+        data_item = get_taobao_commission(full_str,external_id=str(ext_1688))
+        # msg = data_item
+    elif re.search('1688\.com', full_str):
+        link_re = re.search('offer\/(\d+)\.html', full_str)
+        if link_re:
+            offer_id = link_re.group(1).strip()
+            one_week = datetime.date.today() - datetime.timedelta(days=1)
+            referUrl_objs = product_models.ReferUrl.objects.filter(Q(telegram_id=ext_1688) | Q(customer=ext_1688),item_id=offer_id, created__gte=one_week)
+            if referUrl_objs.exists():
+                return referUrl_objs.first()
+            data_1688 = get_1688_commission(full_str,ext_1688)
+        # msg = link_1688
+    if data_item:
+        data['commission_rate'] = data_item['commission_rate']
+        if 'coupon_amount' in data_item:
+            data['coupon_amount'] = data_item['coupon_amount']
+        if 'coupon_end_time' in data_item:
+            data['coupon_end_time'] = data_item['coupon_end_time']
+        if 'coupon_id' in data_item:
+            data['coupon_id'] = data_item['coupon_id']
+        if 'coupon_info' in data_item:
+            data['coupon_info'] = data_item['coupon_info']
+        if 'coupon_remain_count' in data_item:
+            data['coupon_remain_count'] = data_item['coupon_remain_count']
+        if 'coupon_share_url' in data_item:
+            data['coupon_share_url'] = data_item['coupon_share_url']
+        if 'coupon_start_time' in data_item:
+            data['coupon_start_time'] = data_item['coupon_start_time']
+        if 'coupon_total_count' in data_item:
+            data['coupon_total_count'] = data_item['coupon_total_count']
+        if 'item_description' in data_item:
+            data['item_description'] = data_item['item_description']
+        data['customer'] = ext_1688
+        data['item_id'] = data_item['item_id']
+        data['item_url'] = data_item['item_url']
+        data['nick'] = data_item['nick']
+        data['pict_url'] = data_item['pict_url']
+        data['real_post_fee'] = data_item['real_post_fee']
+        data['reserve_price'] = data_item['reserve_price']
+        data['seller_id'] = data_item['seller_id']
+        data['shop_title'] = data_item['shop_title']
+        data['short_title'] = data_item['short_title']
+        data['tk_total_commi'] = data_item['tk_total_commi']
+        data['tk_total_sales'] = data_item['tk_total_sales']
+        data['url'] = data_item['url']
+        data['volume'] = data_item['volume']
+        data['x_id'] = data_item['x_id']
+        data['zk_final_price'] = data_item['zk_final_price']
+        if 'coupon_amount' in data:
+            commission_price_org = (float(data['zk_final_price']) - float(data['coupon_amount'])) * (float(data['commission_rate']) / float(10000))
+            commission_price = round(commission_price_org - (commission_price_org * float(0.20)), 2)
         else:
-            return
+            commission_price_org = float(data['zk_final_price']) * (float(data['commission_rate']) / float(10000))
 
-# 获取淘宝客商品优惠券
-def get_material_optional(keyword,appkey,secret,adzone_id):
-    req = top.api.TbkDgMaterialOptionalRequest()
-    req.set_app_info(top.appinfo(appkey, secret))
+            commission_price = round(commission_price_org - (commission_price_org * float(0.20)), 2)
+        print('commission_price_org',commission_price_org)
+        print('===',commission_price)
+        data['commission_price'] = decimal.Decimal(commission_price)
+        referUrl_obj = product_models.ReferUrl.objects.create(**data)
 
-    # req.start_dsr = 10
-    req.page_size = 20
-    req.page_no = 1
-    req.platform = 1
-    # req.end_tk_rate = 1234
-    # req.start_tk_rate = 1234
-    # req.end_price = 10
-    # req.start_price = 10
-    req.is_overseas = 'false'
-    # req.is_tmall = false
-    # req.sort = "tk_rate_des"
-    # req.itemloc = "杭州"
-    # req.cat = "16,18"
-    req.q = keyword
-    # req.material_id = 2836
-    # req.has_coupon = false
-    # req.ip = "13.2.33.4"
-    req.adzone_id = adzone_id
-    # req.need_free_shipment = true
-    # req.need_prepay = true
-    # req.include_pay_rate_30 = true
-    # req.include_good_rate = true
-    # req.include_rfd_rate = true
-    # req.npx_level = 2
-    # req.end_ka_tk_rate = 1234
-    # req.start_ka_tk_rate = 1234
-    req.device_encrypt = "MD5"
-    req.device_value = "xxx"
-    req.device_type = "IMEI"
-    try:
-        resp = req.getResponse()
-        if len(resp['tbk_dg_material_optional_response']['result_list']['map_data']) == 1:
-            print('tbk_dg_material_optional_response==', resp)
-            return resp['tbk_dg_material_optional_response']['result_list']['map_data'][0]
+        print(data_item)
+
+        print(referUrl_obj.url)
+
+        if referUrl_obj.coupon_share_url:
+            tkl_create = generate_ttoken('https:' + referUrl_obj.coupon_share_url, 'chietkhauviet.com')
         else:
-            return
-        print(resp)
-    except Exception as e:
+            tkl_create = generate_ttoken('https:' + referUrl_obj.url, 'chietkhauviet.com')
+        if tkl_create:
+            referUrl_obj.taokouling = tkl_create
+            referUrl_obj.save(update_fields=["taokouling"])
+        return referUrl_obj
 
-        return
+    if data_1688:
+        item_info = data_1688['item_info'][0]
+        link_commissions = data_1688['link_commissions']['result'][0]
+        data['customer'] = ext_1688
+        data['coupon_share_url'] = link_commissions['shortClickUrl']
+        data['item_url'] = 'https://detail.1688.com/offer/%s.html' % (item_info['offerId'])
+        data['commission_rate'] = item_info['ratio']
+        data['item_id'] = item_info['offerId']
+        data['pict_url'] = item_info['imgUrl']
+        data['seller_id'] = item_info['sellerId']
+        data['short_title'] = item_info['title']
+        data['zk_final_price'] = item_info['price']
+        data['item_description'] = link_commissions['searchCode']
+        data['taokouling'] = link_commissions['alipayUrl']
+        data['url'] = link_commissions['shortClickUrl']
+        data['short_url'] = link_commissions['shortClickUrl']
+        commission_price = float(data['zk_final_price']) * float(data['commission_rate'])
+        commission_price = round(commission_price - (commission_price * float(0.45)), 2)
+        data['commission_price'] = decimal.Decimal(commission_price)
+        referUrl_obj = product_models.ReferUrl.objects.create(**data)
+
+        return referUrl_obj
+    
 
 @api_view(['GET','POST','PUT'])
 def thong_tin_chiet_khau(request,commission_id):
@@ -180,6 +200,7 @@ def thong_tin_chiet_khau(request,commission_id):
         referUrl = None
     context = {'commission':referUrl}
     return render(request, template, context)
+
 
 
 @api_view(['POST'])
@@ -202,15 +223,15 @@ def get_commission(request):
             get_taokouling = taokouling_extract(url)
             if get_taokouling:
                 url = get_taokouling[0]
-        commisstion_obj = get_commisstion_obj(url,username=username)
-        if commisstion_obj:
+        commission_obj = get_commission_obj(url,username=username)
+        if commission_obj:
             status['success'] = True
-            status['short_title'] = commisstion_obj.short_title
-            status['pict_url'] = commisstion_obj.pict_url
-            status['url'] = commisstion_obj.url
-            status['taokouling'] = commisstion_obj.taokouling
-            status['zk_final_price'] = commisstion_obj.zk_final_price
-            status['commission_price'] = commisstion_obj.commission_price
+            status['short_title'] = commission_obj.short_title
+            status['pict_url'] = commission_obj.pict_url
+            status['url'] = commission_obj.url
+            status['taokouling'] = commission_obj.taokouling
+            status['zk_final_price'] = commission_obj.zk_final_price
+            status['commission_price'] = commission_obj.commission_price
             status['msg'] = 'Đã tìm thấy sản phẩm của bạn!'
         else:
             status['msg'] = 'Sản phẩm của bạn không có chiết khấu vui lòng chọn sản phẩm khác!'
@@ -371,8 +392,6 @@ def get_all_commission(request):
     return Response(data_table, status=HTTP_200_OK)
 
 
-
-
 @api_view(['GET'])
 def get_item_selections(request):
     page_size = request.GET.get('page_size',20)
@@ -403,70 +422,5 @@ def get_item_ifashions(request):
     resq = get_optimus_optional(4093,page_no=page_no,page_size=page_size)
     return Response(resq, status=HTTP_200_OK)
 
-
-def get_material_optional(keyword,page_no=1,page_size=20):
-    req = top.api.TbkDgMaterialOptionalRequest()
-    req.set_app_info(top.appinfo(appkey, secret))
-
-    # req.start_dsr = 10
-    req.page_size = page_size
-    req.page_no =page_no
-    req.platform = 1
-    # req.end_tk_rate = 1234
-    # req.start_tk_rate = 1234
-    # req.end_price = 10
-    # req.start_price = 10
-    req.is_overseas = 'false'
-    # req.is_tmall = false
-    # req.sort = "tk_rate_des"
-    # req.itemloc = "杭州"
-    # req.cat = "16,18"
-    # req.q = keyword
-    req.material_id = 30443
-    req.cat = "16,18"
-    req.q = keyword
-    # req.has_coupon = false
-    # req.ip = "13.2.33.4"
-    req.adzone_id = adzone_id
-    # req.need_free_shipment = true
-    # req.need_prepay = true
-    # req.include_pay_rate_30 = true
-    # req.include_good_rate = true
-    # req.include_rfd_rate = true
-    # req.npx_level = 2
-    # req.end_ka_tk_rate = 1234
-    # req.start_ka_tk_rate = 1234
-    req.device_encrypt = "MD5"
-    req.device_value = "xxx"
-    req.device_type = "IMEI"
-
-    resp = req.getResponse()
-    # print(resp)
-    if resp['tbk_dg_material_optional_response']['result_list']['map_data']:
-        return resp['tbk_dg_material_optional_response']['result_list']['map_data']
-    else:
-        return
-
-
-def get_optimus_optional(material_id,page_no=1,page_size=20):
-    req = top.api.TbkDgOptimusMaterialRequest()
-    req.set_app_info(top.appinfo(appkey, secret))
-    # san pham:6708
-    # ban chay:28026
-    # flash sale:4094
-    # ifashion:4093
-    req.page_size = page_size
-    req.page_no = page_no
-    req.material_id = material_id
-    req.platform = 1
-    req.adzone_id = adzone_id
-    req.device_encrypt = "MD5"
-    req.device_value = "xxx"
-    req.device_type = "IMEI"
-    resp = req.getResponse()
-    if resp['tbk_dg_optimus_material_response']['result_list']['map_data']:
-        return resp['tbk_dg_optimus_material_response']['result_list']['map_data']
-    else:
-        return
 
 

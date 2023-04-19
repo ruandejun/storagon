@@ -18,6 +18,9 @@ from telebot import types
 from django.core.files import File
 import datetime
 import openai
+from cashback.api.Alibaba1688Api import *
+from cashback.api.TaobaoApi import *
+from cashback.api.Commission_Api import get_commission_obj
 
 def send_telegram_notify_to_group(group_id,msg,reply_markup=None,reply_id=None):
     #token='1235501300:AAEWPcah92B1PvsdvTCSHdT12CCg4gq-qZo'
@@ -349,6 +352,273 @@ def check_cmd_telegram_gpt(chat_id,message_id=None,text=None,callback_query=None
         response = create_completion_openai(text)
         send_telegram_notify_to_group_gpt(chat_id, msg=f'{response}', reply_id=message_id)
 
+@shared_task
+def check_cmd_cashback_telegram(chat_id,message_id=None,text=None,callback_query=None, chat=None, document=None, original_text=''):
+
+    userTelegram_objs = UserTelegram.objects.filter(telegram_id=chat_id)
+    if not userTelegram_objs.exists():
+        print('===create new user===')
+        user, created = User.objects.get_or_create(username=chat_id)
+        # user.save()
+        user.set_password('telegrambot123')
+        
+        if chat:
+            user_telegram = UserTelegram(user=user, telegram_id=chat_id)
+        else:
+            user_telegram = UserTelegram(user=user, telegram_id=chat_id)
+        user_telegram.save()
+        userTelegram_objs = UserTelegram.objects.filter(telegram_id=chat_id)
+
+    user_telegram = userTelegram_objs.first()
+    user = user_telegram.user
+    currency_obj, created = AccountCurrency.objects.get_or_create(code='CNY', label='CNY')
+    account_balance_obj, created = AccountBalance.objects.get_or_create(user=user,balance_type=BalanceType.credit,currency=currency_obj)
+    current_banlance = UserController.calculateUserBlance(account_balance_obj)
+
+    if callback_query:
+        print('callback_query==', callback_query)
+        if callback_query.find('|') != -1:
+            # callback_query_json = ast.literal_eval(callback_query.strip())
+            
+            # edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
+            # {'action': 'checker', 'value': 'ccn gate 2', 'type': 'checker'}
+            callback_split = callback_query.split('|')
+            reply_action = callback_split[0].strip()
+            reply_value = callback_split[1].strip()
+            reply_type = callback_split[2].strip()
+            if reply_action == 'set_checker':
+                checker_objs = CheckerType.objects.filter(value=reply_value.strip())
+                if checker_objs.exists():
+                    user_telegram.checker_type = checker_objs[0]
+                    user_telegram.save()
+                    status_text = 'Your checker mode has been set as %s' % (reply_value.strip())
+                    checker_objs = CheckerType.objects.all()
+                    limit = 10
+                    account_page = 1
+                    account_total = checker_objs.count()
+                    import math
+                    page_total = math.ceil(float(account_total) / 50)
+                    # print(page_total)
+                    list_accounta_show = checker_objs[(account_page-1)*limit:account_page*limit]      
+                    
+                    listing_show_sers = CheckerTypeFunctionSerializer(list_accounta_show, many=True)
+                    
+                    checker_last_obj = checker_objs.first()
+                    
+                    html_show = create_html_show('Checker', current_banlance, checker_objs.count(), account_page, page_total, checker_last_obj.created.strftime("%d-%m-%Y %H:%M"), status=status_text)
+
+                    markup_button = create_function_listing_markup(listing_show_sers.data, listing_type='checker', page=account_page)
+
+                    # send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
+                    
+                    edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
+                    
+
+            if reply_type == 'checker_status':    
+                checktask_objs = CheckerTask.objects.filter(pk=int(reply_value))
+                if checktask_objs.exists():
+                    checktask_obj = checktask_objs.first()
+                    if reply_action == 'stop':
+                        checktask_obj.status = 2
+                        checktask_obj.save()
+                        checktask_obj.refresh_from_db()
+                    elif reply_action == 'recheck':
+                        checktask_obj.status = LinkStatus.working
+                        checktask_obj.save()
+                        checktask_obj.refresh_from_db()                        
+                    # if reply_action == 'get_invalid' or reply_action == 'get_valid':
+                    if reply_action == 'get_invalid':
+                        checktask_obj.display_value = 1
+                        checktask_obj.save()
+                        checktask_obj.refresh_from_db()
+                    elif reply_action == 'get_valid':
+                        checktask_obj.display_value = 0
+                        checktask_obj.save()
+                        checktask_obj.refresh_from_db()
+                    elif reply_action == 'get_unknown':
+                        checktask_obj.display_value = 2
+                        checktask_obj.save()
+                        checktask_obj.refresh_from_db()   
+
+                                                 
+                    # else:
+                    #     checktask_obj.display_value = 2
+                    display_value = checktask_obj.display_value
+
+                    document_valid = checktask_obj.document_valid
+                    document_invalid = checktask_obj.document_invalid
+                    if document_valid:
+                        f = document_valid.open('r')
+                        valid_result = f.read()
+                    else:
+                        list_valid_objs = CheckerValid.objects.filter(checker_task_id=int(reply_value))
+                        if list_valid_objs.exists():
+                            valid_result = '\n'.join('<code>'+str(x.details)+'</code>' for x in list_valid_objs)
+                        else:
+                            valid_result = ''
+                        
+                    if document_invalid:
+                        f = document_valid.open('r')
+                        invalid_result = f.read()
+                    else:
+                        list_invalid_objs = CheckerInvalid.objects.filter(checker_task_id=int(reply_value))
+                        if list_invalid_objs.exists():
+                            invalid_result = '\n'.join('<code>'+str(x.details)+'</code>' for x in list_invalid_objs) 
+                        else:
+                            invalid_result = ''                       
+                    if valid_result.strip():
+                        list_display_valid = valid_result.strip().split('\n')
+                    else:
+                        list_display_valid = []
+                    if invalid_result.strip():
+                        list_display_invalid = invalid_result.strip().split('\n')  
+                    else:
+                        list_display_invalid = []
+                    
+                    if display_value == 1:
+                        list_display_result = list_display_invalid
+                        page_display = checktask_obj.display_page_invalid
+                    else:
+                        list_display_result = list_display_valid
+                        page_display = checktask_obj.display_page_valid
+                    import math
+                    page_total = math.ceil(float(len(list_display_result)) / 50)
+                    if page_total <= 1:
+                        page_total = 1
+                    
+                    if reply_action == 'next_page':
+                        print('==next page==')
+                        if display_value == 0:
+                            if checktask_obj.display_page_valid+1 <= page_total:
+                                page_display = checktask_obj.display_page_valid+1
+                                checktask_obj.display_page_valid = page_display
+                            else:
+                                page_display = checktask_obj.display_page_valid
+                                
+                        elif display_value == 1:
+                            if checktask_obj.display_page_invalid+1 <= page_total:
+                                page_display = checktask_obj.display_page_invalid+1
+                                checktask_obj.display_page_invalid = checktask_obj.display_page_invalid+1
+                            else:
+                                page_display = checktask_obj.display_page_invalid
+                                
+                        else:
+                            if checktask_obj.display_page_unknown+1 <= page_total:
+                                page_display = checktask_obj.display_page_unknown+1
+                                checktask_obj.display_page_unknown = checktask_obj.display_page_unknown+1
+                            else:
+                                page_display = checktask_obj.display_page_unknown
+
+                        checktask_obj.save() 
+                        checktask_obj.refresh_from_db() 
+                    elif reply_action == 'last_page':
+                        print('==last page==')
+                        if display_value == 0:
+                            checktask_obj.display_page_valid = page_total
+                        elif display_value == 1 :
+                            checktask_obj.display_page_invalid = page_total
+                        else:
+                            checktask_obj.display_page_unknown  = page_total
+                        checktask_obj.save() 
+                        checktask_obj.refresh_from_db()  
+                        
+                    elif reply_action == 'first_page':
+                        print('==first page==')
+                        if display_value == 0:
+                            checktask_obj.display_page_valid = 1
+                        elif display_value == 1 :
+                            checktask_obj.display_page_invalid = 1
+                        else:
+                            checktask_obj.display_page_unknown  = 1
+                        checktask_obj.save() 
+                        checktask_obj.refresh_from_db()      
+                    elif reply_action == 'back_page':
+                        print('==back page==')                    
+                        if display_value == 0:
+                            if checktask_obj.display_page_valid-1 >= 1:
+                                page_display = checktask_obj.display_page_valid-1
+                                checktask_obj.display_page_valid = page_display
+                            else:
+                                page_display = 1
+                                
+                        elif display_value == 1:
+                            if checktask_obj.display_page_invalid-1 >= 1:
+                                page_display = checktask_obj.display_page_invalid-1
+                                checktask_obj.display_page_invalid = checktask_obj.display_page_invalid+1
+                            else:
+                                page_display = 1
+                                
+                        else:
+                            if checktask_obj.display_page_unknown-1 >= 1:
+                                page_display = checktask_obj.display_page_unknown-1
+                                checktask_obj.display_page_unknown = checktask_obj.display_page_unknown-1
+                            else:
+                                page_display = 1
+
+                        checktask_obj.save() 
+                        checktask_obj.refresh_from_db()                     
+                    
+                    list_display = []
+                    i = (page_display-1)*50
+                    while i < len(list_display_result) and len(list_display) < 50 and i >=0:
+                        list_display.append(list_display_result[i])
+                        i+=1  
+                    plant_text = '\n'.join('<code>'+str(x)+'</code>' for x in list_display)
+                    status_text = 'Checked %s/%s Left %s: %s valid, %s invalid.' % (len(list_display_valid)+len(list_display_invalid), checktask_obj.total_value, checktask_obj.total_value-(len(list_display_valid)+len(list_display_invalid)), len(list_display_valid), len(list_display_invalid))
+                    html_show = create_html_show('Checker '+ checktask_obj.checker_type.value, current_banlance, checktask_obj.total_value, page_display, page_total, datetime.datetime.now().strftime("%d-%m-%Y %H:%M"), status=status_text, plant_text=plant_text, displaying_page='Invalid')
+
+                    markup_button = create_checker_markup(reply_value,listing_type='checker_status', valid=len(list_display_valid), invalid=len(list_display_invalid))
+                    try:
+                        send_msg = edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)	
+                    except Exception as e:
+                        print(e)                    
+                    
+            if reply_action == 'deposit':
+                print('==create deposit wallet==')
+                wallet_result = create_coinbase_charge_wallet(chat_id)
+                if reply_type == 'USDT':
+                    html_show = create_html_deposit_details(current_banlance, reply_type, wallet_result['usdt_address'], wallet_result['charge_id'])
+                else:
+                    html_show = create_html_deposit_details(current_banlance, reply_type, wallet_result['usdc_address'], wallet_result['charge_id'])
+                send_telegram_notify_to_group(chat_id, html_show)          
+        elif callback_query == 'deposit':
+            html_show = create_html_deposit(0)
+            markup_button = create_deposit_markup()
+            # edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
+            send_telegram_notify_to_group(chat_id, html_show, reply_markup=markup_button)
+    
+    elif text:    
+        list_urls = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', text)
+        if not re.search(r'1688\.',text):
+            get_taokouling = taokouling_extract(text)
+            if get_taokouling:
+                list_urls = get_taokouling
+        if list_urls:
+            for full_str in list_urls:
+                msg = 'Xin lỗi sản phẩm của bạn không có chiết khấu vui lòng tìm sản phâm khác hoặc truy cập chietkhauviet.com để tìm kiếm sản phẩm!'
+
+                referUrl_obj = get_commission_obj(full_str,telegram_id=chat_id)
+
+                if referUrl_obj:
+                    msg = '<a href="https://chietkhauviet.com/page/thong-tin-chiet-khau/%s">Giá sản phẩm:%s Chiết khấu:%s Phieu KM:%s</a>' % (
+                        referUrl_obj.pk, float(referUrl_obj.zk_final_price) - float(referUrl_obj.coupon_amount), round(float(referUrl_obj.commission_price),2), referUrl_obj.coupon_amount)
+
+                send_telegram_notify_to_group(chat_id, msg=msg,reply_id=message_id)
+        else:        
+            cmd = text.lstrip("/").strip()
+            extra_text = ''
+            if cmd.find(' ') != -1:
+                new_cmds = cmd.split(' ')
+                first_cmd = new_cmds[0].strip()
+                #cmd
+                extra_text = cmd.split(first_cmd)[-1].strip()
+                cmd = first_cmd
+            elif not cmd:
+                print('===text===', user_telegram.checker_type)
+                print(text)
+
+
+                
 @shared_task
 def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, chat=None, document=None, original_text=''):
 

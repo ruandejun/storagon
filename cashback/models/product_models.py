@@ -190,7 +190,7 @@ class ReferUrl(models.Model):
 
     wechat_id = models.CharField(verbose_name=_("wechat_id"), blank=True, null=True, max_length=255, db_index=True)
 
-    order_item = models.ForeignKey('OrderItem', verbose_name=_("order_item"), null=True, blank=True)
+    # order_item = models.ForeignKey('OrderItem', verbose_name=_("order_item"), null=True, blank=True)
 
     shopping_domain = models.CharField(verbose_name=_("shopping_domain"), blank=True, max_length=255, db_index=True)
 

@@ -10,7 +10,7 @@ __pycache__/
 data_db/
 postgres_data/
 log/
-
+migrations
 # Distribution / packaging
 .Python
 build/

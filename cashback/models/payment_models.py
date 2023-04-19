@@ -25,23 +25,7 @@ from storagon.enum import *
 
 
 # ================= Payment ====================
-class AlipayAccounts(models.Model):
-    class Meta:
-        verbose_name = _("AlipayAccounts")
-        verbose_name_plural = _("AlipayAccounts")
-    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
-    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
-    created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
-    
-    modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)
-    note = models.TextField(verbose_name=_("note"), blank=True, default='')  # payment note
-    value = models.CharField(verbose_name=_("value"), max_length=255, primary_key=True, unique=True)
-    amount = models.DecimalField(verbose_name=_("amount"), default=decimal.Decimal(0), max_digits=MONEY_MAX_DIGITS,
-                                 decimal_places=MONEY_DECIMAL_PLACES,
-                                 validators=[MinValueValidator(0)], db_index=True)
-    def __str__(self):
-        return str("%s" % (self.value))
-    
+
 class PaymentType(models.Model):
     class Meta:
         verbose_name = _("PaymentType")
@@ -151,8 +135,119 @@ class VendorPayment(models.Model):
     def __str__(self):
         return str(self.transaction) if self.transaction_id else ""
 
+# class LogisticsPayment(models.Model):
+#     class Meta:
+#         verbose_name = _("LogisticsPayment")
+#         verbose_name_plural = _("LogisticsPayment")
+
+#     created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
+#     modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
+#     created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
+    
+#     modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)
+
+#     shipment_service = models.ForeignKey("ShipmentService", verbose_name=_("shipment_service"),
+#                                          on_delete=models.PROTECT)
+#     type = models.ForeignKey("PaymentType", verbose_name=_("PaymentType"),
+#                              limit_choices_to={'is_logisticspayment': True}, on_delete=models.PROTECT)
+#     transaction = models.OneToOneField("Transaction", verbose_name=_("transaction"), on_delete=models.PROTECT)
+#     note = models.TextField(verbose_name=_("note"), blank=True)  # payment note
+
+#     def __str__(self):
+#         return str(self.transaction) if self.transaction_id else ""
+
+class GenericPayment(models.Model):
+    class Meta:
+        verbose_name = _("General Payment")
+        verbose_name_plural = _("General Payment")
+
+    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
+    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
+    created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
+    
+    modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)
+
+    content_type = models.ForeignKey(ContentType, verbose_name=_("content_type"), on_delete=models.PROTECT)
+    object_id = models.PositiveIntegerField(verbose_name=_("object_id"), )
+    content_object = GenericForeignKey('content_type', 'object_id')
+
+    type = models.ForeignKey("PaymentType", verbose_name=_("type"), on_delete=models.PROTECT)
+
+    transaction = models.OneToOneField("Transaction", verbose_name=_("transaction"), on_delete=models.PROTECT)
+    note = models.TextField(verbose_name=_("note"), blank=True)  # payment note
+
+    def __str__(self):
+        return str(self.transaction) if self.transaction_id else ""
+
+class CustomerPayment(models.Model):
+    class Meta:
+        verbose_name = _("CustomerPayment")
+        verbose_name_plural = _("CustomerPayment")
+
+    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
+    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
+    created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
+    
+    modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)
+
+    # order = models.ForeignKey("Order", verbose_name=_("order"), null=True, blank=True, on_delete=models.PROTECT)
+
+    # thanhtoanho = models.ForeignKey("ThanhToanHo", verbose_name=_("ThanhToanHo"), null=True, blank=True, on_delete=models.PROTECT)
+
+    # order_billing = models.ForeignKey("OrderBilling", verbose_name=_("order_billing"), null=True, blank=True, on_delete=models.PROTECT)
+
+    # exported_shipment = models.ForeignKey("Exportedshipment", verbose_name=_("exported_shipment"), null=True, blank=True, on_delete=models.PROTECT)
+
+    type = models.ForeignKey("PaymentType", verbose_name=_("PaymentType"),
+                             limit_choices_to={'is_customerpayment': True}, on_delete=models.PROTECT)
+
+    need_to_pay = models.DecimalField(verbose_name=_("need_to_pay"), default=decimal.Decimal(0),
+                                max_digits=MONEY_MAX_DIGITS, decimal_places=MONEY_DECIMAL_PLACES,
+                                validators=[MinValueValidator(0)], db_index=True, null=True, blank=True)
+
+    payment_left = models.DecimalField(verbose_name=_("payment_left"), default=decimal.Decimal(0),
+                                max_digits=MONEY_MAX_DIGITS, decimal_places=MONEY_DECIMAL_PLACES,
+                                validators=[MinValueValidator(0)], db_index=True, null=True, blank=True)
+
+    sum_shipment_cost = models.DecimalField(verbose_name=_("sum_shipment_cost"), default=decimal.Decimal(0),
+                                max_digits=MONEY_MAX_DIGITS, decimal_places=MONEY_DECIMAL_PLACES,
+                                validators=[MinValueValidator(0)], db_index=True, null=True, blank=True)
+
+    sum_shipment_weight = models.DecimalField(verbose_name=_("sum_shipment_weight"), default=decimal.Decimal(0),
+                                max_digits=MONEY_MAX_DIGITS, decimal_places=MONEY_DECIMAL_PLACES,
+                                validators=[MinValueValidator(0)], db_index=True, null=True, blank=True)
+
+    total_service = models.DecimalField(verbose_name=_("total_service"), default=decimal.Decimal(0),
+                                max_digits=MONEY_MAX_DIGITS, decimal_places=MONEY_DECIMAL_PLACES,
+                                validators=[MinValueValidator(0)], db_index=True, null=True, blank=True)
+
+    currency = models.ForeignKey("Currency", verbose_name=_("currency"), on_delete=models.PROTECT, null=True, blank=True)
 
 
+    exchange_rate = models.DecimalField(verbose_name=_("exchange_rate"), default=decimal.Decimal(0),
+                                        max_digits=XRATE_MAX_DIGITS, decimal_places=XRATE_DECIMAL_PLACES,
+                                        validators=[MinValueValidator(0)])
+
+    transaction = models.OneToOneField("Transaction", verbose_name=_("transaction"), on_delete=models.PROTECT)
+
+    note = models.TextField(verbose_name=_("note"), blank=True)  # payment note
+
+    def __str__(self):
+        return str(self.transaction) if self.transaction_id else ""
+
+    def amount_tag(self):
+        return self.transaction.currency.display(self.transaction.amount)
+
+    # @cached_property
+    # def customer_tag(self):
+    #     return self.order.customer.username
+
+    @cached_property
+    def created_tag(self):
+        if self.created:
+            return self.created.strftime("%d-%m-%Y %H:%M")
+        else:
+            return self.created
 
 class TransactionTaobao(models.Model):
     class Meta:
@@ -594,7 +689,27 @@ class BalanceAccount(models.Model):
     def __str__(self):
         return str("%s" % (self.account_holder.username))
 
+class ReportBanks(models.Model):
+    class Meta:
+        verbose_name = _("ReportBanks")
+        verbose_name_plural = _("ReportBanks")
+    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
+    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
+    created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
+    
+    modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)
+    note = models.TextField(verbose_name=_("note"), blank=True, default='')  # payment note
+    value = models.CharField(verbose_name=_("value"), max_length=255, primary_key=True, unique=True)
+    amount = models.DecimalField(verbose_name=_("amount"), default=decimal.Decimal(0), max_digits=MONEY_MAX_DIGITS,
+                                 decimal_places=MONEY_DECIMAL_PLACES,
+                                 validators=[MinValueValidator(0)], db_index=True)
 
+    updated = models.DateTimeField(verbose_name=_("updated"), null=True, blank=True)
+
+    def __str__(self):
+        return str("%s" % (self.value))
+
+class ReportBalance(models.Model):
     class Meta:
         verbose_name = _("ReportBalance")
         verbose_name_plural = _("ReportBalance")

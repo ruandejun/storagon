@@ -23,10 +23,6 @@ class BankaccountSerializer(serializers.ModelSerializer):
 
     type = serializers.SlugRelatedField(slug_field='label', read_only=True)
 
-
-
-
-
 class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = payment_models.Transaction
@@ -115,8 +111,6 @@ class CustomerPaymentSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_transaction_id(customerpayment):
         return customerpayment.transaction.id
-
-
 
 class CartItemSerializer(serializers.ModelSerializer):
 

@@ -12,7 +12,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from ..enums import *
+from storagon.enum import *
 
 
 class CustomerProfile(models.Model):

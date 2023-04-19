@@ -14,7 +14,7 @@ import json
 import logging
 import re
 import uuid
-from audit_log.models.fields import CreatingUserField, LastUserField
+# from audit_log.models.fields import CreatingUserField, LastUserField
 from concurrency.fields import IntegerVersionField
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -27,12 +27,12 @@ from ..models import logistic_models
 from user_module.models import UserProfile
 from .customer_models import CustomerProfile
 from ..constants.DefaultSettings import *
-from ..enums import *
+from storagon.enum import *
 import datetime
 from django.core.serializers import serialize
 from system_configure.controllers import SystemConfigureController
 from django.utils.functional import cached_property
-
+from payment_models import AlipayAccounts
 
 
 CALCULATE_DATE = datetime.datetime.now().replace(month=8, day=1, hour=00, minute=00)
@@ -46,10 +46,9 @@ class HistoryOrder(models.Model):
     version = IntegerVersionField()
     created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
     modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
-    created_by = CreatingUserField(verbose_name=_("created by"), limit_choices_to={'is_staff': True}, editable=True,
-                                   blank=True, related_name="created_%(app_label)s_%(class)s_set")
-    modified_by = LastUserField(verbose_name=_("modified by"), limit_choices_to={'is_staff': True},
-                                related_name="modified_%(app_label)s_%(class)s_set")
+    created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
+    
+    modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)
     order = models.ForeignKey("Order", verbose_name=_("order"))
 
     details = models.TextField(verbose_name=_("details"), blank=True, null=True)
@@ -65,9 +64,9 @@ class PromotionOrder(models.Model):
     version = IntegerVersionField()
     created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
     modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
-    created_by = CreatingUserField(verbose_name=_("created by"), limit_choices_to={'is_staff': True}, related_name="created_%(app_label)s_%(class)s_set")
-    modified_by = LastUserField(verbose_name=_("modified by"), limit_choices_to={'is_staff': True},
-                                related_name="modified_%(app_label)s_%(class)s_set")
+    created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
+    
+    modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)
 
     from_date = models.DateTimeField(verbose_name=_("from_date"), null=True)
 
@@ -176,21 +175,7 @@ class OrderPackageItem(models.Model):
         return str(self.order_item)[:100]
 
 
-class AlipayAccounts(models.Model):
-    class Meta:
-        verbose_name = _("AlipayAccounts")
-        verbose_name_plural = _("AlipayAccounts")
-    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
-    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
-    created_by = CreatingUserField(verbose_name=_("created by"), related_name="created_%(app_label)s_%(class)s_set")
-    modified_by = LastUserField(verbose_name=_("modified by"), related_name="modified_%(app_label)s_%(class)s_set")
-    note = models.TextField(verbose_name=_("note"), blank=True, default='')  # payment note
-    value = models.CharField(verbose_name=_("value"), max_length=255, primary_key=True, unique=True)
-    amount = models.DecimalField(verbose_name=_("amount"), default=decimal.Decimal(0), max_digits=MONEY_MAX_DIGITS,
-                                 decimal_places=MONEY_DECIMAL_PLACES,
-                                 validators=[MinValueValidator(0)], db_index=True)
-    def __str__(self):
-        return str("%s" % (self.value))
+
 
 class OrderPackage(models.Model):
     class Meta:
@@ -200,8 +185,9 @@ class OrderPackage(models.Model):
     version = IntegerVersionField()
     created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
     modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
-    created_by = CreatingUserField(verbose_name=_("created by"), related_name="created_%(app_label)s_%(class)s_set")
-    modified_by = LastUserField(verbose_name=_("modified by"), related_name="modified_%(app_label)s_%(class)s_set")
+    created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
+    
+    modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)
 
     order = models.ForeignKey("Order", verbose_name=_("order"), null=True, blank=True)
 
@@ -358,10 +344,9 @@ class Order(models.Model):
     version = IntegerVersionField()
     created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
     modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
-    created_by = CreatingUserField(verbose_name=_("created by"), limit_choices_to={'is_staff': True}, editable=True,
-                                   blank=True, related_name="created_%(app_label)s_%(class)s_set")
-    modified_by = LastUserField(verbose_name=_("modified by"), limit_choices_to={'is_staff': True},
-                                related_name="modified_%(app_label)s_%(class)s_set")
+    created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
+    
+    modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)
 
     status = models.ForeignKey("Status", verbose_name=_("status"), limit_choices_to={'is_orderstatus': True},
                                on_delete=models.PROTECT)
@@ -1319,8 +1304,9 @@ class OrderItem(models.Model):
     version = IntegerVersionField()
     created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
     modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
-    created_by = CreatingUserField(verbose_name=_("created by"), related_name="created_%(app_label)s_%(class)s_set")
-    modified_by = LastUserField(verbose_name=_("modified by"), related_name="modified_%(app_label)s_%(class)s_set")
+    created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
+    
+    modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)
 
     sku = models.CharField(verbose_name=_("sku"), blank=True, max_length=512, db_index=True)
     min_quantity = models.PositiveIntegerField(verbose_name=_("min_quantity"),null=True, blank=True, default=1)
@@ -1843,10 +1829,9 @@ class OrderedItem(models.Model):
     version = IntegerVersionField()
     created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
     modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
-    created_by = CreatingUserField(verbose_name=_("created by"), limit_choices_to={'is_staff': True}, editable=True,
-                                   blank=True, related_name="created_%(app_label)s_%(class)s_set")
-    modified_by = LastUserField(verbose_name=_("modified by"), limit_choices_to={'is_staff': True},
-                                related_name="modified_%(app_label)s_%(class)s_set")
+    created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
+    
+    modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)
 
     note = models.TextField(verbose_name=_("note"), blank=True, null=True)
 
@@ -1875,10 +1860,9 @@ class TotalOrderBilling(models.Model):
     version = IntegerVersionField()
     created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
     modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
-    created_by = CreatingUserField(verbose_name=_("created by"), limit_choices_to={'is_staff': True}, editable=True,
-                                   blank=True, related_name="created_%(app_label)s_%(class)s_set")
-    modified_by = LastUserField(verbose_name=_("modified by"), limit_choices_to={'is_staff': True},
-                                related_name="modified_%(app_label)s_%(class)s_set")
+    created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
+    
+    modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)
 
     note = models.TextField(verbose_name=_("note"), blank=True, null=True)
 
@@ -1897,10 +1881,9 @@ class ThanhToanHo(models.Model):
     version = IntegerVersionField()
     created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
     modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
-    created_by = CreatingUserField(verbose_name=_("created by"), limit_choices_to={'is_staff': True}, editable=True,
-                                   blank=True, related_name="created_%(app_label)s_%(class)s_set")
-    modified_by = LastUserField(verbose_name=_("modified by"), limit_choices_to={'is_staff': True},
-                                related_name="modified_%(app_label)s_%(class)s_set")
+    created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
+    
+    modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)
 
     customer = models.ForeignKey(User, verbose_name=_("customer"), related_name="thanhtoanho_customer_set",
                                  on_delete=models.PROTECT, null=True)
@@ -1975,10 +1958,9 @@ class OrderBilling(models.Model):
     version = IntegerVersionField()
     created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
     modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
-    created_by = CreatingUserField(verbose_name=_("created by"), limit_choices_to={'is_staff': True}, editable=True,
-                                   blank=True, related_name="created_%(app_label)s_%(class)s_set")
-    modified_by = LastUserField(verbose_name=_("modified by"), limit_choices_to={'is_staff': True},
-                                related_name="modified_%(app_label)s_%(class)s_set")
+    created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
+    
+    modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)
 
     note = models.TextField(verbose_name=_("note"), blank=True, null=True)
 
@@ -2031,10 +2013,9 @@ class Extracharge(models.Model):
     version = IntegerVersionField()
     created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
     modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
-    created_by = CreatingUserField(verbose_name=_("created by"), limit_choices_to={'is_staff': True}, editable=True,
-                                   blank=True, related_name="created_%(app_label)s_%(class)s_set")
-    modified_by = LastUserField(verbose_name=_("modified by"), limit_choices_to={'is_staff': True},
-                                related_name="modified_%(app_label)s_%(class)s_set")
+    created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
+    
+    modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)
 
     note = models.TextField(verbose_name=_("note"), blank=True, null=True)
 
@@ -2085,10 +2066,9 @@ class Refundcharge(models.Model):
     version = IntegerVersionField()
     created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
     modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
-    created_by = CreatingUserField(verbose_name=_("created by"), limit_choices_to={'is_staff': True}, editable=True,
-                                   blank=True, related_name="created_%(app_label)s_%(class)s_set")
-    modified_by = LastUserField(verbose_name=_("modified by"), limit_choices_to={'is_staff': True},
-                                related_name="modified_%(app_label)s_%(class)s_set")
+    created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
+    
+    modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)
 
     note = models.TextField(verbose_name=_("note"), blank=True, null=True)
 

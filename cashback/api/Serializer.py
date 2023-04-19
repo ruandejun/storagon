@@ -7,8 +7,7 @@
 #  Created by MEOMUN on 12/1/15.
 #  Copyright (c) 2015 orderus. All rights reserved.
 from rest_framework import serializers
-from cashback.models import order_models, payment_models, shop_models, logistic_models, product_models, \
-     Category, ProductOption, Vendor, customer_models, ticketbox_models, translate_models
+from cashback.models import payment_models, logistic_models, product_models
 from django.contrib.auth.models import User
 from django.db.models import Sum, F, Count, Q
 from system_configure.controllers import SystemConfigureController

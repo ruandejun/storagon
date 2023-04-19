@@ -213,7 +213,7 @@ def get_commission(request):
             request.session.save()
         username = request.session.session_key
     status = {'success': False, 'msg': "kiem tra lai thong tin"}
-    list_currencies = shop_models.Currency.objects.get(code='CNY')
+    list_currencies, created = shop_models.Currency.objects.get_or_create(code='CNY', label='CNY')
     exchange_rate = list_currencies.exchange_rate
     html = {"user":None,"config":{"exchange_rate":exchange_rate,"service_cost_1688":"12","service_cost_taobao":"10","service_cost_tmall":"10"}}
     status['config'] = html

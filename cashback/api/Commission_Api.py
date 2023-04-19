@@ -206,7 +206,7 @@ def thong_tin_chiet_khau(request,commission_id):
 @api_view(['POST', 'GET'])
 def get_commission(request):
 
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         username = request.user.username
     else:
         if not request.session.session_key:

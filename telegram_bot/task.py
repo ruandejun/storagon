@@ -221,6 +221,13 @@ def create_deposit_markup():
     markup.row(inline_keyboard_usdt, inline_keyboard_usdc)
     return markup
 
+def create_html_cashback_product_show():
+    html_show = '''
+<b>Thong tin san pham</b>
+<code>Anh</code><a href="https://img.alicdn.com/bao/uploaded/i2/2200549466609/O1CN01cjeYKI1ygyBj969ZO_!!2200549466609.jpg">.</a>
+    ''' 
+    return html_show
+
 def create_html_show(type='',balance='',total='',page='',total_page='',updated='', status='', plant_text='',displaying_page='Displaying'):
     html_show = '''
 <b>\U0001F47B MunBot %s AIO automatic \U0001F47D</b>
@@ -422,7 +429,7 @@ def check_cmd_cashback_telegram(chat_id,message_id=None,text=None,callback_query
                 if referUrl_obj:
                     msg = '<a href="https://chietkhauviet.com/page/thong-tin-chiet-khau/%s">Giá sản phẩm:%s Chiết khấu:%s Phieu KM:%s</a>' % (
                         referUrl_obj.pk, float(referUrl_obj.zk_final_price) - float(referUrl_obj.coupon_amount), round(float(referUrl_obj.commission_price),2), referUrl_obj.coupon_amount)
-
+                    msg = create_html_cashback_product_show()
                 send_telegram_notify_to_group(chat_id, msg=msg,reply_id=message_id, bot_type='cashback')
         else:        
             cmd = text.lstrip("/").strip()

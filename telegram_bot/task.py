@@ -419,8 +419,8 @@ def check_cmd_cashback_telegram(chat_id,message_id=None,text=None,callback_query
                     html_show = create_html_deposit_details(current_banlance, reply_type, wallet_result['usdt_address'], wallet_result['charge_id'])
                 else:
                     html_show = create_html_deposit_details(current_banlance, reply_type, wallet_result['usdc_address'], wallet_result['charge_id'])
-                markup_button = create_cashback_product_markup()    
-                send_telegram_notify_to_group(chat_id, html_show, reply_markup=markup_button, bot_type='cashback')          
+                 
+                send_telegram_notify_to_group(chat_id, html_show, bot_type='cashback')          
         elif callback_query == 'deposit':
             html_show = create_html_deposit(0)
             markup_button = create_deposit_markup()
@@ -443,7 +443,8 @@ def check_cmd_cashback_telegram(chat_id,message_id=None,text=None,callback_query
                     msg = '<a href="https://chietkhauviet.com/page/thong-tin-chiet-khau/%s">Giá sản phẩm:%s Chiết khấu:%s Phieu KM:%s</a>' % (
                         referUrl_obj.pk, float(referUrl_obj.zk_final_price) - float(referUrl_obj.coupon_amount), round(float(referUrl_obj.commission_price),2), referUrl_obj.coupon_amount)
                     msg = create_html_cashback_product_show()
-                send_telegram_notify_to_group(chat_id, msg=msg,reply_id=message_id, bot_type='cashback')
+                markup_button = create_cashback_product_markup()       
+                send_telegram_notify_to_group(chat_id, msg=msg,reply_id=message_id, reply_markup=markup_button bot_type='cashback')
         else:        
             cmd = text.lstrip("/").strip()
             extra_text = ''

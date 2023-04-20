@@ -224,7 +224,7 @@ def create_cashback_product_markup():
 
     markup = types.InlineKeyboardMarkup()
 
-    inline_keyboard_usdt = types.InlineKeyboardButton('Link Mobile')
+    inline_keyboard_usdt = types.InlineKeyboardButton('Link Mobile', url='https://test')
     inline_keyboard_usdc = types.InlineKeyboardButton('Link PC', url='https://chietkhauviet.com')
 
     markup.row(inline_keyboard_usdt, inline_keyboard_usdc)

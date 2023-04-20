@@ -227,7 +227,7 @@ def create_html_cashback_product_show():
 Gia goc:11.11
 Chiet khau: 1
 Gia cuoi cung: 10.11
-
+Phieu khuyen mai: 1
     ''' 
     return html_show
 

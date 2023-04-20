@@ -223,8 +223,11 @@ def create_deposit_markup():
 
 def create_html_cashback_product_show():
     html_show = '''
-<b>Thong tin san pham</b>
-<code>Anh</code><a href="https://img.alicdn.com/bao/uploaded/i2/2200549466609/O1CN01cjeYKI1ygyBj969ZO_!!2200549466609.jpg">.</a>
+<a href="https://img.alicdn.com/bao/uploaded/i2/2200549466609/O1CN01cjeYKI1ygyBj969ZO_!!2200549466609.jpg"> </a>
+Gia goc:11.11
+Chiet khau: 1
+Gia cuoi cung: 10.11
+
     ''' 
     return html_show
 

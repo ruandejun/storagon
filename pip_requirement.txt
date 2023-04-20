@@ -32,7 +32,7 @@ requests==2.26.0
 bs4
 dnspython==1.15.0
 uwsgi
-pyTelegramBotAPI==4.2.0
+pyTelegramBotAPI==4.11.0
 pymongo
 django-mptt
 tqdm

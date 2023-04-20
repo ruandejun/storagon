@@ -220,6 +220,15 @@ def create_deposit_markup():
 
     markup.row(inline_keyboard_usdt, inline_keyboard_usdc)
     return markup
+def create_cashback_product_markup():
+
+    markup = types.InlineKeyboardMarkup()
+
+    inline_keyboard_usdt = types.InlineKeyboardButton('Link Mobile', pay=True)
+    inline_keyboard_usdc = types.InlineKeyboardButton('Link PC', url='https://chietkhauviet.com')
+
+    markup.row(inline_keyboard_usdt, inline_keyboard_usdc)
+    return markup
 
 def create_html_cashback_product_show():
     html_show = '''
@@ -410,7 +419,8 @@ def check_cmd_cashback_telegram(chat_id,message_id=None,text=None,callback_query
                     html_show = create_html_deposit_details(current_banlance, reply_type, wallet_result['usdt_address'], wallet_result['charge_id'])
                 else:
                     html_show = create_html_deposit_details(current_banlance, reply_type, wallet_result['usdc_address'], wallet_result['charge_id'])
-                send_telegram_notify_to_group(chat_id, html_show, bot_type='cashback')          
+                markup_button = create_cashback_product_markup()    
+                send_telegram_notify_to_group(chat_id, html_show, reply_markup=markup_button, bot_type='cashback')          
         elif callback_query == 'deposit':
             html_show = create_html_deposit(0)
             markup_button = create_deposit_markup()

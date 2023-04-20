@@ -203,6 +203,23 @@ class UserTelegram(models.Model):
     def __str__(self):
         return str(self.telegram_id)
     
+class TelegramBot(models.Model):
+    class Meta:
+        verbose_name = _("TelegramBot")
+        verbose_name_plural = _("TelegramBot")
+
+    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
+    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
+
+    value = models.CharField(verbose_name=_("value"), max_length=255, primary_key=True, unique=True)
+    
+    telegram_id = models.CharField(verbose_name=_("telegram_id"), blank=True, max_length=255)
+
+    status = models.PositiveSmallIntegerField(choices=AccountStatus.ChoiceList(), default=AccountStatus.normal,
+                                                   db_index=True)   
+    def __str__(self):
+        return str(self.telegram_id)     
+     
 class Status(models.Model):
     class Meta:
         verbose_name = _("Status")

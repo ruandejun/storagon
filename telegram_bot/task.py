@@ -444,7 +444,7 @@ def check_cmd_cashback_telegram(chat_id,message_id=None,text=None,callback_query
                         referUrl_obj.pk, float(referUrl_obj.zk_final_price) - float(referUrl_obj.coupon_amount), round(float(referUrl_obj.commission_price),2), referUrl_obj.coupon_amount)
                     msg = create_html_cashback_product_show()
                 markup_button = create_cashback_product_markup()       
-                send_telegram_notify_to_group(chat_id, msg=msg,reply_id=message_id, reply_markup=markup_button bot_type='cashback')
+                send_telegram_notify_to_group(chat_id, msg=msg,reply_id=message_id, reply_markup=markup_button, bot_type='cashback')
         else:        
             cmd = text.lstrip("/").strip()
             extra_text = ''

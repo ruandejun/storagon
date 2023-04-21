@@ -220,12 +220,12 @@ def create_deposit_markup():
 
     markup.row(inline_keyboard_usdt, inline_keyboard_usdc)
     return markup
-def create_cashback_product_markup():
+def create_cashback_product_markup(refer_id=''):
 
     markup = types.InlineKeyboardMarkup()
 
-    inline_keyboard_usdt = types.InlineKeyboardButton('Link Mobile', switch_inline_query='taobao://s.click.taobao.com/t?e=m%3D2%26s%3D4GG1%2BUuTKlYcQipKwQzePOeEDrYVVa64r4ll3HtqqoxyINtkUhsv0Kxy7i0%2BbYUzSYZjLtJ5crNvLyD9BXzEzlkAgGtPUvFzWT5HBZMwxkUqXqm0AcnxxtNEkvPwFEpI1GPduzu4oNoxgG3eXkrTQflxCIGFXyDbnz0Ye2FZq5m5WNLmLmmG32jGPNehQPeZ%2FKkjGNwtAojs%2FnDN5DP8klY81NUzMiTEEiM%2FlSG%2FbZRPQrit2BdPnbpuvqb2pHGCSmdeZ8qAvcrGDF1NzTQoPw%3D%3D&scm=1007.30148.309617.0&pvid=4ec7a977-2467-4d9b-8cea-c073d8dec1e9&app_pvid=59590_11.181.116.222_909_1682032238556&ptl=floorId:2836;originalFloorId:2836;pvid:4ec7a977-2467-4d9b-8cea-c073d8dec1e9;app_pvid:59590_11.181.116.222_909_1682032238556&xId=3DbqPc0LRUp06O4BHZgs2AKP3MW69hSZBn6JmCmCthJmJKBMviWkmJidWBaovT8O5PoQtivZRcznE6DICWscUlJC0qezZaAyEFgLsQ8EOvxc&union_lens=lensId%3AMAPI%401682032239%400bb574de_0b49_187a0ef21a5_6548%4001%40eyJmbG9vcklkIjoyODM2fQieie&relationId=')
-    inline_keyboard_usdc = types.InlineKeyboardButton('Link PC', switch_inline_query='taobao://s.click.taobao.com/t?e=m%3D2%26s%3D4GG1%2BUuTKlYcQipKwQzePOeEDrYVVa64r4ll3HtqqoxyINtkUhsv0Kxy7i0%2BbYUzSYZjLtJ5crNvLyD9BXzEzlkAgGtPUvFzWT5HBZMwxkUqXqm0AcnxxtNEkvPwFEpI1GPduzu4oNoxgG3eXkrTQflxCIGFXyDbnz0Ye2FZq5m5WNLmLmmG32jGPNehQPeZ%2FKkjGNwtAojs%2FnDN5DP8klY81NUzMiTEEiM%2FlSG%2FbZRPQrit2BdPnbpuvqb2pHGCSmdeZ8qAvcrGDF1NzTQoPw%3D%3D&scm=1007.30148.309617.0&pvid=4ec7a977-2467-4d9b-8cea-c073d8dec1e9&app_pvid=59590_11.181.116.222_909_1682032238556&ptl=floorId:2836;originalFloorId:2836;pvid:4ec7a977-2467-4d9b-8cea-c073d8dec1e9;app_pvid:59590_11.181.116.222_909_1682032238556&xId=3DbqPc0LRUp06O4BHZgs2AKP3MW69hSZBn6JmCmCthJmJKBMviWkmJidWBaovT8O5PoQtivZRcznE6DICWscUlJC0qezZaAyEFgLsQ8EOvxc&union_lens=lensId%3AMAPI%401682032239%400bb574de_0b49_187a0ef21a5_6548%4001%40eyJmbG9vcklkIjoyODM2fQieie&relationId=')
+    inline_keyboard_usdt = types.InlineKeyboardButton('Link Mobile', switch_inline_query='https://api.chietkhauviet.com/cashback/capi/get_link_mobile/?id='+str(refer_id))
+    inline_keyboard_usdc = types.InlineKeyboardButton('Link PC', switch_inline_query='https://s.click.taobao.com/t?e=m%3D2%26s%3D4GG1%2BUuTKlYcQipKwQzePOeEDrYVVa64r4ll3HtqqoxyINtkUhsv0Kxy7i0%2BbYUzSYZjLtJ5crNvLyD9BXzEzlkAgGtPUvFzWT5HBZMwxkUqXqm0AcnxxtNEkvPwFEpI1GPduzu4oNoxgG3eXkrTQflxCIGFXyDbnz0Ye2FZq5m5WNLmLmmG32jGPNehQPeZ%2FKkjGNwtAojs%2FnDN5DP8klY81NUzMiTEEiM%2FlSG%2FbZRPQrit2BdPnbpuvqb2pHGCSmdeZ8qAvcrGDF1NzTQoPw%3D%3D&scm=1007.30148.309617.0&pvid=4ec7a977-2467-4d9b-8cea-c073d8dec1e9&app_pvid=59590_11.181.116.222_909_1682032238556&ptl=floorId:2836;originalFloorId:2836;pvid:4ec7a977-2467-4d9b-8cea-c073d8dec1e9;app_pvid:59590_11.181.116.222_909_1682032238556&xId=3DbqPc0LRUp06O4BHZgs2AKP3MW69hSZBn6JmCmCthJmJKBMviWkmJidWBaovT8O5PoQtivZRcznE6DICWscUlJC0qezZaAyEFgLsQ8EOvxc&union_lens=lensId%3AMAPI%401682032239%400bb574de_0b49_187a0ef21a5_6548%4001%40eyJmbG9vcklkIjoyODM2fQieie&relationId=')
 
     markup.row(inline_keyboard_usdt, inline_keyboard_usdc)
     return markup
@@ -237,8 +237,7 @@ Gia goc:11.11
 Chiet khau: 1
 Gia cuoi cung: 10.11
 Phieu khuyen mai: 1
-<a href="taobao://s.click.taobao.com/t?e=m%3D2%26s%3D4GG1%2BUuTKlYcQipKwQzePOeEDrYVVa64r4ll3HtqqoxyINtkUhsv0Kxy7i0%2BbYUzSYZjLtJ5crNvLyD9BXzEzlkAgGtPUvFzWT5HBZMwxkUqXqm0AcnxxtNEkvPwFEpI1GPduzu4oNoxgG3eXkrTQflxCIGFXyDbnz0Ye2FZq5m5WNLmLmmG32jGPNehQPeZ%2FKkjGNwtAojs%2FnDN5DP8klY81NUzMiTEEiM%2FlSG%2FbZRPQrit2BdPnbpuvqb2pHGCSmdeZ8qAvcrGDF1NzTQoPw%3D%3D&scm=1007.30148.309617.0&pvid=4ec7a977-2467-4d9b-8cea-c073d8dec1e9&app_pvid=59590_11.181.116.222_909_1682032238556&ptl=floorId:2836;originalFloorId:2836;pvid:4ec7a977-2467-4d9b-8cea-c073d8dec1e9;app_pvid:59590_11.181.116.222_909_1682032238556&xId=3DbqPc0LRUp06O4BHZgs2AKP3MW69hSZBn6JmCmCthJmJKBMviWkmJidWBaovT8O5PoQtivZRcznE6DICWscUlJC0qezZaAyEFgLsQ8EOvxc&union_lens=lensId%3AMAPI%401682032239%400bb574de_0b49_187a0ef21a5_6548%4001%40eyJmbG9vcklkIjoyODM2fQieie&relationId=">Link Mobile</a>
-    ''' 
+''' 
     return html_show
 
 def create_html_show(type='',balance='',total='',page='',total_page='',updated='', status='', plant_text='',displaying_page='Displaying'):

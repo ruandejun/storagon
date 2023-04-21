@@ -163,7 +163,7 @@ def get_material_optional(keyword, external_id='',start_tk_rate=None, end_tk_rat
     req.end_price = end_price
     try:
         resp = req.getResponse()
-        # print(resp)
+        print(resp)
         # if len(resp['tbk_dg_material_optional_response']['result_list']['map_data']) == 1:
         return resp['tbk_dg_material_optional_response']['result_list']['map_data']
         # else:
@@ -207,7 +207,7 @@ def get_taobao_commission(keyword, external_id=''):
         item_title = item_data['title']
         pict_url = item_data['pict_url']
         seller_id = item_data['seller_id']
-        category_id = item_data['level_one_category_id']
+        category_id = item_data['category_id']
         if 'shop_dsr' in item_data:
             shop_dsr = int(item_data['shop_dsr'])-1
         else:
@@ -215,7 +215,7 @@ def get_taobao_commission(keyword, external_id=''):
         zk_final_price = int(float(item_data['zk_final_price']))
         zk_final_price_end = zk_final_price+1
         print(short_title)
-        data_items = get_material_optional(short_title, external_id, cat=str(category_id))
+        data_items = get_material_optional(short_title+'...', external_id, cat=str(category_id),start_price=str(zk_final_price), end_price=zk_final_price_end)
         if not data_items:
             print('==search error===', short_title)
             return
@@ -232,20 +232,20 @@ def get_taobao_commission(keyword, external_id=''):
                 print('===found===')
                 data_item = line_data_item
                 return line_data_item
-        # if not data_item:
-        #     print('===Find by title===', item_title)
-        #     data_items = get_material_optional(item_title, external_id,cat=str(category_id),start_dsr=str(shop_dsr), start_price=str(zk_final_price))
-        #     data_item = None
-        #     for line_data_item in data_items:
-        #         short_title_item = line_data_item['short_title']
-        #         pict_url_item = line_data_item['pict_url']
-        #         seller_id_item = line_data_item['seller_id']
-        #         # print(pict_url, pict_url_item)
-        #         # print(seller_id, seller_id_item)
-        #         if pict_url == pict_url_item and seller_id == seller_id_item:
-        #             # data_item = line_data_item
-        #             print('===found===')
-        #             data_item = line_data_item
-        #             return line_data_item
+        if not data_item:
+            print('===Find by title===', item_title)
+            data_items = get_material_optional(item_title +'...', external_id,cat=str(category_id),start_price=str(zk_final_price))
+            data_item = None
+            for line_data_item in data_items:
+                short_title_item = line_data_item['short_title']
+                pict_url_item = line_data_item['pict_url']
+                seller_id_item = line_data_item['seller_id']
+                # print(pict_url, pict_url_item)
+                # print(seller_id, seller_id_item)
+                if pict_url == pict_url_item and seller_id == seller_id_item:
+                    # data_item = line_data_item
+                    print('===found===')
+                    data_item = line_data_item
+                    return line_data_item
         if data_item:
             return data_item

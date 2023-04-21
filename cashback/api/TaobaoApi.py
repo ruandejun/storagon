@@ -202,6 +202,7 @@ def get_taobao_commission(keyword, external_id=''):
     data_item_by_urls = get_material_optional(keyword, external_id)
     if data_item_by_urls:
         item_data = data_item_by_urls[0]
+        print(item_data)
         short_title = item_data['short_title']
         item_title = item_data['title']
         pict_url = item_data['pict_url']

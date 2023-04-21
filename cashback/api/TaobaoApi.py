@@ -155,7 +155,7 @@ def get_material_optional(keyword, external_id='',start_tk_rate=None, end_tk_rat
     req.q = keyword
     req.adzone_id = adzone_id
     req.cat = cat
-    req.external_id = external_id
+    # req.external_id = external_id
     req.end_tk_rate = end_tk_rate
     req.start_tk_rate = start_tk_rate
     req.start_dsr = start_dsr

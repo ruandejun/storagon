@@ -95,7 +95,7 @@ def get_commission_obj(full_str,telegram_id=None,wechat_id=None,zalo_id=None,use
 
     if re.search('taobao\.|tmall\.', full_str):
 
-        data_item = get_taobao_commission(full_str,external_id=str(ext_1688))
+        data_item = get_taobao_commission(full_str)
         # msg = data_item
     elif re.search('1688\.com', full_str):
         link_re = re.search('offer\/(\d+)\.html', full_str)
@@ -205,7 +205,7 @@ def thong_tin_chiet_khau(request,commission_id):
 class CustomSchemeRedirect(HttpResponsePermanentRedirect):
     allowed_schemes = ['taobao']
 def get_link_mobile(request):
-
+    my_search = request.GET.get('')
     return CustomSchemeRedirect('taobao://s.click.taobao.com/t?e=m%3D2%26s%3D4GG1%2BUuTKlYcQipKwQzePOeEDrYVVa64r4ll3HtqqoxyINtkUhsv0Kxy7i0%2BbYUzSYZjLtJ5crNvLyD9BXzEzlkAgGtPUvFzWT5HBZMwxkUqXqm0AcnxxtNEkvPwFEpI1GPduzu4oNoxgG3eXkrTQflxCIGFXyDbnz0Ye2FZq5m5WNLmLmmG32jGPNehQPeZ%2FKkjGNwtAojs%2FnDN5DP8klY81NUzMiTEEiM%2FlSG%2FbZRPQrit2BdPnbpuvqb2pHGCSmdeZ8qAvcrGDF1NzTQoPw%3D%3D&scm=1007.30148.309617.0&pvid=4ec7a977-2467-4d9b-8cea-c073d8dec1e9&app_pvid=59590_11.181.116.222_909_1682032238556&ptl=floorId:2836;originalFloorId:2836;pvid:4ec7a977-2467-4d9b-8cea-c073d8dec1e9;app_pvid:59590_11.181.116.222_909_1682032238556&xId=3DbqPc0LRUp06O4BHZgs2AKP3MW69hSZBn6JmCmCthJmJKBMviWkmJidWBaovT8O5PoQtivZRcznE6DICWscUlJC0qezZaAyEFgLsQ8EOvxc&union_lens=lensId%3AMAPI%401682032239%400bb574de_0b49_187a0ef21a5_6548%4001%40eyJmbG9vcklkIjoyODM2fQieie&relationId=')
 
 @api_view(['POST'])

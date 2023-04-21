@@ -230,16 +230,21 @@ def create_cashback_product_markup(refer_id='123'):
     markup.row(inline_keyboard_usdt, inline_keyboard_usdc)
     return markup
 
-def create_html_cashback_product_show():
+def create_html_cashback_product_show(product_json):
+                    product_json['short_title'] = commission_obj.short_title
+                    product_json['pict_url'] = commission_obj.pict_url
+                    product_json['url'] = commission_obj.url
+                    product_json['taokouling'] = commission_obj.taokouling
+                    product_json['zk_final_price'] = commission_obj.zk_final_price
+                    product_json['commission_price'] = commission_obj.commission_price
     html_show = '''
-<a href="https://img.alicdn.com/bao/uploaded/i2/2200549466609/O1CN01cjeYKI1ygyBj969ZO_!!2200549466609.jpg"> </a>
-Gia goc:11.11
-Chiet khau: 1
-Gia cuoi cung: 10.11
-Phieu khuyen mai: 1
-<a href="https://api.chietkhauviet.com/cashback/capi/get_link_mobile/">Link Mobile</a>
-<a href="https://s.click.taobao.com/t?e=m%3D2%26s%3D4GG1%2BUuTKlYcQipKwQzePOeEDrYVVa64r4ll3HtqqoxyINtkUhsv0Kxy7i0%2BbYUzSYZjLtJ5crNvLyD9BXzEzlkAgGtPUvFzWT5HBZMwxkUqXqm0AcnxxtNEkvPwFEpI1GPduzu4oNoxgG3eXkrTQflxCIGFXyDbnz0Ye2FZq5m5WNLmLmmG32jGPNehQPeZ%2FKkjGNwtAojs%2FnDN5DP8klY81NUzMiTEEiM%2FlSG%2FbZRPQrit2BdPnbpuvqb2pHGCSmdeZ8qAvcrGDF1NzTQoPw%3D%3D&scm=1007.30148.309617.0&pvid=4ec7a977-2467-4d9b-8cea-c073d8dec1e9&app_pvid=59590_11.181.116.222_909_1682032238556&ptl=floorId:2836;originalFloorId:2836;pvid:4ec7a977-2467-4d9b-8cea-c073d8dec1e9;app_pvid:59590_11.181.116.222_909_1682032238556&xId=3DbqPc0LRUp06O4BHZgs2AKP3MW69hSZBn6JmCmCthJmJKBMviWkmJidWBaovT8O5PoQtivZRcznE6DICWscUlJC0qezZaAyEFgLsQ8EOvxc&union_lens=lensId%3AMAPI%401682032239%400bb574de_0b49_187a0ef21a5_6548%4001%40eyJmbG9vcklkIjoyODM2fQieie&relationId=">Link PC</a>
-''' 
+<a href="%s"> </a>
+Sản phẩm: %s
+Giá gốc: %s
+Chiết khấu: %s
+Phiếu khuyến mãi: %s
+Giá cuối cùng: %s
+''' % (product_json['pict_url'], product_json['short_title'], product_json['zk_final_price'], product_json['commission_price'] )
     return html_show
 
 def create_html_show(type='',balance='',total='',page='',total_page='',updated='', status='', plant_text='',displaying_page='Displaying'):
@@ -439,14 +444,26 @@ def check_cmd_cashback_telegram(chat_id,message_id=None,text=None,callback_query
             for full_str in list_urls:
                 msg = 'Xin lỗi sản phẩm của bạn không có chiết khấu vui lòng tìm sản phâm khác hoặc truy cập chietkhauviet.com để tìm kiếm sản phẩm!'
 
-                referUrl_obj = get_commission_obj(full_str,telegram_id=chat_id)
+                commission_obj = get_commission_obj(full_str,telegram_id=chat_id)
 
-                if referUrl_obj:
-                    msg = '<a href="https://chietkhauviet.com/page/thong-tin-chiet-khau/%s">Giá sản phẩm:%s Chiết khấu:%s Phieu KM:%s</a>' % (
-                        referUrl_obj.pk, float(referUrl_obj.zk_final_price) - float(referUrl_obj.coupon_amount), round(float(referUrl_obj.commission_price),2), referUrl_obj.coupon_amount)
-                    msg = create_html_cashback_product_show()
-                markup_button = create_cashback_product_markup()       
-                send_telegram_notify_to_group(chat_id, msg=msg,reply_id=message_id, reply_markup=markup_button, bot_type='cashback')
+                if commission_obj:
+                    # msg = '<a href="https://chietkhauviet.com/page/thong-tin-chiet-khau/%s">Giá sản phẩm:%s Chiết khấu:%s Phieu KM:%s</a>' % (
+                    #     referUrl_obj.pk, float(referUrl_obj.zk_final_price) - float(referUrl_obj.coupon_amount), round(float(referUrl_obj.commission_price),2), referUrl_obj.coupon_amount)
+                    product_json = {}
+                    product_json['id'] = commission_obj.pk
+                    product_json['short_title'] = commission_obj.short_title
+                    product_json['pict_url'] = commission_obj.pict_url
+                    product_json['url'] = commission_obj.url
+                    product_json['taokouling'] = commission_obj.taokouling
+                    product_json['zk_final_price'] = commission_obj.zk_final_price
+                    product_json['commission_price'] = commission_obj.commission_price
+                    product_json['msg'] = '�ã tìm thấy sản phẩm của bạn!'
+
+                    msg = create_html_cashback_product_show(product_json)
+                    markup_button = create_cashback_product_markup()       
+                    send_telegram_notify_to_group(chat_id, msg=msg,reply_id=message_id, reply_markup=markup_button, bot_type='cashback')
+                else:
+                    send_telegram_notify_to_group(chat_id, msg=msg,reply_id=message_id, bot_type='cashback')
         else:        
             cmd = text.lstrip("/").strip()
             extra_text = ''

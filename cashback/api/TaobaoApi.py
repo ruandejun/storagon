@@ -155,7 +155,7 @@ def get_material_optional(keyword, external_id='',start_tk_rate=None, end_tk_rat
     req.q = keyword
     req.adzone_id = adzone_id
     req.cat = cat
-    # req.external_id = external_id
+    req.external_id = external_id
     req.end_tk_rate = end_tk_rate
     req.start_tk_rate = start_tk_rate
     req.start_dsr = start_dsr
@@ -215,7 +215,7 @@ def get_taobao_commission(keyword, external_id=''):
         zk_final_price = int(float(item_data['zk_final_price']))
         zk_final_price_end = zk_final_price+1
         print(short_title)
-        data_items = get_material_optional(short_title, external_id, cat=str(category_id),start_dsr=str(shop_dsr), start_price=str(zk_final_price))
+        data_items = get_material_optional(short_title, external_id, cat=str(category_id),start_dsr=str(shop_dsr))
         if not data_items:
             print('==search error===', short_title)
             return
@@ -234,7 +234,7 @@ def get_taobao_commission(keyword, external_id=''):
                 return line_data_item
         if not data_item:
             print('===Find by title===', item_title)
-            data_items = get_material_optional(item_title, external_id,cat=str(category_id),start_dsr=str(shop_dsr), start_price=str(zk_final_price))
+            data_items = get_material_optional(item_title, external_id,cat=str(category_id),start_dsr=str(shop_dsr))
             data_item = None
             for line_data_item in data_items:
                 short_title_item = line_data_item['short_title']

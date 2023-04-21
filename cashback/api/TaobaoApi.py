@@ -163,7 +163,7 @@ def get_material_optional(keyword, external_id='',start_tk_rate=None, end_tk_rat
     req.end_price = end_price
     try:
         resp = req.getResponse()
-        print(resp)
+        # print(resp)
         # if len(resp['tbk_dg_material_optional_response']['result_list']['map_data']) == 1:
         return resp['tbk_dg_material_optional_response']['result_list']['map_data']
         # else:

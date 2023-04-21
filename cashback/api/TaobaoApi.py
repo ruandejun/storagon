@@ -207,7 +207,7 @@ def get_taobao_commission(keyword, external_id=''):
         item_title = item_data['title']
         pict_url = item_data['pict_url']
         seller_id = item_data['seller_id']
-        category_id = item_data['category_id']
+        category_id = item_data['level_one_category_id']
         if 'shop_dsr' in item_data:
             shop_dsr = int(item_data['shop_dsr'])-1
         else:
@@ -215,7 +215,7 @@ def get_taobao_commission(keyword, external_id=''):
         zk_final_price = int(float(item_data['zk_final_price']))
         zk_final_price_end = zk_final_price+1
         print(short_title)
-        data_items = get_material_optional(short_title, external_id)
+        data_items = get_material_optional(short_title, external_id, cat=str(category_id),start_dsr=str(shop_dsr), start_price=str(zk_final_price))
         if not data_items:
             print('==search error===', short_title)
             return

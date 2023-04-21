@@ -220,31 +220,26 @@ def create_deposit_markup():
 
     markup.row(inline_keyboard_usdt, inline_keyboard_usdc)
     return markup
-def create_cashback_product_markup(refer_id='123'):
+def create_cashback_product_markup(product_json):
 
     markup = types.InlineKeyboardMarkup()
 
-    inline_keyboard_usdt = types.InlineKeyboardButton('Link Mobile', url='https://api.chietkhauviet.com/cashback/capi/get_link_mobile/?id='+str(refer_id))
-    inline_keyboard_usdc = types.InlineKeyboardButton('Link PC', url='https://s.click.taobao.com/t?e=m%3D2%26s%3D4GG1%2BUuTKlYcQipKwQzePOeEDrYVVa64r4ll3HtqqoxyINtkUhsv0Kxy7i0%2BbYUzSYZjLtJ5crNvLyD9BXzEzlkAgGtPUvFzWT5HBZMwxkUqXqm0AcnxxtNEkvPwFEpI1GPduzu4oNoxgG3eXkrTQflxCIGFXyDbnz0Ye2FZq5m5WNLmLmmG32jGPNehQPeZ%2FKkjGNwtAojs%2FnDN5DP8klY81NUzMiTEEiM%2FlSG%2FbZRPQrit2BdPnbpuvqb2pHGCSmdeZ8qAvcrGDF1NzTQoPw%3D%3D&scm=1007.30148.309617.0&pvid=4ec7a977-2467-4d9b-8cea-c073d8dec1e9&app_pvid=59590_11.181.116.222_909_1682032238556&ptl=floorId:2836;originalFloorId:2836;pvid:4ec7a977-2467-4d9b-8cea-c073d8dec1e9;app_pvid:59590_11.181.116.222_909_1682032238556&xId=3DbqPc0LRUp06O4BHZgs2AKP3MW69hSZBn6JmCmCthJmJKBMviWkmJidWBaovT8O5PoQtivZRcznE6DICWscUlJC0qezZaAyEFgLsQ8EOvxc&union_lens=lensId%3AMAPI%401682032239%400bb574de_0b49_187a0ef21a5_6548%4001%40eyJmbG9vcklkIjoyODM2fQieie&relationId=')
+    inline_keyboard_usdt = types.InlineKeyboardButton('Link Mobile', url='https://api.chietkhauviet.com/cashback/capi/get_link_mobile/?id='+str(product_json['id']))
+    inline_keyboard_usdc = types.InlineKeyboardButton('Link PC', url='https://api.chietkhauviet.com/cashback/capi/get_link_pc/?id='+str(product_json['id']))
 
     markup.row(inline_keyboard_usdt, inline_keyboard_usdc)
     return markup
 
 def create_html_cashback_product_show(product_json):
-                    product_json['short_title'] = commission_obj.short_title
-                    product_json['pict_url'] = commission_obj.pict_url
-                    product_json['url'] = commission_obj.url
-                    product_json['taokouling'] = commission_obj.taokouling
-                    product_json['zk_final_price'] = commission_obj.zk_final_price
-                    product_json['commission_price'] = commission_obj.commission_price
+
     html_show = '''
 <a href="%s"> </a>
 Sản phẩm: %s
 Giá gốc: %s
 Chiết khấu: %s
 Phiếu khuyến mãi: %s
-Giá cuối cùng: %s
-''' % (product_json['pict_url'], product_json['short_title'], product_json['zk_final_price'], product_json['commission_price'] )
+%s
+''' % (product_json['pict_url'], product_json['short_title'], product_json['zk_final_price'], product_json['commission_price'], product_json['coupon_amount'], product_json['taokouling'] )
     return html_show
 
 def create_html_show(type='',balance='',total='',page='',total_page='',updated='', status='', plant_text='',displaying_page='Displaying'):
@@ -457,10 +452,12 @@ def check_cmd_cashback_telegram(chat_id,message_id=None,text=None,callback_query
                     product_json['taokouling'] = commission_obj.taokouling
                     product_json['zk_final_price'] = commission_obj.zk_final_price
                     product_json['commission_price'] = commission_obj.commission_price
-                    product_json['msg'] = '�ã tìm thấy sản phẩm của bạn!'
+                    product_json['coupon_amount'] = commission_obj.coupon_amount
+                    product_json['coupon_share_url'] = commission_obj.coupon_share_url
+                    # product_json['msg'] = '�ã tìm thấy sản phẩm của bạn!'
 
                     msg = create_html_cashback_product_show(product_json)
-                    markup_button = create_cashback_product_markup()       
+                    markup_button = create_cashback_product_markup(product_json)       
                     send_telegram_notify_to_group(chat_id, msg=msg,reply_id=message_id, reply_markup=markup_button, bot_type='cashback')
                 else:
                     send_telegram_notify_to_group(chat_id, msg=msg,reply_id=message_id, bot_type='cashback')

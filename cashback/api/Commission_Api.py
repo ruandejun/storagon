@@ -204,9 +204,32 @@ def thong_tin_chiet_khau(request,commission_id):
     return render(request, template, context)
 class CustomSchemeRedirect(HttpResponsePermanentRedirect):
     allowed_schemes = ['taobao']
+    allowed_schemes = ['1688']
+def get_link_pc(request):
+    refer_id = request.GET.get('id')
+    refer_obj = product_models.ReferUrl.objects.get(pk=refer_id)
+    if refer_obj.coupon_share_url:
+        link_redirect = refer_obj.coupon_share_url
+    else:
+        link_redirect = refer_obj.url
+    if link_redirect.find('taobao') != -1:
+        prefix = 'taobao'
+    else:
+        prefix = '1688'
+    return CustomSchemeRedirect('https:'+link_redirect)
 def get_link_mobile(request):
-    my_search = request.GET.get('')
-    return CustomSchemeRedirect('taobao://s.click.taobao.com/t?e=m%3D2%26s%3D4GG1%2BUuTKlYcQipKwQzePOeEDrYVVa64r4ll3HtqqoxyINtkUhsv0Kxy7i0%2BbYUzSYZjLtJ5crNvLyD9BXzEzlkAgGtPUvFzWT5HBZMwxkUqXqm0AcnxxtNEkvPwFEpI1GPduzu4oNoxgG3eXkrTQflxCIGFXyDbnz0Ye2FZq5m5WNLmLmmG32jGPNehQPeZ%2FKkjGNwtAojs%2FnDN5DP8klY81NUzMiTEEiM%2FlSG%2FbZRPQrit2BdPnbpuvqb2pHGCSmdeZ8qAvcrGDF1NzTQoPw%3D%3D&scm=1007.30148.309617.0&pvid=4ec7a977-2467-4d9b-8cea-c073d8dec1e9&app_pvid=59590_11.181.116.222_909_1682032238556&ptl=floorId:2836;originalFloorId:2836;pvid:4ec7a977-2467-4d9b-8cea-c073d8dec1e9;app_pvid:59590_11.181.116.222_909_1682032238556&xId=3DbqPc0LRUp06O4BHZgs2AKP3MW69hSZBn6JmCmCthJmJKBMviWkmJidWBaovT8O5PoQtivZRcznE6DICWscUlJC0qezZaAyEFgLsQ8EOvxc&union_lens=lensId%3AMAPI%401682032239%400bb574de_0b49_187a0ef21a5_6548%4001%40eyJmbG9vcklkIjoyODM2fQieie&relationId=')
+    refer_id = request.GET.get('id')
+    refer_obj = product_models.ReferUrl.objects.get(pk=refer_id)
+    if refer_obj.coupon_share_url:
+        link_redirect = refer_obj.coupon_share_url
+    else:
+        link_redirect = refer_obj.url
+    if link_redirect.find('taobao') != -1:
+        prefix = 'taobao'
+    else:
+        prefix = '1688'
+    return CustomSchemeRedirect(prefix+':'+link_redirect)
+
 
 @api_view(['POST'])
 def get_commission(request):

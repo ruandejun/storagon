@@ -9,5 +9,5 @@ from .Commission_Api import *
 
 urlpatterns = [
 	url(r'^get_commission/', get_commission, name='get_commission'),
-
+	url(r'^get_link_mobile/', get_link_mobile, name='get_link_mobile'),
 ]

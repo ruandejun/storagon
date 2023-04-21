@@ -146,7 +146,7 @@ def taokouling_extract(text):
 def get_material_optional(keyword, external_id='',start_tk_rate=None, end_tk_rate=None, cat=None, start_dsr=None, end_price=None, start_price=None):
     req = top.api.TbkDgMaterialOptionalRequest()
     req.set_app_info(top.appinfo(appkey, secret))
-    req.page_size = 200
+    req.page_size = 300
     # req.page_no = 1
     # req.platform = 1
     # req.promotion_type = 2
@@ -223,6 +223,7 @@ def get_taobao_commission(keyword, external_id=''):
             short_title_item = line_data_item['short_title']
             pict_url_item = line_data_item['pict_url']
             seller_id_item = line_data_item['seller_id']
+            print(short_title_item)
             # print(pict_url, pict_url_item)
             # print(seller_id, seller_id_item)
             if pict_url == pict_url_item and seller_id == seller_id_item:
@@ -231,7 +232,7 @@ def get_taobao_commission(keyword, external_id=''):
                 data_item = line_data_item
                 return line_data_item
         if not data_item:
-            print('===Find by title===')
+            print('===Find by title===', item_title)
             data_items = get_material_optional(item_title, external_id,cat=str(category_id),start_dsr=str(shop_dsr), start_price=str(zk_final_price))
             data_item = None
             for line_data_item in data_items:

@@ -215,7 +215,7 @@ def get_taobao_commission(keyword, external_id=''):
         zk_final_price = int(float(item_data['zk_final_price']))
         zk_final_price_end = zk_final_price+1
         print(short_title)
-        data_items = get_material_optional(short_title, external_id, cat=str(category_id))
+        data_items = get_material_optional(short_title, external_id)
         if not data_items:
             print('==search error===', short_title)
             return
@@ -232,20 +232,20 @@ def get_taobao_commission(keyword, external_id=''):
                 print('===found===')
                 data_item = line_data_item
                 return line_data_item
-        if not data_item:
-            print('===Find by title===', item_title)
-            data_items = get_material_optional(item_title, external_id,cat=str(category_id))
-            data_item = None
-            for line_data_item in data_items:
-                short_title_item = line_data_item['short_title']
-                pict_url_item = line_data_item['pict_url']
-                seller_id_item = line_data_item['seller_id']
-                # print(pict_url, pict_url_item)
-                # print(seller_id, seller_id_item)
-                if pict_url == pict_url_item and seller_id == seller_id_item:
-                    # data_item = line_data_item
-                    print('===found===')
-                    data_item = line_data_item
-                    return line_data_item
+        # if not data_item:
+        #     print('===Find by title===', item_title)
+        #     data_items = get_material_optional(item_title, external_id,cat=str(category_id),start_dsr=str(shop_dsr), start_price=str(zk_final_price))
+        #     data_item = None
+        #     for line_data_item in data_items:
+        #         short_title_item = line_data_item['short_title']
+        #         pict_url_item = line_data_item['pict_url']
+        #         seller_id_item = line_data_item['seller_id']
+        #         # print(pict_url, pict_url_item)
+        #         # print(seller_id, seller_id_item)
+        #         if pict_url == pict_url_item and seller_id == seller_id_item:
+        #             # data_item = line_data_item
+        #             print('===found===')
+        #             data_item = line_data_item
+        #             return line_data_item
         if data_item:
             return data_item

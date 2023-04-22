@@ -224,6 +224,7 @@ def get_link_mobile(request):
         link_redirect = refer_obj.coupon_share_url
     else:
         link_redirect = refer_obj.url
+    link_redirect = link_redirect.replace('https://','//')
     if link_redirect.find('taobao') != -1:
         prefix = 'taobao'
     else:

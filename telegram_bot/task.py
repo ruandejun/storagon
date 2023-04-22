@@ -239,7 +239,7 @@ Phiếu giảm giá: %s
 Giá cuối: %s
 Chiết khấu: %s
 %s
-''' % (product_json['pict_url'], product_json['zk_final_price'], product_json['coupon_amount'], product_json['zk_final_price']-product_json['coupon_amount'], round(product_json['commission_price'], 2), product_json['taokouling'] )
+''' % (product_json['pict_url'], product_json['zk_final_price'], product_json['coupon_amount'], float(product_json['zk_final_price'])-float(product_json['coupon_amount']), round(product_json['commission_price'], 2), product_json['taokouling'] )
     return html_show
 
 def create_html_show(type='',balance='',total='',page='',total_page='',updated='', status='', plant_text='',displaying_page='Displaying'):

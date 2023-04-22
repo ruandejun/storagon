@@ -203,7 +203,7 @@ def thong_tin_chiet_khau(request,commission_id):
     context = {'commission':referUrl}
     return render(request, template, context)
 class CustomSchemeRedirect(HttpResponsePermanentRedirect):
-    allowed_schemes = ['taobao','1688', 'https']
+    allowed_schemes = ['taobao','alibaba', 'https']
     # allowed_schemes = ['1688']
 def get_link_pc(request):
     refer_id = request.GET.get('id')
@@ -212,10 +212,11 @@ def get_link_pc(request):
         link_redirect = refer_obj.coupon_share_url
     else:
         link_redirect = refer_obj.url
+    link_redirect = link_redirect.replace('https://','//')    
     if link_redirect.find('taobao') != -1:
         prefix = 'taobao'
     else:
-        prefix = '1688'
+        prefix = 'alibaba'
     return CustomSchemeRedirect('https:'+link_redirect)
 def get_link_mobile(request):
     refer_id = request.GET.get('id')
@@ -229,7 +230,7 @@ def get_link_mobile(request):
     if link_redirect.find('taobao') != -1:
         prefix = 'taobao'
     else:
-        prefix = '1688'
+        prefix = 'alibaba'
     print('====',prefix+':'+link_redirect)    
     return CustomSchemeRedirect(prefix+':'+link_redirect)
 

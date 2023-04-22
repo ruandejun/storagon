@@ -17,7 +17,7 @@ from cashback.api.Alibaba1688Api import *
 from cashback.api.TaobaoApi import *
 from django.urls import reverse
 from django.shortcuts import redirect
-from django.http import HttpResponsePermanentRedirect
+from django.http import HttpResponsePermanentRedirect, HttpResponseRedirect
 
 def get_groups(user,request):
     # from ipware import get_client_ip
@@ -202,7 +202,7 @@ def thong_tin_chiet_khau(request,commission_id):
         referUrl = None
     context = {'commission':referUrl}
     return render(request, template, context)
-class CustomSchemeRedirect(HttpResponsePermanentRedirect):
+class CustomSchemeRedirect(HttpResponseRedirect):
     allowed_schemes = ['taobao','alibaba', 'https']
     # allowed_schemes = ['1688']
 def get_link_pc(request):

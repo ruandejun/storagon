@@ -203,7 +203,7 @@ def thong_tin_chiet_khau(request,commission_id):
     context = {'commission':referUrl}
     return render(request, template, context)
 class CustomSchemeRedirect(HttpResponseRedirect):
-    allowed_schemes = ['taobao','alibaba', 'https']
+    allowed_schemes = ['taobao','1688', 'https']
     # allowed_schemes = ['1688']
 def get_link_pc(request):
     refer_id = request.GET.get('id')
@@ -216,7 +216,7 @@ def get_link_pc(request):
     if link_redirect.find('taobao') != -1:
         prefix = 'taobao'
     else:
-        prefix = 'alibaba'
+        prefix = '1688'
     return CustomSchemeRedirect('https:'+link_redirect)
 def get_link_mobile(request):
     refer_id = request.GET.get('id')
@@ -229,11 +229,11 @@ def get_link_mobile(request):
     if link_redirect.find('taobao') != -1:
         prefix = 'taobao'
     else:
-        prefix = 'alibaba'
+        prefix = '1688'
     print('====',prefix+':'+link_redirect)    
-    # return CustomSchemeRedirect(prefix+':'+link_redirect)
-    status = {}
-    return Response(status, status=HTTP_200_OK)
+    return CustomSchemeRedirect(prefix+':'+link_redirect)
+    # status = {}
+    # return Response(status, status=HTTP_200_OK)
 
 
 @api_view(['POST'])

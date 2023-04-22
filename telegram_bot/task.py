@@ -220,6 +220,7 @@ def create_deposit_markup():
 
     markup.row(inline_keyboard_usdt, inline_keyboard_usdc)
     return markup
+
 def create_cashback_product_markup(product_json):
 
     markup = types.InlineKeyboardMarkup()

@@ -231,7 +231,9 @@ def get_link_mobile(request):
     else:
         prefix = 'alibaba'
     print('====',prefix+':'+link_redirect)    
-    return CustomSchemeRedirect(prefix+':'+link_redirect)
+    # return CustomSchemeRedirect(prefix+':'+link_redirect)
+    status = {}
+    return Response(status, status=HTTP_200_OK)
 
 
 @api_view(['POST'])

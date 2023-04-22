@@ -95,7 +95,7 @@ def get_commission_obj(full_str,telegram_id=None,wechat_id=None,zalo_id=None,use
 
     if re.search('taobao\.|tmall\.', full_str):
 
-        data_item = get_taobao_commission(full_str)
+        data_item = get_taobao_commission(full_str, ext_1688)
         # msg = data_item
     elif re.search('1688\.com', full_str):
         link_re = re.search('offer\/(\d+)\.html', full_str)

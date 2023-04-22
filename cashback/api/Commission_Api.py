@@ -213,10 +213,10 @@ def get_link_pc(request):
     else:
         link_redirect = refer_obj.url
     link_redirect = link_redirect.replace('https://','//')    
-    if link_redirect.find('taobao') != -1:
-        prefix = 'taobao'
-    else:
-        prefix = '1688'
+    # if link_redirect.find('taobao') != -1:
+    #     prefix = 'taobao'
+    # else:
+    #     prefix = '1688'
     return CustomSchemeRedirect('https:'+link_redirect)
 def get_link_mobile(request):
     refer_id = request.GET.get('id')
@@ -229,7 +229,7 @@ def get_link_mobile(request):
     if link_redirect.find('taobao') != -1:
         prefix = 'taobao'
     else:
-        prefix = '1688'
+        prefix = 'taobao'
     print('====',prefix+':'+link_redirect)    
     return CustomSchemeRedirect(prefix+':'+link_redirect)
     # status = {}

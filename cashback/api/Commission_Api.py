@@ -145,14 +145,14 @@ def get_commission_obj(full_str,telegram_id=None,wechat_id=None,zalo_id=None,use
         data['zk_final_price'] = data_item['zk_final_price']
         if 'coupon_amount' in data:
             commission_price_org = (float(data['zk_final_price']) - float(data['coupon_amount'])) * (float(data['commission_rate']) / float(10000))
-            commission_price = round(commission_price_org - (commission_price_org * float(0.20)), 2)
+            commission_price = round(commission_price_org - (commission_price_org * float(0.35)), 2)
         else:
             commission_price_org = float(data['zk_final_price']) * (float(data['commission_rate']) / float(10000))
 
-            commission_price = round(commission_price_org - (commission_price_org * float(0.20)), 2)
+            commission_price = round(commission_price_org - (commission_price_org * float(0.35)), 2)
         print('commission_price_org',commission_price_org)
         print('===',commission_price)
-        data['commission_price'] = decimal.Decimal(commission_price)
+        data['commission_price'] = decimal.Decimal(round(commission_price, 2))
         referUrl_obj = product_models.ReferUrl.objects.create(**data)
 
         print(data_item)
@@ -186,7 +186,7 @@ def get_commission_obj(full_str,telegram_id=None,wechat_id=None,zalo_id=None,use
         data['short_url'] = link_commissions['shortClickUrl']
         commission_price = float(data['zk_final_price']) * float(data['commission_rate'])
         commission_price = round(commission_price - (commission_price * float(0.45)), 2)
-        data['commission_price'] = decimal.Decimal(commission_price)
+        data['commission_price'] = decimal.Decimal(round(commission_price, 2))
         referUrl_obj = product_models.ReferUrl.objects.create(**data)
 
         return referUrl_obj
@@ -203,8 +203,8 @@ def thong_tin_chiet_khau(request,commission_id):
     context = {'commission':referUrl}
     return render(request, template, context)
 class CustomSchemeRedirect(HttpResponsePermanentRedirect):
-    allowed_schemes = ['taobao']
-    allowed_schemes = ['1688']
+    allowed_schemes = ['taobao','1688']
+    # allowed_schemes = ['1688']
 def get_link_pc(request):
     refer_id = request.GET.get('id')
     refer_obj = product_models.ReferUrl.objects.get(pk=refer_id)

@@ -203,7 +203,7 @@ def thong_tin_chiet_khau(request,commission_id):
     context = {'commission':referUrl}
     return render(request, template, context)
 class CustomSchemeRedirect(HttpResponsePermanentRedirect):
-    allowed_schemes = ['taobao','1688']
+    allowed_schemes = ['taobao','1688', 'https']
     # allowed_schemes = ['1688']
 def get_link_pc(request):
     refer_id = request.GET.get('id')

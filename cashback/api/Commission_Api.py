@@ -225,6 +225,7 @@ def get_link_mobile(request):
     else:
         link_redirect = refer_obj.url
     link_redirect = link_redirect.replace('https://','//')
+    print('====',prefix+':'+link_redirect)
     if link_redirect.find('taobao') != -1:
         prefix = 'taobao'
     else:

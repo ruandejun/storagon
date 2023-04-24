@@ -426,7 +426,7 @@ class Transaction1688(models.Model):
         verbose_name_plural = _("Transaction1688")
         #unique_together = ("transaction_holder", "type", 'payment_type', 'created_by', 'amount', 'reference')
 
-    {'tradeNumber': 2.0, 'tkId': 2207375577020, 'settleState': 0, 'platformRatio': 0.0, 'mediaId': 1351006, 'platform': 1, 'orderState': 10, 'feedId': 606463610631, 'bizId': 3318410520423602921, 'commission': 3.16, 'ext': '', 'rightsState': 0, 'bizSubId': 3318410520423602921, 'tradeAmount': 316.0, 'createTime': '2023-04-24 12:10:25', 'buyerType': 'NEW', 'name': '洗鞋机家用小型洗鞋洗衣两用神器懒人洗鞋器迷你刷鞋机器非全自动', 'mediaZoneId': 1356006, 'ratio': 0.01}]
+
 
     created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
 

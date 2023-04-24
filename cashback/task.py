@@ -94,17 +94,17 @@ def get_taobao_transaction():
                     else:
                         account_holder_recheck = account_holder_objs[0]
 
-                    if hasattr(account_holder_recheck, 'telegram'):
-                        print(account_holder_recheck.telegram.telegram_id)
+                    if hasattr(account_holder_recheck, 'user_telegram'):
+                        print(account_holder_recheck.user_telegram.telegram_id)
                         trade_number = line.trade_parent_id.replace(line.trade_parent_id[5:len(line.trade_parent_id)-5],'xxxxxxxx')
                         print(trade_number, line.tradeAmount, line.commission_paid)
                         msg = '%s, %s, chiết khấu:%s Cần xác nhận, vui lòng xác nhận bằng /mdh mã đặt hàng' % (
                         trade_number, line.alipay_total_price, line.commission_paid)
                         print(msg)
-                        send_telegram_notify_to_group(account_holder.telegram.telegram_id, msg=msg, bot_type='cashback')
+                        send_telegram_notify_to_group(account_holder.user_telegram.telegram_id, msg=msg, bot_type='cashback')
             else:
                 customer_refer = customer_list[0]
-                account_holder_objs = User.objects.filter(Q(username=customer_refer) | Q(telegram__telegram_id=customer_refer)).distinct()
+                account_holder_objs = User.objects.filter(Q(username=customer_refer) | Q(user_telegram__telegram_id=customer_refer)).distinct()
                 if not account_holder_objs.exists():
                     account_holder = None
                 else:
@@ -119,7 +119,7 @@ def get_taobao_transaction():
             print(line.trade_parent_id,line.tradeAmount,line.commission_paid)
             msg = '%s, %s, chiết khấu:%s Đã thanh toán' % (line.trade_parent_id,line.alipay_total_price,line.commission_paid)
             print(msg)
-            send_telegram_notify_to_group(account_holder.telegram.telegram_id, msg=msg, bot_type='cashback')
+            send_telegram_notify_to_group(account_holder.user_telegram.telegram_id, msg=msg, bot_type='cashback')
 
 
 @shared_task
@@ -194,7 +194,7 @@ def get_1688_transaction():
         print(payment_models.Transaction1688.objects.count())
 
     for line in payment_models.Transaction1688.objects.filter(commission_paid=0):
-        account_holder_objs = User.objects.filter(Q(username=line.ext) | Q(telegram__telegram_id=line.ext)).distinct()
+        account_holder_objs = User.objects.filter(Q(username=line.ext) | Q(user_telegram__telegram_id=line.ext)).distinct()
         if not account_holder_objs.exists():
             account_holder = None
         else:
@@ -202,11 +202,11 @@ def get_1688_transaction():
         line.commission_paid = decimal.Decimal('{0:.2f}'.format(line.commission * decimal.Decimal(0.55)))
         line.account_holder = account_holder
         line.save(update_fields=['commission_paid','account_holder'])
-        if hasattr(account_holder, 'telegram'):
-            print(account_holder.telegram.telegram_id)
+        if hasattr(account_holder, 'user_telegram'):
+            print(account_holder.user_telegram.telegram_id)
             print(line.bizSubId,line.tradeAmount,line.commission_paid)
             msg = '%s, %s, chiết khấu:%s Đã thanh toán' % (line.bizId,line.tradeAmount,line.commission_paid)
             print(msg)
-            send_telegram_notify_to_group(account_holder.telegram.telegram_id, msg=msg)
+            send_telegram_notify_to_group(account_holder.user_telegram.telegram_id, msg=msg)
 
 

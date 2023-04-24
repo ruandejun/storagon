@@ -7,6 +7,20 @@ from http.cookiejar import CookieJar
 from django.contrib.auth.models import User
 from celery import shared_task
 from django.db.models import Sum, F, Count, Q
+from telegram_bot.task import send_telegram_notify_to_group
+
+
+appkey = settings.TAOBAO_APPKEY
+secret = settings.TAOBAO_SECRET
+adzone_id = settings.TAOBAO_ADZONE_ID
+
+
+APP_KEY_1688 = settings.APP_KEY_1688
+APP_SECRET_1688 = settings.APP_SECRET_1688
+ACCESS_TOKEN_1688 = settings.ACCESS_TOKEN_1688
+MEDIAID_1688 = settings.MEDIAID_1688
+MEDIAZONEID_1688 = settings.MEDIAZONEID_1688
+
 @shared_task
 def get_taobao_transaction():
     req = top.api.TbkOrderDetailsGetRequest()
@@ -87,7 +101,7 @@ def get_taobao_transaction():
                         msg = '%s, %s, chiết khấu:%s Cần xác nhận, vui lòng xác nhận bằng /mdh mã đặt hàng' % (
                         trade_number, line.alipay_total_price, line.commission_paid)
                         print(msg)
-                        send_telegram_notify_to_group(account_holder.telegram.telegram_id, msg=msg)
+                        send_telegram_notify_to_group(account_holder.telegram.telegram_id, msg=msg, bot_type='cashback')
             else:
                 customer_refer = customer_list[0]
                 account_holder_objs = User.objects.filter(Q(username=customer_refer) | Q(telegram__telegram_id=customer_refer)).distinct()
@@ -105,16 +119,16 @@ def get_taobao_transaction():
             print(line.trade_parent_id,line.tradeAmount,line.commission_paid)
             msg = '%s, %s, chiết khấu:%s Đã thanh toán' % (line.trade_parent_id,line.alipay_total_price,line.commission_paid)
             print(msg)
-            send_telegram_notify_to_group(account_holder.telegram.telegram_id, msg=msg)
+            send_telegram_notify_to_group(account_holder.telegram.telegram_id, msg=msg, bot_type='cashback')
 
 
 @shared_task
 def get_1688_transaction():
     aop.set_default_server('gw.open.1688.com')
 
-    aop.set_default_appinfo(app_key, app_secret)  # default
+    aop.set_default_appinfo(APP_KEY_1688, APP_SECRET_1688)  # default
 
-    start_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai')) - timedelta(hours=3)).strftime(
+    start_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai')) - datetime.timedelta(hours=3)).strftime(
         '%Y-%m-%d %H:%M:%S')
     end_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai'))).strftime(
         '%Y-%m-%d %H:%M:%S')

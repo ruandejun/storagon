@@ -41,10 +41,9 @@ def get_taobao_transaction():
     req.start_time = start_time
     req.end_time = end_time
     req.page_no = 1
-    try:
-        resp = req.getResponse()
-    except:
-        return
+
+    resp = req.getResponse()
+
     print(resp)
     # result = json.loads(resp)
     results = resp['tbk_order_details_get_response']['data']['results']

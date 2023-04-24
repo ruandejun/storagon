@@ -188,7 +188,7 @@ class UserTelegram(models.Model):
 
     user = models.ForeignKey(User, verbose_name=_("User"), related_name='user_telegram', on_delete=models.PROTECT)
 
-    telegram_id = models.CharField(verbose_name=_("telegram_id"), blank=True, max_length=255)
+    telegram_id = models.CharField(verbose_name=_("telegram_id"), blank=True, max_length=255, unique=True)
 
     first_name = models.CharField(verbose_name=_("first_name"), blank=True, max_length=255)
 

@@ -31,7 +31,7 @@ def get_taobao_transaction():
     time = 0
     # while time <= time_limit:
 
-    start_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai')) - datetime.timedelta(hours=24)).strftime(
+    start_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai')) - datetime.timedelta(minutes=30)).strftime(
         '%Y-%m-%d %H:%M:%S')
     end_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai'))).strftime('%Y-%m-%d %H:%M:%S')
     print(appkey,end_time)
@@ -41,9 +41,10 @@ def get_taobao_transaction():
     req.start_time = start_time
     req.end_time = end_time
     req.page_no = 1
-
-    resp = req.getResponse()
-
+    try:
+        resp = req.getResponse()
+    except:
+        return
     print(resp)
     # result = json.loads(resp)
     results = resp['tbk_order_details_get_response']['data']['results']

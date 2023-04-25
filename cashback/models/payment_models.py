@@ -343,7 +343,7 @@ class TransactionTaobao(models.Model):
     item_img = models.CharField(verbose_name=_("item_img"), max_length=2048, blank=True)
     item_link = models.CharField(verbose_name=_("item_link"), max_length=2048, blank=True)
     seller_shop_title = models.CharField(verbose_name=_("seller_shop_title"), max_length=2048, blank=True)
-
+    marketing_type = models.CharField(verbose_name=_("marketing_type"), null=True, blank=True, max_length=512)
     item_category_name = models.CharField(verbose_name=_("item_category_name"), null=True, blank=True, max_length=512)
     alsc_pid = models.CharField(verbose_name=_("alsc_pid"), null=True, blank=True, max_length=512)
     alsc_id = models.CharField(verbose_name=_("alsc_id"), null=True, blank=True, max_length=512)
@@ -376,6 +376,7 @@ class TransactionTaobao(models.Model):
     tk_deposit_time = models.DateTimeField(verbose_name=_("tk_deposit_time"), null=True, blank=True)
     click_time = models.DateTimeField(verbose_name=_("click_time"), null=True, blank=True)
     tk_create_time = models.DateTimeField(verbose_name=_("tk_create_time"), null=True, blank=True)
+    modified_time = models.DateTimeField(verbose_name=_("modified_time"), null=True, blank=True)
     tk_paid_time = models.DateTimeField(verbose_name=_("tk_paid_time"), null=True, blank=True)
     tb_paid_time = models.DateTimeField(verbose_name=_("tb_paid_time"), null=True, blank=True)
     tk_earning_time = models.DateTimeField(verbose_name=_("tk_earning_time"), null=True, blank=True)

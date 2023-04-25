@@ -475,8 +475,7 @@ def check_cmd_cashback_telegram(chat_id,message_id=None,text=None,callback_query
                 print('===text===', user_telegram.checker_type)
                 print(text)
 
-
-                
+              
 @shared_task
 def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, chat=None, document=None, original_text=''):
 

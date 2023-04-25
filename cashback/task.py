@@ -21,8 +21,10 @@ ACCESS_TOKEN_1688 = settings.ACCESS_TOKEN_1688
 MEDIAID_1688 = settings.MEDIAID_1688
 MEDIAZONEID_1688 = settings.MEDIAZONEID_1688
 
+
 @shared_task
 def get_taobao_transaction():
+
     req = top.api.TbkOrderDetailsGetRequest()
     req.set_app_info(top.appinfo(appkey, secret))
     time_range = 3
@@ -54,11 +56,14 @@ def get_taobao_transaction():
         return
     else:
         data = results['publisher_order_dto']
+    model_dict = {'adzone_id': 110595300409, 'adzone_name': 'thegioinhaphang', 'alimama_rate': '10.00', 'alimama_share_fee': '0.01', 'alipay_total_price': '2.80', 'click_time': '2023-04-25 13:02:31', 'deposit_price': '0.00', 'flow_source': '--', 'income_rate': '5.00', 'is_lx': '0', 'item_category_name': '文具电教/文化用品/商务用品', 'item_id': 'nXtQUotkQRC0tP-d2qOpq7TnymanG2vUn', 'item_img': '//img.alicdn.com/tfscom/i3/32003675/O1CN01FpMsYS1d1CMRbT1bd_!!32003675.jpg', 'item_link': '//uland.taobao.com/item/edetail?id=nXtQUotkQRC0tP-d2qOpq7TnymanG2vUn', 'item_num': 1, 'item_price': '2.80', 'item_title': '三渡PET长条贴纸 花花系列 立体烫金樱花蓝亚麻花手账装饰防水贴', 'marketing_type': '', 'modified_time': '2023-04-25 13:21:55', 'order_type': '淘宝', 'pub_id': 859350174, 'pub_share_fee': '0.00', 'pub_share_pre_fee': '0.14', 'pub_share_rate': '100.00', 'refund_tag': 0, 'seller_nick': '木木手帐生活馆', 'seller_shop_title': '木木手帐生活馆', 'site_id': 1251850405, 'site_name': 'chuyenhang365', 'subsidy_fee': '0.00', 'subsidy_rate': '0.00', 'subsidy_type': '--', 'tb_deposit_time': '--', 'tb_paid_time': '2023-04-25 13:21:40', 'terminal_type': 'PC', 'tk_commission_fee_for_media_platform': '0.00', 'tk_commission_pre_fee_for_media_platform': '0.00', 'tk_commission_rate_for_media_platform': '0.00', 'tk_create_time': '2023-04-25 13:19:29', 'tk_deposit_time': '--', 'tk_order_role': 2, 'tk_paid_time': '2023-04-25 13:21:55', 'tk_status': 12, 'tk_total_rate': '5.00', 'total_commission_fee': '0.00', 'total_commission_rate': '5.00', 'trade_id': '1876057285108350796', 'trade_parent_id': '1876057285106350796'}    
     for line in data:
         print(line)
         for key in line.keys():
             if line[key] == '--':
                 line[key] = None
+            if key not in model_dict:
+                line.pop(key, None)
         trade_id = line.get('trade_id')
         tran_taobao_objs = payment_models.TransactionTaobao.objects.filter(trade_id=trade_id)
         if tran_taobao_objs.exists():

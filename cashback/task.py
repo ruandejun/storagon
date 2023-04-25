@@ -166,9 +166,9 @@ def get_1688_transaction():
         req.pageNo = i
         req.pageSize = 200
         resp = req.get_response(timeout=30)
-        print(resp)
+        # print(resp)
         for line in resp['tradeBillList']:
-            # print(line)
+            print(line)
             # print(line['orderState'])
             if not line['ext'] or line['orderState'] == 10 or line['orderState'] == 80:
                 continue

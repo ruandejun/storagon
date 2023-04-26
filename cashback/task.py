@@ -74,13 +74,21 @@ def get_taobao_transaction(start_time=None, end_time=None):
                 line.pop(line_remove, None)
         trade_id = line.get('trade_id')
         tran_taobao_objs = payment_models.TransactionTaobao.objects.filter(trade_id=trade_id)
+        if line['tk_status'] == 3:
+            # print('===tk_status', line)
+            print('===update transaction===')
+            tran_commission_objs = payment_models.TransactionCommission.filter(reference=trade_id)
+            if not tran_commission_objs.exists():
+                print('===create new commission===')
+                data_create = {}
+                data_create['']
+                payment_models.TransactionCommission(**data_create)
         if tran_taobao_objs.exists():
             tran_taobao_objs.update(**line)
             continue
         if line['tk_status']  == 13:
             continue
-        if line['tk_status'] == 3:
-            print('===tk_status', line)
+
         tran_taobao = payment_models.TransactionTaobao(**line)
         list_id.append(tran_taobao)
 

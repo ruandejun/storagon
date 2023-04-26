@@ -33,7 +33,7 @@ def get_taobao_transaction():
     time = 0
     # while time <= time_limit:
 
-    start_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai')) - datetime.timedelta(hours=4)).strftime(
+    start_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai')) - datetime.timedelta(hours=3)).strftime(
         '%Y-%m-%d %H:%M:%S')
     end_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai'))).strftime('%Y-%m-%d %H:%M:%S')
     print(appkey,end_time)

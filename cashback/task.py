@@ -45,6 +45,7 @@ def get_taobao_transaction(start_time=None, end_time=None):
     req.end_time = end_time
     req.page_no = 1
     req.tk_status = 3
+    req.query_type = 3
     try:
         resp = req.getResponse()
     except:

@@ -541,9 +541,9 @@ class TransactionCommission(models.Model):
         verbose_name = _("TransactionCommission")
         verbose_name_plural = _("TransactionCommission")
         #unique_together = ("transaction_holder", "type", 'payment_type', 'created_by', 'amount', 'reference')
-    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
+    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True, default=None)
 
-    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
+    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True, default=None)
 
     created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
     

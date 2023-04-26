@@ -23,7 +23,7 @@ MEDIAZONEID_1688 = settings.MEDIAZONEID_1688
 
 
 @shared_task
-def get_taobao_transaction():
+def get_taobao_transaction(start_time=None, end_time=None):
 
     req = top.api.TbkOrderDetailsGetRequest()
     req.set_app_info(top.appinfo(appkey, secret))
@@ -32,11 +32,12 @@ def get_taobao_transaction():
     list_id = []
     time = 0
     # while time <= time_limit:
-
-    start_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai')) - datetime.timedelta(hours=3)).strftime(
+    if not start_time:
+        start_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai')) - datetime.timedelta(hours=3)).strftime(
         '%Y-%m-%d %H:%M:%S')
-    end_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai'))).strftime('%Y-%m-%d %H:%M:%S')
-    print(appkey,end_time)
+    if not end_time:
+        end_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai'))).strftime('%Y-%m-%d %H:%M:%S')
+    # print(appkey,end_time)
     print(start_time,end_time)
     # req.start_dsr = 10
     req.page_size = 200
@@ -215,3 +216,24 @@ def get_1688_transaction():
             send_telegram_notify_to_group(account_holder.user_telegram.telegram_id, msg=msg)
 
 
+def get_all_taobao_transaction():
+    current_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai'))).strftime('%Y-%m-%d %H:%M:%S')
+    time_range = 3
+    time_limit = 2160
+    list_id = []
+    time = 0
+    while time <= time_limit:
+        end_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai')) - datetime.timedelta(hours=time)).strftime(
+        '%Y-%m-%d %H:%M:%S')
+        
+        time+=time_range
+        
+        start_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai')) - datetime.timedelta(hours=time)).strftime(
+        '%Y-%m-%d %H:%M:%S')
+        get_taobao_transaction(start_time=start_time, end_time=end_time)
+        
+    # if not start_time:
+    #     start_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai')) - datetime.timedelta(hours=3)).strftime(
+    #     '%Y-%m-%d %H:%M:%S')
+    # if not end_time:
+    #     end_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai'))).strftime('%Y-%m-%d %H:%M:%S')

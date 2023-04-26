@@ -77,6 +77,21 @@ class TransactionType(models.Model):
     def __str__(self):
         return str(self.label)
 
+class CommissionType(models.Model):
+    class Meta:
+        verbose_name = _("CommissionType")
+        verbose_name_plural = _("CommissionType")
+
+    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
+    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
+
+    value = models.CharField(verbose_name=_("value"), max_length=255, primary_key=True, unique=True)
+    label = models.CharField(verbose_name=_("label"), max_length=255)
+    default = models.BooleanField(verbose_name=_("default"), default=False, db_index=True)
+
+    def __str__(self):
+        return str(self.label)
+
 class PurposePayment(models.Model):
     class Meta:
         verbose_name = _("PurposePayment")
@@ -526,7 +541,19 @@ class TransactionCommission(models.Model):
         verbose_name = _("TransactionCommission")
         verbose_name_plural = _("TransactionCommission")
         #unique_together = ("transaction_holder", "type", 'payment_type', 'created_by', 'amount', 'reference')
+    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
 
+    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
+
+    created_by = models.ForeignKey(User, null=True, editable=False, related_name='%(class)s_created', on_delete=models.PROTECT)
+    
+    modified_by = models.ForeignKey(User, null=True, editable=True, related_name='%(class)s_modified', on_delete=models.PROTECT)
+    
+    
+    commission_type = models.ForeignKey(CommissionType, verbose_name=_("commission_type"), blank=True,
+                                           null=True,
+                                           on_delete=models.PROTECT)   
+    
     transaction_holder = models.ForeignKey("BalanceAccount", verbose_name=_("transaction_holder"), blank=True,
                                            null=True,
                                            on_delete=models.PROTECT)

@@ -84,8 +84,8 @@ def get_taobao_transaction(start_time=None, end_time=None):
 
     for line in payment_models.TransactionTaobao.objects.filter(commission_paid=0):
 
-        time_check = (pytz.timezone.now() - datetime.timedelta(hours=3))
-        referUrl_obj = product_models.ReferUrl.objects.filter(item_id=line.item_id, created__gte=time_check)
+        time_check = (datetime.datetime.now() - datetime.timedelta(hours=3))
+        referUrl_obj = product_models.ReferUrl.objects.filter(item_id=line.item_id)
         account_holder = None
         if referUrl_obj.exists():
             customer_list = referUrl_obj.values_list('customer',flat=True)

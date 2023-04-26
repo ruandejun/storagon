@@ -383,7 +383,7 @@ class TransactionTaobao(models.Model):
 
     account_holder = models.ForeignKey(User, verbose_name=_("account_holder"), null=True, blank=True,
                                        on_delete=models.PROTECT)
-    transaction_commission = models.ForeignKey("TransactionCommission", verbose_name=_("transaction_commission"), blank=True,
+    transaction_commission = models.OneToOneField("TransactionCommission", verbose_name=_("transaction_commission"), blank=True,
                                            null=True,
                                            on_delete=models.PROTECT)
 
@@ -464,7 +464,7 @@ class Transaction1688(models.Model):
 
     name = models.CharField(verbose_name=_("name"), max_length=2048, blank=True)
 
-    transaction_commission = models.ForeignKey("TransactionCommission", verbose_name=_("transaction_commission"), blank=True,
+    transaction_commission = models.OneToOneField("TransactionCommission", verbose_name=_("transaction_commission"), blank=True,
                                            null=True,
                                            on_delete=models.PROTECT)
 

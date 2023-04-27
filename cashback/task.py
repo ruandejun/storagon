@@ -1,4 +1,4 @@
-from cashback.models import payment_models, product_models
+from cashback.models import payment_models, product_models, shop_models
 import datetime
 import json, re, pytz, decimal
 from django.conf import settings
@@ -59,7 +59,7 @@ def get_taobao_transaction(start_time=None, end_time=None):
         return
     else:
         data = results['publisher_order_dto']
-    model_dict = {'adzone_id': 110595300409, 'adzone_name': 'thegioinhaphang', 'alimama_rate': '10.00', 'alimama_share_fee': '0.01', 'alipay_total_price': '2.80', 'click_time': '2023-04-25 13:02:31', 'deposit_price': '0.00', 'flow_source': '--', 'income_rate': '5.00', 'is_lx': '0', 'item_category_name': '文具电教/文化用品/商务用品', 'item_id': 'nXtQUotkQRC0tP-d2qOpq7TnymanG2vUn', 'item_img': '//img.alicdn.com/tfscom/i3/32003675/O1CN01FpMsYS1d1CMRbT1bd_!!32003675.jpg', 'item_link': '//uland.taobao.com/item/edetail?id=nXtQUotkQRC0tP-d2qOpq7TnymanG2vUn', 'item_num': 1, 'item_price': '2.80', 'item_title': '三渡PET长条贴纸 花花系列 立体烫金樱花蓝亚麻花手账装饰防水贴', 'marketing_type': '', 'modified_time': '2023-04-25 13:21:55', 'order_type': '淘宝', 'pub_id': 859350174, 'pub_share_fee': '0.00', 'pub_share_pre_fee': '0.14', 'pub_share_rate': '100.00', 'refund_tag': 0, 'seller_nick': '木木手帐生活馆', 'seller_shop_title': '木木手帐生活馆', 'site_id': 1251850405, 'site_name': 'chuyenhang365', 'subsidy_fee': '0.00', 'subsidy_rate': '0.00', 'subsidy_type': '--', 'tb_deposit_time': '--', 'tb_paid_time': '2023-04-25 13:21:40', 'terminal_type': 'PC', 'tk_commission_fee_for_media_platform': '0.00', 'tk_commission_pre_fee_for_media_platform': '0.00', 'tk_commission_rate_for_media_platform': '0.00', 'tk_create_time': '2023-04-25 13:19:29', 'tk_deposit_time': '--', 'tk_order_role': 2, 'tk_paid_time': '2023-04-25 13:21:55', 'tk_status': 12, 'tk_total_rate': '5.00', 'total_commission_fee': '0.00', 'total_commission_rate': '5.00', 'trade_id': '1876057285108350796', 'trade_parent_id': '1876057285106350796'}    
+    model_dict = {'adzone_id': 109959950065, 'adzone_name': 'chuyenhang365', 'alimama_rate': '10.00', 'alimama_share_fee': '0.26', 'alipay_total_price': '37.80', 'click_time': '2023-04-15 15:29:47', 'deposit_price': '0.00', 'flow_source': '--', 'income_rate': '7.00', 'is_lx': '0', 'item_category_name': '女装/女士精品', 'item_id': '0jtNUGt0BmS2t6-m80Wn0di7K7G7qOoUBg', 'item_img': '//img.alicdn.com/tfscom/i3/2820556330/O1CN01XAJ0ed1wdBvMkLPT9_!!2820556330.jpg', 'item_link': '//uland.taobao.com/item/edetail?id=0jtNUGt0BmS2t6-m80Wn0di7K7G7qOoUBg', 'item_num': 1, 'item_price': '128.00', 'item_title': '夏装2023年新款女装时尚刺绣纯棉衬衫女洋气全棉衬衣蕾丝拼接上衣', 'marketing_type': '', 'modified_time': '2023-04-26 17:32:30', 'order_type': '淘宝', 'pay_price': '37.80', 'pub_id': 859350174, 'pub_share_fee': '2.65', 'pub_share_pre_fee': '2.65', 'pub_share_rate': '100.00', 'refund_tag': 0, 'seller_nick': '韩都女装服饰馆', 'seller_shop_title': '韩都女装服饰馆', 'site_id': 1251850405, 'site_name': 'chuyenhang365', 'subsidy_fee': '0.00', 'subsidy_rate': '0.00', 'subsidy_type': '--', 'tb_deposit_time': '--', 'tb_paid_time': '2023-04-15 17:57:09', 'terminal_type': 'PC', 'tk_commission_fee_for_media_platform': '0.00', 'tk_commission_pre_fee_for_media_platform': '0.00', 'tk_commission_rate_for_media_platform': '0.00', 'tk_create_time': '2023-04-15 16:56:11', 'tk_deposit_time': '--', 'tk_earning_time': '2023-04-26 17:32:30', 'tk_order_role': 2, 'tk_paid_time': '2023-04-15 17:57:24', 'tk_status': 3, 'tk_total_rate': '7.00', 'total_commission_fee': '2.65', 'total_commission_rate': '7.00', 'trade_id': '3306979983228993420', 'trade_parent_id': '3306979983227993420'}   
     for line in data:
         print(line)
         list_key_remove = []
@@ -74,37 +74,29 @@ def get_taobao_transaction(start_time=None, end_time=None):
                 line.pop(line_remove, None)
         trade_id = line.get('trade_id')
 
-
         ##create taobao transaction  
         tran_taobao_objs = payment_models.TransactionTaobao.objects.filter(trade_id=trade_id)
         if tran_taobao_objs.exists():
-            tran_taobao_objs.update(**line)
+            tran_taobao_objs.update(**line)            
+            tran_commission_objs = payment_models.TransactionCommission.objects.filter(reference=trade_id)
+            if tran_commission_objs.exists():
+                tran_commission_objs.update(status=line['tk_status'])
+
             continue
         if line['tk_status']  == 13:
             continue
         tran_taobao = payment_models.TransactionTaobao(**line)
         list_create_transaction.append(tran_taobao)
         
-        ##create commission transaction
-        tran_commission_objs = payment_models.TransactionCommission.filter(reference=trade_id)
-        if not tran_commission_objs.exists():
-            print('===create new commission===')
-            data_create = {}
-            data_create['amount'] = ''
-            data_create['reference'] = trade_id
-            data_create['commission_amount'] = ''
-            data_create['customer_ratio'] = ''
-            if line['tk_status']  == 3:
-                data_create['approved'] = line['tk_earning_time']
-            data_create['share_fee'] = line['alimama_share_fee']
-            payment_models.TransactionCommission(**data_create)
+
 
     print(len(list_create_transaction))
     if list_create_transaction:
         payment_models.TransactionTaobao.objects.bulk_create(list_create_transaction)
     else:
         print(payment_models.TransactionTaobao.objects.count())
-
+        
+    #find transactiontaobao not add commission and create conmmision
     for line in payment_models.TransactionTaobao.objects.filter(commission_paid=0):
 
         time_check = (datetime.datetime.now() - datetime.timedelta(hours=3))
@@ -137,18 +129,53 @@ def get_taobao_transaction(start_time=None, end_time=None):
                 if not account_holder_objs.exists():
                     account_holder = None
                 else:
-                    account_holder = account_holder_objs[0]
-
+                    account_holder = account_holder_objs[0]     
+            
+        ##create commission transaction
+        tran_commission_objs = payment_models.TransactionCommission.filter(reference=line.trade_id)
+        if line.account_holder:
+            balance_objs = payment_models.BalanceAccount.objects.filter(currency__value='CNY', account_holder=line.account_holder)
+            if not balance_obj.exists():
+                currency_obj, created = shop_models.Currency.objects.get_or_create(value='CNY', label='CNY')
+                balance_obj = payment_models.BalanceAccount.objects.create(account_holder=line.account_holder, currency=currency_obj)
+            else:
+                balance_obj = balance_objs[0]
+        else:
+            balance_obj = None  
+        if not tran_commission_objs.exists():
+            print('===create new commission===')
+            data_create = {}
+            data_create['amount'] = decimal.Decimal('{0:.2f}'.format(line.pub_share_pre_fee))
+            data_create['reference'] = line.trade_id
+            data_create['commission_amount'] = decimal.Decimal('{0:.2f}'.format(line.pub_share_pre_fee * decimal.Decimal(0.65)))
+            data_create['customer_ratio'] = decimal.Decimal(0.65)
+            if line['tk_status']  == 3:
+                data_create['approved'] = line['tk_earning_time']
+            data_create['share_fee'] = line['alimama_share_fee']
+            data_create['status'] = line['tk_status']
+            commission_type_obj, created = payment_models.CommissionType.objects.get_or_create(value='taobao', label='taobao')
+            tran_commission_obj = payment_models.TransactionCommission(**data_create)
+            tran_commission_obj.transaction_holder = balance_obj
+            tran_commission_obj.commission_type = commission_type_obj
+            tran_commission_obj.save(update_fields=['commission_type','transaction_holder'])
+        else:
+            tran_commission_obj = tran_commission_objs[0]
+            if tran_commission_obj.status != line['tk_status']:
+                tran_commission_obj.status = line['tk_status']
+                tran_commission_obj.save(update_fields=['status'])
+                
         line.commission_paid = decimal.Decimal('{0:.2f}'.format(line.pub_share_pre_fee * decimal.Decimal(0.65)))
         line.account_holder = account_holder
-        line.save(update_fields=['commission_paid','account_holder'])
+        line.transaction_commission = tran_commission_obj
+        line.save(update_fields=['commission_paid','account_holder', 'transaction_commission'])                 
+        ##send telegram notification
         if hasattr(account_holder, 'telegram'):
             print(account_holder.telegram.telegram_id)
             print(line.trade_parent_id,line.tradeAmount,line.commission_paid)
             msg = '%s, %s, chiết khấu:%s Đã thanh toán' % (line.trade_parent_id,line.alipay_total_price,line.commission_paid)
             # print(msg)
-            send_telegram_notify_to_group(account_holder.user_telegram.telegram_id, msg=msg, bot_type='cashback')
-
+            send_telegram_notify_to_group(account_holder.user_telegram.telegram_id, msg=msg, bot_type='cashback')            
+            
 
 @shared_task
 def get_1688_transaction():
@@ -227,6 +254,40 @@ def get_1688_transaction():
             account_holder = None
         else:
             account_holder = account_holder_objs[0]
+            
+        ##create commission transaction
+        tran_commission_objs = payment_models.TransactionCommission.filter(reference=line.bizId)
+        if line.account_holder:
+            balance_objs = payment_models.BalanceAccount.objects.filter(currency__value='CNY', account_holder=line.account_holder)
+            if not balance_obj.exists():
+                currency_obj, created = shop_models.Currency.objects.get_or_create(value='CNY', label='CNY')
+                balance_obj = payment_models.BalanceAccount.objects.create(account_holder=line.account_holder, currency=currency_obj)
+            else:
+                balance_obj = balance_objs[0]
+        else:
+            balance_obj = None  
+        if not tran_commission_objs.exists():
+            print('===create new commission===')
+            data_create = {}
+            data_create['amount'] = decimal.Decimal('{0:.2f}'.format(line.commission))
+            data_create['reference'] = line.bizId
+            data_create['commission_amount'] = decimal.Decimal('{0:.2f}'.format(line.commission * decimal.Decimal(0.55)))
+            data_create['customer_ratio'] = decimal.Decimal(0.55)
+            # if line['tk_status']  == 3:
+                # data_create['approved'] = line['tk_earning_time']
+            # data_create['share_fee'] = line['alimama_share_fee']
+            # data_create['status'] = line['tk_status']
+            commission_type_obj, created = payment_models.CommissionType.objects.get_or_create(value='1688', label='1688')
+            tran_commission_obj = payment_models.TransactionCommission(**data_create)
+            tran_commission_obj.transaction_holder = balance_obj
+            tran_commission_obj.commission_type = commission_type_obj
+            tran_commission_obj.save(update_fields=['commission_type','transaction_holder'])
+        else:
+            tran_commission_obj = tran_commission_objs[0]
+            if tran_commission_obj.status != line['orderState']:
+                tran_commission_obj.status = line['orderState']
+                tran_commission_obj.save(update_fields=['status'])
+                            
         line.commission_paid = decimal.Decimal('{0:.2f}'.format(line.commission * decimal.Decimal(0.55)))
         line.account_holder = account_holder
         line.save(update_fields=['commission_paid','account_holder'])

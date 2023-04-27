@@ -29,7 +29,7 @@ def get_taobao_transaction(start_time=None, end_time=None):
     req.set_app_info(top.appinfo(appkey, secret))
     time_range = 3
     time_limit = 3600
-    list_id = []
+    list_create_transaction = []
     time = 0
     # while time <= time_limit:
     if not start_time:
@@ -73,29 +73,35 @@ def get_taobao_transaction(start_time=None, end_time=None):
             for line_remove in list_key_remove:
                 line.pop(line_remove, None)
         trade_id = line.get('trade_id')
+
+
+        ##create taobao transaction  
         tran_taobao_objs = payment_models.TransactionTaobao.objects.filter(trade_id=trade_id)
-        if line['tk_status'] == 3:
-            # print('===tk_status', line)
-            print('===update transaction===')
-            tran_commission_objs = payment_models.TransactionCommission.filter(reference=trade_id)
-            if not tran_commission_objs.exists():
-                print('===create new commission===')
-                data_create = {}
-                data_create['']
-                payment_models.TransactionCommission(**data_create)
         if tran_taobao_objs.exists():
             tran_taobao_objs.update(**line)
             continue
         if line['tk_status']  == 13:
             continue
-
         tran_taobao = payment_models.TransactionTaobao(**line)
-        list_id.append(tran_taobao)
+        list_create_transaction.append(tran_taobao)
+        
+        ##create commission transaction
+        tran_commission_objs = payment_models.TransactionCommission.filter(reference=trade_id)
+        if not tran_commission_objs.exists():
+            print('===create new commission===')
+            data_create = {}
+            data_create['amount'] = ''
+            data_create['reference'] = trade_id
+            data_create['commission_amount'] = ''
+            data_create['customer_ratio'] = ''
+            if line['tk_status']  == 3:
+                data_create['approved'] = line['tk_earning_time']
+            data_create['share_fee'] = line['alimama_share_fee']
+            payment_models.TransactionCommission(**data_create)
 
-
-    print(len(list_id))
-    if list_id:
-        payment_models.TransactionTaobao.objects.bulk_create(list_id)
+    print(len(list_create_transaction))
+    if list_create_transaction:
+        payment_models.TransactionTaobao.objects.bulk_create(list_create_transaction)
     else:
         print(payment_models.TransactionTaobao.objects.count())
 
@@ -109,7 +115,7 @@ def get_taobao_transaction(start_time=None, end_time=None):
             if customer_list.count() > 1:
                 account_holder = None
                 for line_cus in customer_list:
-                    print(line_cus)
+                    # print(line_cus)
                     account_holder_objs = User.objects.filter(
                         Q(username=line_cus) | Q(telegram__telegram_id=line_cus)).distinct()
                     if not account_holder_objs.exists():
@@ -133,15 +139,14 @@ def get_taobao_transaction(start_time=None, end_time=None):
                 else:
                     account_holder = account_holder_objs[0]
 
-
-        line.commission_paid = decimal.Decimal('{0:.2f}'.format(line.pub_share_pre_fee * decimal.Decimal(0.8)))
+        line.commission_paid = decimal.Decimal('{0:.2f}'.format(line.pub_share_pre_fee * decimal.Decimal(0.65)))
         line.account_holder = account_holder
         line.save(update_fields=['commission_paid','account_holder'])
         if hasattr(account_holder, 'telegram'):
             print(account_holder.telegram.telegram_id)
             print(line.trade_parent_id,line.tradeAmount,line.commission_paid)
             msg = '%s, %s, chiết khấu:%s Đã thanh toán' % (line.trade_parent_id,line.alipay_total_price,line.commission_paid)
-            print(msg)
+            # print(msg)
             send_telegram_notify_to_group(account_holder.user_telegram.telegram_id, msg=msg, bot_type='cashback')
 
 

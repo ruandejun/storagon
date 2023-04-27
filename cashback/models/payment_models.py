@@ -557,13 +557,18 @@ class TransactionCommission(models.Model):
     transaction_holder = models.ForeignKey("BalanceAccount", verbose_name=_("transaction_holder"), blank=True,
                                            null=True,
                                            on_delete=models.PROTECT)
-
+    commission_amount = models.DecimalField(verbose_name=_("commission_amount"), default=decimal.Decimal(0), max_digits=MONEY_MAX_DIGITS,
+                                 decimal_places=MONEY_DECIMAL_PLACES, validators=[MinValueValidator(0)], db_index=True)
+    
     amount = models.DecimalField(verbose_name=_("amount"), default=decimal.Decimal(0), max_digits=MONEY_MAX_DIGITS,
-                                 decimal_places=MONEY_DECIMAL_PLACES, validators=[MinValueValidator(0)], db_index=True)\
+                                 decimal_places=MONEY_DECIMAL_PLACES, validators=[MinValueValidator(0)], db_index=True)
 
     customer_ratio = models.DecimalField(verbose_name=_("customer_ratio"), default=decimal.Decimal(0), max_digits=MONEY_MAX_DIGITS,
                                  decimal_places=MONEY_DECIMAL_PLACES, validators=[MinValueValidator(0)], db_index=True)
-
+    
+    share_fee = models.DecimalField(verbose_name=_("share_fee"), default=decimal.Decimal(0), max_digits=MONEY_MAX_DIGITS,
+                                 decimal_places=MONEY_DECIMAL_PLACES, validators=[MinValueValidator(0)], db_index=True)
+    
     detail = models.CharField(verbose_name=_("detail"), blank=True,max_length=512)  # store detail automatically get from bank system
 
     reference = models.CharField(verbose_name=_("reference"), blank=True, max_length=255)  # store detail automatically get from bank system

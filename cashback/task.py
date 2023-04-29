@@ -176,7 +176,6 @@ def get_taobao_transaction(start_time=None, end_time=None):
             # print(msg)
             send_telegram_notify_to_group(account_holder.user_telegram.telegram_id, msg=msg, bot_type='cashback')            
             
-
 @shared_task
 def get_1688_transaction():
     aop.set_default_server('gw.open.1688.com')
@@ -232,6 +231,9 @@ def get_1688_transaction():
                         list_success.append(tran_1688_objs.first().pk)
                     print('===', tran_1688_objs.first().orderState, line['orderState'])
                     tran_1688_objs.update(**line)
+                    tran_commission_objs = payment_models.TransactionCommission.objects.filter(reference=line['bizSubId'])
+                    if tran_commission_objs.exists():
+                        tran_commission_objs.update(status=line['orderState'])                    
                 continue
             referUrl_obj = product_models.ReferUrl.objects.filter(Q(telegram_id=line['ext']) | Q(customer=line['ext']),
                                                                   item_id=line['feedId']).distinct()
@@ -270,7 +272,7 @@ def get_1688_transaction():
             print('===create new commission===')
             data_create = {}
             data_create['amount'] = decimal.Decimal('{0:.2f}'.format(line.commission))
-            data_create['reference'] = line.bizId
+            data_create['reference'] = line.bizSubId
             data_create['commission_amount'] = decimal.Decimal('{0:.2f}'.format(line.commission * decimal.Decimal(0.55)))
             data_create['customer_ratio'] = decimal.Decimal(0.55)
             # if line['tk_status']  == 3:

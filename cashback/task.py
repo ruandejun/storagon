@@ -150,9 +150,9 @@ def get_taobao_transaction(start_time=None, end_time=None):
             data_create['commission_amount'] = decimal.Decimal('{0:.2f}'.format(line.pub_share_pre_fee * decimal.Decimal(0.65)))
             data_create['customer_ratio'] = decimal.Decimal(0.65)
             if line.tk_status  == 3:
-                data_create['approved'] = line['tk_earning_time']
-            data_create['share_fee'] = line['alimama_share_fee']
-            data_create['status'] = line['tk_status']
+                data_create['approved'] = line.tk_earning_time
+            data_create['share_fee'] = line.alimama_share_fee
+            data_create['status'] = line.tk_status
             commission_type_obj, created = payment_models.CommissionType.objects.get_or_create(value='taobao', label='taobao')
             tran_commission_obj = payment_models.TransactionCommission(**data_create)
             tran_commission_obj.transaction_holder = balance_obj
@@ -160,8 +160,8 @@ def get_taobao_transaction(start_time=None, end_time=None):
             tran_commission_obj.save(update_fields=['commission_type','transaction_holder'])
         else:
             tran_commission_obj = tran_commission_objs[0]
-            if tran_commission_obj.status != line['tk_status']:
-                tran_commission_obj.status = line['tk_status']
+            if tran_commission_obj.status != line.tk_status:
+                tran_commission_obj.status = line.tk_status
                 tran_commission_obj.save(update_fields=['status'])
                 
         line.commission_paid = decimal.Decimal('{0:.2f}'.format(line.pub_share_pre_fee * decimal.Decimal(0.65)))

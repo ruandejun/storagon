@@ -157,7 +157,7 @@ def get_taobao_transaction(start_time=None, end_time=None):
             tran_commission_obj = payment_models.TransactionCommission(**data_create)
             tran_commission_obj.transaction_holder = balance_obj
             tran_commission_obj.commission_type = commission_type_obj
-            tran_commission_obj.save(update_fields=['commission_type','transaction_holder'])
+            tran_commission_obj.save()
         else:
             tran_commission_obj = tran_commission_objs[0]
             if tran_commission_obj.status != line.tk_status:
@@ -283,7 +283,7 @@ def get_1688_transaction():
             tran_commission_obj = payment_models.TransactionCommission(**data_create)
             tran_commission_obj.transaction_holder = balance_obj
             tran_commission_obj.commission_type = commission_type_obj
-            tran_commission_obj.save(update_fields=['commission_type','transaction_holder'])
+            tran_commission_obj.save()
         else:
             tran_commission_obj = tran_commission_objs[0]
             if tran_commission_obj.status != line['orderState']:

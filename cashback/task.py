@@ -132,7 +132,7 @@ def get_taobao_transaction(start_time=None, end_time=None):
                     account_holder = account_holder_objs[0]     
             
         ##create commission transaction
-        tran_commission_objs = payment_models.TransactionCommission.filter(reference=line.trade_id)
+        tran_commission_objs = payment_models.TransactionCommission.objects.filter(reference=line.trade_id)
         if line.account_holder:
             balance_objs = payment_models.BalanceAccount.objects.filter(currency__value='CNY', account_holder=line.account_holder)
             if not balance_obj.exists():
@@ -258,7 +258,7 @@ def get_1688_transaction():
             account_holder = account_holder_objs[0]
             
         ##create commission transaction
-        tran_commission_objs = payment_models.TransactionCommission.filter(reference=line.bizId)
+        tran_commission_objs = payment_models.TransactionCommission.objects.filter(reference=line.bizId)
         if line.account_holder:
             balance_objs = payment_models.BalanceAccount.objects.filter(currency__value='CNY', account_holder=line.account_holder)
             if not balance_obj.exists():

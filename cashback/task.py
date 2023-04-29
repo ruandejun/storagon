@@ -149,7 +149,7 @@ def get_taobao_transaction(start_time=None, end_time=None):
             data_create['reference'] = line.trade_id
             data_create['commission_amount'] = decimal.Decimal('{0:.2f}'.format(line.pub_share_pre_fee * decimal.Decimal(0.65)))
             data_create['customer_ratio'] = decimal.Decimal(0.65)
-            if line['tk_status']  == 3:
+            if line.tk_status  == 3:
                 data_create['approved'] = line['tk_earning_time']
             data_create['share_fee'] = line['alimama_share_fee']
             data_create['status'] = line['tk_status']

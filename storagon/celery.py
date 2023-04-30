@@ -23,9 +23,9 @@ app = Celery('storagon')
 # app.conf.broker_url = 'redis://default:hanoi123@redis:6379/0'
 # Using a string here means the worker will not have to
 # pickle the object when using Windows.
-app.config_from_object(settings, namespace='CELERY')
+app.config_from_object('django.conf:settings', namespace='CELERY')
 app.autodiscover_tasks()
-# celery_app.config_from_object(settings, namespace='CELERY')
+
 
 @app.task(bind=True)
 def debug_task(self):

@@ -123,7 +123,7 @@ class TransactionCommissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = payment_models.TransactionCommission
 
-        fields = ('transaction_holder', 'amount','detail','reference','note','status','approved','approved_by')
+        fields = ('transaction_holder','amount','commission_amount', 'customer_ratio', 'share_fee','detail','reference','note','status','approved','approved_by')
 
 
     status = serializers.SlugRelatedField(slug_field='label', read_only=True)

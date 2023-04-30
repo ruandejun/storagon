@@ -16,6 +16,7 @@ from celery import Celery
 
 from django.conf import settings
 
+from django.apps import apps 
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'storagon.settings')
 
@@ -24,7 +25,7 @@ app = Celery('storagon')
 # Using a string here means the worker will not have to
 # pickle the object when using Windows.
 app.config_from_object('django.conf:settings', namespace='CELERY')
-app.autodiscover_tasks(['cashback', 'system_configure', 'telegram_bot', 'servermain', 'serverfile'])
+app.autodiscover_tasks(lambda: [n.name for n in apps.get_app_configs()])
 
 
 @app.task(bind=True)

@@ -310,7 +310,8 @@ def get_1688_transaction():
                             
         line.commission_paid = decimal.Decimal('{0:.2f}'.format(line.commission * decimal.Decimal(0.55)))
         line.account_holder = account_holder
-        line.save(update_fields=['commission_paid','account_holder'])
+        line.transaction_commission = tran_commission_obj
+        line.save(update_fields=['commission_paid','account_holder', 'transaction_commission'])  
         if hasattr(account_holder, 'user_telegram'):
             print(account_holder.user_telegram.telegram_id)
             print(line.bizSubId,line.tradeAmount,line.commission_paid)

@@ -51,13 +51,13 @@ INSTALLED_APPS = (
 	'rest_framework', # Restful API
 	'rest_framework.authtoken',
 	'rest_framework_mongoengine', # Restful for mongoengine
+ 	'django_celery_beat',
 	'admin_file_manager',
 	'private_tracker',
 	'servermain',
 	'serverfile',
 	'telegram_bot',
 	'cashback',
-	'django_celery_beat',
 
 )
 

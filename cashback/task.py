@@ -1,3 +1,4 @@
+from celery import shared_task
 from cashback.models import payment_models, product_models, shop_models
 import datetime
 import json, re, pytz, decimal
@@ -5,7 +6,6 @@ from django.conf import settings
 import top.api, requests, aop
 from http.cookiejar import CookieJar
 from django.contrib.auth.models import User
-from celery import shared_task
 from django.db.models import Sum, F, Count, Q
 from telegram_bot.task import send_telegram_notify_to_group
 from django.utils import timezone

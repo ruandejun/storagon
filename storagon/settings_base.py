@@ -57,8 +57,7 @@ INSTALLED_APPS = (
 	'servermain',
 	'serverfile',
 	'telegram_bot',
-	'cashback',
-
+	'cashback'
 )
 
 MIDDLEWARE = (

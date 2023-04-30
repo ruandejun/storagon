@@ -22,6 +22,9 @@ from cashback.api.Alibaba1688Api import *
 from cashback.api.TaobaoApi import *
 from cashback.api.Commission_Api import get_commission_obj
 
+@shared_task
+def test_task():
+    print('===test===')
 def send_telegram_notify_to_group(group_id,msg,reply_markup=None,reply_id=None,bot_type='checker'):
     #token='1235501300:AAEWPcah92B1PvsdvTCSHdT12CCg4gq-qZo'
     if bot_type == 'cashback':

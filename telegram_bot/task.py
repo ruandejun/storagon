@@ -40,6 +40,11 @@ ACCESS_TOKEN_1688 = settings.ACCESS_TOKEN_1688
 MEDIAID_1688 = settings.MEDIAID_1688
 MEDIAZONEID_1688 = settings.MEDIAZONEID_1688
 
+
+def fix_unique_email():
+    user_objs = User.objects.all()
+    user_objs.update(email=None)
+
 @shared_task
 def get_taobao_transaction(start_time=None, end_time=None):
 

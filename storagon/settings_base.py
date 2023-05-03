@@ -14,6 +14,8 @@ import sys
 from pathlib import Path
 from corsheaders.defaults import default_headers
 import mongoengine
+from django.contrib.auth.models import User
+User._meta.get_field('email')._unique = True
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 

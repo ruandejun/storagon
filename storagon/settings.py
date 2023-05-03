@@ -6,7 +6,6 @@ DOMAIN = 'storagon.io'
 ENABLE_ENCRYPTION = False
 # DOMAIN = 'storagon.com'
 # ENABLE_ENCRYPTION = True
-User._meta.get_field('email')._unique = True
 
 TIME_ZONE = 'Asia/Bangkok'
 

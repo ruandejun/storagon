@@ -31,6 +31,7 @@ from django.core.validators import RegexValidator
 from django.utils.translation import ugettext_lazy as _
 
 
+User._meta.get_field('email')._unique = True
 
 # Create your models here.
 

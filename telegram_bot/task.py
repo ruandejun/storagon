@@ -26,7 +26,7 @@ import top.api, aop
 from http.cookiejar import CookieJar
 from django.db.models import Sum, F, Count, Q
 from django.utils import timezone
-
+from django.utils.crypto import get_random_string
 
 
 appkey = settings.TAOBAO_APPKEY
@@ -43,7 +43,12 @@ MEDIAZONEID_1688 = settings.MEDIAZONEID_1688
 
 def fix_unique_email():
     user_objs = User.objects.all()
-    user_objs.update(email='')
+    
+    
+    for user_obj in user_objs:
+        unique_id = get_random_string(length=32)
+        user_obj.email=unique_id+'@storagon.io'
+        user_obj.save()
 
 @shared_task
 def get_taobao_transaction(start_time=None, end_time=None):

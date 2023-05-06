@@ -87,7 +87,17 @@ class TransactionType(EnumBase):
 	refererPPD = 7
 	deposit = 8
 	withdrawn = 9
-
+class TransactionCommissionType(EnumBase):
+	agency = 0
+	referer = 1
+	website = 2
+	pay = 3
+	transfer = 4
+	ppd = 5
+	rebill = 6
+	refererPPD = 7
+	deposit = 8
+	withdrawn = 9
 
 class TransactionStatus(EnumBase):
 	auto = 0

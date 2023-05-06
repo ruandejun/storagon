@@ -726,7 +726,7 @@ def check_cmd_cashback_telegram(chat_id,message_id=None,text=None,callback_query
     user = user_telegram.user
     currency_obj, created = AccountCurrency.objects.get_or_create(code='CNY', label='CNY')
     account_balance_obj, created = AccountBalance.objects.get_or_create(user=user,balance_type=BalanceType.credit,currency=currency_obj)
-    current_banlance = UserController.calculateUserBlance(account_balance_obj)
+    current_banlance = UserController.calculateUserBalance(account_balance_obj)
 
     if callback_query:
         print('callback_query==', callback_query)
@@ -822,7 +822,7 @@ def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, ch
     user = user_telegram.user
     currency_obj, created = AccountCurrency.objects.get_or_create(code='USD', label='USD')
     account_balance_obj, created = AccountBalance.objects.get_or_create(user=user,balance_type=BalanceType.credit,currency=currency_obj)
-    current_banlance = UserController.calculateUserBlance(account_balance_obj)
+    current_banlance = UserController.calculateUserBalance(account_balance_obj)
 
     if callback_query:
         print('callback_query==', callback_query)

@@ -62,10 +62,10 @@ class PaymentType(models.Model):
     def __str__(self):
         return str(self.label)
 
-class TransactionType(models.Model):
+class TransactionTypes(models.Model):
     class Meta:
-        verbose_name = _("TransactionType")
-        verbose_name_plural = _("TransactionType")
+        verbose_name = _("TransactionTypes")
+        verbose_name_plural = _("TransactionTypes")
 
     created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
     modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
@@ -554,6 +554,8 @@ class TransactionCommission(models.Model):
                                            null=True,
                                            on_delete=models.PROTECT)   
     
+    transaction_type = models.PositiveSmallIntegerField(choices=TransactionType.ChoiceList(), default=TransactionType.agency, db_index=True)
+    
     transaction_holder = models.ForeignKey("BalanceAccount", verbose_name=_("transaction_holder"), blank=True,
                                            null=True,
                                            on_delete=models.PROTECT)
@@ -596,7 +598,7 @@ class Transaction(models.Model):
                                            null=True,
                                            on_delete=models.PROTECT)
     #deposit or paid
-    type = models.ForeignKey("TransactionType", verbose_name=_("TransactionType"), on_delete=models.PROTECT, null=True)
+    type = models.ForeignKey("TransactionTypes", verbose_name=_("TransactionTypes"), on_delete=models.PROTECT, null=True)
 
     #bank or cash
     payment_type = models.ForeignKey("PaymentType", verbose_name=_("PaymentType"), on_delete=models.PROTECT, null=True)

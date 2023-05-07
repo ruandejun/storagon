@@ -259,13 +259,13 @@ def calculateUserBalance(accountBalance, realtime=False):
 def calculateUserCommission(accountBalance, realtime=False):
 	if realtime:
 		print('==get deposit==')
-		transaction_deposits = TransactionCommission.objects.filter(transaction_holder=accountBalance,transaction_type=TransactionType.deposit, transaction_status=TransactionStatus.success).aggregate(
+		transaction_deposits = TransactionCommission.objects.filter(transaction_holder=accountBalance,transaction_type=TransactionCommissionType.deposit, status=TransactionStatus.success).aggregate(
 	            sum_amount=Sum(F('amount')), count=Count(F('id')))
 		print('==get paid==')
-		transaction_paids = TransactionCommission.objects.filter(transaction_holder=accountBalance,transaction_type=TransactionType.pay, transaction_status=TransactionStatus.success).aggregate(
+		transaction_paids = TransactionCommission.objects.filter(transaction_holder=accountBalance,transaction_type=TransactionCommissionType.pay, status=TransactionStatus.success).aggregate(
 	            sum_amount=Sum(F('amount')), count=Count(F('id')))
 		print('==get refund==')
-		transaction_withdrawns = TransactionCommission.objects.filter(transaction_holder=accountBalance,transaction_type=TransactionType.withdrawn, transaction_status=TransactionStatus.success).aggregate(
+		transaction_withdrawns = TransactionCommission.objects.filter(transaction_holder=accountBalance,transaction_type=TransactionCommissionType.withdrawn, status=TransactionStatus.success).aggregate(
 	            sum_amount=Sum(F('amount')), count=Count(F('id')))
 
 		if not transaction_deposits['sum_amount']:

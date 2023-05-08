@@ -23,7 +23,7 @@ def get_groups(user,request):
     # from ipware import get_client_ip
     # ip, is_routable = get_client_ip(request)
     groups = []
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         # company_ip = SystemConfigureController.getConfigure('company_ip')
         # if company_ip.find(ip) != -1 or user.profile.administrator:
         list_group = user.groups.all()

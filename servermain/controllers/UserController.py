@@ -22,6 +22,7 @@ from storagon.tool import *
 from storagon.enum import *
 from system_configure.controllers import SystemConfigureController
 from django.db.models import Sum, F, Count, Q , Case, When, Value
+from cashback.models.payment_models import TransactionCommission
 
 def calculateUserStorage(user_id):
 	"""Recalculate an user storage
@@ -223,7 +224,7 @@ def verifyAccountActivation(activation_code):
 	cache.delete(activation_code);
 	return True
 
-def calculateUserBlance(accountBalance, realtime=False):
+def calculateUserBalance(accountBalance, realtime=False):
 	if realtime:
 		print('==get deposit==')
 		transaction_deposits = TransactionLog.objects.filter(balance=accountBalance,transaction_type=TransactionType.deposit, transaction_status=TransactionStatus.success).aggregate(
@@ -233,6 +234,38 @@ def calculateUserBlance(accountBalance, realtime=False):
 	            sum_amount=Sum(F('amount')), count=Count(F('id')))
 		print('==get refund==')
 		transaction_withdrawns = TransactionLog.objects.filter(balance=accountBalance,transaction_type=TransactionType.withdrawn, transaction_status=TransactionStatus.success).aggregate(
+	            sum_amount=Sum(F('amount')), count=Count(F('id')))
+
+		if not transaction_deposits['sum_amount']:
+			sum_deposits_amount = 0
+		else:
+			sum_deposits_amount = transaction_deposits['sum_amount']
+
+		if not transaction_paids['sum_amount']:
+			sum_pays_amount = 0
+		else:
+			sum_pays_amount = transaction_paids['sum_amount']
+		if not transaction_withdrawns['sum_amount']:
+			sum_withdrawns_amount = 0
+		else:
+			sum_withdrawns_amount = transaction_withdrawns['sum_amount']
+		current_banlance = sum_deposits_amount - sum_pays_amount - sum_withdrawns_amount
+		accountBalance.amount = current_banlance
+		accountBalance.save(update_fields=['amount'])
+	else:
+		current_banlance = accountBalance.amount
+	return current_banlance
+
+def calculateUserCommission(accountBalance, realtime=False):
+	if realtime:
+		print('==get deposit==')
+		transaction_deposits = TransactionCommission.objects.filter(transaction_holder=accountBalance,transaction_type=TransactionCommissionType.deposit, status=TransactionStatus.success).aggregate(
+	            sum_amount=Sum(F('amount')), count=Count(F('id')))
+		print('==get paid==')
+		transaction_paids = TransactionCommission.objects.filter(transaction_holder=accountBalance,transaction_type=TransactionCommissionType.pay, status=TransactionStatus.success).aggregate(
+	            sum_amount=Sum(F('amount')), count=Count(F('id')))
+		print('==get refund==')
+		transaction_withdrawns = TransactionCommission.objects.filter(transaction_holder=accountBalance,transaction_type=TransactionCommissionType.withdrawn, status=TransactionStatus.success).aggregate(
 	            sum_amount=Sum(F('amount')), count=Count(F('id')))
 
 		if not transaction_deposits['sum_amount']:

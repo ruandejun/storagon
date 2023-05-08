@@ -554,6 +554,8 @@ class TransactionCommission(models.Model):
                                            null=True,
                                            on_delete=models.PROTECT)   
     
+    transaction_type = models.PositiveSmallIntegerField(choices=TransactionCommissionType.ChoiceList(), default=TransactionCommissionType.agency, db_index=True)
+    
     transaction_holder = models.ForeignKey("BalanceAccount", verbose_name=_("transaction_holder"), blank=True,
                                            null=True,
                                            on_delete=models.PROTECT)

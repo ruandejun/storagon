@@ -18,6 +18,8 @@ from cashback.api.TaobaoApi import *
 from django.urls import reverse
 from django.shortcuts import redirect
 from django.http import HttpResponsePermanentRedirect, HttpResponseRedirect
+from storagon.enum import *
+
 
 def get_groups(user,request):
     # from ipware import get_client_ip
@@ -420,6 +422,26 @@ def get_all_commission(request):
     list_get = tran_commission_objs[offset:offset+limit]
 
     data = TransactionCommissionSerializer(list_get, many=True).data
+
+    data_table = {'total': count, 'rows': data}
+    return Response(data_table, status=HTTP_200_OK)
+
+
+@api_view(['GET','POST','PUT'])
+def get_commission_information(request):
+    # groups = get_groups(request.user,request)
+    
+    balance_currency = request.GET.get('currency','VND')
+
+    print('==get deposit==')
+    transaction_deposits = payment_models.TransactionCommission.objects.filter(transaction_holder=accountBalance,transaction_type=TransactionCommissionType.deposit, status=TransactionStatus.success).aggregate(
+            sum_amount=Sum(F('amount')), count=Count(F('id')))
+    print('==get paid==')
+    transaction_paids = payment_models.TransactionCommission.objects.filter(transaction_holder=accountBalance,transaction_type=TransactionCommissionType.pay, status=TransactionStatus.success).aggregate(
+            sum_amount=Sum(F('amount')), count=Count(F('id')))
+    print('==get refund==')
+    transaction_withdrawns = payment_models.TransactionCommission.objects.filter(transaction_holder=accountBalance,transaction_type=TransactionCommissionType.withdrawn, status=TransactionStatus.success).aggregate(
+            sum_amount=Sum(F('amount')), count=Count(F('id')))
 
     data_table = {'total': count, 'rows': data}
     return Response(data_table, status=HTTP_200_OK)

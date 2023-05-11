@@ -29,6 +29,7 @@ import random, re
 from Crypto.Cipher import AES
 from django.core.validators import RegexValidator
 from django.utils.translation import ugettext_lazy as _
+from servermain.models import AccountBalance, AccountCurrency
 
 
 User._meta.get_field('email')._unique = True

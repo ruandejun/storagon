@@ -583,7 +583,7 @@ class TransactionCommission(models.Model):
 
     approved = models.DateTimeField(verbose_name=_("approved"), null=True, blank=True)
 
-    status = models.PositiveIntegerField(verbose_name=_("status"), null=True, blank=True, default=0)
+    status = models.PositiveIntegerField(verbose_name=_("status"), choices=TransactionStatus.ChoiceList(), null=True, blank=True, default=TransactionStatus.pending)
 
     def __str__(self):
         return self.pk

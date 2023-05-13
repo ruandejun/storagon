@@ -22,7 +22,7 @@ from django.utils.translation import ugettext_lazy as _
 from ..constants.DefaultSettings import *
 from storagon.enum import *
 # from .order_models import AlipayAccounts
-from shop_models import Currency
+from .shop_models import Currency
 
 # ================= Payment ====================
 

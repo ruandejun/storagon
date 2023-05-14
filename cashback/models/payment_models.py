@@ -22,7 +22,7 @@ from django.utils.translation import ugettext_lazy as _
 from ..constants.DefaultSettings import *
 from storagon.enum import *
 # from .order_models import AlipayAccounts
-from .shop_models import Currency
+
 
 # ================= Payment ====================
 
@@ -253,7 +253,7 @@ class CustomerPayment(models.Model):
                                 max_digits=MONEY_MAX_DIGITS, decimal_places=MONEY_DECIMAL_PLACES,
                                 validators=[MinValueValidator(0)], db_index=True, null=True, blank=True)
 
-    currency = models.ForeignKey(Currency, verbose_name=_("currency"), on_delete=models.PROTECT, null=True, blank=True)
+    currency = models.ForeignKey("Currency", verbose_name=_("currency"), on_delete=models.PROTECT, null=True, blank=True)
 
 
     exchange_rate = models.DecimalField(verbose_name=_("exchange_rate"), default=decimal.Decimal(0),
@@ -631,7 +631,7 @@ class Transaction(models.Model):
                                             editable=False)
     to_balance_history = models.CharField(verbose_name=_("to_balance_history"), default="", max_length=512,
                                           editable=False)
-    currency = models.ForeignKey(Currency, verbose_name=_("currency"), on_delete=models.PROTECT)
+    currency = models.ForeignKey("Currency", verbose_name=_("currency"), on_delete=models.PROTECT)
 
     exchange_rate = models.DecimalField(verbose_name=_("exchange_rate"), default=decimal.Decimal(0),
                                         max_digits=XRATE_MAX_DIGITS,
@@ -697,7 +697,7 @@ class BankAccount(models.Model):
     type = models.ForeignKey("PaymentType", verbose_name=_("PaymentType"), limit_choices_to={'is_vendorpayment': True},
                              on_delete=models.PROTECT)
 
-    currency = models.ForeignKey(Currency, verbose_name=_("currency"), on_delete=models.PROTECT)
+    currency = models.ForeignKey("Currency", verbose_name=_("currency"), on_delete=models.PROTECT)
 
     exchange_rate = models.DecimalField(verbose_name=_("exchange_rate"), default=decimal.Decimal(0),
                                         max_digits=XRATE_MAX_DIGITS,
@@ -727,7 +727,7 @@ class BalanceAccount(models.Model):
     name = models.CharField(verbose_name=_("name"), max_length=512)
     type = models.PositiveSmallIntegerField(verbose_name=_("type"), choices=BalanceType.ChoiceList(),
                                             default=BalanceType.bank, db_index=True)
-    currency = models.ForeignKey(Currency, verbose_name=_("currency"), on_delete=models.PROTECT)
+    currency = models.ForeignKey("Currency", verbose_name=_("currency"), on_delete=models.PROTECT)
     amount = models.DecimalField(verbose_name=_("amount"), default=decimal.Decimal(0), max_digits=MONEY_MAX_DIGITS,
                                  decimal_places=MONEY_DECIMAL_PLACES,
                                  validators=[MinValueValidator(0)], db_index=True)

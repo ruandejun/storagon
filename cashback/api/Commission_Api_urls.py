@@ -16,6 +16,7 @@ urlpatterns = [
 	url(r'^get_1688_commission_statistics/', get_1688_commission_statistics, name='get_1688_commission_statistics'),
 	url(r'^get_taobao_commission_statistics/', get_taobao_commission_statistics, name='get_taobao_commission_statistics'),
 	url(r'^get_all_commission/', get_all_commission, name='get_all_commission'),
+	url(r'^get_commission_information/', get_commission_information, name='get_commission_information'),
 	url(r'^get_item_selections/', get_item_selections, name='get_item_selections'),
 	url(r'^get_item_quantity_sale/', get_item_quantity_sale, name='get_item_quantity_sale'),
 	url(r'^get_item_flash_sale/', get_item_flash_sale, name='get_item_flash_sale'),

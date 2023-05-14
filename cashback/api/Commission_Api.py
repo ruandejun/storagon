@@ -433,6 +433,14 @@ def get_commission_information(request):
     
     balance_currency = request.GET.get('currency','VND')
 
+    currency_obj, created = shop_models.Currency.objects.get_or_create(value=balance_currency.upper(), label=balance_currency.upper())
+    
+    accountBalance_objs = payment_models.BalanceAccount.objects.filter(currency__value=balance_currency.upper(), account_holder=request.user)
+    if accountBalance_objs.exists():
+        accountBalance = accountBalance_objs.first()
+    else:
+        accountBalance = payment_models.BalanceAccount.objects.get_or_create(currency=currency_obj, account_holder=request.user, name=request.user.username)
+        
     print('==get deposit==')
     transaction_deposits = payment_models.TransactionCommission.objects.filter(transaction_holder=accountBalance,transaction_type=TransactionCommissionType.deposit, status=TransactionStatus.success).aggregate(
             sum_amount=Sum(F('amount')), count=Count(F('id')))
@@ -443,7 +451,7 @@ def get_commission_information(request):
     transaction_withdrawns = payment_models.TransactionCommission.objects.filter(transaction_holder=accountBalance,transaction_type=TransactionCommissionType.withdrawn, status=TransactionStatus.success).aggregate(
             sum_amount=Sum(F('amount')), count=Count(F('id')))
 
-    data_table = {'total': count, 'rows': data}
+    data_table = {'total_deposit': dict(transaction_deposits), 'total_paid': dict(transaction_paids), 'total_withdrawns': dict(transaction_withdrawns)}
     return Response(data_table, status=HTTP_200_OK)
 
 

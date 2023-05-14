@@ -433,7 +433,7 @@ def get_commission_information(request):
     
     balance_currency = request.GET.get('currency','VND')
 
-    currency_obj, created = shop_models.Currency.objects.get_or_create(value=balance_currency.upper(), label=balance_currency.upper())
+    currency_obj, created = shop_models.Currency.objects.get_or_create(code=balance_currency.upper(), label=balance_currency.upper())
     
     accountBalance_objs = payment_models.BalanceAccount.objects.filter(currency__value=balance_currency.upper(), account_holder=request.user)
     if accountBalance_objs.exists():

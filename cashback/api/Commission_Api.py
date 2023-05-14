@@ -439,7 +439,7 @@ def get_commission_information(request):
 
     currency_obj, created = shop_models.Currency.objects.get_or_create(code=balance_currency.upper(), label=balance_currency.upper())
     
-    accountBalance_objs = payment_models.BalanceAccount.objects.filter(currency__value=balance_currency.upper(), account_holder=request.user)
+    accountBalance_objs = payment_models.BalanceAccount.objects.filter(currency__code=balance_currency.upper(), account_holder=request.user)
     if accountBalance_objs.exists():
         accountBalance = accountBalance_objs.first()
     else:

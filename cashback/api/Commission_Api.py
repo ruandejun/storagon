@@ -430,8 +430,8 @@ def get_all_commission(request):
 
 @api_view(['GET','POST','PUT'])
 @login_required_ajax()
-@signature_test()
-@user_passes_test(banned_check)
+# @signature_test()
+# @user_passes_test(banned_check)
 def get_commission_information(request):
     # groups = get_groups(request.user,request)
     

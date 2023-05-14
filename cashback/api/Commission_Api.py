@@ -19,7 +19,8 @@ from django.urls import reverse
 from django.shortcuts import redirect
 from django.http import HttpResponsePermanentRedirect, HttpResponseRedirect
 from storagon.enum import *
-
+from storagon.decorator import banned_check, login_required_ajax, signature_test
+from django.contrib.auth.decorators import user_passes_test
 
 def get_groups(user,request):
     # from ipware import get_client_ip
@@ -428,6 +429,9 @@ def get_all_commission(request):
 
 
 @api_view(['GET','POST','PUT'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
 def get_commission_information(request):
     # groups = get_groups(request.user,request)
     

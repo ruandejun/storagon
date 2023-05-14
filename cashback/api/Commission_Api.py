@@ -443,7 +443,7 @@ def get_commission_information(request):
     if accountBalance_objs.exists():
         accountBalance = accountBalance_objs.first()
     else:
-        accountBalance = payment_models.BalanceAccount.objects.get_or_create(currency=currency_obj, account_holder=request.user, name=request.user.username)
+        accountBalance, created = payment_models.BalanceAccount.objects.get_or_create(currency=currency_obj, account_holder=request.user, name=request.user.username)
         
     print('==get deposit==')
     transaction_deposits = payment_models.TransactionCommission.objects.filter(transaction_holder=accountBalance,transaction_type=TransactionCommissionType.deposit, status=TransactionStatus.success).aggregate(

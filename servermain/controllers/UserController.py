@@ -262,6 +262,7 @@ def calculateUserCommission(accountBalance, realtime=False):
 		transaction_deposits = TransactionCommission.objects.filter(transaction_holder=accountBalance,transaction_type=TransactionCommissionType.deposit, status=TransactionStatus.success).aggregate(
 	            sum_amount=Sum(F('amount')), count=Count(F('id')))
 		print('==get paid==')
+		#paid some orders by currency
 		transaction_paids = TransactionCommission.objects.filter(transaction_holder=accountBalance,transaction_type=TransactionCommissionType.pay, status=TransactionStatus.success).aggregate(
 	            sum_amount=Sum(F('amount')), count=Count(F('id')))
 		print('==get refund==')

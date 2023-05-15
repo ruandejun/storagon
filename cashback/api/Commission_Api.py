@@ -449,13 +449,35 @@ def get_commission_information(request):
     transaction_deposits = payment_models.TransactionCommission.objects.filter(transaction_holder=accountBalance,transaction_type=TransactionCommissionType.deposit, status=TransactionStatus.success).aggregate(
             sum_amount=Sum(F('amount')), count=Count(F('id')))
     print('==get paid==')
+    #paid some orders by currency
     transaction_paids = payment_models.TransactionCommission.objects.filter(transaction_holder=accountBalance,transaction_type=TransactionCommissionType.pay, status=TransactionStatus.success).aggregate(
             sum_amount=Sum(F('amount')), count=Count(F('id')))
-    print('==get refund==')
+    print('==get withdrawns==')
     transaction_withdrawns = payment_models.TransactionCommission.objects.filter(transaction_holder=accountBalance,transaction_type=TransactionCommissionType.withdrawn, status=TransactionStatus.success).aggregate(
             sum_amount=Sum(F('amount')), count=Count(F('id')))
 
-    data_table = {'total_deposit': dict(transaction_deposits), 'total_paid': dict(transaction_paids), 'total_withdrawns': dict(transaction_withdrawns)}
+    transaction_pending = payment_models.TransactionCommission.objects.filter(transaction_holder=accountBalance,transaction_type=TransactionCommissionType.agency, status=TransactionStatus.pending).aggregate(
+            sum_amount=Sum(F('amount')), count=Count(F('id')))
+    
+    if not transaction_deposits['sum_amount']:
+        sum_deposits_amount = 0
+    else:
+        sum_deposits_amount = transaction_deposits['sum_amount']
+
+    if not transaction_paids['sum_amount']:
+        sum_pays_amount = 0
+    else:
+        sum_pays_amount = transaction_paids['sum_amount']
+    if not transaction_withdrawns['sum_amount']:
+        sum_withdrawns_amount = 0
+    else:
+        sum_withdrawns_amount = transaction_withdrawns['sum_amount']
+    current_banlance = sum_deposits_amount - sum_pays_amount - sum_withdrawns_amount
+    accountBalance.amount = current_banlance
+    accountBalance.save(update_fields=['amount'])
+    
+
+    data_table = {'account_balance':{'username': request.user.username, 'currency': balance_currency,'current_banlance': current_banlance},'total_deposit': dict(transaction_deposits), 'total_paid': dict(transaction_paids), 'total_withdrawns': dict(transaction_withdrawns), 'total_pending': dict(transaction_pending)}
     return Response(data_table, status=HTTP_200_OK)
 
 

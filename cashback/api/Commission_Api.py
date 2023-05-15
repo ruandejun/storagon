@@ -446,18 +446,20 @@ def get_commission_information(request):
         accountBalance, created = payment_models.BalanceAccount.objects.get_or_create(currency=currency_obj, account_holder=request.user, name=request.user.username)
         
     print('==get deposit==')
-    transaction_deposits = payment_models.TransactionCommission.objects.filter(transaction_holder=accountBalance,transaction_type=TransactionCommissionType.deposit, status=TransactionStatus.success).aggregate(
-            sum_amount=Sum(F('amount')), count=Count(F('id')))
+    transaction_deposits = payment_models.TransactionCommission.objects.filter(account_holder=request.user, transaction_type=TransactionCommissionType.deposit, status=TransactionStatus.success).aggregate(
+            sum_amount=Sum(F('amount') * F('exchange_rate')), count=Count(F('id')))
+    
     print('==get paid==')
     #paid some orders by currency
-    transaction_paids = payment_models.TransactionCommission.objects.filter(transaction_holder=accountBalance,transaction_type=TransactionCommissionType.pay, status=TransactionStatus.success).aggregate(
-            sum_amount=Sum(F('amount')), count=Count(F('id')))
+    transaction_paids = payment_models.TransactionCommission.objects.filter(account_holder=request.user, transaction_type=TransactionCommissionType.pay, status=TransactionStatus.success).aggregate(
+            sum_amount=Sum(F('amount') * F('exchange_rate')), count=Count(F('id')))
+    
     print('==get withdrawns==')
-    transaction_withdrawns = payment_models.TransactionCommission.objects.filter(transaction_holder=accountBalance,transaction_type=TransactionCommissionType.withdrawn, status=TransactionStatus.success).aggregate(
-            sum_amount=Sum(F('amount')), count=Count(F('id')))
+    transaction_withdrawns = payment_models.TransactionCommission.objects.filter(account_holder=request.user, transaction_type=TransactionCommissionType.withdrawn, status=TransactionStatus.success).aggregate(
+            sum_amount=Sum(F('amount') * F('exchange_rate')), count=Count(F('id')))
 
-    transaction_pending = payment_models.TransactionCommission.objects.filter(transaction_holder=accountBalance,transaction_type=TransactionCommissionType.agency, status=TransactionStatus.pending).aggregate(
-            sum_amount=Sum(F('amount')), count=Count(F('id')))
+    transaction_pending = payment_models.TransactionCommission.objects.filter(account_holder=request.user, transaction_type=TransactionCommissionType.agency, status=TransactionStatus.pending).aggregate(
+            sum_amount=Sum(F('amount') * F('exchange_rate')), count=Count(F('id')))
     
     if not transaction_deposits['sum_amount']:
         sum_deposits_amount = 0

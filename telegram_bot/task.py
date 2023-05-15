@@ -161,10 +161,11 @@ def get_taobao_transaction(start_time=None, end_time=None):
             
         ##create commission transaction
         tran_commission_objs = payment_models.TransactionCommission.objects.filter(reference=line.trade_id)
+        currency_obj, created = shop_models.Currency.objects.get_or_create(value='CNY', label='CNY')
         if line.account_holder:
             balance_objs = payment_models.BalanceAccount.objects.filter(currency__value='CNY', account_holder=line.account_holder)
             if not balance_obj.exists():
-                currency_obj, created = shop_models.Currency.objects.get_or_create(value='CNY', label='CNY')
+                
                 balance_obj = payment_models.BalanceAccount.objects.create(account_holder=line.account_holder, currency=currency_obj)
             else:
                 balance_obj = balance_objs[0]
@@ -185,6 +186,9 @@ def get_taobao_transaction(start_time=None, end_time=None):
             tran_commission_obj = payment_models.TransactionCommission(**data_create)
             tran_commission_obj.transaction_holder = balance_obj
             tran_commission_obj.commission_type = commission_type_obj
+            tran_commission_obj.account_holder = account_holder
+            tran_commission_obj.currency = currency_obj
+            tran_commission_obj.exchange_rate = currency_obj.exchange_rate
             tran_commission_obj.save()
         else:
             tran_commission_obj = tran_commission_objs[0]
@@ -287,10 +291,10 @@ def get_1688_transaction():
             
         ##create commission transaction
         tran_commission_objs = payment_models.TransactionCommission.objects.filter(reference=line.bizId)
+        currency_obj, created = shop_models.Currency.objects.get_or_create(value='CNY', label='CNY')
         if line.account_holder:
             balance_objs = payment_models.BalanceAccount.objects.filter(currency__value='CNY', account_holder=line.account_holder)
             if not balance_obj.exists():
-                currency_obj, created = shop_models.Currency.objects.get_or_create(value='CNY', label='CNY')
                 balance_obj = payment_models.BalanceAccount.objects.create(account_holder=line.account_holder, currency=currency_obj)
             else:
                 balance_obj = balance_objs[0]
@@ -311,6 +315,9 @@ def get_1688_transaction():
             tran_commission_obj = payment_models.TransactionCommission(**data_create)
             tran_commission_obj.transaction_holder = balance_obj
             tran_commission_obj.commission_type = commission_type_obj
+            tran_commission_obj.account_holder = account_holder
+            tran_commission_obj.currency = currency_obj
+            tran_commission_obj.exchange_rate = currency_obj.exchange_rate
             tran_commission_obj.save()
         else:
             tran_commission_obj = tran_commission_objs[0]

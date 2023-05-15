@@ -554,6 +554,15 @@ class TransactionCommission(models.Model):
                                            null=True,
                                            on_delete=models.PROTECT)   
     
+    account_holder = models.ForeignKey(User, verbose_name=_("account_holder"), null=True, blank=True,
+                                       on_delete=models.PROTECT)
+    
+    currency = models.ForeignKey("Currency", verbose_name=_("currency"), null=True, blank=True, on_delete=models.PROTECT)
+
+    exchange_rate = models.DecimalField(verbose_name=_("exchange_rate"), default=decimal.Decimal(0),
+                                        max_digits=XRATE_MAX_DIGITS,
+                                        decimal_places=XRATE_DECIMAL_PLACES, validators=[MinValueValidator(0)])
+     
     transaction_type = models.PositiveSmallIntegerField(choices=TransactionCommissionType.ChoiceList(), default=TransactionCommissionType.agency, db_index=True)
     
     transaction_holder = models.ForeignKey("BalanceAccount", verbose_name=_("transaction_holder"), blank=True,

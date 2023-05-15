@@ -458,6 +458,7 @@ def get_commission_information(request):
     transaction_withdrawns = payment_models.TransactionCommission.objects.filter(account_holder=request.user, transaction_type=TransactionCommissionType.withdrawn, status=TransactionStatus.success).aggregate(
             sum_amount=Sum(F('amount') * F('exchange_rate')), count=Count(F('id')))
 
+    print('==get pending==')
     transaction_pending = payment_models.TransactionCommission.objects.filter(account_holder=request.user, transaction_type=TransactionCommissionType.agency, status=TransactionStatus.pending).aggregate(
             sum_amount=Sum(F('amount') * F('exchange_rate')), count=Count(F('id')))
     

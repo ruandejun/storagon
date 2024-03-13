@@ -1561,8 +1561,11 @@ def update_profile_by_id(request):
     if request.method == 'GET':
         return successResponse({"ok": "Get request processed"})
     update_post = json.loads(request.body)
-
-    browser_profiles = BrowserProfiles.objects.filter(pk=update_post['id'], profile_owner=request.user)
+    if update_post['id'].find('\n') !=-1:
+      id_update = update_post['id'].split('\n')[0].strip()
+    else:
+      id_update = update_post['id']
+    browser_profiles = BrowserProfiles.objects.filter(pk=id_update, profile_owner=request.user)
     if browser_profiles.exists():
       browser_profiles.update(**update_post['update_data'])
       browser_profile = BrowserProfiles.objects.get(

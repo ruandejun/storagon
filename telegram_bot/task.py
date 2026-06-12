@@ -1,1419 +1,1419 @@
-from ensurepip import version
-import re, telebot, ast, requests
-from tkinter import N
-from celery import shared_task
-from storagon import settings
-
-from servermain.models import AccountBalance, AccountCurrency
-from django.contrib.auth.models import User
-from telegram_bot.models import *
-from storagon.enum import *
-from servermain.controllers import UserController
-from telegram_bot.api.TelegramBot_RestfulApi import AccountsSellingSerializer, CheckerTypeFunctionSerializer, CreatorTypeFunctionSerializer
-from rest_framework.authtoken.models import Token
-import random, json, os, pathlib, functools, shutil, pytz, decimal
-from tqdm.auto import tqdm
-from pathlib import Path
-from telebot import types
-from django.core.files import File
-import datetime
-import openai
-from cashback.api.Alibaba1688Api import *
-from cashback.api.TaobaoApi import *
-from cashback.api.Commission_Api import get_commission_obj
-from cashback.models import payment_models, product_models, shop_models
-import top.api, aop
-from http.cookiejar import CookieJar
-from django.db.models import Sum, F, Count, Q
-from django.utils import timezone
-from django.utils.crypto import get_random_string
-
-
-appkey = settings.TAOBAO_APPKEY
-secret = settings.TAOBAO_SECRET
-adzone_id = settings.TAOBAO_ADZONE_ID
-
-
-APP_KEY_1688 = settings.APP_KEY_1688
-APP_SECRET_1688 = settings.APP_SECRET_1688
-ACCESS_TOKEN_1688 = settings.ACCESS_TOKEN_1688
-MEDIAID_1688 = settings.MEDIAID_1688
-MEDIAZONEID_1688 = settings.MEDIAZONEID_1688
-
-
-def fix_unique_email():
-    user_objs = User.objects.all()
-    
-    
-    for user_obj in user_objs:
-        unique_id = get_random_string(length=32)
-        user_obj.email=unique_id+'@storagon.io'
-        user_obj.save()
-
-@shared_task
-def get_taobao_transaction(start_time=None, end_time=None):
-
-    req = top.api.TbkOrderDetailsGetRequest()
-    req.set_app_info(top.appinfo(appkey, secret))
-    time_range = 3
-    time_limit = 3600
-    list_create_transaction = []
-    time = 0
-    # while time <= time_limit:
-    if not start_time:
-        start_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai')) - datetime.timedelta(hours=3)).strftime(
-        '%Y-%m-%d %H:%M:%S')
-    if not end_time:
-        end_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai'))).strftime('%Y-%m-%d %H:%M:%S')
-    # print(appkey,end_time)
-    print(start_time,end_time)
-    # req.start_dsr = 10
-    req.page_size = 200
-    req.start_time = start_time
-    req.end_time = end_time
-    req.page_no = 1
-    req.tk_status = None
-    req.query_type = 4
-    try:
-        resp = req.getResponse()
-    except:
-        return
-    print(resp)
-    # result = json.loads(resp)
-    results = resp['tbk_order_details_get_response']['data']['results']
-    # print(results)
-    time = time + time_range
-    if 'publisher_order_dto' not in results:
-        return
-    else:
-        data = results['publisher_order_dto']
-    model_dict = {'adzone_id': 109959950065, 'adzone_name': 'chuyenhang365', 'alimama_rate': '10.00', 'alimama_share_fee': '0.26', 'alipay_total_price': '37.80', 'click_time': '2023-04-15 15:29:47', 'deposit_price': '0.00', 'flow_source': '--', 'income_rate': '7.00', 'is_lx': '0', 'item_category_name': '女装/女士精�', 'item_id': '0jtNUGt0BmS2t6-m80Wn0di7K7G7qOoUBg', 'item_img': '//img.alicdn.com/tfscom/i3/2820556330/O1CN01XAJ0ed1wdBvMkLPT9_!!2820556330.jpg', 'item_link': '//uland.taobao.com/item/edetail?id=0jtNUGt0BmS2t6-m80Wn0di7K7G7qOoUBg', 'item_num': 1, 'item_price': '128.00', 'item_title': '�装2023年新款女装时尚刺绣纯棉衬衫女洋气全棉衬衣蕾�拼接上衣', 'marketing_type': '', 'modified_time': '2023-04-26 17:32:30', 'order_type': '淘�', 'pay_price': '37.80', 'pub_id': 859350174, 'pub_share_fee': '2.65', 'pub_share_pre_fee': '2.65', 'pub_share_rate': '100.00', 'refund_tag': 0, 'seller_nick': '韩都女装�饰馆', 'seller_shop_title': '韩都女装�饰馆', 'site_id': 1251850405, 'site_name': 'chuyenhang365', 'subsidy_fee': '0.00', 'subsidy_rate': '0.00', 'subsidy_type': '--', 'tb_deposit_time': '--', 'tb_paid_time': '2023-04-15 17:57:09', 'terminal_type': 'PC', 'tk_commission_fee_for_media_platform': '0.00', 'tk_commission_pre_fee_for_media_platform': '0.00', 'tk_commission_rate_for_media_platform': '0.00', 'tk_create_time': '2023-04-15 16:56:11', 'tk_deposit_time': '--', 'tk_earning_time': '2023-04-26 17:32:30', 'tk_order_role': 2, 'tk_paid_time': '2023-04-15 17:57:24', 'tk_status': 3, 'tk_total_rate': '7.00', 'total_commission_fee': '2.65', 'total_commission_rate': '7.00', 'trade_id': '3306979983228993420', 'trade_parent_id': '3306979983227993420'}   
-    for line in data:
-        print(line)
-        list_key_remove = []
-        for key in line.keys():
-            if line[key] == '--':
-                line[key] = None
-            if key not in model_dict:
-                # line.pop(key, None)
-                list_key_remove.append(key)
-        if list_key_remove:
-            for line_remove in list_key_remove:
-                line.pop(line_remove, None)
-        trade_id = line.get('trade_id')
-
-        ##create taobao transaction  
-        tran_taobao_objs = payment_models.TransactionTaobao.objects.filter(trade_id=trade_id)
-        if tran_taobao_objs.exists():
-            tran_taobao_objs.update(**line)            
-            tran_commission_objs = payment_models.TransactionCommission.objects.filter(reference=trade_id)
-            if tran_commission_objs.exists():
-                tran_commission_objs.update(status=line['tk_status'])
-
-            continue
-        if line['tk_status']  == 13:
-            continue
-        tran_taobao = payment_models.TransactionTaobao(**line)
-        list_create_transaction.append(tran_taobao)
-        
-
-
-    print(len(list_create_transaction))
-    if list_create_transaction:
-        payment_models.TransactionTaobao.objects.bulk_create(list_create_transaction)
-    else:
-        print(payment_models.TransactionTaobao.objects.count())
-        
-    #find transactiontaobao not add commission and create conmmision
-    for line in payment_models.TransactionTaobao.objects.filter(commission_paid=0):
-
-        time_check = (datetime.datetime.now() - datetime.timedelta(hours=3))
-        referUrl_obj = product_models.ReferUrl.objects.filter(item_id=line.item_id)
-        account_holder = None
-        if referUrl_obj.exists():
-            customer_list = referUrl_obj.values_list('customer',flat=True)
-            if customer_list.count() > 1:
-                account_holder = None
-                for line_cus in customer_list:
-                    # print(line_cus)
-                    account_holder_objs = User.objects.filter(
-                        Q(username=line_cus) | Q(telegram__telegram_id=line_cus)).distinct()
-                    if not account_holder_objs.exists():
-                        account_holder_recheck = None
-                    else:
-                        account_holder_recheck = account_holder_objs[0]
-
-                    if hasattr(account_holder_recheck, 'user_telegram'):
-                        print(account_holder_recheck.user_telegram.telegram_id)
-                        trade_number = line.trade_parent_id.replace(line.trade_parent_id[5:len(line.trade_parent_id)-5],'xxxxxxxx')
-                        print(trade_number, line.tradeAmount, line.commission_paid)
-                        msg = '%s, %s, chiết khấu:%s Cần xác nhận, vui lòng xác nhận bằng /mdh mã đặt hàng' % (
-                        trade_number, line.alipay_total_price, line.commission_paid)
-                        print(msg)
-                        send_telegram_notify_to_group(account_holder.user_telegram.telegram_id, msg=msg, bot_type='cashback')
-            else:
-                customer_refer = customer_list[0]
-                account_holder_objs = User.objects.filter(Q(username=customer_refer) | Q(user_telegram__telegram_id=customer_refer)).distinct()
-                if not account_holder_objs.exists():
-                    account_holder = None
-                else:
-                    account_holder = account_holder_objs[0]     
-            
-        ##create commission transaction
-        tran_commission_objs = payment_models.TransactionCommission.objects.filter(reference=line.trade_id)
-        currency_obj, created = shop_models.Currency.objects.get_or_create(value='CNY', label='CNY')
-        if line.account_holder:
-            balance_objs = payment_models.BalanceAccount.objects.filter(currency__value='CNY', account_holder=line.account_holder)
-            if not balance_obj.exists():
-                
-                balance_obj = payment_models.BalanceAccount.objects.create(account_holder=line.account_holder, currency=currency_obj)
-            else:
-                balance_obj = balance_objs[0]
-        else:
-            balance_obj = None  
-        if not tran_commission_objs.exists():
-            print('===create new commission===')
-            data_create = {}
-            data_create['amount'] = decimal.Decimal('{0:.2f}'.format(line.pub_share_pre_fee))
-            data_create['reference'] = line.trade_id
-            data_create['commission_amount'] = decimal.Decimal('{0:.2f}'.format(line.pub_share_pre_fee * decimal.Decimal(0.65)))
-            data_create['customer_ratio'] = decimal.Decimal(0.65)
-            if line.tk_status  == 3:
-                data_create['approved'] = line.tk_earning_time
-            data_create['share_fee'] = line.alimama_share_fee
-            data_create['status'] = line.tk_status
-            commission_type_obj, created = payment_models.CommissionType.objects.get_or_create(value='taobao', label='taobao')
-            tran_commission_obj = payment_models.TransactionCommission(**data_create)
-            tran_commission_obj.transaction_holder = balance_obj
-            tran_commission_obj.commission_type = commission_type_obj
-            tran_commission_obj.account_holder = account_holder
-            tran_commission_obj.currency = currency_obj
-            tran_commission_obj.exchange_rate = currency_obj.exchange_rate
-            tran_commission_obj.save()
-        else:
-            tran_commission_obj = tran_commission_objs[0]
-            if tran_commission_obj.status != line.tk_status:
-                tran_commission_obj.status = line.tk_status
-                tran_commission_obj.save(update_fields=['status'])
-                
-        line.commission_paid = decimal.Decimal('{0:.2f}'.format(line.pub_share_pre_fee * decimal.Decimal(0.65)))
-        line.account_holder = account_holder
-        line.transaction_commission = tran_commission_obj
-        line.save(update_fields=['commission_paid','account_holder', 'transaction_commission'])                 
-        ##send telegram notification
-        if hasattr(account_holder, 'telegram'):
-            print(account_holder.telegram.telegram_id)
-            print(line.trade_parent_id,line.tradeAmount,line.commission_paid)
-            msg = '%s, %s, chiết khấu:%s �ã thanh toán' % (line.trade_parent_id,line.alipay_total_price,line.commission_paid)
-            # print(msg)
-            send_telegram_notify_to_group(account_holder.user_telegram.telegram_id, msg=msg, bot_type='cashback')            
-            
-@shared_task
-def get_1688_transaction():
-    aop.set_default_server('gw.open.1688.com')
-
-    aop.set_default_appinfo(APP_KEY_1688, APP_SECRET_1688)  # default
-
-    start_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai')) - datetime.timedelta(hours=3)).strftime(
-        '%Y-%m-%d %H:%M:%S')
-    end_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai'))).strftime(
-        '%Y-%m-%d %H:%M:%S')
-
-    # start_time = (timezone.now().date() - timedelta(30)).strftime("%Y-%m-%d")
-    # end_time = timezone.now().date().strftime("%Y-%m-%d")
-    print(start_time,end_time)
-    req = aop.api.AlibabaCpsTradeBillListParam()
-    req.access_token = ''
-    req.queryOrderType = 'orderAll'
-    req.orderState = 20
-    req.queryTimeType = 'gmtCreateTime'
-    req.queryStartTime = start_time
-    req.queryEndTime = end_time
-    req.pageNo = 1
-    req.pageSize = 200
-    resp = req.get_response(timeout=30)
-    if 'totalRow' not in resp:
-        return
-    print(resp)
-    totalrow = resp['totalRow']
-    print(totalrow)
-    lastPage = round(totalrow / 200, 0)
-    # # payment_models.Transaction1688.objects.all().delete()
-    list_id = []
-    list_paid = []
-    list_success = []
-    i = 1
-    while i <= int(lastPage):
-        req.pageNo = i
-        req.pageSize = 200
-        resp = req.get_response(timeout=30)
-        # print(resp)
-        for line in resp['tradeBillList']:
-            print(line)
-            # print(line['orderState'])
-            if not line['ext'] or line['orderState'] == 10 or line['orderState'] == 80:
-                continue
-
-            tran_1688_objs = payment_models.Transaction1688.objects.filter(bizSubId=line['bizSubId'])
-            if tran_1688_objs.exists():
-                if tran_1688_objs.first().orderState != line['orderState']:
-                    if line['orderState'] == 20:
-                        list_paid.append(tran_1688_objs.first().pk)
-                    elif line['orderState'] == 50:
-                        list_success.append(tran_1688_objs.first().pk)
-                    print('===', tran_1688_objs.first().orderState, line['orderState'])
-                    tran_1688_objs.update(**line)
-                    tran_commission_objs = payment_models.TransactionCommission.objects.filter(reference=line['bizSubId'])
-                    if tran_commission_objs.exists():
-                        tran_commission_objs.update(status=line['orderState'])                    
-                continue
-            referUrl_obj = product_models.ReferUrl.objects.filter(Q(telegram_id=line['ext']) | Q(customer=line['ext']),
-                                                                  item_id=line['feedId']).distinct()
-            if not referUrl_obj.exists():
-                continue
-            print(line, referUrl_obj.count())
-            tran_1688 = payment_models.Transaction1688(**line)
-            list_id.append(tran_1688)
-        i+=1
-
-    print(len(list_id))
-    if list_id:
-        payment_models.Transaction1688.objects.bulk_create(list_id)
-    else:
-        print(payment_models.Transaction1688.objects.count())
-
-    for line in payment_models.Transaction1688.objects.filter(commission_paid=0):
-        account_holder_objs = User.objects.filter(Q(username=line.ext) | Q(user_telegram__telegram_id=line.ext)).distinct()
-        if not account_holder_objs.exists():
-            account_holder = None
-        else:
-            account_holder = account_holder_objs[0]
-            
-        ##create commission transaction
-        tran_commission_objs = payment_models.TransactionCommission.objects.filter(reference=line.bizId)
-        currency_obj, created = shop_models.Currency.objects.get_or_create(value='CNY', label='CNY')
-        if line.account_holder:
-            balance_objs = payment_models.BalanceAccount.objects.filter(currency__value='CNY', account_holder=line.account_holder)
-            if not balance_obj.exists():
-                balance_obj = payment_models.BalanceAccount.objects.create(account_holder=line.account_holder, currency=currency_obj)
-            else:
-                balance_obj = balance_objs[0]
-        else:
-            balance_obj = None  
-        if not tran_commission_objs.exists():
-            print('===create new commission===')
-            data_create = {}
-            data_create['amount'] = decimal.Decimal('{0:.2f}'.format(line.commission))
-            data_create['reference'] = line.bizSubId
-            data_create['commission_amount'] = decimal.Decimal('{0:.2f}'.format(line.commission * decimal.Decimal(0.55)))
-            data_create['customer_ratio'] = decimal.Decimal(0.55)
-            # if line['tk_status']  == 3:
-                # data_create['approved'] = line['tk_earning_time']
-            # data_create['share_fee'] = line['alimama_share_fee']
-            # data_create['status'] = line['tk_status']
-            commission_type_obj, created = payment_models.CommissionType.objects.get_or_create(value='1688', label='1688')
-            tran_commission_obj = payment_models.TransactionCommission(**data_create)
-            tran_commission_obj.transaction_holder = balance_obj
-            tran_commission_obj.commission_type = commission_type_obj
-            tran_commission_obj.account_holder = account_holder
-            tran_commission_obj.currency = currency_obj
-            tran_commission_obj.exchange_rate = currency_obj.exchange_rate
-            tran_commission_obj.save()
-        else:
-            tran_commission_obj = tran_commission_objs[0]
-            if tran_commission_obj.status != line['orderState']:
-                tran_commission_obj.status = line['orderState']
-                tran_commission_obj.save(update_fields=['status'])
-                            
-        line.commission_paid = decimal.Decimal('{0:.2f}'.format(line.commission * decimal.Decimal(0.55)))
-        line.account_holder = account_holder
-        line.transaction_commission = tran_commission_obj
-        line.save(update_fields=['commission_paid','account_holder', 'transaction_commission'])  
-        if hasattr(account_holder, 'user_telegram'):
-            print(account_holder.user_telegram.telegram_id)
-            print(line.bizSubId,line.tradeAmount,line.commission_paid)
-            msg = '%s, %s, chiết khấu:%s �ã thanh toán' % (line.bizId,line.tradeAmount,line.commission_paid)
-            print(msg)
-            send_telegram_notify_to_group(account_holder.user_telegram.telegram_id, msg=msg)
-
-
-def get_all_taobao_transaction():
-    current_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai'))).strftime('%Y-%m-%d %H:%M:%S')
-    time_range = 3
-    time_limit = 2160
-    list_id = []
-    time = 0
-    while time <= time_limit:
-        end_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai')) - datetime.timedelta(hours=time)).strftime(
-        '%Y-%m-%d %H:%M:%S')
-        
-        time+=time_range
-        
-        start_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai')) - datetime.timedelta(hours=time)).strftime(
-        '%Y-%m-%d %H:%M:%S')
-        get_taobao_transaction(start_time=start_time, end_time=end_time)
-        
-        
-def send_telegram_notify_to_group(group_id,msg,reply_markup=None,reply_id=None,bot_type='checker'):
-    #token='1235501300:AAEWPcah92B1PvsdvTCSHdT12CCg4gq-qZo'
-    if bot_type == 'cashback':
-        token = settings.TELEGRAM_CASHBACK_TOKEN
-    else:
-        token = settings.TELEGRAM_TOKEN
-    bot = telebot.TeleBot(token)
-    send_msg = bot.send_message(group_id,'<b>'+msg+'</b>',reply_to_message_id=reply_id,reply_markup=reply_markup,parse_mode='HTML',disable_web_page_preview=False)
-    return send_msg
-
-def send_telegram_notify_to_group_gpt(group_id,msg,reply_markup=None,reply_id=None):
-    token='6099065217:AAFw2dDz6C4BfVmG-5MOYtYyksfk38PpheE'
-    # token = settings.TELEGRAM_TOKEN
-    bot = telebot.TeleBot(token)
-    send_msg = bot.send_message(group_id,'<b>'+msg+'</b>',reply_to_message_id=reply_id,reply_markup=reply_markup,parse_mode='HTML',disable_web_page_preview=False)
-    return send_msg
-
-def edit_telegram_notify_to_group(chat_id,message_id,text,reply_markup=None, bot_type='checker'):
-    #token='1235501300:AAEWPcah92B1PvsdvTCSHdT12CCg4gq-qZo'
-    if bot_type == 'cashback':
-        token = settings.TELEGRAM_CASHBACK_TOKEN
-    else:
-        token = settings.TELEGRAM_TOKEN
-    bot = telebot.TeleBot(token)
-    edited_msg = bot.edit_message_text(chat_id=chat_id, message_id=message_id,
-                          text=text, reply_markup=reply_markup, parse_mode='HTML')
-    return edited_msg
-
-def download_file(url, local_filename):
-    # local_filename = url.split('/')[-1]
-
-    r = requests.get(url, stream=True, allow_redirects=True)
-    if r.status_code != 200:
-        r.raise_for_status()  # Will only raise for 4xx codes, so...
-        raise RuntimeError(f"Request to {url} returned status code {r.status_code}")
-    file_size = int(r.headers.get('Content-Length', 0))
-
-    path = pathlib.Path(local_filename).expanduser().resolve()
-    path.parent.mkdir(parents=True, exist_ok=True)
-
-    desc = "(Unknown total file size)" if file_size == 0 else ""
-    r.raw.read = functools.partial(r.raw.read, decode_content=True)  # Decompress if needed
-    with tqdm.wrapattr(r.raw, "read", total=file_size, desc=desc) as r_raw:
-        with path.open("wb") as f:
-            shutil.copyfileobj(r_raw, f)
-    return path   
-
-
-def download_file_from_telegram(fileInfo):
-    token = settings.TELEGRAM_TOKEN
-    bot = telebot.TeleBot(token)
-    file_info = bot.get_file(fileInfo['file_id'])
-    # print('===file_info===',file_info)
-    file_url = 'https://api.telegram.org/file/bot{0}/{1}'.format(token, file_info.file_path)
-    file_path = download_file(file_url, fileInfo['file_unique_id'])
-    return file_path
-    # print(file_url)
-    # file = requests.get(file_url)
-    # print(file_path)
-    # f = open(file_path, 'r', encoding='utf-8')
-    # result = f.read()
-
-    # print('==result==',result)
-    # f.close()
-    # os.remove(file_path)
-    # print('===file===',file_info)
-# def create_checker_markup(checker_id,valid=0,invalid=0, unknown=0, listing_type='',page=0):
-    
-#     markup = types.InlineKeyboardMarkup()
-#     callback_valid = '%s|%s|%s' % ('get_valid', checker_id, listing_type)
-#     callback_invalid = '%s|%s|%s' % ('get_invalid', checker_id, listing_type)
-#     callback_unknown = '%s|%s|%s' % ('get_unknown', checker_id, listing_type)
-#     inline_keyboard_valid = types.InlineKeyboardButton('Valid: %s' % (valid) , callback_data=str(callback_valid))
-#     inline_keyboard_invalid = types.InlineKeyboardButton('Invalid: %s' % (invalid), callback_data=str(callback_invalid))
-#     inline_keyboard_unknown = types.InlineKeyboardButton('Unknown: %s' % (unknown), callback_data=str(callback_unknown))
-#     markup.row(inline_keyboard_valid,inline_keyboard_invalid, inline_keyboard_unknown)
-
-#     new_markup= create_menu_markup(markup, listing_type, page)    
-#     return new_markup
-
-def create_checker_markup(checker_id,valid=0,invalid=0, unknown=0, listing_type='',page=0):
-    
-    markup = types.InlineKeyboardMarkup()
-    callback_valid = '%s|%s|%s' % ('get_valid', checker_id, listing_type)
-    callback_invalid = '%s|%s|%s' % ('get_invalid', checker_id, listing_type)
-    callback_unknown = '%s|%s|%s' % ('get_unknown', checker_id, listing_type)
-    inline_keyboard_valid = types.InlineKeyboardButton('Valid: %s' % (valid) , callback_data=str(callback_valid))
-    inline_keyboard_invalid = types.InlineKeyboardButton('Invalid: %s' % (invalid), callback_data=str(callback_invalid))
-    inline_keyboard_unknown = types.InlineKeyboardButton('Unknown: %s' % (unknown), callback_data=str(callback_unknown))
-    markup.row(inline_keyboard_valid,inline_keyboard_invalid, inline_keyboard_unknown)
-    new_markup = create_page_navigation_markup(markup, listing_type, checker_id)
-    new_markup= create_checker_menu_markup(markup, listing_type, checker_id)    
-    return new_markup
-
-def create_page_navigation_markup(markup, listing_type='',checker_id=''):
-    # backPage = page-1
-    # nextPage = page+1
-    # lastPage = -1
-    # if backPage <=0:
-    #     backPage=0
-    callback_data_firstpage = '%s|%s|%s' % ('first_page', checker_id, listing_type)#{'action': 'set_page', 'value': 0, 'type':listing_type}    
-    inline_keyboard_first_page = types.InlineKeyboardButton('First Page \U0001F51D', callback_data=str(callback_data_firstpage))
-        
-    callback_data_back_page = '%s|%s|%s' % ('back_page', checker_id, listing_type)#{'action': 'set_page', 'value': backPage, 'type':listing_type}   
-    inline_keyboard_back_page = types.InlineKeyboardButton('Back \U00002B05', callback_data=str(callback_data_back_page))
-    
-    
-    callback_data_next_page = '%s|%s|%s' % ('next_page', checker_id, listing_type)#{'action': 'set_page', 'value': nextPage, 'type':listing_type} 
-    inline_keyboard_next_page = types.InlineKeyboardButton('Next \U000027A1', callback_data=str(callback_data_next_page))
-    
-    
-    callback_data_last_page = '%s|%s|%s' % ('last_page', checker_id, listing_type)#{'action': 'set_page', 'value': lastPage, 'type':listing_type}
-    inline_keyboard_last_page = types.InlineKeyboardButton('Last Page \U0001F51A', callback_data=str(callback_data_last_page))
-    markup.row(inline_keyboard_first_page,inline_keyboard_back_page,inline_keyboard_next_page,inline_keyboard_last_page)
-    return markup
-    
-def create_checker_menu_markup(markup, listing_type='',checker_id=''):	
-    callback_data_stop = '%s|%s|%s' % ('stop', checker_id, listing_type)
-    inline_keyboard_menu = types.InlineKeyboardButton('Stop \U0001F6AB', callback_data=str(callback_data_stop))
-    
-    callback_data_refresh = '%s|%s|%s' % ('recheck', checker_id, listing_type)#{'action': 'set_page', 'value': 'refresh', 'type':listing_type} 
-
-    inline_keyboard_refesh = types.InlineKeyboardButton('ReCheck \U0001F504', callback_data=str(callback_data_refresh))
-    inline_keyboard_deposit = types.InlineKeyboardButton('Deposit \U0001F4B3', callback_data='deposit')
-    markup.row(inline_keyboard_menu, inline_keyboard_refesh, inline_keyboard_deposit)
-    return markup   
-
-def create_menu_markup(markup, listing_type='',checker_id=''):
-    # backPage = page-1
-    # nextPage = page+1
-    # lastPage = -1
-    # if backPage <=0:
-    #     backPage=0
-    markup = create_page_navigation_markup(markup, listing_type,checker_id)
-
-
-    
-    
-    inline_keyboard_menu = types.InlineKeyboardButton('Menu \U0001F3D8', callback_data='menu')
-    
-    callback_data_refresh = '%s|%s|%s' % ('set_page', 'refresh', listing_type)#{'action': 'set_page', 'value': 'refresh', 'type':listing_type} 
-
-    inline_keyboard_refesh = types.InlineKeyboardButton('Refresh \U0001F504', callback_data=str(callback_data_refresh))
-    inline_keyboard_deposit = types.InlineKeyboardButton('Deposit \U0001F4B3', callback_data='deposit')
-    markup.row(inline_keyboard_menu, inline_keyboard_refesh, inline_keyboard_deposit)
-    return markup    
-    
-def create_function_listing_markup(listing, listing_type='',page=0):
-    # backPage = page-1
-    # nextPage = page+1
-    # lastPage = -1
-    # if backPage <=0:
-    #     backPage=0
-    
-    markup = types.InlineKeyboardMarkup()
-    i = 0
-    while i < len(listing):
-        line_function1 = listing[i]
-        line_function2 = listing[i+1]
-        callback_data1 = '%s|%s|%s' % ('set_checker', line_function1['value'], listing_type)#{'action': 'set_checker', 'value': line_function1['value'], 'type':listing_type}
-        callback_data2 = '%s|%s|%s' % ('set_checker', line_function2['value'], listing_type)#{'action': 'set_checker', 'value': line_function2['value'], 'type':listing_type}
-        inline_keyboard_function1 = types.InlineKeyboardButton(line_function1['value'], callback_data=str(callback_data1))
-        inline_keyboard_function2 = types.InlineKeyboardButton(line_function2['value'], callback_data=str(callback_data2))
-        markup.row(inline_keyboard_function1,inline_keyboard_function2)
-        i+=2
-    new_markup= create_menu_markup(markup, listing_type, page)    
-    return new_markup
-
-
-def create_listing_markup(listing,type,page=0):
-
-    markup = types.InlineKeyboardMarkup()
-
-    for line in listing:
-        inline_keyboard_account = types.InlineKeyboardButton(line['account'], callback_data='view|%s' %(line['id']))
-        inline_keyboard_buy = types.InlineKeyboardButton('$%s \U0001F6D2' % (line['price']), callback_data='buy|%s' %(line['id']))
-        markup.row(inline_keyboard_account,inline_keyboard_buy)
-    inline_keyboard_first_page = types.InlineKeyboardButton('First Page \U0001F51D', callback_data='first_page')
-    inline_keyboard_back_page = types.InlineKeyboardButton('Back \U00002B05', callback_data='back|%s' % (page-1))
-    inline_keyboard_next_page = types.InlineKeyboardButton('Next \U000027A1', callback_data='next|%s' % (page+1))
-    inline_keyboard_last_page = types.InlineKeyboardButton('Last Page \U0001F51A', callback_data='last_page')
-    markup.row(inline_keyboard_first_page,inline_keyboard_back_page,inline_keyboard_next_page,inline_keyboard_last_page)
-
-    inline_keyboard_menu = types.InlineKeyboardButton('Menu \U0001F3D8', callback_data='menu')
-    inline_keyboard_refesh = types.InlineKeyboardButton('Refresh \U0001F504', callback_data='refesh|%s' % (type))
-    inline_keyboard_deposit = types.InlineKeyboardButton('Deposit \U0001F4B3', callback_data='deposit')
-    markup.row(inline_keyboard_menu, inline_keyboard_refesh, inline_keyboard_deposit)
-    return markup
-
-def create_deposit_markup():
-
-    markup = types.InlineKeyboardMarkup()
-
-    inline_keyboard_usdt = types.InlineKeyboardButton('USDT', callback_data='deposit|coinbase|USDT')
-    inline_keyboard_usdc = types.InlineKeyboardButton('USDC', callback_data='deposit|coinbase|USDC')
-
-    markup.row(inline_keyboard_usdt, inline_keyboard_usdc)
-    return markup
-
-def create_cashback_product_markup(product_json):
-
-    markup = types.InlineKeyboardMarkup()
-
-    inline_keyboard_usdt = types.InlineKeyboardButton('Link Mobile', url='https://api.chietkhauviet.com/cashback/capi/get_link_mobile/?id='+str(product_json['id']))
-    inline_keyboard_usdc = types.InlineKeyboardButton('Link PC', url='https://api.chietkhauviet.com/cashback/capi/get_link_pc/?id='+str(product_json['id']))
-
-    markup.row(inline_keyboard_usdt, inline_keyboard_usdc)
-    return markup
-
-def create_html_cashback_product_show(product_json):
-
-    html_show = '''
-<a href="%s"> </a>
-Giá gốc: %s
-Phiếu giảm giá: %s
-Giá cuối: %s
-Chiết khấu: %s
-%s
-''' % (product_json['pict_url'], product_json['zk_final_price'], product_json['coupon_amount'], float(product_json['zk_final_price'])-float(product_json['coupon_amount']), round(product_json['commission_price'], 2), product_json['taokouling'] )
-    return html_show
-
-def create_html_show(type='',balance='',total='',page='',total_page='',updated='', status='', plant_text='',displaying_page='Displaying'):
-    html_show = '''
-<b>\U0001F47B MunBot %s AIO automatic \U0001F47D</b>
-<b>Balance: </b> <code>$%s \U0001F4B3</code>
-<b>Total: </b> <code>%s \U0001F6D2</code>
-<b>Notification: </b> <i>%s</i>
-%s
-<pre>%s page %s of %s. Last updated @%s</pre>
-    ''' % (type, balance, total, status, plant_text, displaying_page, page, total_page, updated)
-    return html_show
-
-def create_html_deposit(balance):
-    html_show = '''
-<b>\U0001F47B MunBot AIO automatic \U0001F47D</b>
-<b>Balance: </b><code>$%s \U0001F4B3</code>
-Choose your deposit crypto type
-
-Payment modes supported are 
-USDT | USDC | More being added soon
-
-Funds will be added after 2 confirmations.
-    ''' % (balance)
-    return html_show
-
-def create_html_deposit_details(balance,payment_method, address, account_id):
-    html_show = '''
-<b>\U0001F47B MunBot AIO automatic \U0001F47D</b>
-<b>Balance: </b>$<code>%s</code> \U0001F4B3
-Here is the details:-
-<code>Send crypto to the address shown below</code><a href="https://chart.googleapis.com/chart?chs=200x200&chld=%s&cht=qr&%s">.</a>
-Payment: %s
-Address: <code>%s</code>
-Charge ID: <code>%s</code>
-
-1. Funds will be automatic convert to USD by your balance.
-2. Funds will be added after 2 confirmations.
-    ''' % (balance,'L%7C2',address,payment_method,address, account_id)
-    return html_show
-
-def get_or_create_user(username):
-    User.objects.filter(username=username)
-
-
-def get_deposit_address(user,name='USDT'):
-    currency_obj, created = AccountCurrency.objects.get_or_create(code=name, label=name)
-    account_balance_obj, created = AccountBalance.objects.get_or_create(user=user,balance_type=BalanceType.credit,currency=currency_obj)
-    # current_banlance = UserController.calculateUserBlance(account_balance_obj)
-    if created or len(account_balance_obj.address) < 3:
-        walletAddress = createCoinBaseAddress(name)
-        if walletAddress:
-            account_balance_obj.address = walletAddress['address']
-            account_balance_obj.account_id = walletAddress['id']
-            account_balance_obj.save()
-            return (walletAddress['address'],walletAddress['id'])
-        else:
-            return
-    else:
-        return (account_balance_obj.address, account_balance_obj.account_id)
-
-def create_coinbase_charge_wallet(telegram_id):
-    from coinbase_commerce.client import Client
-
-    API_KEY = "f0481c32-7320-4db9-bcf9-f55808e807ba"
-
-    # initialize client
-    client = Client(api_key=API_KEY)
-
-    # charge info
-    charge_info = {
-        "name": 'Telegram deposit %s' % (telegram_id),
-        "description": str(telegram_id),
-        'metadata': {'customer_id':telegram_id, 'customer_name':telegram_id},
-        # "local_price": {
-        #     "amount": "100.00",
-        #     "currency": "USD"
-        # },
-        "pricing_type": "no_price"
-
-    }
-
-    charge = client.charge.create(**charge_info)
-    saved_charge_id = charge.id
-    data = {}
-    data['charge_id'] = saved_charge_id
-    data['usdt_address'] = charge.addresses['tether']
-    data['usdc_address'] = charge.addresses['usdc']
-    {
-    "apecoin": "0xff2bd195884b927b74ee311137bc886bd660294f",    
-    "bitcoin": "3BsBpnH5P4eE8joKv99oSWCH23KMNNn762",
-    "bitcoincash": "qp5qycz49ssw94sryf7de2xqz4qyyuh09vrh5ugs4t",
-    "dai": "0xff2bd195884b927b74ee311137bc886bd660294f",        
-    "dogecoin": "DQA1Wr6bfCLAughUBD3Z8LXyHbLxQnxv64",
-    "ethereum": "0xff2bd195884b927b74ee311137bc886bd660294f",   
-    "litecoin": "MNfcS2xYvFV4WdGWUtQXUubM8bdSPan9he",
-    "polygon": "0xff2bd195884b927b74ee311137bc886bd660294f",    
-    "pusdc": "0xff2bd195884b927b74ee311137bc886bd660294f",      
-    "pweth": "0xff2bd195884b927b74ee311137bc886bd660294f",      
-    "shibainu": "0xff2bd195884b927b74ee311137bc886bd660294f",
-    "tether": "0xff2bd195884b927b74ee311137bc886bd660294f",
-    "usdc": "0xff2bd195884b927b74ee311137bc886bd660294f"
-    }
-    return data
-    # print(charge.addresses)
-    # print(charge.pricing)
-
-    # print("Created charge {!r}".format(charge))
-    # print("#" * 100)
-
-
-def create_completion_openai(text):
-    prompt = '"""\n{}\n"""'.format(text)
-
-    openai.api_key = 'sk-FakeOpenAIApiKeyForBypassingGitHubPushProtection'#env["OPENAI_API_KEY"]
-    response = openai.Completion.create(
-        # engine = "text-davinci-003",
-        engine = "text-davinci-001",
-        #engine = "text-curie-001",
-        #engine = "text-babbage-001",
-        #engine = "text-ada-001",
-        #engine = "code-davinci-002",
-        #engine = "code-cushman-001",
-        prompt = prompt,
-        temperature = 0.9,
-        max_tokens = 1500,
-        top_p = 1,
-        frequency_penalty = 0,
-        presence_penalty = 0.6,
-        stop = ['"""'])
-
-    return response.choices[0].text
-
-@shared_task
-def check_cmd_telegram_gpt(chat_id,message_id=None,text=None,callback_query=None, chat=None, document=None, original_text=''):
-    if text:
-        response = create_completion_openai(text)
-        send_telegram_notify_to_group_gpt(chat_id, msg=f'{response}', reply_id=message_id)
-
-@shared_task
-def check_cmd_cashback_telegram(chat_id,message_id=None,text=None,callback_query=None, chat=None, document=None, original_text=''):
-
-    userTelegram_objs = UserTelegram.objects.filter(telegram_id=chat_id)
-    if not userTelegram_objs.exists():
-        print('===create new user===')
-        user, created = User.objects.get_or_create(username=chat_id)
-        # user.save()
-        user.set_password('telegrambot123')
-        
-        if chat:
-            user_telegram = UserTelegram(user=user, telegram_id=chat_id)
-        else:
-            user_telegram = UserTelegram(user=user, telegram_id=chat_id)
-        user_telegram.save()
-        userTelegram_objs = UserTelegram.objects.filter(telegram_id=chat_id)
-
-    user_telegram = userTelegram_objs.first()
-    user = user_telegram.user
-    currency_obj, created = AccountCurrency.objects.get_or_create(code='CNY', label='CNY')
-    account_balance_obj, created = AccountBalance.objects.get_or_create(user=user,balance_type=BalanceType.credit,currency=currency_obj)
-    current_banlance = UserController.calculateUserBalance(account_balance_obj)
-
-    if callback_query:
-        print('callback_query==', callback_query)
-        if callback_query.find('|') != -1:
-            # callback_query_json = ast.literal_eval(callback_query.strip())
-            
-            # edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
-            # {'action': 'checker', 'value': 'ccn gate 2', 'type': 'checker'}
-            callback_split = callback_query.split('|')
-            reply_action = callback_split[0].strip()
-            reply_value = callback_split[1].strip()
-            reply_type = callback_split[2].strip()
-  
-            if reply_action == 'deposit':
-                print('==create deposit wallet==')
-                wallet_result = create_coinbase_charge_wallet(chat_id)
-                if reply_type == 'USDT':
-                    html_show = create_html_deposit_details(current_banlance, reply_type, wallet_result['usdt_address'], wallet_result['charge_id'])
-                else:
-                    html_show = create_html_deposit_details(current_banlance, reply_type, wallet_result['usdc_address'], wallet_result['charge_id'])
-                 
-                send_telegram_notify_to_group(chat_id, html_show, bot_type='cashback')          
-        elif callback_query == 'deposit':
-            html_show = create_html_deposit(0)
-            markup_button = create_deposit_markup()
-            # edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
-            send_telegram_notify_to_group(chat_id, html_show, reply_markup=markup_button, bot_type='cashback')
-    
-    elif text:    
-        list_urls = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', text)
-        if not re.search(r'1688\.',text):
-            get_taokouling = taokouling_extract(text)
-            if get_taokouling:
-                list_urls = get_taokouling
-        if list_urls:
-            for full_str in list_urls:
-                msg = 'Xin lỗi sản phẩm của bạn không có chiết khấu vui lòng tìm sản phâm khác hoặc truy cập chietkhauviet.com để tìm kiếm sản phẩm!'
-
-                commission_obj = get_commission_obj(full_str,telegram_id=chat_id)
-
-                if commission_obj:
-                    # msg = '<a href="https://chietkhauviet.com/page/thong-tin-chiet-khau/%s">Giá sản phẩm:%s Chiết khấu:%s Phieu KM:%s</a>' % (
-                    #     referUrl_obj.pk, float(referUrl_obj.zk_final_price) - float(referUrl_obj.coupon_amount), round(float(referUrl_obj.commission_price),2), referUrl_obj.coupon_amount)
-                    product_json = {}
-                    product_json['id'] = commission_obj.pk
-                    product_json['short_title'] = commission_obj.short_title
-                    product_json['pict_url'] = commission_obj.pict_url
-                    product_json['url'] = commission_obj.url
-                    product_json['taokouling'] = commission_obj.taokouling
-                    product_json['zk_final_price'] = commission_obj.zk_final_price
-                    product_json['commission_price'] = commission_obj.commission_price
-                    product_json['coupon_amount'] = commission_obj.coupon_amount
-                    product_json['coupon_share_url'] = commission_obj.coupon_share_url
-                    # product_json['msg'] = '�ã tìm thấy sản phẩm của bạn!'
-
-                    msg = create_html_cashback_product_show(product_json)
-                    markup_button = create_cashback_product_markup(product_json)       
-                    send_telegram_notify_to_group(chat_id, msg=msg,reply_id=message_id, reply_markup=markup_button, bot_type='cashback')
-                else:
-                    send_telegram_notify_to_group(chat_id, msg=msg,reply_id=message_id, bot_type='cashback')
-        else:        
-            cmd = text.lstrip("/").strip()
-            extra_text = ''
-            if cmd.find(' ') != -1:
-                new_cmds = cmd.split(' ')
-                first_cmd = new_cmds[0].strip()
-                #cmd
-                extra_text = cmd.split(first_cmd)[-1].strip()
-                cmd = first_cmd
-            elif not cmd:
-                print('===text===', user_telegram.checker_type)
-                print(text)
-
-              
-@shared_task
-def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, chat=None, document=None, original_text=''):
-
-    userTelegram_objs = UserTelegram.objects.filter(telegram_id=chat_id)
-    if not userTelegram_objs.exists():
-        print('===create new user===')
-        user, created = User.objects.get_or_create(username=chat_id)
-        # user.save()
-        user.set_password('telegrambot123')
-        
-        if chat:
-            user_telegram = UserTelegram(user=user, telegram_id=chat_id)
-        else:
-            user_telegram = UserTelegram(user=user, telegram_id=chat_id)
-        user_telegram.save()
-        userTelegram_objs = UserTelegram.objects.filter(telegram_id=chat_id)
-
-    user_telegram = userTelegram_objs.first()
-    user = user_telegram.user
-    currency_obj, created = AccountCurrency.objects.get_or_create(code='USD', label='USD')
-    account_balance_obj, created = AccountBalance.objects.get_or_create(user=user,balance_type=BalanceType.credit,currency=currency_obj)
-    current_banlance = UserController.calculateUserBalance(account_balance_obj)
-
-    if callback_query:
-        print('callback_query==', callback_query)
-        if callback_query.find('|') != -1:
-            # callback_query_json = ast.literal_eval(callback_query.strip())
-            
-            # edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
-            # {'action': 'checker', 'value': 'ccn gate 2', 'type': 'checker'}
-            callback_split = callback_query.split('|')
-            reply_action = callback_split[0].strip()
-            reply_value = callback_split[1].strip()
-            reply_type = callback_split[2].strip()
-            if reply_action == 'set_checker':
-                checker_objs = CheckerType.objects.filter(value=reply_value.strip())
-                if checker_objs.exists():
-                    user_telegram.checker_type = checker_objs[0]
-                    user_telegram.save()
-                    status_text = 'Your checker mode has been set as %s' % (reply_value.strip())
-                    checker_objs = CheckerType.objects.all()
-                    limit = 10
-                    account_page = 1
-                    account_total = checker_objs.count()
-                    import math
-                    page_total = math.ceil(float(account_total) / 50)
-                    # print(page_total)
-                    list_accounta_show = checker_objs[(account_page-1)*limit:account_page*limit]      
-                    
-                    listing_show_sers = CheckerTypeFunctionSerializer(list_accounta_show, many=True)
-                    
-                    checker_last_obj = checker_objs.first()
-                    
-                    html_show = create_html_show('Checker', current_banlance, checker_objs.count(), account_page, page_total, checker_last_obj.created.strftime("%d-%m-%Y %H:%M"), status=status_text)
-
-                    markup_button = create_function_listing_markup(listing_show_sers.data, listing_type='checker', page=account_page)
-
-                    # send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
-                    
-                    edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
-                    
-
-            if reply_type == 'checker_status':    
-                checktask_objs = CheckerTask.objects.filter(pk=int(reply_value))
-                if checktask_objs.exists():
-                    checktask_obj = checktask_objs.first()
-                    if reply_action == 'stop':
-                        checktask_obj.status = 2
-                        checktask_obj.save()
-                        checktask_obj.refresh_from_db()
-                    elif reply_action == 'recheck':
-                        checktask_obj.status = LinkStatus.working
-                        checktask_obj.save()
-                        checktask_obj.refresh_from_db()                        
-                    # if reply_action == 'get_invalid' or reply_action == 'get_valid':
-                    if reply_action == 'get_invalid':
-                        checktask_obj.display_value = 1
-                        checktask_obj.save()
-                        checktask_obj.refresh_from_db()
-                    elif reply_action == 'get_valid':
-                        checktask_obj.display_value = 0
-                        checktask_obj.save()
-                        checktask_obj.refresh_from_db()
-                    elif reply_action == 'get_unknown':
-                        checktask_obj.display_value = 2
-                        checktask_obj.save()
-                        checktask_obj.refresh_from_db()   
-
-                                                 
-                    # else:
-                    #     checktask_obj.display_value = 2
-                    display_value = checktask_obj.display_value
-
-                    document_valid = checktask_obj.document_valid
-                    document_invalid = checktask_obj.document_invalid
-                    if document_valid:
-                        f = document_valid.open('r')
-                        valid_result = f.read()
-                    else:
-                        list_valid_objs = CheckerValid.objects.filter(checker_task_id=int(reply_value))
-                        if list_valid_objs.exists():
-                            valid_result = '\n'.join('<code>'+str(x.details)+'</code>' for x in list_valid_objs)
-                        else:
-                            valid_result = ''
-                        
-                    if document_invalid:
-                        f = document_valid.open('r')
-                        invalid_result = f.read()
-                    else:
-                        list_invalid_objs = CheckerInvalid.objects.filter(checker_task_id=int(reply_value))
-                        if list_invalid_objs.exists():
-                            invalid_result = '\n'.join('<code>'+str(x.details)+'</code>' for x in list_invalid_objs) 
-                        else:
-                            invalid_result = ''                       
-                    if valid_result.strip():
-                        list_display_valid = valid_result.strip().split('\n')
-                    else:
-                        list_display_valid = []
-                    if invalid_result.strip():
-                        list_display_invalid = invalid_result.strip().split('\n')  
-                    else:
-                        list_display_invalid = []
-                    
-                    if display_value == 1:
-                        list_display_result = list_display_invalid
-                        page_display = checktask_obj.display_page_invalid
-                    else:
-                        list_display_result = list_display_valid
-                        page_display = checktask_obj.display_page_valid
-                    import math
-                    page_total = math.ceil(float(len(list_display_result)) / 50)
-                    if page_total <= 1:
-                        page_total = 1
-                    
-                    if reply_action == 'next_page':
-                        print('==next page==')
-                        if display_value == 0:
-                            if checktask_obj.display_page_valid+1 <= page_total:
-                                page_display = checktask_obj.display_page_valid+1
-                                checktask_obj.display_page_valid = page_display
-                            else:
-                                page_display = checktask_obj.display_page_valid
-                                
-                        elif display_value == 1:
-                            if checktask_obj.display_page_invalid+1 <= page_total:
-                                page_display = checktask_obj.display_page_invalid+1
-                                checktask_obj.display_page_invalid = checktask_obj.display_page_invalid+1
-                            else:
-                                page_display = checktask_obj.display_page_invalid
-                                
-                        else:
-                            if checktask_obj.display_page_unknown+1 <= page_total:
-                                page_display = checktask_obj.display_page_unknown+1
-                                checktask_obj.display_page_unknown = checktask_obj.display_page_unknown+1
-                            else:
-                                page_display = checktask_obj.display_page_unknown
-
-                        checktask_obj.save() 
-                        checktask_obj.refresh_from_db() 
-                    elif reply_action == 'last_page':
-                        print('==last page==')
-                        if display_value == 0:
-                            checktask_obj.display_page_valid = page_total
-                        elif display_value == 1 :
-                            checktask_obj.display_page_invalid = page_total
-                        else:
-                            checktask_obj.display_page_unknown  = page_total
-                        checktask_obj.save() 
-                        checktask_obj.refresh_from_db()  
-                        
-                    elif reply_action == 'first_page':
-                        print('==first page==')
-                        if display_value == 0:
-                            checktask_obj.display_page_valid = 1
-                        elif display_value == 1 :
-                            checktask_obj.display_page_invalid = 1
-                        else:
-                            checktask_obj.display_page_unknown  = 1
-                        checktask_obj.save() 
-                        checktask_obj.refresh_from_db()      
-                    elif reply_action == 'back_page':
-                        print('==back page==')                    
-                        if display_value == 0:
-                            if checktask_obj.display_page_valid-1 >= 1:
-                                page_display = checktask_obj.display_page_valid-1
-                                checktask_obj.display_page_valid = page_display
-                            else:
-                                page_display = 1
-                                
-                        elif display_value == 1:
-                            if checktask_obj.display_page_invalid-1 >= 1:
-                                page_display = checktask_obj.display_page_invalid-1
-                                checktask_obj.display_page_invalid = checktask_obj.display_page_invalid+1
-                            else:
-                                page_display = 1
-                                
-                        else:
-                            if checktask_obj.display_page_unknown-1 >= 1:
-                                page_display = checktask_obj.display_page_unknown-1
-                                checktask_obj.display_page_unknown = checktask_obj.display_page_unknown-1
-                            else:
-                                page_display = 1
-
-                        checktask_obj.save() 
-                        checktask_obj.refresh_from_db()                     
-                    
-                    list_display = []
-                    i = (page_display-1)*50
-                    while i < len(list_display_result) and len(list_display) < 50 and i >=0:
-                        list_display.append(list_display_result[i])
-                        i+=1  
-                    plant_text = '\n'.join('<code>'+str(x)+'</code>' for x in list_display)
-                    status_text = 'Checked %s/%s Left %s: %s valid, %s invalid.' % (len(list_display_valid)+len(list_display_invalid), checktask_obj.total_value, checktask_obj.total_value-(len(list_display_valid)+len(list_display_invalid)), len(list_display_valid), len(list_display_invalid))
-                    html_show = create_html_show('Checker '+ checktask_obj.checker_type.value, current_banlance, checktask_obj.total_value, page_display, page_total, datetime.datetime.now().strftime("%d-%m-%Y %H:%M"), status=status_text, plant_text=plant_text, displaying_page='Invalid')
-
-                    markup_button = create_checker_markup(reply_value,listing_type='checker_status', valid=len(list_display_valid), invalid=len(list_display_invalid))
-                    try:
-                        send_msg = edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)	
-                    except Exception as e:
-                        print(e)                    
-                    
-            if reply_action == 'deposit':
-                print('==create deposit wallet==')
-                wallet_result = create_coinbase_charge_wallet(chat_id)
-                if reply_type == 'USDT':
-                    html_show = create_html_deposit_details(current_banlance, reply_type, wallet_result['usdt_address'], wallet_result['charge_id'])
-                else:
-                    html_show = create_html_deposit_details(current_banlance, reply_type, wallet_result['usdc_address'], wallet_result['charge_id'])
-                send_telegram_notify_to_group(chat_id, html_show)          
-        elif callback_query == 'deposit':
-            html_show = create_html_deposit(0)
-            markup_button = create_deposit_markup()
-            # edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
-            send_telegram_notify_to_group(chat_id, html_show, reply_markup=markup_button)
-    elif document:
-        if user_telegram.checker_type:
-            if document['mime_type'] == 'text/plain' and document['file_size'] <= 62500:
-                file_path = download_file_from_telegram(document)
-                
-                path_file = Path(file_path)
-                with path_file.open(mode='rb') as f:
-                    check_task = CheckerTask()
-                    check_task.checker_type = user_telegram.checker_type
-                    check_task.file_id = document['file_id']
-                    check_task.file_name = document['file_name']
-                    check_task.file_unique_id = document['file_unique_id']
-                    check_task.file_size = document['file_size']
-                    check_task.document = File(f, name=document['file_unique_id'])
-                    check_task.owner = user
-                    check_task.save()
-                    check_task.refresh_from_db()
-                    
-                with path_file.open(mode='r') as f:
-                    result = f.read()
-                    checker_split = result.split('\n')
-                    list_valid = [line for line in checker_split if line.find('|') != -1]
-                    # checker_count = len(result.split('\n'))
-                    import math
-                    page_total = math.ceil(float(len(list_valid)) / 50)
-                    # print(page_total)  
-                    status_text = 'Waiting for worker...'                 
-                    html_show = create_html_show('Checker '+ str(user_telegram.checker_type.value), current_banlance, len(list_valid), 1, 1, datetime.datetime.now().strftime("%d-%m-%Y %H:%M"), status=status_text, displaying_page='Valid')
-
-                    markup_button = create_checker_markup(check_task.pk,listing_type='checker_status')
-
-                    send_msg = send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
-                    print(send_msg)
-                    print('send_msg==', send_msg.message_id)
-                    check_task.total_value = len(checker_split)
-                    check_task.status_message_id = send_msg.message_id
-                    check_task.save()
-                    # edit_telegram_notify_to_group(chat_id, message_id=send_msg['message_id'], msg=html_show,reply_id=message_id, reply_markup=markup_button)
-                os.remove(path_file)
-
-            else:
-                msg = 'You have to send the TXT file and not over 50kb file!'
-                send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
-    
-    elif text:    
-        cmd = text.lstrip("/").strip()
-        extra_text = ''
-        if cmd.find(' ') != -1:
-            new_cmds = cmd.split(' ')
-            first_cmd = new_cmds[0].strip()
-            #cmd
-            extra_text = cmd.split(first_cmd)[-1].strip()
-            cmd = first_cmd
-        elif not cmd:
-            print('===text===', user_telegram.checker_type)
-            print(text)
-
-        if cmd == "listing":
-            print('===listing===')
-            list_account_objs = AccountsSelling.objects.filter(type__value='amazon', selling_status=SellingStatus.listed)
-            if list_account_objs.exists():
-                limit = 10
-                account_page = 1
-                account_total = list_account_objs.count()
-                import math
-                page_total = math.ceil(float(list_account_objs.count()) / 10)
-                print(page_total)
-                list_accounta_show = list_account_objs[(account_page-1)*limit:account_page*limit]
-                data = AccountsSellingSerializer(list_accounta_show, many=True).data
-                html_show = create_html_show('amazon', current_banlance, account_total, account_page, page_total, '2021-11-25 21:02')
-
-                markup_button = create_listing_markup(data, 'amazon', page=1)
-
-                send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
-            else:
-                msg = "The all of account sold out."
-                # send_message(msg, t_chat["id"])
-                send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
-        elif cmd == 'deposit':
-            html_show = create_html_deposit(0)
-            markup_button = create_deposit_markup()
-            send_telegram_notify_to_group(chat_id, msg=html_show, reply_id=message_id, reply_markup=markup_button)
-        elif cmd == 'token':
-            print('==get token user==')
-            user = User.objects.get(username=chat_id)
-            token, created = Token.objects.get_or_create(user=user)
-            # user.set_password('telegrambot123')
-            # user.save()
-            msg = "token:%s" %(token.key)
-            # send_message(msg, t_chat["id"])
-            send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
-        elif cmd == 'setversion':
-            print('==set version==')
-            if str(chat_id) == '892844098':
-                mun_obj = MunAnti.objects.create(version=extra_text.strip())
-                msg = 'New version %s already updated!' % (extra_text)
-                send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
-        elif cmd == 'addhwid':
-            
-            if str(chat_id) == '892844098':
-                print('==set addhwid==')
-                if extra_text.find(' ') != -1:
-                    new_cmds = extra_text.split(' ')
-                    user_id = new_cmds[0].strip()
-                    # user_id = new_cmds[1].strip()
-                    function_add = extra_text.split(user_id)[-1].strip()
-                    userObj = User.objects.get(username=user_id)
-                    print(cmd, user_id, function_add)
-                    mun_obj, created = UserHwid.objects.get_or_create(value=function_add, user=userObj)
-                    msg = 'Your hwid %s already updated!' % (mun_obj.value)
-                    send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
-            else:
-                hwid_objs = UserHwid.objects.filter(user=user)
-                if not hwid_objs.exists():
-                    mun_obj, created = UserHwid.objects.get_or_create(value=extra_text.strip(), user=user)  
-                    msg = 'Your hwid %s already updated!' % (mun_obj.value)
-                    send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
-                else:
-                    # hwid_obj = hwid_objs.first()
-                    # hwid_obj.value = extra_text.strip()
-                    # hwid_obj.save()
-                    mun_obj, created = UserHwid.objects.get_or_create(value=extra_text.strip(), user=user)  
-                    msg = 'Your hwid %s already updated!' % (mun_obj.value)
-                    send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id) 
-                    
-        elif cmd == 'rmlnv':
-            if str(chat_id) == '892844098':
-                print('==rmlnv==')
-                link_checkout_obj = LinkCheckout.objects.all()  
-                link_checkout_obj.update(status=3)       
-                msg = 'Your cmd rmlnv already updated!'
-                send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)                   
-        elif cmd == 'addcheck':
-            
-            if str(chat_id) == '892844098':
-                print('==set addcheck==')
-                if extra_text.find(' ') != -1:
-                    new_cmds = extra_text.split(' ')
-                    user_id = new_cmds[0].strip()
-                    # user_id = new_cmds[1].strip()
-                    function_add = extra_text.split(user_id)[-1].strip()
-                    userObj = User.objects.get(username=user_id)
-                    print(cmd, user_id, function_add)
-                    mun_obj, created = UserCheckFunction.objects.get_or_create(value=function_add.strip(), label=function_add.strip(), user=userObj)
-                    msg = 'Your check function %s already updated!' % (mun_obj.value)
-                    send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
-        elif cmd == 'addcreate':
-            
-            if str(chat_id) == '892844098':
-                print('==set addcreate==')
-                if extra_text.find(' ') != -1:
-                    new_cmds = extra_text.split(' ')
-                    user_id = new_cmds[0].strip()
-                    # user_id = new_cmds[1].strip()
-                    function_add = extra_text.split(user_id)[-1].strip()
-                    userObj = User.objects.get(username=user_id)
-                    print(cmd, user_id, function_add)
-                    mun_obj, created = UserCreateFunction.objects.get_or_create(value=function_add.strip(), label=function_add.strip(), user=userObj)
-                    msg = 'Your create function %s already updated!' % (mun_obj.value)
-                    send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id )         
-                    
-        elif cmd == 'addchecker':
-            if str(chat_id) == '892844098':
-                print('==set addchecker==')
-                function_add = extra_text.strip()
-                mun_obj, created = CheckerType.objects.get_or_create(value=function_add.strip(), label=function_add.strip())
-                msg = 'Your checker function %s already updated!' % (mun_obj.value)
-                send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id )        
-        elif cmd == 'addcreator':
-            if str(chat_id) == '892844098':
-                print('==set addchecker==')
-                function_add = extra_text.strip()
-                mun_obj, created = CreatorType.objects.get_or_create(value=function_add.strip(), label=function_add.strip())
-                msg = 'Your checker function %s already updated!' % (mun_obj.value)
-                send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id )                       
-        elif cmd == 'version' or cmd == 'v':
-            print('==get version==')
-            obj_last = MunAnti.objects.last()
-            if obj_last.update_url:
-                update_url = obj_last.update_url
-            else:
-                update_url = 'https://munanti.s3.ap-southeast-1.amazonaws.com/Update.zip'
-            msg = '''
-MunAnti AIO Automator.
-Version:%s
-Update URL:%s
-Updateded:%s
-                ''' % (obj_last.version, update_url, obj_last.modified.strftime("%d-%m-%Y %H:%M"))
-            send_telegram_notify_to_group(chat_id, msg=msg, reply_id=message_id)
-              
-        elif cmd == 'setpassword':
-            print('==set password user==')
-            user = User.objects.get(username=chat_id)
-            
-            if len(extra_text) <= 3:
-                msg = 'Your password must be longer that 3 characters'
-                send_telegram_notify_to_group(
-                    chat_id, msg=str(msg), reply_id=message_id)
-                return
-            else:
-                # token, created = Token.objects.get_or_create(user=user)
-                user.set_password(extra_text)
-                user.save()
-                msg = '''
-Your password have been changed successfully.
-Username:%s
-Password:%s
-                ''' % (chat_id, extra_text)
-                # send_message(msg, t_chat["id"])
-                send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
-        
-        elif cmd == 'checker':
-            print('==set checker==')
-            if not extra_text.strip():
-                checker_objs = CheckerType.objects.all()
-                limit = 10
-                account_page = 1
-                account_total = checker_objs.count()
-                import math
-                page_total = math.ceil(float(account_total) / 10)
-                print(page_total)
-                list_accounta_show = checker_objs[(account_page-1)*limit:account_page*limit]      
-                
-                listing_show_sers = CheckerTypeFunctionSerializer(list_accounta_show, many=True)
-                
-                checker_last_obj = checker_objs.first()
-                
-                html_show = create_html_show('Checker', current_banlance, checker_objs.count(), account_page, page_total, checker_last_obj.created.strftime("%d-%m-%Y %H:%M"))
-
-                markup_button = create_function_listing_markup(listing_show_sers.data, listing_type='checker', page=account_page)
-
-                send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
-            else:
-                checker_objs = CheckerType.objects.filter(value=extra_text.strip())
-                if checker_objs.exists():
-                    user_telegram.checker_type = checker_objs[0]
-                    user_telegram.save()
-                    msg = 'Your checker mode has been set as %s' % (extra_text.strip())
-                    send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
-                else:
-                    checker_objs = CheckerType.objects.all()
-                    limit = 10
-                    account_page = 1
-                    account_total = checker_objs.count()
-                    import math
-                    page_total = math.ceil(float(account_total) / 10)
-                    print(page_total)
-                    list_accounta_show = checker_objs[(account_page-1)*limit:account_page*limit]      
-                    
-                    listing_show_sers = CheckerTypeFunctionSerializer(list_accounta_show, many=True)
-                    
-                    checker_last_obj = checker_objs.last()
-                    
-                    html_show = create_html_show('Checker', current_banlance, checker_objs.count(), account_page, page_total, checker_last_obj.created.strftime("%d-%m-%Y %H:%M"))
-
-                    markup_button = create_function_listing_markup(listing_show_sers.data, listing_type='checker', page=account_page)
-
-                    send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
-
-        elif cmd == 'task':
-            check_task_objs = CheckerTask.objects.filter(user=user)
-            msg = 'You are having %s tasks' % (check_task_objs.count())
-            send_telegram_notify_to_group(
-                chat_id, msg=str(msg), reply_id=message_id)
-        # else:
-        #     import math
-        #     page_total = math.ceil(float(123) / 10)
-        #     print('test page==',page_total)
-        #     msg = "The system cannot recognize your command! please contact admin: "+cmd
-        #     #send_message(msg, t_chat["id"])
-        #     send_telegram_notify_to_group(chat_id, msg=str(msg),reply_id=message_id)
-
-# def update_checker_status(chat_id, message_id, checkerTaskInfo):
-#     print('==update_checker_status==')
-#     markup = create_checker_markup()
-    
-#     html_show = create_html_show('Checker', current_banlance, checker_objs.count(), account_page, page_total, checker_last_obj.created.strftime("%d-%m-%Y %H:%M"))
-
-#     markup_button = create_function_listing_markup(listing_show_sers.data, listing_type='checker', page=account_page)
-
-#     send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
-    # send_telegram_notify_to_group(
-    #     chat_id, msg=str(msg), reply_id=message_id)    
-
-
-def createCoinBaseAddress(name="BTC"):
-    print('==Create Coin Base==')
-    from coinbase.wallet.client import Client
-    api_key='11MXKS7siI92KbqW'
-    api_secret='bjWdjutsdhUxq7MZPiBHCNO1zCPVqvvp'
-    client = Client(api_key, api_secret)
-    if name=='BTC':
-        account_id = '7c85e01f-b6ea-51d6-89b1-708a019257ab'
-    elif name == 'LTC':
-        account_id = '696babe5-d4d4-57df-864e-98b19dc24854'
-    elif name == 'ETH':
-        account_id = '3131d761-0b89-5458-b8ea-e87d5ab2d77b'
-    else:
-        return
-    created = client.create_address(account_id)
-    print('created',created)
-
-    return created
-def import_account_data():
-    print('==import_account_data==')
-    # | 1 | Thomas | Neumann | 321 BERKLEY PL | STAUNTON | VA | 24401 | 540-255-7790 | 461791163 | Aug  8 1973 12:00AM | tan5f@virginia.edu | University Of Virginia | 0.00 | 434-243-2833
-    f = open('account_data.txt', 'r', encoding="ISO-8859-1")
-    list_create = []
-    dict_ssn={}
-    result = f.read()
-    for line in result.split('\n'):
-        print(line)
-        line_split = line.split('|')
-        if line_split:
-            try:
-                data = {}
-                data['first_name'] = line_split[2].strip()
-                data['last_name'] = line_split[3].strip()
-                data['address1'] = line_split[4].strip()
-                data['city'] = line_split[5].strip()
-                data['state'] = line_split[6].strip()
-                data['zipcode'] = line_split[7].strip()
-                data['ssn'] = line_split[9].strip()
-                data['dob'] = line_split[10].strip()
-                if line_split[9].strip() not in dict_ssn:
-                    list_create.append(AccountsData(**data))
-                    dict_ssn[line_split[9].strip()] = 1
-            except Exception as e:
-                print(e)
-                continue
-    if list_create:
-        AccountsData.objects.bulk_create(list_create)
-        
-def import_created_account(account_type):
-    print('==import_created_account==')
-    # | 1 | Thomas | Neumann | 321 BERKLEY PL | STAUNTON | VA | 24401 | 540-255-7790 | 461791163 | Aug  8 1973 12:00AM | tan5f@virginia.edu | University Of Virginia | 0.00 | 434-243-2833
-    typeobj, created = AccountsType.objects.get_or_create(value=account_type, label=account_type)
-    f = open('account.txt', 'r', encoding="utf8")
-    list_create = []
-    dict_ssn={}
-    result = f.read()
-    for line in result.split('\n'):
-        print(line)
-        line_split = line.split('|')
-        if line_split:
-            try:
-                data = {}
-                data['email'] = line_split[0].strip()
-                data['password'] = line_split[1].strip()
-                objFileter = AccountsCreated.objects.filter(email=line_split[0].strip())
-                if not objFileter.exists():
-                    list_create.append(AccountsCreated(email=line_split[0].strip(), password=line_split[1].strip(), type=typeobj))
-            except Exception as e:
-                print(e)
-                continue
-    if list_create:
-        AccountsCreated.objects.bulk_create(list_create)     
-    print('==created==', len(list_create))   
-# if __name__ == '__main__':
-#     # get_tbk_coupon('python')
-#     print('===task===')
-#     createCoinBaseAddress('ETH')
-
-def fix_font_and_rects():
-    list_obj = BrowserProfiles.objects.all()
-    for line_obj in list_obj:
-        if line_obj.profile_rects == 'Noise':
-            line_obj.profile_rects = str(round(random.uniform(0.2, 0.35), 5))
-        if line_obj.profile_font == 'Noise':
-            listFonts = ['Arial', 'Calibri', 'Cambria', 'Cambria Math', 'Candara', 'Comic Sans MS', 'Comic Sans MS Bold', 'Comic Sans', 'Consolas', 'Constantia', 'Corbel', 'Courier New', 'Caurier Regular', 'Ebrima', 'Fixedsys Regular', 'Franklin Gothic', 'Gabriola Regular', 'Gadugi', 'Georgia', 'HoloLens MDL2 Assets Regular', 'Impact Regular', 'Javanese Text Regular', 'Leelawadee UI', 'Lucida Console Regular', 'Lucida Sans Unicode Regular', 'Malgun Gothic', 'Microsoft Himalaya Regular', 'Microsoft JhengHei', 'Microsoft JhengHei UI', 'Microsoft PhangsPa', 'Microsoft Sans Serif Regular', 'Microsoft Tai Le', 'Microsoft YaHei', 'Microsoft YaHei UI', 'Microsoft Yi Baiti Regular', 'MingLiU_HKSCS-ExtB Regular', 'MingLiu-ExtB Regular', 'Modern Regular', 'Mongolia Baiti Regular', 'MS Gothic Regular', 'MS PGothic Regular', 'MS Sans Serif Regular', 'MS Serif Regular', 'MS UI Gothic Regular', 'MV Boli Regular', 'Myanmar Text', 'Nimarla UI', 'Myanmar Tet', 'Nirmala UI', 'NSimSun Regular', 'Palatino Linotype', 'PMingLiU-ExtB Regular', 'Roman Regular', 'Script Regular', 'Segoe MDL2 Assets Regular', 'Segoe Print', 'Segoe Script', 'Segoe UI', 'Segoe UI Emoji Regular', 'Segoe UI Historic Regular', 'Segoe UI Symbol Regular', 'SimSun Regular', 'SimSun-ExtB Regular', 'Sitka Banner', 'Sitka Display', 'Sitka Heading', 'Sitka Small', 'Sitka Subheading', 'Sitka Text', 'Small Fonts Regular', 'Sylfaen Regular', 'Symbol Regular', 'System Bold', 'Tahoma', 'Terminal', 'Times New Roman', 'Trebuchet MS', 'Verdana', 'Webdings Regular', 'Wingdings Regular', 'Yu Gothic', 'Yu Gothic UI', 'Arial Black', 'Calibri Light', 'Courier', 'Fixedsys', 'Franklin Gothic Medium', 'Gabriola', 'HoloLens MDL2 Assets', 'Impact', 'Javanese Text', 'Leelawadee UI Semilight', 'Lucida Console', 'Lucida Sans Unicode', 'MS Gothic', 'MS PGothic', 'MS Sans Serif', 'MS Serif', 'MS UI Gothic', 'MV Boli', 'Malgun Gothic Semilight', 'Marlett', 'Microsoft Himalaya', 'Microsoft JhengHei Light', 'Microsoft JhengHei UI Light', 'Microsoft New Tai Lue', 'Microsoft PhagsPa', 'Microsoft Sans Serif', 'Microsoft YaHei Light', 'Microsoft YaHei UI Light', 'Microsoft Yi Baiti', 'MingLiU-ExtB', 'MingLiU_HKSCS-ExtB', 'Modern', 'Mongolian Baiti', 'NSimSun', 'Nirmala UI Semilight', 'PMingLiU-ExtB', 'Roman', 'Script', 'Segoe MDL2 Assets', 'Segoe UI Black', 'Segoe UI Emoji', 'Segoe UI Historic', 'Segoe UI Light', 'Segoe UI Semibold', 'Segoe UI Semilight', 'Segoe UI Symbol', 'SimSun', 'SimSun-ExtB', 'Small Fonts', 'Sylfaen', 'Symbol', 'System', 'Webdings', 'Wingdings', 'Yu Gothic Light', 'Yu Gothic Medium', 'Yu Gothic UI Light', 'Yu Gothic UI Semibold', 'Yu Gothic UI Semilight', 'Arial Narrow', 'Arial Unicode MS', 'Book Antiqua', 'Bookman Old Style', 'Century', 'Century Gothic', 'Century Schoolbook', 'Garamond', 'Helvetica', 'Lucida Bright', 'Lucida Calligraphy', 'Lucida Fax', 'Lucida Handwriting', 'Lucida Sans', 'Lucida Sans Typewriter', 'Monotype Corsiva', 'MS Outlook', 'MS Reference Sans Serif', 'Times', 'Wingdings 2', 'Wingdings 3', 'default', 'sans-serif', 'serif', 'monospace', 'cursive', 'fantasy', 'inherit', 'auto', 'Brush Script MT', 'Broadway', 'Bell MT', 'Berlin Sans FB', 'Blackadder ITC', 'Curlz MT', 'Elephant', 'Engravers MT', 'Goudy Old Style', 'Minion Pro', 'Papyrus', 'Wide Latin', 'Snap ITC', 'Stencil', 'Old English Text MT', 'Ubuntu', 'Ubuntu Mono', 'Terminus Font', 'Terminus', 'Ubuntu Mono 13', 'Ubuntu Mono Regular', 'Apple Braille Outline 6 Dot', 'Apple Braille Outline 8 Dot', 'Apple Braille Pinpoint 6 Dot', 'Apple Braille Pinpoint 8 Dot', 'Apple Braille', 'Apple Symbols', 'AppleGothic', 'AquaKana', 'Geeza Pro Bold', 'Geeza Pro', 'Geneva', 'HelveLTMM', 'Helvetica LT MM', 'HelveticaNeue', 'Hiragino Kaku Gothic ProN W3', 'Hiragino Kaku Gothic ProN W6', 'Hiragino Mincho ProN W3', 'Hiragino Mincho ProN W6', 'Keyboard', 'LastResort', 'LiHei Pro', 'LucidaGrande', 'Menlo', 'Monaco', 'STHeiti', 'STHeiti Light', 'STXihei', 'Thonburi', 'ThonburiBold', 'Times LT MM', 'TimesLTMM', 'ZapfDingbats', 'AmericanTypewriter', 'Andale Mono', 'Apple Chancery', 'Apple LiGothic Medium', 'Arial Bold Italic', 'Arial Bold', 'Arial Italic', 'Arial Narrow Bold Italic', 'Arial Narrow Bold', 'Arial Narrow Italic', 'Arial Rounded Bold', 'Arial Unicode', 'Baskerville', 'BigCaslon', 'Brush Script', 'Chalkboard', 'Chalkduster', 'Cochin', 'Copperplate', 'Courier New Bold Italic', 'Courier New Bold', 'Courier New Italic', 'Didot', 'Futura', 'Georgia Bold Italic', 'Georgia Bold', 'Georgia Italic', 'GillSans', 'Hei', 'Herculanum', 'Hiragino Kaku Gothic Pro W3', 'Hiragino Kaku Gothic Pro W6', 'Hiragino Kaku Gothic Std W8', 'Hiragino Kaku Gothic StdN W8', 'Hiragino Maru Gothic Pro W4', 'Hiragino Maru Gothic ProN W4', 'Hiragino Mincho Pro W3', 'Hiragino Mincho Pro W6', 'Hoefler Text', 'Hoefler Text Ornaments', 'Kai', 'MarkerFelt', 'Optima', 'Osaka', 'OsakaMono', 'Skia', 'Tahoma Bold', 'Times New Roman Bold Italic', 'Times New Roman Bold', 'Times New Roman Italic', 'Trebuchet MS Bold Italic', 'Trebuchet MS Bold', 'Trebuchet MS Italic', 'Verdana Bold Italic', 'Verdana Bold', 'Verdana Italic', 'Zapfino', 'Aharoni Bold', 'Andalus Regular', 'Angsana New', 'Angsana New Bold', 'Angsana New Italic', 'Angsana New Bold Italic', 'AngsanaUPC', 'AngsanaUPC Bold', 'AngsanaUPC Italic', 'AngsanaUPC Bold Italic', 'Aparajita', 'Aparajita Bold', 'Aparajita Italic', 'Aparajita Bold Italic', 'Arabic Typesetting Regular', 'Arial Unicode MS Regular', 'Batang', 'BatangChe', 'Browallia New', 'Browallia New Bold', 'Browallia New Italic', 'Browallia New Bold Italic', 'BrowalliaUPC', 'BrowalliaUPC Bold', 'BrowalliaUPC Italic', 'BrowalliaUPC Bold Italic', 'Calibri Bold', 'Calibri Italic', 'Calibri Bold Italic', 'Cambria Bold', 'Cambria Italic', 'Cambria Bold Italic', 'Candara Bold', 'Candara Italic', 'Candara Bold Italic', 'Consolas Bold', 'Consolas Italic', 'Consolas Bold Italic', 'Constantia Bold', 'Constantia Italic', 'Constantia Bold Italic', 'Corbel Bold', 'Corbel Italic', 'Corbel Bold Italic', 'Cordia New', 'Cordia New Bold', 'Cordia New Italic', 'Cordia New Bold Italic', 'CordiaUPC', 'CordiaUPC Bold', 'CordiaUPC Italic', 'CordiaUPC Bold Italic', 'DFKai-SB', 'DaunPenh', 'David', 'David Bold', 'DilleniaUPC', 'DilleniaUPC Bold', 'DilleniaUPC Italic', 'DilleniaUPC Bold Italic', 'DokChampa', 'Dotum', 'DotumChe', 'Ebrima Bold', 'Estrangelo Edessa', 'EucrosiaUPC', 'EucrosiaUPC Bold', 'EucrosiaUPC Italic', 'EucrosiaUPC Bold Italic', 'Euphemia', 'FangSong', 'FrankRuehl', 'Franklin Gothic Medium Italic', 'FreesiaUPC', 'FreesiaUPC Bold', 'FreesiaUPC Italic', 'FreesiaUPC Bold Italic', 'Gautami', 'Gautami Bold', '& Georgia Bold Italic', 'Gisha', 'Gisha Bold', 'Gulim', 'GulimChe', 'Gungsuh', 'GungsuhChe', 'IrisUPC', 'IrisUPC Bold', 'IrisUPC Italic', 'IrisUPC Bold Italic', 'Iskoola Pota', 'IskoolaPota Bold', 'JasmineUPC', 'JasmineUPC Bold', 'JasmineUPC Italic', 'JasmineUPC Bold Italic', 'KaiTi', 'Kalinga', 'Kalinga Bold', 'Kartika', 'Kartika Bold', 'Khmer UI', 'Khmer UI Bold', 'KodchiangUPC', 'KodchiangUPC Bold', 'KodchiangUPC Italic', 'KodchiangUPC Bold Italic', 'Kokila', 'Kokila Bold', 'Kokila Italic', 'Kokila Bold Italic', 'Lao UI', 'Lao UI Bold', 'Latha', 'Latha Bold', 'Leelawadee', 'Leelawadee Bold', 'Levenim MT', 'Levenim MT Bold', 'LilyUPC', 'LilyUPC Bold', 'LilyUPC Italic', 'LilyUPC Bold Italic', 'MS Mincho', 'MS PMincho', 'Malgun Gothic Bold', 'Mangal', 'Mangal Bold', 'Meiryo UI', 'Meiryo UI Bold', 'Meiryo UI Italic', 'Meiryo UI Bold Italic', 'Meiryo', 'Meiryo Bold', 'Meiryo Italic', 'Meiryo Bold Italic', 'Microsoft JhengHei Bold', 'Microsoft New Tai Lue Bold', 'Microsoft PhagsPa Bold', 'Microsoft Tai Le Bold', 'Microsoft Uighur', 'Microsoft YaHei Bold', 'MingLiU', 'MingLiU_HKSCS', 'Miriam', 'Miriam Fixed', 'MoolBoran', 'Narkisim', 'Nyala', 'PMingLiU', 'Palatino Linotype Bold', 'Palatino Linotype Italic', 'Palatino Linotype Bold Italic', 'Plantagenet Cherokee', 'Raavi', 'Raavi Bold', 'Rod', 'Sakkal Majalla', 'Sakkal Majalla Bold', 'Segoe Print Bold', 'Segoe Script Bold', 'Segoe UI Bold', 'Segoe UI Italic', 'Segoe UI Bold Italic', 'Shonar Bangla', 'Shonar Bangla Bold', 'Shruti', 'Shruti Bold', 'SimHei', 'Simplified Arabic', 'Simplified Arabic Bold', 'Simplified Arabic Fixed', ' Times New Roman Bold', 'Traditional Arabic', 'Traditional Arabic Bold', 'Tunga', 'Tunga Bold', 'Utsaah', 'Utsaah Bold', 'Utsaah Italic', 'Utsaah Bold Italic', 'Vani', 'Vani Bold', 'Vijaya', 'Vijaya Bold', 'Vrinda', 'Vrinda Bold']
-            fonts_max = random.randint(200, len(listFonts)-1)
-            fonts_min = random.randint(0, 150)
-            listUse = listFonts[fonts_min:fonts_max]  
-            line_obj.profile_font = str(listUse)
+from ensurepip import version
+import re, telebot, ast, requests
+from tkinter import N
+from celery import shared_task
+from storagon import settings
+
+from servermain.models import AccountBalance, AccountCurrency
+from django.contrib.auth.models import User
+from telegram_bot.models import *
+from storagon.enum import *
+from servermain.controllers import UserController
+from telegram_bot.api.TelegramBot_RestfulApi import AccountsSellingSerializer, CheckerTypeFunctionSerializer, CreatorTypeFunctionSerializer
+from rest_framework.authtoken.models import Token
+import random, json, os, pathlib, functools, shutil, pytz, decimal
+from tqdm.auto import tqdm
+from pathlib import Path
+from telebot import types
+from django.core.files import File
+import datetime
+import openai
+from cashback.api.Alibaba1688Api import *
+from cashback.api.TaobaoApi import *
+from cashback.api.Commission_Api import get_commission_obj
+from cashback.models import payment_models, product_models, shop_models
+import top.api, aop
+from http.cookiejar import CookieJar
+from django.db.models import Sum, F, Count, Q
+from django.utils import timezone
+from django.utils.crypto import get_random_string
+
+
+appkey = settings.TAOBAO_APPKEY
+secret = settings.TAOBAO_SECRET
+adzone_id = settings.TAOBAO_ADZONE_ID
+
+
+APP_KEY_1688 = settings.APP_KEY_1688
+APP_SECRET_1688 = settings.APP_SECRET_1688
+ACCESS_TOKEN_1688 = settings.ACCESS_TOKEN_1688
+MEDIAID_1688 = settings.MEDIAID_1688
+MEDIAZONEID_1688 = settings.MEDIAZONEID_1688
+
+
+def fix_unique_email():
+    user_objs = User.objects.all()
+    
+    
+    for user_obj in user_objs:
+        unique_id = get_random_string(length=32)
+        user_obj.email=unique_id+'@storagon.io'
+        user_obj.save()
+
+@shared_task
+def get_taobao_transaction(start_time=None, end_time=None):
+
+    req = top.api.TbkOrderDetailsGetRequest()
+    req.set_app_info(top.appinfo(appkey, secret))
+    time_range = 3
+    time_limit = 3600
+    list_create_transaction = []
+    time = 0
+    # while time <= time_limit:
+    if not start_time:
+        start_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai')) - datetime.timedelta(hours=3)).strftime(
+        '%Y-%m-%d %H:%M:%S')
+    if not end_time:
+        end_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai'))).strftime('%Y-%m-%d %H:%M:%S')
+    # print(appkey,end_time)
+    print(start_time,end_time)
+    # req.start_dsr = 10
+    req.page_size = 200
+    req.start_time = start_time
+    req.end_time = end_time
+    req.page_no = 1
+    req.tk_status = None
+    req.query_type = 4
+    try:
+        resp = req.getResponse()
+    except:
+        return
+    print(resp)
+    # result = json.loads(resp)
+    results = resp['tbk_order_details_get_response']['data']['results']
+    # print(results)
+    time = time + time_range
+    if 'publisher_order_dto' not in results:
+        return
+    else:
+        data = results['publisher_order_dto']
+    model_dict = {'adzone_id': 109959950065, 'adzone_name': 'chuyenhang365', 'alimama_rate': '10.00', 'alimama_share_fee': '0.26', 'alipay_total_price': '37.80', 'click_time': '2023-04-15 15:29:47', 'deposit_price': '0.00', 'flow_source': '--', 'income_rate': '7.00', 'is_lx': '0', 'item_category_name': '女装/女士精品', 'item_id': '0jtNUGt0BmS2t6-m80Wn0di7K7G7qOoUBg', 'item_img': '//img.alicdn.com/tfscom/i3/2820556330/O1CN01XAJ0ed1wdBvMkLPT9_!!2820556330.jpg', 'item_link': '//uland.taobao.com/item/edetail?id=0jtNUGt0BmS2t6-m80Wn0di7K7G7qOoUBg', 'item_num': 1, 'item_price': '128.00', 'item_title': '女装2023年新款女装时尚刺绣纯棉衬衫女洋气全棉衬衣蕾丝拼接上衣', 'marketing_type': '', 'modified_time': '2023-04-26 17:32:30', 'order_type': '淘宝', 'pay_price': '37.80', 'pub_id': 859350174, 'pub_share_fee': '2.65', 'pub_share_pre_fee': '2.65', 'pub_share_rate': '100.00', 'refund_tag': 0, 'seller_nick': '韩都女装装饰馆', 'seller_shop_title': '韩du女装饰馆', 'site_id': 1251850405, 'site_name': 'chuyenhang365', 'subsidy_fee': '0.00', 'subsidy_rate': '0.00', 'subsidy_type': '--', 'tb_deposit_time': '--', 'tb_paid_time': '2023-04-15 17:57:09', 'terminal_type': 'PC', 'tk_commission_fee_for_media_platform': '0.00', 'tk_commission_pre_fee_for_media_platform': '0.00', 'tk_commission_rate_for_media_platform': '0.00', 'tk_create_time': '2023-04-15 16:56:11', 'tk_deposit_time': '--', 'tk_earning_time': '2023-04-26 17:32:30', 'tk_order_role': 2, 'tk_paid_time': '2023-04-15 17:57:24', 'tk_status': 3, 'tk_total_rate': '7.00', 'total_commission_fee': '2.65', 'total_commission_rate': '7.00', 'trade_id': '3306979983228993420', 'trade_parent_id': '3306979983227993420'}   
+    for line in data:
+        print(line)
+        list_key_remove = []
+        for key in line.keys():
+            if line[key] == '--':
+                line[key] = None
+            if key not in model_dict:
+                # line.pop(key, None)
+                list_key_remove.append(key)
+        if list_key_remove:
+            for line_remove in list_key_remove:
+                line.pop(line_remove, None)
+        trade_id = line.get('trade_id')
+
+        ##create taobao transaction  
+        tran_taobao_objs = payment_models.TransactionTaobao.objects.filter(trade_id=trade_id)
+        if tran_taobao_objs.exists():
+            tran_taobao_objs.update(**line)            
+            tran_commission_objs = payment_models.TransactionCommission.objects.filter(reference=trade_id)
+            if tran_commission_objs.exists():
+                tran_commission_objs.update(status=line['tk_status'])
+
+            continue
+        if line['tk_status']  == 13:
+            continue
+        tran_taobao = payment_models.TransactionTaobao(**line)
+        list_create_transaction.append(tran_taobao)
+        
+
+
+    print(len(list_create_transaction))
+    if list_create_transaction:
+        payment_models.TransactionTaobao.objects.bulk_create(list_create_transaction)
+    else:
+        print(payment_models.TransactionTaobao.objects.count())
+        
+    #find transactiontaobao not add commission and create conmmision
+    for line in payment_models.TransactionTaobao.objects.filter(commission_paid=0):
+
+        time_check = (datetime.datetime.now() - datetime.timedelta(hours=3))
+        referUrl_obj = product_models.ReferUrl.objects.filter(item_id=line.item_id)
+        account_holder = None
+        if referUrl_obj.exists():
+            customer_list = referUrl_obj.values_list('customer',flat=True)
+            if customer_list.count() > 1:
+                account_holder = None
+                for line_cus in customer_list:
+                    # print(line_cus)
+                    account_holder_objs = User.objects.filter(
+                        Q(username=line_cus) | Q(telegram__telegram_id=line_cus)).distinct()
+                    if not account_holder_objs.exists():
+                        account_holder_recheck = None
+                    else:
+                        account_holder_recheck = account_holder_objs[0]
+
+                    if hasattr(account_holder_recheck, 'user_telegram'):
+                        print(account_holder_recheck.user_telegram.telegram_id)
+                        trade_number = line.trade_parent_id.replace(line.trade_parent_id[5:len(line.trade_parent_id)-5],'xxxxxxxx')
+                        print(trade_number, line.tradeAmount, line.commission_paid)
+                        msg = '%s, %s, chiết khấu:%s Cần xác nhận, vui lòng xác nhận bằng /mdh mã đặt hàng' % (
+                        trade_number, line.alipay_total_price, line.commission_paid)
+                        print(msg)
+                        send_telegram_notify_to_group(account_holder.user_telegram.telegram_id, msg=msg, bot_type='cashback')
+            else:
+                customer_refer = customer_list[0]
+                account_holder_objs = User.objects.filter(Q(username=customer_refer) | Q(user_telegram__telegram_id=customer_refer)).distinct()
+                if not account_holder_objs.exists():
+                    account_holder = None
+                else:
+                    account_holder = account_holder_objs[0]     
+            
+        ##create commission transaction
+        tran_commission_objs = payment_models.TransactionCommission.objects.filter(reference=line.trade_id)
+        currency_obj, created = shop_models.Currency.objects.get_or_create(value='CNY', label='CNY')
+        if line.account_holder:
+            balance_objs = payment_models.BalanceAccount.objects.filter(currency__value='CNY', account_holder=line.account_holder)
+            if not balance_obj.exists():
+                
+                balance_obj = payment_models.BalanceAccount.objects.create(account_holder=line.account_holder, currency=currency_obj)
+            else:
+                balance_obj = balance_objs[0]
+        else:
+            balance_obj = None  
+        if not tran_commission_objs.exists():
+            print('===create new commission===')
+            data_create = {}
+            data_create['amount'] = decimal.Decimal('{0:.2f}'.format(line.pub_share_pre_fee))
+            data_create['reference'] = line.trade_id
+            data_create['commission_amount'] = decimal.Decimal('{0:.2f}'.format(line.pub_share_pre_fee * decimal.Decimal(0.65)))
+            data_create['customer_ratio'] = decimal.Decimal(0.65)
+            if line.tk_status  == 3:
+                data_create['approved'] = line.tk_earning_time
+            data_create['share_fee'] = line.alimama_share_fee
+            data_create['status'] = line.tk_status
+            commission_type_obj, created = payment_models.CommissionType.objects.get_or_create(value='taobao', label='taobao')
+            tran_commission_obj = payment_models.TransactionCommission(**data_create)
+            tran_commission_obj.transaction_holder = balance_obj
+            tran_commission_obj.commission_type = commission_type_obj
+            tran_commission_obj.account_holder = account_holder
+            tran_commission_obj.currency = currency_obj
+            tran_commission_obj.exchange_rate = currency_obj.exchange_rate
+            tran_commission_obj.save()
+        else:
+            tran_commission_obj = tran_commission_objs[0]
+            if tran_commission_obj.status != line.tk_status:
+                tran_commission_obj.status = line.tk_status
+                tran_commission_obj.save(update_fields=['status'])
+                
+        line.commission_paid = decimal.Decimal('{0:.2f}'.format(line.pub_share_pre_fee * decimal.Decimal(0.65)))
+        line.account_holder = account_holder
+        line.transaction_commission = tran_commission_obj
+        line.save(update_fields=['commission_paid','account_holder', 'transaction_commission'])                 
+        ##send telegram notification
+        if hasattr(account_holder, 'telegram'):
+            print(account_holder.telegram.telegram_id)
+            print(line.trade_parent_id,line.tradeAmount,line.commission_paid)
+            msg = '%s, %s, chiết khấu:%s đã thanh toán' % (line.trade_parent_id,line.alipay_total_price,line.commission_paid)
+            # print(msg)
+            send_telegram_notify_to_group(account_holder.user_telegram.telegram_id, msg=msg, bot_type='cashback')            
+            
+@shared_task
+def get_1688_transaction():
+    aop.set_default_server('gw.open.1688.com')
+
+    aop.set_default_appinfo(APP_KEY_1688, APP_SECRET_1688)  # default
+
+    start_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai')) - datetime.timedelta(hours=3)).strftime(
+        '%Y-%m-%d %H:%M:%S')
+    end_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai'))).strftime(
+        '%Y-%m-%d %H:%M:%S')
+
+    # start_time = (timezone.now().date() - timedelta(30)).strftime("%Y-%m-%d")
+    # end_time = timezone.now().date().strftime("%Y-%m-%d")
+    print(start_time,end_time)
+    req = aop.api.AlibabaCpsTradeBillListParam()
+    req.access_token = ''
+    req.queryOrderType = 'orderAll'
+    req.orderState = 20
+    req.queryTimeType = 'gmtCreateTime'
+    req.queryStartTime = start_time
+    req.queryEndTime = end_time
+    req.pageNo = 1
+    req.pageSize = 200
+    resp = req.get_response(timeout=30)
+    if 'totalRow' not in resp:
+        return
+    print(resp)
+    totalrow = resp['totalRow']
+    print(totalrow)
+    lastPage = round(totalrow / 200, 0)
+    # # payment_models.Transaction1688.objects.all().delete()
+    list_id = []
+    list_paid = []
+    list_success = []
+    i = 1
+    while i <= int(lastPage):
+        req.pageNo = i
+        req.pageSize = 200
+        resp = req.get_response(timeout=30)
+        # print(resp)
+        for line in resp['tradeBillList']:
+            print(line)
+            # print(line['orderState'])
+            if not line['ext'] or line['orderState'] == 10 or line['orderState'] == 80:
+                continue
+
+            tran_1688_objs = payment_models.Transaction1688.objects.filter(bizSubId=line['bizSubId'])
+            if tran_1688_objs.exists():
+                if tran_1688_objs.first().orderState != line['orderState']:
+                    if line['orderState'] == 20:
+                        list_paid.append(tran_1688_objs.first().pk)
+                    elif line['orderState'] == 50:
+                        list_success.append(tran_1688_objs.first().pk)
+                    print('===', tran_1688_objs.first().orderState, line['orderState'])
+                    tran_1688_objs.update(**line)
+                    tran_commission_objs = payment_models.TransactionCommission.objects.filter(reference=line['bizSubId'])
+                    if tran_commission_objs.exists():
+                        tran_commission_objs.update(status=line['orderState'])                    
+                continue
+            referUrl_obj = product_models.ReferUrl.objects.filter(Q(telegram_id=line['ext']) | Q(customer=line['ext']),
+                                                                  item_id=line['feedId']).distinct()
+            if not referUrl_obj.exists():
+                continue
+            print(line, referUrl_obj.count())
+            tran_1688 = payment_models.Transaction1688(**line)
+            list_id.append(tran_1688)
+        i+=1
+
+    print(len(list_id))
+    if list_id:
+        payment_models.Transaction1688.objects.bulk_create(list_id)
+    else:
+        print(payment_models.Transaction1688.objects.count())
+
+    for line in payment_models.Transaction1688.objects.filter(commission_paid=0):
+        account_holder_objs = User.objects.filter(Q(username=line.ext) | Q(user_telegram__telegram_id=line.ext)).distinct()
+        if not account_holder_objs.exists():
+            account_holder = None
+        else:
+            account_holder = account_holder_objs[0]
+            
+        ##create commission transaction
+        tran_commission_objs = payment_models.TransactionCommission.objects.filter(reference=line.bizId)
+        currency_obj, created = shop_models.Currency.objects.get_or_create(value='CNY', label='CNY')
+        if line.account_holder:
+            balance_objs = payment_models.BalanceAccount.objects.filter(currency__value='CNY', account_holder=line.account_holder)
+            if not balance_obj.exists():
+                balance_obj = payment_models.BalanceAccount.objects.create(account_holder=line.account_holder, currency=currency_obj)
+            else:
+                balance_obj = balance_objs[0]
+        else:
+            balance_obj = None  
+        if not tran_commission_objs.exists():
+            print('===create new commission===')
+            data_create = {}
+            data_create['amount'] = decimal.Decimal('{0:.2f}'.format(line.commission))
+            data_create['reference'] = line.bizSubId
+            data_create['commission_amount'] = decimal.Decimal('{0:.2f}'.format(line.commission * decimal.Decimal(0.55)))
+            data_create['customer_ratio'] = decimal.Decimal(0.55)
+            # if line['tk_status']  == 3:
+                # data_create['approved'] = line['tk_earning_time']
+            # data_create['share_fee'] = line['alimama_share_fee']
+            # data_create['status'] = line['tk_status']
+            commission_type_obj, created = payment_models.CommissionType.objects.get_or_create(value='1688', label='1688')
+            tran_commission_obj = payment_models.TransactionCommission(**data_create)
+            tran_commission_obj.transaction_holder = balance_obj
+            tran_commission_obj.commission_type = commission_type_obj
+            tran_commission_obj.account_holder = account_holder
+            tran_commission_obj.currency = currency_obj
+            tran_commission_obj.exchange_rate = currency_obj.exchange_rate
+            tran_commission_obj.save()
+        else:
+            tran_commission_obj = tran_commission_objs[0]
+            if tran_commission_obj.status != line['orderState']:
+                tran_commission_obj.status = line['orderState']
+                tran_commission_obj.save(update_fields=['status'])
+                            
+        line.commission_paid = decimal.Decimal('{0:.2f}'.format(line.commission * decimal.Decimal(0.55)))
+        line.account_holder = account_holder
+        line.transaction_commission = tran_commission_obj
+        line.save(update_fields=['commission_paid','account_holder', 'transaction_commission'])  
+        if hasattr(account_holder, 'user_telegram'):
+            print(account_holder.user_telegram.telegram_id)
+            print(line.bizSubId,line.tradeAmount,line.commission_paid)
+            msg = '%s, %s, chiết khấu:%s đã thanh toán' % (line.bizId,line.tradeAmount,line.commission_paid)
+            print(msg)
+            send_telegram_notify_to_group(account_holder.user_telegram.telegram_id, msg=msg)
+
+
+def get_all_taobao_transaction():
+    current_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai'))).strftime('%Y-%m-%d %H:%M:%S')
+    time_range = 3
+    time_limit = 2160
+    list_id = []
+    time = 0
+    while time <= time_limit:
+        end_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai')) - datetime.timedelta(hours=time)).strftime(
+        '%Y-%m-%d %H:%M:%S')
+        
+        time+=time_range
+        
+        start_time = (datetime.datetime.now().astimezone(pytz.timezone('Asia/Shanghai')) - datetime.timedelta(hours=time)).strftime(
+        '%Y-%m-%d %H:%M:%S')
+        get_taobao_transaction(start_time=start_time, end_time=end_time)
+        
+        
+def send_telegram_notify_to_group(group_id,msg,reply_markup=None,reply_id=None,bot_type='checker'):
+    #token='1235501300:AAEWPcah92B1PvsdvTCSHdT12CCg4gq-qZo'
+    if bot_type == 'cashback':
+        token = settings.TELEGRAM_CASHBACK_TOKEN
+    else:
+        token = settings.TELEGRAM_TOKEN
+    bot = telebot.TeleBot(token)
+    send_msg = bot.send_message(group_id,'<b>'+msg+'</b>',reply_to_message_id=reply_id,reply_markup=reply_markup,parse_mode='HTML',disable_web_page_preview=False)
+    return send_msg
+
+def send_telegram_notify_to_group_gpt(group_id,msg,reply_markup=None,reply_id=None):
+    token='6099065217:AAFw2dDz6C4BfVmG-5MOYtYyksfk38PpheE'
+    # token = settings.TELEGRAM_TOKEN
+    bot = telebot.TeleBot(token)
+    send_msg = bot.send_message(group_id,'<b>'+msg+'</b>',reply_to_message_id=reply_id,reply_markup=reply_markup,parse_mode='HTML',disable_web_page_preview=False)
+    return send_msg
+
+def edit_telegram_notify_to_group(chat_id,message_id,text,reply_markup=None, bot_type='checker'):
+    #token='1235501300:AAEWPcah92B1PvsdvTCSHdT12CCg4gq-qZo'
+    if bot_type == 'cashback':
+        token = settings.TELEGRAM_CASHBACK_TOKEN
+    else:
+        token = settings.TELEGRAM_TOKEN
+    bot = telebot.TeleBot(token)
+    edited_msg = bot.edit_message_text(chat_id=chat_id, message_id=message_id,
+                          text=text, reply_markup=reply_markup, parse_mode='HTML')
+    return edited_msg
+
+def download_file(url, local_filename):
+    # local_filename = url.split('/')[-1]
+
+    r = requests.get(url, stream=True, allow_redirects=True)
+    if r.status_code != 200:
+        r.raise_for_status()  # Will only raise for 4xx codes, so...
+        raise RuntimeError(f"Request to {url} returned status code {r.status_code}")
+    file_size = int(r.headers.get('Content-Length', 0))
+
+    path = pathlib.Path(local_filename).expanduser().resolve()
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    desc = "(Unknown total file size)" if file_size == 0 else ""
+    r.raw.read = functools.partial(r.raw.read, decode_content=True)  # Decompress if needed
+    with tqdm.wrapattr(r.raw, "read", total=file_size, desc=desc) as r_raw:
+        with path.open("wb") as f:
+            shutil.copyfileobj(r_raw, f)
+    return path   
+
+
+def download_file_from_telegram(fileInfo):
+    token = settings.TELEGRAM_TOKEN
+    bot = telebot.TeleBot(token)
+    file_info = bot.get_file(fileInfo['file_id'])
+    # print('===file_info===',file_info)
+    file_url = 'https://api.telegram.org/file/bot{0}/{1}'.format(token, file_info.file_path)
+    file_path = download_file(file_url, fileInfo['file_unique_id'])
+    return file_path
+    # print(file_url)
+    # file = requests.get(file_url)
+    # print(file_path)
+    # f = open(file_path, 'r', encoding='utf-8')
+    # result = f.read()
+
+    # print('==result==',result)
+    # f.close()
+    # os.remove(file_path)
+    # print('===file===',file_info)
+# def create_checker_markup(checker_id,valid=0,invalid=0, unknown=0, listing_type='',page=0):
+    
+#     markup = types.InlineKeyboardMarkup()
+#     callback_valid = '%s|%s|%s' % ('get_valid', checker_id, listing_type)
+#     callback_invalid = '%s|%s|%s' % ('get_invalid', checker_id, listing_type)
+#     callback_unknown = '%s|%s|%s' % ('get_unknown', checker_id, listing_type)
+#     inline_keyboard_valid = types.InlineKeyboardButton('Valid: %s' % (valid) , callback_data=str(callback_valid))
+#     inline_keyboard_invalid = types.InlineKeyboardButton('Invalid: %s' % (invalid), callback_data=str(callback_invalid))
+#     inline_keyboard_unknown = types.InlineKeyboardButton('Unknown: %s' % (unknown), callback_data=str(callback_unknown))
+#     markup.row(inline_keyboard_valid,inline_keyboard_invalid, inline_keyboard_unknown)
+
+#     new_markup= create_menu_markup(markup, listing_type, page)    
+#     return new_markup
+
+def create_checker_markup(checker_id,valid=0,invalid=0, unknown=0, listing_type='',page=0):
+    
+    markup = types.InlineKeyboardMarkup()
+    callback_valid = '%s|%s|%s' % ('get_valid', checker_id, listing_type)
+    callback_invalid = '%s|%s|%s' % ('get_invalid', checker_id, listing_type)
+    callback_unknown = '%s|%s|%s' % ('get_unknown', checker_id, listing_type)
+    inline_keyboard_valid = types.InlineKeyboardButton('Valid: %s' % (valid) , callback_data=str(callback_valid))
+    inline_keyboard_invalid = types.InlineKeyboardButton('Invalid: %s' % (invalid), callback_data=str(callback_invalid))
+    inline_keyboard_unknown = types.InlineKeyboardButton('Unknown: %s' % (unknown), callback_data=str(callback_unknown))
+    markup.row(inline_keyboard_valid,inline_keyboard_invalid, inline_keyboard_unknown)
+    new_markup = create_page_navigation_markup(markup, listing_type, checker_id)
+    new_markup= create_checker_menu_markup(markup, listing_type, checker_id)    
+    return new_markup
+
+def create_page_navigation_markup(markup, listing_type='',checker_id=''):
+    # backPage = page-1
+    # nextPage = page+1
+    # lastPage = -1
+    # if backPage <=0:
+    #     backPage=0
+    callback_data_firstpage = '%s|%s|%s' % ('first_page', checker_id, listing_type)#{'action': 'set_page', 'value': 0, 'type':listing_type}    
+    inline_keyboard_first_page = types.InlineKeyboardButton('First Page \U0001F51D', callback_data=str(callback_data_firstpage))
+        
+    callback_data_back_page = '%s|%s|%s' % ('back_page', checker_id, listing_type)#{'action': 'set_page', 'value': backPage, 'type':listing_type}   
+    inline_keyboard_back_page = types.InlineKeyboardButton('Back \U00002B05', callback_data=str(callback_data_back_page))
+    
+    
+    callback_data_next_page = '%s|%s|%s' % ('next_page', checker_id, listing_type)#{'action': 'set_page', 'value': nextPage, 'type':listing_type} 
+    inline_keyboard_next_page = types.InlineKeyboardButton('Next \U000027A1', callback_data=str(callback_data_next_page))
+    
+    
+    callback_data_last_page = '%s|%s|%s' % ('last_page', checker_id, listing_type)#{'action': 'set_page', 'value': lastPage, 'type':listing_type}
+    inline_keyboard_last_page = types.InlineKeyboardButton('Last Page \U0001F51A', callback_data=str(callback_data_last_page))
+    markup.row(inline_keyboard_first_page,inline_keyboard_back_page,inline_keyboard_next_page,inline_keyboard_last_page)
+    return markup
+    
+def create_checker_menu_markup(markup, listing_type='',checker_id=''):	
+    callback_data_stop = '%s|%s|%s' % ('stop', checker_id, listing_type)
+    inline_keyboard_menu = types.InlineKeyboardButton('Stop \U0001F6AB', callback_data=str(callback_data_stop))
+    
+    callback_data_refresh = '%s|%s|%s' % ('recheck', checker_id, listing_type)#{'action': 'set_page', 'value': 'refresh', 'type':listing_type} 
+
+    inline_keyboard_refesh = types.InlineKeyboardButton('ReCheck \U0001F504', callback_data=str(callback_data_refresh))
+    inline_keyboard_deposit = types.InlineKeyboardButton('Deposit \U0001F4B3', callback_data='deposit')
+    markup.row(inline_keyboard_menu, inline_keyboard_refesh, inline_keyboard_deposit)
+    return markup   
+
+def create_menu_markup(markup, listing_type='',checker_id=''):
+    # backPage = page-1
+    # nextPage = page+1
+    # lastPage = -1
+    # if backPage <=0:
+    #     backPage=0
+    markup = create_page_navigation_markup(markup, listing_type,checker_id)
+
+
+    
+    
+    inline_keyboard_menu = types.InlineKeyboardButton('Menu \U0001F3D8', callback_data='menu')
+    
+    callback_data_refresh = '%s|%s|%s' % ('set_page', 'refresh', listing_type)#{'action': 'set_page', 'value': 'refresh', 'type':listing_type} 
+
+    inline_keyboard_refesh = types.InlineKeyboardButton('Refresh \U0001F504', callback_data=str(callback_data_refresh))
+    inline_keyboard_deposit = types.InlineKeyboardButton('Deposit \U0001F4B3', callback_data='deposit')
+    markup.row(inline_keyboard_menu, inline_keyboard_refesh, inline_keyboard_deposit)
+    return markup    
+    
+def create_function_listing_markup(listing, listing_type='',page=0):
+    # backPage = page-1
+    # nextPage = page+1
+    # lastPage = -1
+    # if backPage <=0:
+    #     backPage=0
+    
+    markup = types.InlineKeyboardMarkup()
+    i = 0
+    while i < len(listing):
+        line_function1 = listing[i]
+        line_function2 = listing[i+1]
+        callback_data1 = '%s|%s|%s' % ('set_checker', line_function1['value'], listing_type)#{'action': 'set_checker', 'value': line_function1['value'], 'type':listing_type}
+        callback_data2 = '%s|%s|%s' % ('set_checker', line_function2['value'], listing_type)#{'action': 'set_checker', 'value': line_function2['value'], 'type':listing_type}
+        inline_keyboard_function1 = types.InlineKeyboardButton(line_function1['value'], callback_data=str(callback_data1))
+        inline_keyboard_function2 = types.InlineKeyboardButton(line_function2['value'], callback_data=str(callback_data2))
+        markup.row(inline_keyboard_function1,inline_keyboard_function2)
+        i+=2
+    new_markup= create_menu_markup(markup, listing_type, page)    
+    return new_markup
+
+
+def create_listing_markup(listing,type,page=0):
+
+    markup = types.InlineKeyboardMarkup()
+
+    for line in listing:
+        inline_keyboard_account = types.InlineKeyboardButton(line['account'], callback_data='view|%s' %(line['id']))
+        inline_keyboard_buy = types.InlineKeyboardButton('$%s \U0001F6D2' % (line['price']), callback_data='buy|%s' %(line['id']))
+        markup.row(inline_keyboard_account,inline_keyboard_buy)
+    inline_keyboard_first_page = types.InlineKeyboardButton('First Page \U0001F51D', callback_data='first_page')
+    inline_keyboard_back_page = types.InlineKeyboardButton('Back \U00002B05', callback_data='back|%s' % (page-1))
+    inline_keyboard_next_page = types.InlineKeyboardButton('Next \U000027A1', callback_data='next|%s' % (page+1))
+    inline_keyboard_last_page = types.InlineKeyboardButton('Last Page \U0001F51A', callback_data='last_page')
+    markup.row(inline_keyboard_first_page,inline_keyboard_back_page,inline_keyboard_next_page,inline_keyboard_last_page)
+
+    inline_keyboard_menu = types.InlineKeyboardButton('Menu \U0001F3D8', callback_data='menu')
+    inline_keyboard_refesh = types.InlineKeyboardButton('Refresh \U0001F504', callback_data='refesh|%s' % (type))
+    inline_keyboard_deposit = types.InlineKeyboardButton('Deposit \U0001F4B3', callback_data='deposit')
+    markup.row(inline_keyboard_menu, inline_keyboard_refesh, inline_keyboard_deposit)
+    return markup
+
+def create_deposit_markup():
+
+    markup = types.InlineKeyboardMarkup()
+
+    inline_keyboard_usdt = types.InlineKeyboardButton('USDT', callback_data='deposit|coinbase|USDT')
+    inline_keyboard_usdc = types.InlineKeyboardButton('USDC', callback_data='deposit|coinbase|USDC')
+
+    markup.row(inline_keyboard_usdt, inline_keyboard_usdc)
+    return markup
+
+def create_cashback_product_markup(product_json):
+
+    markup = types.InlineKeyboardMarkup()
+
+    inline_keyboard_usdt = types.InlineKeyboardButton('Link Mobile', url='https://api.chietkhauviet.com/cashback/capi/get_link_mobile/?id='+str(product_json['id']))
+    inline_keyboard_usdc = types.InlineKeyboardButton('Link PC', url='https://api.chietkhauviet.com/cashback/capi/get_link_pc/?id='+str(product_json['id']))
+
+    markup.row(inline_keyboard_usdt, inline_keyboard_usdc)
+    return markup
+
+def create_html_cashback_product_show(product_json):
+
+    html_show = '''
+<a href="%s"> </a>
+Giá gốc: %s
+Phiếu giảm giá: %s
+Giá cuối: %s
+Chiết khấu: %s
+%s
+''' % (product_json['pict_url'], product_json['zk_final_price'], product_json['coupon_amount'], float(product_json['zk_final_price'])-float(product_json['coupon_amount']), round(product_json['commission_price'], 2), product_json['taokouling'] )
+    return html_show
+
+def create_html_show(type='',balance='',total='',page='',total_page='',updated='', status='', plant_text='',displaying_page='Displaying'):
+    html_show = '''
+<b>\U0001F47B MunBot %s AIO automatic \U0001F47D</b>
+<b>Balance: </b> <code>$%s \U0001F4B3</code>
+<b>Total: </b> <code>%s \U0001F6D2</code>
+<b>Notification: </b> <i>%s</i>
+%s
+<pre>%s page %s of %s. Last updated @%s</pre>
+    ''' % (type, balance, total, status, plant_text, displaying_page, page, total_page, updated)
+    return html_show
+
+def create_html_deposit(balance):
+    html_show = '''
+<b>\U0001F47B MunBot AIO automatic \U0001F47D</b>
+<b>Balance: </b><code>$%s \U0001F4B3</code>
+Choose your deposit crypto type
+
+Payment modes supported are 
+USDT | USDC | More being added soon
+
+Funds will be added after 2 confirmations.
+    ''' % (balance)
+    return html_show
+
+def create_html_deposit_details(balance,payment_method, address, account_id):
+    html_show = '''
+<b>\U0001F47B MunBot AIO automatic \U0001F47D</b>
+<b>Balance: </b>$<code>%s</code> \U0001F4B3
+Here is the details:-
+<code>Send crypto to the address shown below</code><a href="https://chart.googleapis.com/chart?chs=200x200&chld=%s&cht=qr&%s">.</a>
+Payment: %s
+Address: <code>%s</code>
+Charge ID: <code>%s</code>
+
+1. Funds will be automatic convert to USD by your balance.
+2. Funds will be added after 2 confirmations.
+    ''' % (balance,'L%7C2',address,payment_method,address, account_id)
+    return html_show
+
+def get_or_create_user(username):
+    User.objects.filter(username=username)
+
+
+def get_deposit_address(user,name='USDT'):
+    currency_obj, created = AccountCurrency.objects.get_or_create(code=name, label=name)
+    account_balance_obj, created = AccountBalance.objects.get_or_create(user=user,balance_type=BalanceType.credit,currency=currency_obj)
+    # current_banlance = UserController.calculateUserBlance(account_balance_obj)
+    if created or len(account_balance_obj.address) < 3:
+        walletAddress = createCoinBaseAddress(name)
+        if walletAddress:
+            account_balance_obj.address = walletAddress['address']
+            account_balance_obj.account_id = walletAddress['id']
+            account_balance_obj.save()
+            return (walletAddress['address'],walletAddress['id'])
+        else:
+            return
+    else:
+        return (account_balance_obj.address, account_balance_obj.account_id)
+
+def create_coinbase_charge_wallet(telegram_id):
+    from coinbase_commerce.client import Client
+
+    API_KEY = "f0481c32-7320-4db9-bcf9-f55808e807ba"
+
+    # initialize client
+    client = Client(api_key=API_KEY)
+
+    # charge info
+    charge_info = {
+        "name": 'Telegram deposit %s' % (telegram_id),
+        "description": str(telegram_id),
+        'metadata': {'customer_id':telegram_id, 'customer_name':telegram_id},
+        # "local_price": {
+        #     "amount": "100.00",
+        #     "currency": "USD"
+        # },
+        "pricing_type": "no_price"
+
+    }
+
+    charge = client.charge.create(**charge_info)
+    saved_charge_id = charge.id
+    data = {}
+    data['charge_id'] = saved_charge_id
+    data['usdt_address'] = charge.addresses['tether']
+    data['usdc_address'] = charge.addresses['usdc']
+    {
+    "apecoin": "0xff2bd195884b927b74ee311137bc886bd660294f",    
+    "bitcoin": "3BsBpnH5P4eE8joKv99oSWCH23KMNNn762",
+    "bitcoincash": "qp5qycz49ssw94sryf7de2xqz4qyyuh09vrh5ugs4t",
+    "dai": "0xff2bd195884b927b74ee311137bc886bd660294f",        
+    "dogecoin": "DQA1Wr6bfCLAughUBD3Z8LXyHbLxQnxv64",
+    "ethereum": "0xff2bd195884b927b74ee311137bc886bd660294f",   
+    "litecoin": "MNfcS2xYvFV4WdGWUtQXUubM8bdSPan9he",
+    "polygon": "0xff2bd195884b927b74ee311137bc886bd660294f",    
+    "pusdc": "0xff2bd195884b927b74ee311137bc886bd660294f",      
+    "pweth": "0xff2bd195884b927b74ee311137bc886bd660294f",      
+    "shibainu": "0xff2bd195884b927b74ee311137bc886bd660294f",
+    "tether": "0xff2bd195884b927b74ee311137bc886bd660294f",
+    "usdc": "0xff2bd195884b927b74ee311137bc886bd660294f"
+    }
+    return data
+    # print(charge.addresses)
+    # print(charge.pricing)
+
+    # print("Created charge {!r}".format(charge))
+    # print("#" * 100)
+
+
+def create_completion_openai(text):
+    prompt = '"""\n{}\n"""'.format(text)
+
+    openai.api_key = 'sk-FakeOpenAIApiKeyForBypassingGitHubPushProtection'#env["OPENAI_API_KEY"]
+    response = openai.Completion.create(
+        # engine = "text-davinci-003",
+        engine = "text-davinci-001",
+        #engine = "text-curie-001",
+        #engine = "text-babbage-001",
+        #engine = "text-ada-001",
+        #engine = "code-davinci-002",
+        #engine = "code-cushman-001",
+        prompt = prompt,
+        temperature = 0.9,
+        max_tokens = 1500,
+        top_p = 1,
+        frequency_penalty = 0,
+        presence_penalty = 0.6,
+        stop = ['"""'])
+
+    return response.choices[0].text
+
+@shared_task
+def check_cmd_telegram_gpt(chat_id,message_id=None,text=None,callback_query=None, chat=None, document=None, original_text=''):
+    if text:
+        response = create_completion_openai(text)
+        send_telegram_notify_to_group_gpt(chat_id, msg=f'{response}', reply_id=message_id)
+
+@shared_task
+def check_cmd_cashback_telegram(chat_id,message_id=None,text=None,callback_query=None, chat=None, document=None, original_text=''):
+
+    userTelegram_objs = UserTelegram.objects.filter(telegram_id=chat_id)
+    if not userTelegram_objs.exists():
+        print('===create new user===')
+        user, created = User.objects.get_or_create(username=chat_id)
+        # user.save()
+        user.set_password('telegrambot123')
+        
+        if chat:
+            user_telegram = UserTelegram(user=user, telegram_id=chat_id)
+        else:
+            user_telegram = UserTelegram(user=user, telegram_id=chat_id)
+        user_telegram.save()
+        userTelegram_objs = UserTelegram.objects.filter(telegram_id=chat_id)
+
+    user_telegram = userTelegram_objs.first()
+    user = user_telegram.user
+    currency_obj, created = AccountCurrency.objects.get_or_create(code='CNY', label='CNY')
+    account_balance_obj, created = AccountBalance.objects.get_or_create(user=user,balance_type=BalanceType.credit,currency=currency_obj)
+    current_banlance = UserController.calculateUserBalance(account_balance_obj)
+
+    if callback_query:
+        print('callback_query==', callback_query)
+        if callback_query.find('|') != -1:
+            # callback_query_json = ast.literal_eval(callback_query.strip())
+            
+            # edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
+            # {'action': 'checker', 'value': 'ccn gate 2', 'type': 'checker'}
+            callback_split = callback_query.split('|')
+            reply_action = callback_split[0].strip()
+            reply_value = callback_split[1].strip()
+            reply_type = callback_split[2].strip()
+  
+            if reply_action == 'deposit':
+                print('==create deposit wallet==')
+                wallet_result = create_coinbase_charge_wallet(chat_id)
+                if reply_type == 'USDT':
+                    html_show = create_html_deposit_details(current_banlance, reply_type, wallet_result['usdt_address'], wallet_result['charge_id'])
+                else:
+                    html_show = create_html_deposit_details(current_banlance, reply_type, wallet_result['usdc_address'], wallet_result['charge_id'])
+                 
+                send_telegram_notify_to_group(chat_id, html_show, bot_type='cashback')          
+        elif callback_query == 'deposit':
+            html_show = create_html_deposit(0)
+            markup_button = create_deposit_markup()
+            # edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
+            send_telegram_notify_to_group(chat_id, html_show, reply_markup=markup_button, bot_type='cashback')
+    
+    elif text:    
+        list_urls = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', text)
+        if not re.search(r'1688\.',text):
+            get_taokouling = taokouling_extract(text)
+            if get_taokouling:
+                list_urls = get_taokouling
+        if list_urls:
+            for full_str in list_urls:
+                msg = 'Xin lỗi sản phẩm của bạn không có chiết khấu vui lòng tìm sản phâm khác hoặc truy cập chietkhauviet.com để tìm kiếm sản phẩm!'
+
+                commission_obj = get_commission_obj(full_str,telegram_id=chat_id)
+
+                if commission_obj:
+                    # msg = '<a href="https://chietkhauviet.com/page/thong-tin-chiet-khau/%s">Giá sản phẩm:%s Chiết khấu:%s Phieu KM:%s</a>' % (
+                    #     referUrl_obj.pk, float(referUrl_obj.zk_final_price) - float(referUrl_obj.coupon_amount), round(float(referUrl_obj.commission_price),2), referUrl_obj.coupon_amount)
+                    product_json = {}
+                    product_json['id'] = commission_obj.pk
+                    product_json['short_title'] = commission_obj.short_title
+                    product_json['pict_url'] = commission_obj.pict_url
+                    product_json['url'] = commission_obj.url
+                    product_json['taokouling'] = commission_obj.taokouling
+                    product_json['zk_final_price'] = commission_obj.zk_final_price
+                    product_json['commission_price'] = commission_obj.commission_price
+                    product_json['coupon_amount'] = commission_obj.coupon_amount
+                    product_json['coupon_share_url'] = commission_obj.coupon_share_url
+                    # product_json['msg'] = 'Đã tìm thấy sản phẩm của bạn!'
+
+                    msg = create_html_cashback_product_show(product_json)
+                    markup_button = create_cashback_product_markup(product_json)       
+                    send_telegram_notify_to_group(chat_id, msg=msg,reply_id=message_id, reply_markup=markup_button, bot_type='cashback')
+                else:
+                    send_telegram_notify_to_group(chat_id, msg=msg,reply_id=message_id, bot_type='cashback')
+        else:        
+            cmd = text.lstrip("/").strip()
+            extra_text = ''
+            if cmd.find(' ') != -1:
+                new_cmds = cmd.split(' ')
+                first_cmd = new_cmds[0].strip()
+                #cmd
+                extra_text = cmd.split(first_cmd)[-1].strip()
+                cmd = first_cmd
+            elif not cmd:
+                print('===text===', user_telegram.checker_type)
+                print(text)
+
+              
+@shared_task
+def check_cmd_telegram(chat_id,message_id=None,text=None,callback_query=None, chat=None, document=None, original_text=''):
+
+    userTelegram_objs = UserTelegram.objects.filter(telegram_id=chat_id)
+    if not userTelegram_objs.exists():
+        print('===create new user===')
+        user, created = User.objects.get_or_create(username=chat_id)
+        # user.save()
+        user.set_password('telegrambot123')
+        
+        if chat:
+            user_telegram = UserTelegram(user=user, telegram_id=chat_id)
+        else:
+            user_telegram = UserTelegram(user=user, telegram_id=chat_id)
+        user_telegram.save()
+        userTelegram_objs = UserTelegram.objects.filter(telegram_id=chat_id)
+
+    user_telegram = userTelegram_objs.first()
+    user = user_telegram.user
+    currency_obj, created = AccountCurrency.objects.get_or_create(code='USD', label='USD')
+    account_balance_obj, created = AccountBalance.objects.get_or_create(user=user,balance_type=BalanceType.credit,currency=currency_obj)
+    current_banlance = UserController.calculateUserBalance(account_balance_obj)
+
+    if callback_query:
+        print('callback_query==', callback_query)
+        if callback_query.find('|') != -1:
+            # callback_query_json = ast.literal_eval(callback_query.strip())
+            
+            # edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
+            # {'action': 'checker', 'value': 'ccn gate 2', 'type': 'checker'}
+            callback_split = callback_query.split('|')
+            reply_action = callback_split[0].strip()
+            reply_value = callback_split[1].strip()
+            reply_type = callback_split[2].strip()
+            if reply_action == 'set_checker':
+                checker_objs = CheckerType.objects.filter(value=reply_value.strip())
+                if checker_objs.exists():
+                    user_telegram.checker_type = checker_objs[0]
+                    user_telegram.save()
+                    status_text = 'Your checker mode has been set as %s' % (reply_value.strip())
+                    checker_objs = CheckerType.objects.all()
+                    limit = 10
+                    account_page = 1
+                    account_total = checker_objs.count()
+                    import math
+                    page_total = math.ceil(float(account_total) / 50)
+                    # print(page_total)
+                    list_accounta_show = checker_objs[(account_page-1)*limit:account_page*limit]      
+                    
+                    listing_show_sers = CheckerTypeFunctionSerializer(list_accounta_show, many=True)
+                    
+                    checker_last_obj = checker_objs.first()
+                    
+                    html_show = create_html_show('Checker', current_banlance, checker_objs.count(), account_page, page_total, checker_last_obj.created.strftime("%d-%m-%Y %H:%M"), status=status_text)
+
+                    markup_button = create_function_listing_markup(listing_show_sers.data, listing_type='checker', page=account_page)
+
+                    # send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
+                    
+                    edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
+                    
+
+            if reply_type == 'checker_status':    
+                checktask_objs = CheckerTask.objects.filter(pk=int(reply_value))
+                if checktask_objs.exists():
+                    checktask_obj = checktask_objs.first()
+                    if reply_action == 'stop':
+                        checktask_obj.status = 2
+                        checktask_obj.save()
+                        checktask_obj.refresh_from_db()
+                    elif reply_action == 'recheck':
+                        checktask_obj.status = LinkStatus.working
+                        checktask_obj.save()
+                        checktask_obj.refresh_from_db()                        
+                    # if reply_action == 'get_invalid' or reply_action == 'get_valid':
+                    if reply_action == 'get_invalid':
+                        checktask_obj.display_value = 1
+                        checktask_obj.save()
+                        checktask_obj.refresh_from_db()
+                    elif reply_action == 'get_valid':
+                        checktask_obj.display_value = 0
+                        checktask_obj.save()
+                        checktask_obj.refresh_from_db()
+                    elif reply_action == 'get_unknown':
+                        checktask_obj.display_value = 2
+                        checktask_obj.save()
+                        checktask_obj.refresh_from_db()   
+
+                                                 
+                    # else:
+                    #     checktask_obj.display_value = 2
+                    display_value = checktask_obj.display_value
+
+                    document_valid = checktask_obj.document_valid
+                    document_invalid = checktask_obj.document_invalid
+                    if document_valid:
+                        f = document_valid.open('r')
+                        valid_result = f.read()
+                    else:
+                        list_valid_objs = CheckerValid.objects.filter(checker_task_id=int(reply_value))
+                        if list_valid_objs.exists():
+                            valid_result = '\n'.join('<code>'+str(x.details)+'</code>' for x in list_valid_objs)
+                        else:
+                            valid_result = ''
+                        
+                    if document_invalid:
+                        f = document_valid.open('r')
+                        invalid_result = f.read()
+                    else:
+                        list_invalid_objs = CheckerInvalid.objects.filter(checker_task_id=int(reply_value))
+                        if list_invalid_objs.exists():
+                            invalid_result = '\n'.join('<code>'+str(x.details)+'</code>' for x in list_invalid_objs) 
+                        else:
+                            invalid_result = ''                       
+                    if valid_result.strip():
+                        list_display_valid = valid_result.strip().split('\n')
+                    else:
+                        list_display_valid = []
+                    if invalid_result.strip():
+                        list_display_invalid = invalid_result.strip().split('\n')  
+                    else:
+                        list_display_invalid = []
+                    
+                    if display_value == 1:
+                        list_display_result = list_display_invalid
+                        page_display = checktask_obj.display_page_invalid
+                    else:
+                        list_display_result = list_display_valid
+                        page_display = checktask_obj.display_page_valid
+                    import math
+                    page_total = math.ceil(float(len(list_display_result)) / 50)
+                    if page_total <= 1:
+                        page_total = 1
+                    
+                    if reply_action == 'next_page':
+                        print('==next page==')
+                        if display_value == 0:
+                            if checktask_obj.display_page_valid+1 <= page_total:
+                                page_display = checktask_obj.display_page_valid+1
+                                checktask_obj.display_page_valid = page_display
+                            else:
+                                page_display = checktask_obj.display_page_valid
+                                
+                        elif display_value == 1:
+                            if checktask_obj.display_page_invalid+1 <= page_total:
+                                page_display = checktask_obj.display_page_invalid+1
+                                checktask_obj.display_page_invalid = checktask_obj.display_page_invalid+1
+                            else:
+                                page_display = checktask_obj.display_page_invalid
+                                
+                        else:
+                            if checktask_obj.display_page_unknown+1 <= page_total:
+                                page_display = checktask_obj.display_page_unknown+1
+                                checktask_obj.display_page_unknown = checktask_obj.display_page_unknown+1
+                            else:
+                                page_display = checktask_obj.display_page_unknown
+
+                        checktask_obj.save() 
+                        checktask_obj.refresh_from_db() 
+                    elif reply_action == 'last_page':
+                        print('==last page==')
+                        if display_value == 0:
+                            checktask_obj.display_page_valid = page_total
+                        elif display_value == 1 :
+                            checktask_obj.display_page_invalid = page_total
+                        else:
+                            checktask_obj.display_page_unknown  = page_total
+                        checktask_obj.save() 
+                        checktask_obj.refresh_from_db()  
+                        
+                    elif reply_action == 'first_page':
+                        print('==first page==')
+                        if display_value == 0:
+                            checktask_obj.display_page_valid = 1
+                        elif display_value == 1 :
+                            checktask_obj.display_page_invalid = 1
+                        else:
+                            checktask_obj.display_page_unknown  = 1
+                        checktask_obj.save() 
+                        checktask_obj.refresh_from_db()      
+                    elif reply_action == 'back_page':
+                        print('==back page==')                    
+                        if display_value == 0:
+                            if checktask_obj.display_page_valid-1 >= 1:
+                                page_display = checktask_obj.display_page_valid-1
+                                checktask_obj.display_page_valid = page_display
+                            else:
+                                page_display = 1
+                                
+                        elif display_value == 1:
+                            if checktask_obj.display_page_invalid-1 >= 1:
+                                page_display = checktask_obj.display_page_invalid-1
+                                checktask_obj.display_page_invalid = checktask_obj.display_page_invalid+1
+                            else:
+                                page_display = 1
+                                
+                        else:
+                            if checktask_obj.display_page_unknown-1 >= 1:
+                                page_display = checktask_obj.display_page_unknown-1
+                                checktask_obj.display_page_unknown = checktask_obj.display_page_unknown-1
+                            else:
+                                page_display = 1
+
+                        checktask_obj.save() 
+                        checktask_obj.refresh_from_db()                     
+                    
+                    list_display = []
+                    i = (page_display-1)*50
+                    while i < len(list_display_result) and len(list_display) < 50 and i >=0:
+                        list_display.append(list_display_result[i])
+                        i+=1  
+                    plant_text = '\n'.join('<code>'+str(x)+'</code>' for x in list_display)
+                    status_text = 'Checked %s/%s Left %s: %s valid, %s invalid.' % (len(list_display_valid)+len(list_display_invalid), checktask_obj.total_value, checktask_obj.total_value-(len(list_display_valid)+len(list_display_invalid)), len(list_display_valid), len(list_display_invalid))
+                    html_show = create_html_show('Checker '+ checktask_obj.checker_type.value, current_banlance, checktask_obj.total_value, page_display, page_total, datetime.datetime.now().strftime("%d-%m-%Y %H:%M"), status=status_text, plant_text=plant_text, displaying_page='Invalid')
+
+                    markup_button = create_checker_markup(reply_value,listing_type='checker_status', valid=len(list_display_valid), invalid=len(list_display_invalid))
+                    try:
+                        send_msg = edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)	
+                    except Exception as e:
+                        print(e)                    
+                    
+            if reply_action == 'deposit':
+                print('==create deposit wallet==')
+                wallet_result = create_coinbase_charge_wallet(chat_id)
+                if reply_type == 'USDT':
+                    html_show = create_html_deposit_details(current_banlance, reply_type, wallet_result['usdt_address'], wallet_result['charge_id'])
+                else:
+                    html_show = create_html_deposit_details(current_banlance, reply_type, wallet_result['usdc_address'], wallet_result['charge_id'])
+                send_telegram_notify_to_group(chat_id, html_show)          
+        elif callback_query == 'deposit':
+            html_show = create_html_deposit(0)
+            markup_button = create_deposit_markup()
+            # edit_telegram_notify_to_group(chat_id, message_id, html_show, reply_markup=markup_button)
+            send_telegram_notify_to_group(chat_id, html_show, reply_markup=markup_button)
+    elif document:
+        if user_telegram.checker_type:
+            if document['mime_type'] == 'text/plain' and document['file_size'] <= 62500:
+                file_path = download_file_from_telegram(document)
+                
+                path_file = Path(file_path)
+                with path_file.open(mode='rb') as f:
+                    check_task = CheckerTask()
+                    check_task.checker_type = user_telegram.checker_type
+                    check_task.file_id = document['file_id']
+                    check_task.file_name = document['file_name']
+                    check_task.file_unique_id = document['file_unique_id']
+                    check_task.file_size = document['file_size']
+                    check_task.document = File(f, name=document['file_unique_id'])
+                    check_task.owner = user
+                    check_task.save()
+                    check_task.refresh_from_db()
+                    
+                with path_file.open(mode='r') as f:
+                    result = f.read()
+                    checker_split = result.split('\n')
+                    list_valid = [line for line in checker_split if line.find('|') != -1]
+                    # checker_count = len(result.split('\n'))
+                    import math
+                    page_total = math.ceil(float(len(list_valid)) / 50)
+                    # print(page_total)  
+                    status_text = 'Waiting for worker...'                 
+                    html_show = create_html_show('Checker '+ str(user_telegram.checker_type.value), current_banlance, len(list_valid), 1, 1, datetime.datetime.now().strftime("%d-%m-%Y %H:%M"), status=status_text, displaying_page='Valid')
+
+                    markup_button = create_checker_markup(check_task.pk,listing_type='checker_status')
+
+                    send_msg = send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
+                    print(send_msg)
+                    print('send_msg==', send_msg.message_id)
+                    check_task.total_value = len(checker_split)
+                    check_task.status_message_id = send_msg.message_id
+                    check_task.save()
+                    # edit_telegram_notify_to_group(chat_id, message_id=send_msg['message_id'], msg=html_show,reply_id=message_id, reply_markup=markup_button)
+                os.remove(path_file)
+
+            else:
+                msg = 'You have to send the TXT file and not over 50kb file!'
+                send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
+    
+    elif text:    
+        cmd = text.lstrip("/").strip()
+        extra_text = ''
+        if cmd.find(' ') != -1:
+            new_cmds = cmd.split(' ')
+            first_cmd = new_cmds[0].strip()
+            #cmd
+            extra_text = cmd.split(first_cmd)[-1].strip()
+            cmd = first_cmd
+        elif not cmd:
+            print('===text===', user_telegram.checker_type)
+            print(text)
+
+        if cmd == "listing":
+            print('===listing===')
+            list_account_objs = AccountsSelling.objects.filter(type__value='amazon', selling_status=SellingStatus.listed)
+            if list_account_objs.exists():
+                limit = 10
+                account_page = 1
+                account_total = list_account_objs.count()
+                import math
+                page_total = math.ceil(float(list_account_objs.count()) / 10)
+                print(page_total)
+                list_accounta_show = list_account_objs[(account_page-1)*limit:account_page*limit]
+                data = AccountsSellingSerializer(list_accounta_show, many=True).data
+                html_show = create_html_show('amazon', current_banlance, account_total, account_page, page_total, '2021-11-25 21:02')
+
+                markup_button = create_listing_markup(data, 'amazon', page=1)
+
+                send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
+            else:
+                msg = "The all of account sold out."
+                # send_message(msg, t_chat["id"])
+                send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
+        elif cmd == 'deposit':
+            html_show = create_html_deposit(0)
+            markup_button = create_deposit_markup()
+            send_telegram_notify_to_group(chat_id, msg=html_show, reply_id=message_id, reply_markup=markup_button)
+        elif cmd == 'token':
+            print('==get token user==')
+            user = User.objects.get(username=chat_id)
+            token, created = Token.objects.get_or_create(user=user)
+            # user.set_password('telegrambot123')
+            # user.save()
+            msg = "token:%s" %(token.key)
+            # send_message(msg, t_chat["id"])
+            send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
+        elif cmd == 'setversion':
+            print('==set version==')
+            if str(chat_id) == '892844098':
+                mun_obj = MunAnti.objects.create(version=extra_text.strip())
+                msg = 'New version %s already updated!' % (extra_text)
+                send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
+        elif cmd == 'addhwid':
+            
+            if str(chat_id) == '892844098':
+                print('==set addhwid==')
+                if extra_text.find(' ') != -1:
+                    new_cmds = extra_text.split(' ')
+                    user_id = new_cmds[0].strip()
+                    # user_id = new_cmds[1].strip()
+                    function_add = extra_text.split(user_id)[-1].strip()
+                    userObj = User.objects.get(username=user_id)
+                    print(cmd, user_id, function_add)
+                    mun_obj, created = UserHwid.objects.get_or_create(value=function_add, user=userObj)
+                    msg = 'Your hwid %s already updated!' % (mun_obj.value)
+                    send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
+            else:
+                hwid_objs = UserHwid.objects.filter(user=user)
+                if not hwid_objs.exists():
+                    mun_obj, created = UserHwid.objects.get_or_create(value=extra_text.strip(), user=user)  
+                    msg = 'Your hwid %s already updated!' % (mun_obj.value)
+                    send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
+                else:
+                    # hwid_obj = hwid_objs.first()
+                    # hwid_obj.value = extra_text.strip()
+                    # hwid_obj.save()
+                    mun_obj, created = UserHwid.objects.get_or_create(value=extra_text.strip(), user=user)  
+                    msg = 'Your hwid %s already updated!' % (mun_obj.value)
+                    send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id) 
+                    
+        elif cmd == 'rmlnv':
+            if str(chat_id) == '892844098':
+                print('==rmlnv==')
+                link_checkout_obj = LinkCheckout.objects.all()  
+                link_checkout_obj.update(status=3)       
+                msg = 'Your cmd rmlnv already updated!'
+                send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)                   
+        elif cmd == 'addcheck':
+            
+            if str(chat_id) == '892844098':
+                print('==set addcheck==')
+                if extra_text.find(' ') != -1:
+                    new_cmds = extra_text.split(' ')
+                    user_id = new_cmds[0].strip()
+                    # user_id = new_cmds[1].strip()
+                    function_add = extra_text.split(user_id)[-1].strip()
+                    userObj = User.objects.get(username=user_id)
+                    print(cmd, user_id, function_add)
+                    mun_obj, created = UserCheckFunction.objects.get_or_create(value=function_add.strip(), label=function_add.strip(), user=userObj)
+                    msg = 'Your check function %s already updated!' % (mun_obj.value)
+                    send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
+        elif cmd == 'addcreate':
+            
+            if str(chat_id) == '892844098':
+                print('==set addcreate==')
+                if extra_text.find(' ') != -1:
+                    new_cmds = extra_text.split(' ')
+                    user_id = new_cmds[0].strip()
+                    # user_id = new_cmds[1].strip()
+                    function_add = extra_text.split(user_id)[-1].strip()
+                    userObj = User.objects.get(username=user_id)
+                    print(cmd, user_id, function_add)
+                    mun_obj, created = UserCreateFunction.objects.get_or_create(value=function_add.strip(), label=function_add.strip(), user=userObj)
+                    msg = 'Your create function %s already updated!' % (mun_obj.value)
+                    send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id )         
+                    
+        elif cmd == 'addchecker':
+            if str(chat_id) == '892844098':
+                print('==set addchecker==')
+                function_add = extra_text.strip()
+                mun_obj, created = CheckerType.objects.get_or_create(value=function_add.strip(), label=function_add.strip())
+                msg = 'Your checker function %s already updated!' % (mun_obj.value)
+                send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id )        
+        elif cmd == 'addcreator':
+            if str(chat_id) == '892844098':
+                print('==set addchecker==')
+                function_add = extra_text.strip()
+                mun_obj, created = CreatorType.objects.get_or_create(value=function_add.strip(), label=function_add.strip())
+                msg = 'Your checker function %s already updated!' % (mun_obj.value)
+                send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id )                       
+        elif cmd == 'version' or cmd == 'v':
+            print('==get version==')
+            obj_last = MunAnti.objects.last()
+            if obj_last.update_url:
+                update_url = obj_last.update_url
+            else:
+                update_url = 'https://munanti.s3.ap-southeast-1.amazonaws.com/Update.zip'
+            msg = '''
+MunAnti AIO Automator.
+Version:%s
+Update URL:%s
+Updateded:%s
+                ''' % (obj_last.version, update_url, obj_last.modified.strftime("%d-%m-%Y %H:%M"))
+            send_telegram_notify_to_group(chat_id, msg=msg, reply_id=message_id)
+              
+        elif cmd == 'setpassword':
+            print('==set password user==')
+            user = User.objects.get(username=chat_id)
+            
+            if len(extra_text) <= 3:
+                msg = 'Your password must be longer that 3 characters'
+                send_telegram_notify_to_group(
+                    chat_id, msg=str(msg), reply_id=message_id)
+                return
+            else:
+                # token, created = Token.objects.get_or_create(user=user)
+                user.set_password(extra_text)
+                user.save()
+                msg = '''
+Your password have been changed successfully.
+Username:%s
+Password:%s
+                ''' % (chat_id, extra_text)
+                # send_message(msg, t_chat["id"])
+                send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
+        
+        elif cmd == 'checker':
+            print('==set checker==')
+            if not extra_text.strip():
+                checker_objs = CheckerType.objects.all()
+                limit = 10
+                account_page = 1
+                account_total = checker_objs.count()
+                import math
+                page_total = math.ceil(float(account_total) / 10)
+                print(page_total)
+                list_accounta_show = checker_objs[(account_page-1)*limit:account_page*limit]      
+                
+                listing_show_sers = CheckerTypeFunctionSerializer(list_accounta_show, many=True)
+                
+                checker_last_obj = checker_objs.first()
+                
+                html_show = create_html_show('Checker', current_banlance, checker_objs.count(), account_page, page_total, checker_last_obj.created.strftime("%d-%m-%Y %H:%M"))
+
+                markup_button = create_function_listing_markup(listing_show_sers.data, listing_type='checker', page=account_page)
+
+                send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
+            else:
+                checker_objs = CheckerType.objects.filter(value=extra_text.strip())
+                if checker_objs.exists():
+                    user_telegram.checker_type = checker_objs[0]
+                    user_telegram.save()
+                    msg = 'Your checker mode has been set as %s' % (extra_text.strip())
+                    send_telegram_notify_to_group(chat_id, msg=str(msg), reply_id=message_id)
+                else:
+                    checker_objs = CheckerType.objects.all()
+                    limit = 10
+                    account_page = 1
+                    account_total = checker_objs.count()
+                    import math
+                    page_total = math.ceil(float(account_total) / 10)
+                    print(page_total)
+                    list_accounta_show = checker_objs[(account_page-1)*limit:account_page*limit]      
+                    
+                    listing_show_sers = CheckerTypeFunctionSerializer(list_accounta_show, many=True)
+                    
+                    checker_last_obj = checker_objs.last()
+                    
+                    html_show = create_html_show('Checker', current_banlance, checker_objs.count(), account_page, page_total, checker_last_obj.created.strftime("%d-%m-%Y %H:%M"))
+
+                    markup_button = create_function_listing_markup(listing_show_sers.data, listing_type='checker', page=account_page)
+
+                    send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
+
+        elif cmd == 'task':
+            check_task_objs = CheckerTask.objects.filter(user=user)
+            msg = 'You are having %s tasks' % (check_task_objs.count())
+            send_telegram_notify_to_group(
+                chat_id, msg=str(msg), reply_id=message_id)
+        # else:
+        #     import math
+        #     page_total = math.ceil(float(123) / 10)
+        #     print('test page==',page_total)
+        #     msg = "The system cannot recognize your command! please contact admin: "+cmd
+        #     #send_message(msg, t_chat["id"])
+        #     send_telegram_notify_to_group(chat_id, msg=str(msg),reply_id=message_id)
+
+# def update_checker_status(chat_id, message_id, checkerTaskInfo):
+#     print('==update_checker_status==')
+#     markup = create_checker_markup()
+    
+#     html_show = create_html_show('Checker', current_banlance, checker_objs.count(), account_page, page_total, checker_last_obj.created.strftime("%d-%m-%Y %H:%M"))
+
+#     markup_button = create_function_listing_markup(listing_show_sers.data, listing_type='checker', page=account_page)
+
+#     send_telegram_notify_to_group(chat_id, msg=html_show,reply_id=message_id, reply_markup=markup_button)
+    # send_telegram_notify_to_group(
+    #     chat_id, msg=str(msg), reply_id=message_id)    
+
+
+def createCoinBaseAddress(name="BTC"):
+    print('==Create Coin Base==')
+    from coinbase.wallet.client import Client
+    api_key='11MXKS7siI92KbqW'
+    api_secret='bjWdjutsdhUxq7MZPiBHCNO1zCPVqvvp'
+    client = Client(api_key, api_secret)
+    if name=='BTC':
+        account_id = '7c85e01f-b6ea-51d6-89b1-708a019257ab'
+    elif name == 'LTC':
+        account_id = '696babe5-d4d4-57df-864e-98b19dc24854'
+    elif name == 'ETH':
+        account_id = '3131d761-0b89-5458-b8ea-e87d5ab2d77b'
+    else:
+        return
+    created = client.create_address(account_id)
+    print('created',created)
+
+    return created
+def import_account_data():
+    print('==import_account_data==')
+    # | 1 | Thomas | Neumann | 321 BERKLEY PL | STAUNTON | VA | 24401 | 540-255-7790 | 461791163 | Aug  8 1973 12:00AM | tan5f@virginia.edu | University Of Virginia | 0.00 | 434-243-2833
+    f = open('account_data.txt', 'r', encoding="ISO-8859-1")
+    list_create = []
+    dict_ssn={}
+    result = f.read()
+    for line in result.split('\n'):
+        print(line)
+        line_split = line.split('|')
+        if line_split:
+            try:
+                data = {}
+                data['first_name'] = line_split[2].strip()
+                data['last_name'] = line_split[3].strip()
+                data['address1'] = line_split[4].strip()
+                data['city'] = line_split[5].strip()
+                data['state'] = line_split[6].strip()
+                data['zipcode'] = line_split[7].strip()
+                data['ssn'] = line_split[9].strip()
+                data['dob'] = line_split[10].strip()
+                if line_split[9].strip() not in dict_ssn:
+                    list_create.append(AccountsData(**data))
+                    dict_ssn[line_split[9].strip()] = 1
+            except Exception as e:
+                print(e)
+                continue
+    if list_create:
+        AccountsData.objects.bulk_create(list_create)
+        
+def import_created_account(account_type):
+    print('==import_created_account==')
+    # | 1 | Thomas | Neumann | 321 BERKLEY PL | STAUNTON | VA | 24401 | 540-255-7790 | 461791163 | Aug  8 1973 12:00AM | tan5f@virginia.edu | University Of Virginia | 0.00 | 434-243-2833
+    typeobj, created = AccountsType.objects.get_or_create(value=account_type, label=account_type)
+    f = open('account.txt', 'r', encoding="utf8")
+    list_create = []
+    dict_ssn={}
+    result = f.read()
+    for line in result.split('\n'):
+        print(line)
+        line_split = line.split('|')
+        if line_split:
+            try:
+                data = {}
+                data['email'] = line_split[0].strip()
+                data['password'] = line_split[1].strip()
+                objFileter = AccountsCreated.objects.filter(email=line_split[0].strip())
+                if not objFileter.exists():
+                    list_create.append(AccountsCreated(email=line_split[0].strip(), password=line_split[1].strip(), type=typeobj))
+            except Exception as e:
+                print(e)
+                continue
+    if list_create:
+        AccountsCreated.objects.bulk_create(list_create)     
+    print('==created==', len(list_create))   
+# if __name__ == '__main__':
+#     # get_tbk_coupon('python')
+#     print('===task===')
+#     createCoinBaseAddress('ETH')
+
+def fix_font_and_rects():
+    list_obj = BrowserProfiles.objects.all()
+    for line_obj in list_obj:
+        if line_obj.profile_rects == 'Noise':
+            line_obj.profile_rects = str(round(random.uniform(0.2, 0.35), 5))
+        if line_obj.profile_font == 'Noise':
+            listFonts = ['Arial', 'Calibri', 'Cambria', 'Cambria Math', 'Candara', 'Comic Sans MS', 'Comic Sans MS Bold', 'Comic Sans', 'Consolas', 'Constantia', 'Corbel', 'Courier New', 'Caurier Regular', 'Ebrima', 'Fixedsys Regular', 'Franklin Gothic', 'Gabriola Regular', 'Gadugi', 'Georgia', 'HoloLens MDL2 Assets Regular', 'Impact Regular', 'Javanese Text Regular', 'Leelawadee UI', 'Lucida Console Regular', 'Lucida Sans Unicode Regular', 'Malgun Gothic', 'Microsoft Himalaya Regular', 'Microsoft JhengHei', 'Microsoft JhengHei UI', 'Microsoft PhangsPa', 'Microsoft Sans Serif Regular', 'Microsoft Tai Le', 'Microsoft YaHei', 'Microsoft YaHei UI', 'Microsoft Yi Baiti Regular', 'MingLiU_HKSCS-ExtB Regular', 'MingLiu-ExtB Regular', 'Modern Regular', 'Mongolia Baiti Regular', 'MS Gothic Regular', 'MS PGothic Regular', 'MS Sans Serif Regular', 'MS Serif Regular', 'MS UI Gothic Regular', 'MV Boli Regular', 'Myanmar Text', 'Nimarla UI', 'Myanmar Tet', 'Nirmala UI', 'NSimSun Regular', 'Palatino Linotype', 'PMingLiU-ExtB Regular', 'Roman Regular', 'Script Regular', 'Segoe MDL2 Assets Regular', 'Segoe Print', 'Segoe Script', 'Segoe UI', 'Segoe UI Emoji Regular', 'Segoe UI Historic Regular', 'Segoe UI Symbol Regular', 'SimSun Regular', 'SimSun-ExtB Regular', 'Sitka Banner', 'Sitka Display', 'Sitka Heading', 'Sitka Small', 'Sitka Subheading', 'Sitka Text', 'Small Fonts Regular', 'Sylfaen Regular', 'Symbol Regular', 'System Bold', 'Tahoma', 'Terminal', 'Times New Roman', 'Trebuchet MS', 'Verdana', 'Webdings Regular', 'Wingdings Regular', 'Yu Gothic', 'Yu Gothic UI', 'Arial Black', 'Calibri Light', 'Courier', 'Fixedsys', 'Franklin Gothic Medium', 'Gabriola', 'HoloLens MDL2 Assets', 'Impact', 'Javanese Text', 'Leelawadee UI Semilight', 'Lucida Console', 'Lucida Sans Unicode', 'MS Gothic', 'MS PGothic', 'MS Sans Serif', 'MS Serif', 'MS UI Gothic', 'MV Boli', 'Malgun Gothic Semilight', 'Marlett', 'Microsoft Himalaya', 'Microsoft JhengHei Light', 'Microsoft JhengHei UI Light', 'Microsoft New Tai Lue', 'Microsoft PhagsPa', 'Microsoft Sans Serif', 'Microsoft YaHei Light', 'Microsoft YaHei UI Light', 'Microsoft Yi Baiti', 'MingLiU-ExtB', 'MingLiU_HKSCS-ExtB', 'Modern', 'Mongolian Baiti', 'NSimSun', 'Nirmala UI Semilight', 'PMingLiU-ExtB', 'Roman', 'Script', 'Segoe MDL2 Assets', 'Segoe UI Black', 'Segoe UI Emoji', 'Segoe UI Historic', 'Segoe UI Light', 'Segoe UI Semibold', 'Segoe UI Semilight', 'Segoe UI Symbol', 'SimSun', 'SimSun-ExtB', 'Small Fonts', 'Sylfaen', 'Symbol', 'System', 'Webdings', 'Wingdings', 'Yu Gothic Light', 'Yu Gothic Medium', 'Yu Gothic UI Light', 'Yu Gothic UI Semibold', 'Yu Gothic UI Semilight', 'Arial Narrow', 'Arial Unicode MS', 'Book Antiqua', 'Bookman Old Style', 'Century', 'Century Gothic', 'Century Schoolbook', 'Garamond', 'Helvetica', 'Lucida Bright', 'Lucida Calligraphy', 'Lucida Fax', 'Lucida Handwriting', 'Lucida Sans', 'Lucida Sans Typewriter', 'Monotype Corsiva', 'MS Outlook', 'MS Reference Sans Serif', 'Times', 'Wingdings 2', 'Wingdings 3', 'default', 'sans-serif', 'serif', 'monospace', 'cursive', 'fantasy', 'inherit', 'auto', 'Brush Script MT', 'Broadway', 'Bell MT', 'Berlin Sans FB', 'Blackadder ITC', 'Curlz MT', 'Elephant', 'Engravers MT', 'Goudy Old Style', 'Minion Pro', 'Papyrus', 'Wide Latin', 'Snap ITC', 'Stencil', 'Old English Text MT', 'Ubuntu', 'Ubuntu Mono', 'Terminus Font', 'Terminus', 'Ubuntu Mono 13', 'Ubuntu Mono Regular', 'Apple Braille Outline 6 Dot', 'Apple Braille Outline 8 Dot', 'Apple Braille Pinpoint 6 Dot', 'Apple Braille Pinpoint 8 Dot', 'Apple Braille', 'Apple Symbols', 'AppleGothic', 'AquaKana', 'Geeza Pro Bold', 'Geeza Pro', 'Geneva', 'HelveLTMM', 'Helvetica LT MM', 'HelveticaNeue', 'Hiragino Kaku Gothic ProN W3', 'Hiragino Kaku Gothic ProN W6', 'Hiragino Mincho ProN W3', 'Hiragino Mincho ProN W6', 'Keyboard', 'LastResort', 'LiHei Pro', 'LucidaGrande', 'Menlo', 'Monaco', 'STHeiti', 'STHeiti Light', 'STXihei', 'Thonburi', 'ThonburiBold', 'Times LT MM', 'TimesLTMM', 'ZapfDingbats', 'AmericanTypewriter', 'Andale Mono', 'Apple Chancery', 'Apple LiGothic Medium', 'Arial Bold Italic', 'Arial Bold', 'Arial Italic', 'Arial Narrow Bold Italic', 'Arial Narrow Bold', 'Arial Narrow Italic', 'Arial Rounded Bold', 'Arial Unicode', 'Baskerville', 'BigCaslon', 'Brush Script', 'Chalkboard', 'Chalkduster', 'Cochin', 'Copperplate', 'Courier New Bold Italic', 'Courier New Bold', 'Courier New Italic', 'Didot', 'Futura', 'Georgia Bold Italic', 'Georgia Bold', 'Georgia Italic', 'GillSans', 'Hei', 'Herculanum', 'Hiragino Kaku Gothic Pro W3', 'Hiragino Kaku Gothic Pro W6', 'Hiragino Kaku Gothic Std W8', 'Hiragino Kaku Gothic StdN W8', 'Hiragino Maru Gothic Pro W4', 'Hiragino Maru Gothic ProN W4', 'Hiragino Mincho Pro W3', 'Hiragino Mincho Pro W6', 'Hoefler Text', 'Hoefler Text Ornaments', 'Kai', 'MarkerFelt', 'Optima', 'Osaka', 'OsakaMono', 'Skia', 'Tahoma Bold', 'Times New Roman Bold Italic', 'Times New Roman Bold', 'Times New Roman Italic', 'Trebuchet MS Bold Italic', 'Trebuchet MS Bold', 'Trebuchet MS Italic', 'Verdana Bold Italic', 'Verdana Bold', 'Verdana Italic', 'Zapfino', 'Aharoni Bold', 'Andalus Regular', 'Angsana New', 'Angsana New Bold', 'Angsana New Italic', 'Angsana New Bold Italic', 'AngsanaUPC', 'AngsanaUPC Bold', 'AngsanaUPC Italic', 'AngsanaUPC Bold Italic', 'Aparajita', 'Aparajita Bold', 'Aparajita Italic', 'Aparajita Bold Italic', 'Arabic Typesetting Regular', 'Arial Unicode MS Regular', 'Batang', 'BatangChe', 'Browallia New', 'Browallia New Bold', 'Browallia New Italic', 'Browallia New Bold Italic', 'BrowalliaUPC', 'BrowalliaUPC Bold', 'BrowalliaUPC Italic', 'BrowalliaUPC Bold Italic', 'Calibri Bold', 'Calibri Italic', 'Calibri Bold Italic', 'Cambria Bold', 'Cambria Italic', 'Cambria Bold Italic', 'Candara Bold', 'Candara Italic', 'Candara Bold Italic', 'Consolas Bold', 'Consolas Italic', 'Consolas Bold Italic', 'Constantia Bold', 'Constantia Italic', 'Constantia Bold Italic', 'Corbel Bold', 'Corbel Italic', 'Corbel Bold Italic', 'Cordia New', 'Cordia New Bold', 'Cordia New Italic', 'Cordia New Bold Italic', 'CordiaUPC', 'CordiaUPC Bold', 'CordiaUPC Italic', 'CordiaUPC Bold Italic', 'DFKai-SB', 'DaunPenh', 'David', 'David Bold', 'DilleniaUPC', 'DilleniaUPC Bold', 'DilleniaUPC Italic', 'DilleniaUPC Bold Italic', 'DokChampa', 'Dotum', 'DotumChe', 'Ebrima Bold', 'Estrangelo Edessa', 'EucrosiaUPC', 'EucrosiaUPC Bold', 'EucrosiaUPC Italic', 'EucrosiaUPC Bold Italic', 'Euphemia', 'FangSong', 'FrankRuehl', 'Franklin Gothic Medium Italic', 'FreesiaUPC', 'FreesiaUPC Bold', 'FreesiaUPC Italic', 'FreesiaUPC Bold Italic', 'Gautami', 'Gautami Bold', '& Georgia Bold Italic', 'Gisha', 'Gisha Bold', 'Gulim', 'GulimChe', 'Gungsuh', 'GungsuhChe', 'IrisUPC', 'IrisUPC Bold', 'IrisUPC Italic', 'IrisUPC Bold Italic', 'Iskoola Pota', 'IskoolaPota Bold', 'JasmineUPC', 'JasmineUPC Bold', 'JasmineUPC Italic', 'JasmineUPC Bold Italic', 'KaiTi', 'Kalinga', 'Kalinga Bold', 'Kartika', 'Kartika Bold', 'Khmer UI', 'Khmer UI Bold', 'KodchiangUPC', 'KodchiangUPC Bold', 'KodchiangUPC Italic', 'KodchiangUPC Bold Italic', 'Kokila', 'Kokila Bold', 'Kokila Italic', 'Kokila Bold Italic', 'Lao UI', 'Lao UI Bold', 'Latha', 'Latha Bold', 'Leelawadee', 'Leelawadee Bold', 'Levenim MT', 'Levenim MT Bold', 'LilyUPC', 'LilyUPC Bold', 'LilyUPC Italic', 'LilyUPC Bold Italic', 'MS Mincho', 'MS PMincho', 'Malgun Gothic Bold', 'Mangal', 'Mangal Bold', 'Meiryo UI', 'Meiryo UI Bold', 'Meiryo UI Italic', 'Meiryo UI Bold Italic', 'Meiryo', 'Meiryo Bold', 'Meiryo Italic', 'Meiryo Bold Italic', 'Microsoft JhengHei Bold', 'Microsoft New Tai Lue Bold', 'Microsoft PhagsPa Bold', 'Microsoft Tai Le Bold', 'Microsoft Uighur', 'Microsoft YaHei Bold', 'MingLiU', 'MingLiU_HKSCS', 'Miriam', 'Miriam Fixed', 'MoolBoran', 'Narkisim', 'Nyala', 'PMingLiU', 'Palatino Linotype Bold', 'Palatino Linotype Italic', 'Palatino Linotype Bold Italic', 'Plantagenet Cherokee', 'Raavi', 'Raavi Bold', 'Rod', 'Sakkal Majalla', 'Sakkal Majalla Bold', 'Segoe Print Bold', 'Segoe Script Bold', 'Segoe UI Bold', 'Segoe UI Italic', 'Segoe UI Bold Italic', 'Shonar Bangla', 'Shonar Bangla Bold', 'Shruti', 'Shruti Bold', 'SimHei', 'Simplified Arabic', 'Simplified Arabic Bold', 'Simplified Arabic Fixed', ' Times New Roman Bold', 'Traditional Arabic', 'Traditional Arabic Bold', 'Tunga', 'Tunga Bold', 'Utsaah', 'Utsaah Bold', 'Utsaah Italic', 'Utsaah Bold Italic', 'Vani', 'Vani Bold', 'Vijaya', 'Vijaya Bold', 'Vrinda', 'Vrinda Bold']
+            fonts_max = random.randint(200, len(listFonts)-1)
+            fonts_min = random.randint(0, 150)
+            listUse = listFonts[fonts_min:fonts_max]  
+            line_obj.profile_font = str(listUse)
         line_obj.save()

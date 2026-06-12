@@ -14,6 +14,7 @@ class Card(models.Model):
     cvv = models.CharField(max_length=50, blank=True, null=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Chưa sử dụng')
     extra_info = models.TextField(blank=True, null=True)
+    used_count = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

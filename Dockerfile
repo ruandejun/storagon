@@ -1,4 +1,4 @@
-FROM python:3.9.5
+FROM python:3.9-bookworm
 
 LABEL org.label-schema.build-date=${BUILD_DATE} \
       org.label-schema.name="storagon" \
@@ -13,19 +13,17 @@ LABEL org.label-schema.build-date=${BUILD_DATE} \
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONIOENCODING UTF-8
 
-#Python 2.17.13 already exist in Debian, so install only other dependencies.
-RUN apt-get update -y --force-yes && apt-get install -y --force-yes --no-install-recommends \
+# Install dependencies.
+RUN apt-get update -y && apt-get install -y --no-install-recommends \
     cron \
     gettext \
-    python-setuptools \
-    python-dev \
     rsyslog \
     logrotate \
     curl \
     postgresql-contrib \
     postgresql-client \
     postgresql \
-    && apt-get upgrade -y --force-yes \
+    && apt-get upgrade -y \
     && apt-get clean \
     && rm -rf /tmp/* /var/tmp/* /var/cache/apt/* /var/lib/apt/lists/*
 

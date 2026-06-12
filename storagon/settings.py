@@ -1,6 +1,7 @@
 from .settings_base import *
 
 DEBUG = True
+EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
 LOG_FILE_PATH = os.path.join(BASE_DIR, 'log/junshare.log')
 DOMAIN = 'storagon.io'
 ENABLE_ENCRYPTION = False

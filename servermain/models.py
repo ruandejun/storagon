@@ -310,3 +310,17 @@ class WebsiteAgency(models.Model):
     website_domain = models.CharField(max_length=255, blank=True, unique=True, db_index=True)  # domain of website agency, host
     created_date = models.DateTimeField(auto_now_add=True, db_index=True)
     modified_date = models.DateTimeField(auto_now=True, db_index=True)
+
+
+class Card(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cards', blank=True, null=True)
+    card_number = models.CharField(max_length=255, db_index=True)
+    expiry_date = models.CharField(max_length=50, blank=True, null=True)
+    cvv = models.CharField(max_length=50, blank=True, null=True)
+    status = models.CharField(max_length=100, default='Chưa sử dụng', db_index=True)
+    extra_info = models.TextField(blank=True, null=True)
+    created_date = models.DateTimeField(auto_now_add=True, db_index=True)
+    modified_date = models.DateTimeField(auto_now=True, db_index=True)
+
+    def __unicode__(self):
+        return f"{self.card_number} ({self.status})"

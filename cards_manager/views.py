@@ -16,4 +16,4 @@ class CardViewSet(viewsets.ModelViewSet):
         status = self.request.query_params.get('status')
         if status and status != 'Tất cả':
             queryset = queryset.filter(status=status)
-        return queryset
+        return queryset.order_by('-created_at', '-id')

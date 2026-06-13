@@ -16,7 +16,7 @@ class CardViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['card_number', 'status']
     ordering_fields = ['created_date', 'modified_date', 'id']
-    ordering = ['-id']
+    ordering = ['-created_date', '-id']
 
     def get_queryset(self):
         user = self.request.user

@@ -20,7 +20,7 @@ class Card(models.Model):
 
     class Meta:
         db_table = 'company_cards'
-        ordering = ['-id']
+        ordering = ['-created_at', '-id']
 
     def __str__(self):
         return f"{self.card_number} ({self.status})"

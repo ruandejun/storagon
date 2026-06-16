@@ -1437,8 +1437,6 @@
                             <th>Chủ sở hữu Sub</th>
                             <th>Trạng thái</th>
                             <th>Tạo bởi</th>
-                            <th>2FA</th>
-                            <th>Cookies</th>
                             <th>Ngày tạo</th>
                             <th style="width: 120px; text-align: center;">Hành động</th>
                         </tr>
@@ -4323,10 +4321,6 @@
                     <td>${acc.subscription_owner || '-'}</td>
                     <td style="text-align: center;"><span class="badge ${statusClass}">${statusLabel}</span></td>
                     <td style="text-align: center; font-weight: bold; color: var(--accent);">${acc.created_by || '-'}</td>
-                    <td style="font-size: 11px; font-family: monospace;"><code>${acc.two_factor_auth || '-'}</code></td>
-                    <td style="text-align: center;">
-                        ${acc.cookies ? `<button class="btn btn-primary" style="padding: 4px 8px; font-size: 10px; border-radius: 4px; border: none; cursor: pointer; background: var(--accent); color: white;" onclick="navigator.clipboard.writeText(decodeURIComponent('${encodeURIComponent(acc.cookies)}')).then(()=>alert('Đã copy Cookies!'))">Copy</button>` : '-'}
-                    </td>
                     <td style="text-align: center; color: var(--text-muted); font-size:12px;">${formatDateString(acc.created)}</td>
                     <td style="text-align: center;" class="cell-action">
                         <button class="btn btn-primary" onclick="openEditAccountModal(event, ${acc.id})" style="padding: 2px 6px; font-size: 11px; margin-right: 4px;">Sửa</button>

@@ -309,6 +309,71 @@ class AccountsCreatedViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter]
     search_fields = ['username', 'email', 'type']
 
+    @action(detail=False, methods=['post'], url_path='add-manual')
+    def add_manual(self, request):
+        data = request.data
+        email = data.get('email', '').strip()
+        password = data.get('password', '').strip()
+        type_str = data.get('type', 'Amazon').strip()
+        profile_id = data.get('profile_id')
+        two_factor_auth = data.get('two_factor_auth', '').strip()
+        cookies = data.get('cookies', '').strip()
+        note = data.get('note', '').strip()
+
+        if not email or not password:
+            return Response({'success': False, 'message': 'Email và Mật khẩu không được để trống.'}, status=400)
+
+        # 1. Resolve or create type
+        from telegram_bot.models import AccountsType
+        account_type, _ = AccountsType.objects.get_or_create(value=type_str.lower())
+
+        # 2. Resolve profile
+        profile = None
+        if profile_id:
+            profile_qs = BrowserProfiles.objects.filter(pk=profile_id)
+            if profile_qs.exists():
+                profile = profile_qs[0]
+        
+        if not profile:
+            # Create a default profile
+            profile_name = email.split('@')[0] if email else 'profile'
+            profile_name = re.sub(r'[^a-zA-Z0-9]', '', profile_name)
+            profile = BrowserProfiles.objects.create(
+                profile_owner=request.user,
+                profile_name=profile_name,
+                profile_os='Window',
+                profile_browser='Chrome',
+                profile_version='102.0.5005.63',
+                profile_resolution='1920×1080',
+                profile_cpu='8',
+                profile_canvas='Noise',
+                profile_rects='Noise',
+                profile_font='Noise',
+                profile_audio='Noise',
+                profile_webgl='Noise',
+                profile_time_zone=2, # Follow IP
+                profile_webrtc=2,    # Follow IP
+                profile_geo=2,       # Follow IP
+                profile_vendor='Google Inc. (ATI Technologies Inc.)',
+                profile_renderer='ANGLE (Intel(R) G41 Express Chipset (Microsoft Corporation - WDDM 1.1) Direct3D9Ex vs_3_0 ps_3_0)',
+                profile_start_url='https://iphey.com'
+            )
+
+        # 3. Create the AccountsCreated record
+        account = AccountsCreated.objects.create(
+            owner=request.user,
+            created_by=request.user,
+            email=email,
+            password=password,
+            type=account_type,
+            browser_profiles=profile,
+            two_factor_auth=two_factor_auth,
+            cookies=cookies,
+            note=note
+        )
+
+        return Response({'success': True, 'message': 'Đã thêm tài khoản mới thành công!'})
+
 
 class UserHwidViewSet(viewsets.ModelViewSet):
     """Admin ViewSet for managing UserHwid — controls which machines can use MunLogin tool."""

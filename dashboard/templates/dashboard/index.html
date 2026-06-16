@@ -1415,6 +1415,7 @@
                 </div>
                 <div class="action-buttons">
                     <button class="btn btn-secondary" onclick="loadAccounts(1)">Làm mới</button>
+                    <button class="btn btn-primary" onclick="openAddAccountModal()">Thêm mới</button>
                     <button class="btn btn-danger" id="accountDeleteBtn" onclick="deleteSelectedAccounts()" disabled>Xóa</button>
                 </div>
             </div>
@@ -1967,6 +1968,61 @@
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeModal('addEmailModal')">Hủy</button>
                 <button class="btn btn-primary" onclick="saveAddEmail()">Thêm email</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD ACCOUNT MODAL -->
+    <div class="modal-overlay" id="addAccountModal">
+        <div class="modal-box modal-large">
+            <div class="modal-header">
+                <h3>Thêm Tài Khoản Đã Tạo Mới</h3>
+                <button class="modal-close" onclick="closeModal('addAccountModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Email / Username</label>
+                        <input type="text" class="form-input" id="addAccEmail" placeholder="example@domain.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Mật khẩu</label>
+                        <input type="text" class="form-input" id="addAccPassword">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Loại tài khoản</label>
+                        <select class="filter-select" id="addAccType" style="width: 100%;">
+                            <option value="Amazon">Amazon</option>
+                            <option value="Ebay">Ebay</option>
+                            <option value="Walmart">Walmart</option>
+                            <option value="Other">Khác</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Browser Profile</label>
+                        <select class="filter-select" id="addAccProfile" style="width: 100%;">
+                            <option value="">-- Tự động tạo profile mới --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">2FA Secret Key / Code</label>
+                    <input type="text" class="form-input" id="addAcc2FA" placeholder="Dán mã bảo mật 2FA vào đây...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Cookies (JSON hoặc Netscape)</label>
+                    <textarea class="form-textarea" id="addAccCookies" placeholder="Dán cookie tài khoản vào đây..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Ghi chú</label>
+                    <input type="text" class="form-input" id="addAccNote" placeholder="Ghi chú thêm...">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('addAccountModal')">Hủy</button>
+                <button class="btn btn-primary" onclick="saveAddAccount()">Thêm tài khoản</button>
             </div>
         </div>
     </div>
@@ -4137,6 +4193,84 @@
                 loadAccounts(1);
             } catch (err) {
                 alert('Lỗi khi xóa tài khoản.');
+            }
+        }
+
+        async function openAddAccountModal() {
+            // Reset modal inputs
+            document.getElementById('addAccEmail').value = '';
+            document.getElementById('addAccPassword').value = '';
+            document.getElementById('addAccType').value = 'Amazon';
+            document.getElementById('addAcc2FA').value = '';
+            document.getElementById('addAccCookies').value = '';
+            document.getElementById('addAccNote').value = '';
+            
+            const profileSelect = document.getElementById('addAccProfile');
+            profileSelect.innerHTML = '<option value="">-- Tự động tạo profile mới --</option>';
+
+            // Load profiles list to select from
+            try {
+                const response = await fetch('/dashboard/api/profiles/?page_size=100');
+                if (response.ok) {
+                    const data = await response.json();
+                    const profiles = data.results || data;
+                    profiles.forEach(p => {
+                        const opt = document.createElement('option');
+                        opt.value = p.id;
+                        opt.textContent = `${p.profile_name} (${p.profile_os || 'No OS'})`;
+                        profileSelect.appendChild(opt);
+                    });
+                }
+            } catch (err) {
+                console.error("Lỗi khi load profiles list cho add account modal:", err);
+            }
+
+            openModal('addAccountModal');
+        }
+
+        async function saveAddAccount() {
+            const email = document.getElementById('addAccEmail').value.trim();
+            const password = document.getElementById('addAccPassword').value.trim();
+            const type = document.getElementById('addAccType').value;
+            const profile_id = document.getElementById('addAccProfile').value;
+            const two_factor_auth = document.getElementById('addAcc2FA').value.trim();
+            const cookies = document.getElementById('addAccCookies').value.trim();
+            const note = document.getElementById('addAccNote').value.trim();
+
+            if (!email || !password) {
+                alert('Email và Mật khẩu không được để trống.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/dashboard/api/accounts/add-manual/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password,
+                        type: type,
+                        profile_id: profile_id || null,
+                        two_factor_auth: two_factor_auth,
+                        cookies: cookies,
+                        note: note
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    alert(data.message || 'Đã thêm tài khoản thành công!');
+                    closeModal('addAccountModal');
+                    loadAccounts(1);
+                } else {
+                    alert('Lỗi: ' + (data.message || 'Không thể lưu tài khoản.'));
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Lỗi kết nối hoặc hệ thống.');
             }
         }
 

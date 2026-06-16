@@ -1387,6 +1387,7 @@
                             <th>Trạng thái</th>
                             <th>Sử dụng</th>
                             <th>Ghi chú</th>
+                            <th style="width: 100px; text-align: center;">Hành động</th>
                         </tr>
                     </thead>
                     <tbody id="emailsTableBody">
@@ -3714,7 +3715,7 @@
             body.innerHTML = '';
 
             if (emails.length === 0) {
-                body.innerHTML = `<tr><td colspan="9" style="text-align:center; padding: 30px; color: var(--text-muted);">Không tìm thấy email nào.</td></tr>`;
+                body.innerHTML = `<tr><td colspan="10" style="text-align:center; padding: 30px; color: var(--text-muted);">Không tìm thấy email nào.</td></tr>`;
                 return;
             }
 
@@ -3735,10 +3736,16 @@
                     <td style="text-align: center;"><span class="badge ${e.status === 'Live' ? 'badge-good' : 'badge-dead'}">${e.status || 'Live'}</span></td>
                     <td style="text-align: center;"><span class="badge ${e.used ? 'badge-active' : 'badge-success'}">${e.used ? 'Used' : 'Free'}</span></td>
                     <td style="color: var(--text-muted); font-size: 13px;">${e.note || ''}</td>
+                    <td style="text-align: center;" class="cell-action">
+                        ${e.used ? 
+                            '<span style="color: var(--text-muted); font-size: 13px;">Đã thêm</span>' : 
+                            `<button class="btn btn-success btn-action-add" onclick="addEmailToSystem(event, ${e.id})" style="padding: 2px 8px; font-size: 12px; font-weight: bold; background-color: #01ae7d; border: none; color: white; border-radius: 4px; cursor: pointer;">Thêm</button>`
+                        }
+                    </td>
                 `;
 
                 tr.addEventListener('click', (ev) => {
-                    if (ev.target.closest('.cell-chk') || ev.target.tagName === 'INPUT') return;
+                    if (ev.target.closest('.cell-chk') || ev.target.closest('.cell-action') || ev.target.tagName === 'INPUT' || ev.target.tagName === 'BUTTON') return;
                     selectEmailRowExclusively(e.id);
                 });
 
@@ -3787,6 +3794,32 @@
                 if (chk) chk.checked = true;
             }
             updateEmailActionButtons();
+        }
+
+        async function addEmailToSystem(event, id) {
+            if (event) event.stopPropagation();
+            if (!confirm('Bạn có chắc chắn muốn thêm email này vào hệ thống tài khoản?')) {
+                return;
+            }
+            try {
+                const response = await fetch(`/dashboard/api/emails/${id}/add-to-system/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    }
+                });
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    alert(data.message || 'Thành công!');
+                    loadEmails(emailsPage);
+                } else {
+                    alert('Lỗi: ' + (data.message || 'Không thể thêm tài khoản.'));
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Lỗi kết nối hoặc hệ thống.');
+            }
         }
 
         function updateEmailActionButtons() {

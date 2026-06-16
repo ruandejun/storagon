@@ -250,6 +250,56 @@ class AccountsEmailsViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter]
     search_fields = ['email', 'type']
 
+    @action(detail=True, methods=['post'], url_path='add-to-system')
+    def add_to_system(self, request, pk=None):
+        email_obj = self.get_object()
+        
+        # 1. Create a default browser profile
+        import random
+        profile_name = email_obj.email.split('@')[0] if email_obj.email else 'profile'
+        profile_name = re.sub(r'[^a-zA-Z0-9]', '', profile_name)
+        
+        profile = BrowserProfiles.objects.create(
+            profile_owner=request.user,
+            profile_name=profile_name,
+            profile_os='Window',
+            profile_browser='Chrome',
+            profile_version='102.0.5005.63',
+            profile_resolution='1920×1080',
+            profile_cpu='8',
+            profile_canvas='Noise',
+            profile_rects='Noise',
+            profile_font='Noise',
+            profile_audio='Noise',
+            profile_webgl='Noise',
+            profile_time_zone=2, # Follow IP
+            profile_webrtc=2,    # Follow IP
+            profile_geo=2,       # Follow IP
+            profile_vendor='Google Inc. (ATI Technologies Inc.)',
+            profile_renderer='ANGLE (Intel(R) G41 Express Chipset (Microsoft Corporation - WDDM 1.1) Direct3D9Ex vs_3_0 ps_3_0)',
+            profile_start_url='https://iphey.com'
+        )
+        
+        # 2. Create the AccountsCreated record
+        account = AccountsCreated.objects.create(
+            owner=request.user,
+            created_by=request.user,
+            email=email_obj.email,
+            password=email_obj.password,
+            type=email_obj.type,
+            browser_profiles=profile,
+            accounts_emails=email_obj,
+            signup_ip=email_obj.signup_ip or '',
+            phone_number=email_obj.phone_number or '',
+            note=email_obj.note or ''
+        )
+        
+        # 3. Mark the email as used
+        email_obj.used = 1
+        email_obj.save()
+        
+        return Response({'success': True, 'message': 'Đã thêm tài khoản vào hệ thống thành công!'})
+
 
 class AccountsCreatedViewSet(viewsets.ModelViewSet):
     queryset = AccountsCreated.objects.all().order_by('-id')

@@ -461,6 +461,217 @@ class AccountsEmailsViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({'success': False, 'message': f'Lỗi kết nối IMAP hoặc Đăng nhập thất bại: {str(e)}'}, status=500)
 
+    @action(detail=False, methods=['get'], url_path='get-graph-config')
+    def get_graph_config(self, request):
+        return Response({
+            'success': True,
+            'client_id': get_config('microsoft_graph_client_id', ''),
+            'client_secret': get_config('microsoft_graph_client_secret', ''),
+            'tenant_id': get_config('microsoft_graph_tenant_id', 'common'),
+            'flow': get_config('microsoft_graph_flow', 'ropc')
+        })
+
+    @action(detail=False, methods=['post'], url_path='save-graph-config')
+    def save_graph_config(self, request):
+        data = request.data
+        client_id = data.get('client_id', '').strip()
+        client_secret = data.get('client_secret', '').strip()
+        tenant_id = data.get('tenant_id', 'common').strip()
+        flow = data.get('flow', 'ropc').strip()
+
+        set_config('microsoft_graph_client_id', client_id, 'Microsoft Graph API Client ID')
+        set_config('microsoft_graph_client_secret', client_secret, 'Microsoft Graph API Client Secret')
+        set_config('microsoft_graph_tenant_id', tenant_id, 'Microsoft Graph API Tenant ID')
+        set_config('microsoft_graph_flow', flow, 'Microsoft Graph API Auth Flow (client_credentials or ropc)')
+
+        return Response({'success': True, 'message': 'Lưu cấu hình Graph API thành công!'})
+
+    @action(detail=False, methods=['post'], url_path='bulk-read-mailbox')
+    def bulk_read_mailbox(self, request):
+        ids = request.data.get('ids', [])
+        if not isinstance(ids, list) or not ids:
+            return Response({'success': False, 'message': 'Danh sách email ID không hợp lệ.'}, status=400)
+
+        # Load MS Graph API configs
+        client_id = get_config('microsoft_graph_client_id', '').strip()
+        client_secret = get_config('microsoft_graph_client_secret', '').strip()
+        tenant_id = get_config('microsoft_graph_tenant_id', 'common').strip()
+        flow = get_config('microsoft_graph_flow', 'ropc').strip()
+
+        emails = AccountsEmails.objects.filter(pk__in=ids)
+        if not emails.exists():
+            return Response({'success': False, 'message': 'Không tìm thấy email nào phù hợp.'}, status=404)
+
+        import requests
+        results = {}
+        
+        # Fetch token if using Client Credentials Flow
+        app_token = None
+        app_token_err = None
+        if flow == 'client_credentials':
+            if not client_id or not client_secret:
+                app_token_err = "Thiếu Client ID hoặc Client Secret trong cấu hình Client Credentials."
+            else:
+                try:
+                    token_url = f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token"
+                    res = requests.post(token_url, data={
+                        'grant_type': 'client_credentials',
+                        'client_id': client_id,
+                        'client_secret': client_secret,
+                        'scope': 'https://graph.microsoft.com/.default'
+                    }, timeout=10)
+                    if res.status_code == 200:
+                        app_token = res.json().get('access_token')
+                    else:
+                        app_token_err = f"Lỗi lấy Token từ Azure: {res.text}"
+                except Exception as e:
+                    app_token_err = f"Lỗi kết nối Azure Token Endpoint: {str(e)}"
+
+        for email_obj in emails:
+            email_addr = email_obj.email
+            password = email_obj.password
+            
+            if not email_addr:
+                results[email_obj.id] = {'success': False, 'message': 'Địa chỉ email trống.'}
+                continue
+
+            # Check if it's hotmail/outlook
+            email_lower = email_addr.lower()
+            is_microsoft = any(dom in email_lower for dom in ['@hotmail.', '@live.', '@outlook.', '@msn.'])
+            if not is_microsoft:
+                results[email_obj.id] = {'success': False, 'message': 'Không hỗ trợ tài khoản ngoài Hotmail/Outlook qua Graph API.'}
+                continue
+
+            if flow == 'client_credentials':
+                if app_token_err:
+                    results[email_obj.id] = {'success': False, 'message': app_token_err}
+                    continue
+                if not app_token:
+                    results[email_obj.id] = {'success': False, 'message': 'Không lấy được Access Token cho ứng dụng Azure.'}
+                    continue
+                
+                try:
+                    msg_url = f"https://graph.microsoft.com/v1.0/users/{email_addr}/messages?$top=15"
+                    msg_res = requests.get(msg_url, headers={
+                        'Authorization': f'Bearer {app_token}',
+                        'Accept': 'application/json'
+                    }, timeout=10)
+                    
+                    if msg_res.status_code == 200:
+                        emails_list = msg_res.json().get('value', [])
+                        parsed_emails = [parse_graph_message(m) for m in emails_list]
+                        results[email_obj.id] = {'success': True, 'emails': parsed_emails}
+                    else:
+                        results[email_obj.id] = {'success': False, 'message': f'Lỗi Graph API: {msg_res.text}'}
+                except Exception as e:
+                    results[email_obj.id] = {'success': False, 'message': f'Lỗi kết nối Graph API: {str(e)}'}
+
+            else:  # ROPC Flow
+                if not client_id:
+                    results[email_obj.id] = {'success': False, 'message': 'Chưa cấu hình Client ID cho luồng ROPC.'}
+                    continue
+                if not password:
+                    results[email_obj.id] = {'success': False, 'message': 'Mật khẩu email trống.'}
+                    continue
+
+                try:
+                    token_url = f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token"
+                    payload = {
+                        'grant_type': 'password',
+                        'client_id': client_id,
+                        'username': email_addr,
+                        'password': password,
+                        'scope': 'https://graph.microsoft.com/Mail.Read'
+                    }
+                    if client_secret:
+                        payload['client_secret'] = client_secret
+                        
+                    res = requests.post(token_url, data=payload, timeout=10)
+                    if res.status_code == 200:
+                        user_token = res.json().get('access_token')
+                        
+                        msg_url = "https://graph.microsoft.com/v1.0/me/messages?$top=15"
+                        msg_res = requests.get(msg_url, headers={
+                            'Authorization': f'Bearer {user_token}',
+                            'Accept': 'application/json'
+                        }, timeout=10)
+                        
+                        if msg_res.status_code == 200:
+                            emails_list = msg_res.json().get('value', [])
+                            parsed_emails = [parse_graph_message(m) for m in emails_list]
+                            results[email_obj.id] = {'success': True, 'emails': parsed_emails}
+                        else:
+                            results[email_obj.id] = {'success': False, 'message': f'Lỗi Graph API: {msg_res.text}'}
+                    else:
+                        try:
+                            err_msg = res.json().get("error_description", res.text)
+                        except Exception:
+                            err_msg = res.text
+                        results[email_obj.id] = {'success': False, 'message': f'Lỗi OAuth ROPC: {err_msg}'}
+                except Exception as e:
+                    results[email_obj.id] = {'success': False, 'message': f'Lỗi kết nối OAuth/Graph API: {str(e)}'}
+
+        return Response({'success': True, 'results': results})
+
+
+def get_config(key, default=""):
+    try:
+        from system_configure.models import SystemConfig
+        obj = SystemConfig.objects.filter(key=key).first()
+        return obj.value if obj else default
+    except Exception:
+        return default
+
+
+def set_config(key, value, description=""):
+    try:
+        from system_configure.models import SystemConfig
+        SystemConfig.objects.update_or_create(key=key, defaults={'value': value, 'description': description})
+        return True
+    except Exception:
+        return False
+
+
+def parse_graph_message(m):
+    from_dict = m.get('from', {}) or m.get('sender', {}) or {}
+    email_addr = from_dict.get('emailAddress', {}) or {}
+    from_name = email_addr.get('name', '')
+    from_email = email_addr.get('address', '')
+    from_sender = f"{from_name} <{from_email}>" if from_name else from_email
+
+    subject = m.get('subject') or '(Không có tiêu đề)'
+    received_time = m.get('receivedDateTime', '')
+    
+    date_str = received_time
+    if 'T' in received_time and 'Z' in received_time:
+        try:
+            dt = received_time.replace('Z', '').split('.')[0]
+            parts = dt.split('T')
+            date_str = f"{parts[0]} {parts[1]}"
+        except Exception:
+            pass
+
+    body_dict = m.get('body', {}) or {}
+    body_content = body_dict.get('content', '')
+    
+    snippet = m.get('bodyPreview', '')
+    if not snippet and body_content:
+        import re
+        clean_body = body_content.strip()
+        if "<html" in clean_body.lower() or "<body" in clean_body.lower() or "<div" in clean_body.lower():
+            clean_body = re.sub('<[^<]+?>', '', clean_body)
+            clean_body = clean_body.replace('&nbsp;', ' ').replace('&lt;', '<').replace('&gt;', '>')
+        clean_body = re.sub(r'\s+', ' ', clean_body).strip()
+        snippet = clean_body[:200] + ("..." if len(clean_body) > 200 else "")
+
+    return {
+        'from': from_sender,
+        'subject': subject,
+        'date': date_str,
+        'snippet': snippet,
+        'body': body_content
+    }
+
 
 class AccountsCreatedViewSet(viewsets.ModelViewSet):
     queryset = AccountsCreated.objects.all().order_by('-id')

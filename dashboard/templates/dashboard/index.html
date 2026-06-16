@@ -1371,6 +1371,8 @@
                     <button class="btn btn-primary" onclick="openAddEmailModal()">Thêm Email</button>
                     <button class="btn btn-primary" id="emailEditBtn" onclick="openEditEmailModal()" disabled>Sửa</button>
                     <button class="btn btn-danger" id="emailDeleteBtn" onclick="deleteSelectedEmails()" disabled>Xóa</button>
+                    <button class="btn btn-warning" id="emailBulkReadBtn" onclick="openBulkReadMailModal()" disabled>Đọc mail số lượng lớn</button>
+                    <button class="btn btn-secondary" onclick="openGraphConfigModal()">Cấu hình Graph API</button>
                 </div>
             </div>
 
@@ -2335,6 +2337,106 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeModal('readMailModal')">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GRAPH API CONFIG MODAL -->
+    <div class="modal-overlay" id="graphConfigModal">
+        <div class="modal-box" style="max-width: 500px; width: 90%;">
+            <div class="modal-header">
+                <h3>Cấu Hình Microsoft Graph API</h3>
+                <button class="modal-close" onclick="closeModal('graphConfigModal')">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 20px;">
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label class="form-label" style="font-weight: 600;">Azure AD App Client ID (Application ID)</label>
+                    <input type="text" class="form-control" id="graphClientId" placeholder="Nhập Client ID..." style="width: 100%;">
+                </div>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label class="form-label" style="font-weight: 600;">Azure AD App Client Secret</label>
+                    <input type="password" class="form-control" id="graphClientSecret" placeholder="Nhập Client Secret..." style="width: 100%;">
+                </div>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label class="form-label" style="font-weight: 600;">Tenant ID</label>
+                    <input type="text" class="form-control" id="graphTenantId" placeholder="Mặc định: common..." style="width: 100%;">
+                </div>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label class="form-label" style="font-weight: 600;">Luồng Authentication (Flow Type)</label>
+                    <select class="form-control" id="graphAuthFlow" style="width: 100%; height: 38px; background: #0f172a; color: white; border: 1px solid var(--border-color); border-radius: 6px; padding: 0 10px;">
+                        <option value="ropc">ROPC Flow (Đăng nhập bằng Email + Mật khẩu tài khoản)</option>
+                        <option value="client_credentials">Client Credentials Flow (Quyền ứng dụng Mail.Read)</option>
+                    </select>
+                </div>
+                <div style="font-size: 11px; color: var(--text-muted); line-height: 1.4; margin-top: 10px;">
+                    * Lưu ý: ROPC yêu cầu tắt MFA trên tài khoản Email và kích hoạt "Allow public client flows" trong Azure App Registration. Client Credentials yêu cầu cấp quyền Mail.Read và Admin Consent trên Tenant của Azure.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('graphConfigModal')">Hủy</button>
+                <button class="btn btn-primary" onclick="saveGraphConfig()">Lưu Cấu Hình</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BULK READ MAIL MODAL -->
+    <div class="modal-overlay" id="bulkReadMailModal">
+        <div class="modal-box modal-large" style="max-width: 1000px; width: 95%;">
+            <div class="modal-header">
+                <h3>Đọc Mail Số Lượng Lớn (Microsoft Graph API)</h3>
+                <button class="modal-close" onclick="closeModal('bulkReadMailModal')">&times;</button>
+            </div>
+            <div class="modal-body" style="max-height: 85vh; overflow-y: auto; padding: 20px;">
+                
+                <!-- Status List Area -->
+                <div style="margin-bottom: 16px; background: rgba(30, 41, 59, 0.3); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px;">
+                    <h4 style="font-size: 13px; font-weight: 600; margin-bottom: 8px; display: flex; justify-content: space-between;">
+                        <span>Trạng thái kết nối các tài khoản:</span>
+                        <span id="bulkStatusSummary" style="color: var(--accent);">Đang tải...</span>
+                    </h4>
+                    <div id="bulkReadStatusContainer" style="display: flex; flex-wrap: wrap; gap: 8px; max-height: 120px; overflow-y: auto;">
+                        <!-- Status items will be injected here dynamically -->
+                    </div>
+                </div>
+
+                <!-- Control and Filter Bar inside modal -->
+                <div style="display: flex; gap: 12px; margin-bottom: 12px; align-items: center;">
+                    <div class="search-box" style="flex: 1;">
+                        <input type="text" class="search-input" id="bulkMailSearchInput" placeholder="Tìm kiếm OTP, mã code hoặc nội dung thư..." oninput="filterBulkMails()" style="width: 100%;">
+                    </div>
+                    <button class="btn btn-primary" onclick="refreshBulkMailbox()" style="padding: 8px 16px; font-size: 13px; border-radius: 6px; white-space: nowrap;">🔄 Quét lại</button>
+                </div>
+
+                <!-- Combined Email Grid -->
+                <div style="display: grid; grid-template-columns: 350px 1fr; gap: 16px; min-height: 400px;">
+                    
+                    <!-- Left List: Message list -->
+                    <div style="border: 1px solid var(--border-color); border-radius: 6px; background: rgba(15, 23, 42, 0.2); display: flex; flex-direction: column; overflow: hidden;">
+                        <div style="padding: 10px; font-weight: bold; border-bottom: 1px solid var(--border-color); background: rgba(255,255,255,0.02); font-size: 13px;">
+                            Danh sách thư nhận được
+                        </div>
+                        <div id="bulkMailListContainer" style="flex: 1; overflow-y: auto; max-height: 450px;">
+                            <table class="data-table" style="margin: 0; width: 100%;">
+                                <tbody id="bulkMailListBody">
+                                    <tr><td style="text-align: center; color: var(--text-muted); padding: 30px;">Hộp thư trống hoặc chưa có thư nào.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Right Detail Box: Full body content -->
+                    <div style="border: 1px solid var(--border-color); border-radius: 6px; background: rgba(15, 23, 42, 0.4); display: flex; flex-direction: column; overflow: hidden; padding: 14px;">
+                        <h4 id="bulkMailDetailSubject" style="font-size: 14px; font-weight: bold; margin-bottom: 4px; color: var(--accent);">Chọn thư để xem chi tiết</h4>
+                        <div id="bulkMailDetailMeta" style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;"></div>
+                        <div id="bulkMailDetailBox" style="flex: 1; min-height: 300px; max-height: 400px; overflow-y: auto; font-size: 13px; line-height: 1.6; white-space: pre-wrap; word-break: break-all;">
+                            Chọn một thư từ danh sách bên trái để mở rộng xem toàn bộ mã OTP hoặc link kích hoạt.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('bulkReadMailModal')">Đóng</button>
             </div>
         </div>
     </div>
@@ -4126,6 +4228,304 @@
             }
         }
 
+        /* Graph API configurations */
+        async function openGraphConfigModal() {
+            try {
+                const res = await fetch('/dashboard/api/emails/get-graph-config/');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success) {
+                        document.getElementById('graphClientId').value = data.client_id || '';
+                        document.getElementById('graphClientSecret').value = data.client_secret || '';
+                        document.getElementById('graphTenantId').value = data.tenant_id || 'common';
+                        document.getElementById('graphAuthFlow').value = data.flow || 'ropc';
+                    }
+                }
+            } catch (err) {
+                console.error("Lỗi khi tải cấu hình Graph API:", err);
+            }
+            openModal('graphConfigModal');
+        }
+
+        async function saveGraphConfig() {
+            const client_id = document.getElementById('graphClientId').value.trim();
+            const client_secret = document.getElementById('graphClientSecret').value.trim();
+            const tenant_id = document.getElementById('graphTenantId').value.trim() || 'common';
+            const flow = document.getElementById('graphAuthFlow').value;
+
+            try {
+                const res = await fetch('/dashboard/api/emails/save-graph-config/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({ client_id, client_secret, tenant_id, flow })
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    alert(data.message || 'Lưu cấu hình thành công!');
+                    closeModal('graphConfigModal');
+                } else {
+                    alert('Lỗi: ' + (data.message || 'Không thể lưu cấu hình.'));
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Lỗi kết nối hoặc hệ thống.');
+            }
+        }
+
+        /* Bulk Mailbox Reader */
+        let bulkEmailsData = [];
+        let activeBulkEmailsList = [];
+
+        async function openBulkReadMailModal() {
+            if (selectedEmails.length === 0) {
+                alert('Vui lòng chọn ít nhất một email để tiến hành đọc thư số lượng lớn.');
+                return;
+            }
+            
+            document.getElementById('bulkMailSearchInput').value = '';
+            document.getElementById('bulkMailDetailSubject').textContent = 'Chọn thư để xem chi tiết';
+            document.getElementById('bulkMailDetailMeta').textContent = '';
+            document.getElementById('bulkMailDetailBox').textContent = 'Chọn một thư từ danh sách bên trái để mở rộng xem toàn bộ mã OTP hoặc link kích hoạt.';
+
+            openModal('bulkReadMailModal');
+            refreshBulkMailbox();
+        }
+
+        async function refreshBulkMailbox() {
+            const statusContainer = document.getElementById('bulkReadStatusContainer');
+            const listBody = document.getElementById('bulkMailListBody');
+            const summary = document.getElementById('bulkStatusSummary');
+
+            statusContainer.innerHTML = '';
+            summary.textContent = `Bắt đầu quét ${selectedEmails.length} tài khoản...`;
+            summary.style.color = 'var(--accent)';
+
+            // Build status badges for selected emails
+            const emailStatusMap = {};
+            selectedEmails.forEach(id => {
+                const emailObj = emailsData.find(x => x.id === id);
+                const address = emailObj ? emailObj.email : `ID: ${id}`;
+                
+                const itemDiv = document.createElement('div');
+                itemDiv.style.background = 'rgba(255, 255, 255, 0.05)';
+                itemDiv.style.padding = '4px 10px';
+                itemDiv.style.borderRadius = '4px';
+                itemDiv.style.fontSize = '12px';
+                itemDiv.style.border = '1px solid rgba(255, 255, 255, 0.1)';
+                itemDiv.style.display = 'flex';
+                itemDiv.style.alignItems = 'center';
+                itemDiv.style.gap = '6px';
+                itemDiv.innerHTML = `
+                    <span style="font-weight: 500;">${address}</span>: 
+                    <span id="bulk-status-badge-${id}" style="color: var(--text-muted);">🔄 Đang quét...</span>
+                `;
+                statusContainer.appendChild(itemDiv);
+                emailStatusMap[id] = address;
+            });
+
+            listBody.innerHTML = `
+                <tr><td style="text-align: center; color: var(--text-muted); padding: 40px;">
+                    <div style="display: inline-block; width: 24px; height: 24px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 8px;"></div>
+                    <div>Đang kết nối API và đọc các hộp thư, vui lòng đợi...</div>
+                </td></tr>
+            `;
+
+            try {
+                const res = await fetch('/dashboard/api/emails/bulk-read-mailbox/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({ ids: selectedEmails })
+                });
+
+                if (!res.ok) {
+                    const errorData = await res.json();
+                    summary.textContent = `Lỗi hệ thống: ${errorData.message || 'Không thể thực thi quét.'}`;
+                    summary.style.color = 'var(--danger)';
+                    listBody.innerHTML = `<tr><td style="text-align: center; color: var(--danger); padding: 20px;">Lỗi thực thi quét bulk email.</td></tr>`;
+                    return;
+                }
+
+                const data = await res.json();
+                const results = data.results || {};
+                
+                bulkEmailsData = [];
+                let successCount = 0;
+                let failCount = 0;
+
+                selectedEmails.forEach(id => {
+                    const badge = document.getElementById(`bulk-status-badge-${id}`);
+                    const accountResult = results[id];
+                    const address = emailStatusMap[id];
+
+                    if (accountResult) {
+                        if (accountResult.success) {
+                            successCount++;
+                            const emailsList = accountResult.emails || [];
+                            badge.textContent = `✅ Thành công (${emailsList.length} thư)`;
+                            badge.style.color = 'var(--success)';
+                            
+                            // Attach source email details
+                            emailsList.forEach(m => {
+                                m.sourceEmail = address;
+                                bulkEmailsData.push(m);
+                            });
+                        } else {
+                            failCount++;
+                            badge.textContent = `❌ ${accountResult.message || 'Thất bại'}`;
+                            badge.style.color = 'var(--danger)';
+                            badge.title = accountResult.message || '';
+                        }
+                    } else {
+                        failCount++;
+                        badge.textContent = `❌ Không phản hồi`;
+                        badge.style.color = 'var(--danger)';
+                    }
+                });
+
+                summary.textContent = `Đã hoàn thành! Thành công: ${successCount}/${selectedEmails.length} | Thất bại: ${failCount}`;
+                summary.style.color = successCount === selectedEmails.length ? 'var(--success)' : 'var(--warning)';
+
+                // Sort combined emails by date (newest first)
+                bulkEmailsData.sort((a, b) => new Date(b.date) - new Date(a.date));
+                activeBulkEmailsList = [...bulkEmailsData];
+
+                renderBulkEmails(activeBulkEmailsList);
+
+            } catch (err) {
+                console.error("Lỗi khi đọc bulk mailbox: ", err);
+                summary.textContent = 'Lỗi kết nối mạng hoặc server quá tải.';
+                summary.style.color = 'var(--danger)';
+                listBody.innerHTML = `<tr><td style="text-align: center; color: var(--danger); padding: 20px;">Lỗi kết nối API.</td></tr>`;
+            }
+        }
+
+        function renderBulkEmails(list) {
+            const body = document.getElementById('bulkMailListBody');
+            body.innerHTML = '';
+
+            if (list.length === 0) {
+                body.innerHTML = `
+                    <tr><td style="text-align: center; color: var(--text-muted); padding: 30px;">Hộp thư trống hoặc không tìm thấy thư nào phù hợp với tìm kiếm.</td></tr>
+                `;
+                return;
+            }
+
+            list.forEach((mail, index) => {
+                const tr = document.createElement('tr');
+                tr.style.cursor = 'pointer';
+                tr.style.transition = 'background 0.2s';
+                tr.style.borderBottom = '1px solid var(--border-color)';
+                tr.addEventListener('mouseover', () => tr.style.background = 'rgba(255,255,255,0.03)');
+                tr.addEventListener('mouseout', () => {
+                    if (!tr.classList.contains('active-bulk-row')) {
+                        tr.style.background = 'transparent';
+                    }
+                });
+                tr.addEventListener('click', () => {
+                    document.querySelectorAll('#bulkMailListBody tr').forEach(r => {
+                        r.classList.remove('active-bulk-row');
+                        r.style.background = 'transparent';
+                    });
+                    tr.classList.add('active-bulk-row');
+                    tr.style.background = 'rgba(99, 102, 241, 0.15)';
+                    viewBulkMailDetail(index, list);
+                });
+
+                // Highlight search keywords or highlight OTP numbers
+                let highlightText = mail.snippet;
+                const otpRegex = /\b\d{4,8}\b/g;
+                highlightText = highlightText.replace(otpRegex, match => `<strong style="color: var(--accent); font-size:13px; background: rgba(99,102,241,0.2); padding: 1px 4px; border-radius:3px;">${match}</strong>`);
+
+                const fromClean = mail.from.split('<')[0].replace(/"/g, '').trim() || mail.from;
+
+                tr.innerHTML = `
+                    <td style="padding: 10px; display: flex; flex-direction: column; gap: 4px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted);">
+                            <span style="font-weight: 600; color: var(--accent); max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${mail.sourceEmail}</span>
+                            <span>${mail.date}</span>
+                        </div>
+                        <div style="font-size: 12px; font-weight: 600; color: var(--text-color); max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            ${fromClean} &bull; ${mail.subject}
+                        </div>
+                        <div style="font-size: 11px; color: var(--text-muted); line-height: 1.4; max-height: 32px; overflow: hidden;">
+                            ${highlightText}
+                        </div>
+                    </td>
+                `;
+                body.appendChild(tr);
+            });
+        }
+
+        function filterBulkMails() {
+            const query = document.getElementById('bulkMailSearchInput').value.trim().toLowerCase();
+            if (!query) {
+                activeBulkEmailsList = [...bulkEmailsData];
+            } else {
+                activeBulkEmailsList = bulkEmailsData.filter(mail => {
+                    return mail.from.toLowerCase().includes(query) ||
+                           mail.subject.toLowerCase().includes(query) ||
+                           mail.snippet.toLowerCase().includes(query) ||
+                           (mail.body && mail.body.toLowerCase().includes(query)) ||
+                           mail.sourceEmail.toLowerCase().includes(query);
+                });
+            }
+            renderBulkEmails(activeBulkEmailsList);
+        }
+
+        function viewBulkMailDetail(index, sourceList) {
+            const mail = sourceList[index];
+            if (!mail) return;
+
+            document.getElementById('bulkMailDetailSubject').textContent = mail.subject || '(Không có tiêu đề)';
+            document.getElementById('bulkMailDetailMeta').innerHTML = `
+                <div><strong>Tài khoản nhận:</strong> ${mail.sourceEmail}</div>
+                <div><strong>Người gửi:</strong> ${mail.from}</div>
+                <div><strong>Thời gian nhận:</strong> ${mail.date}</div>
+            `;
+
+            const detailBox = document.getElementById('bulkMailDetailBox');
+            detailBox.innerHTML = '';
+
+            const bodyStr = mail.body || '';
+            const isHtml = (bodyStr.includes('<html') || bodyStr.includes('<body') || bodyStr.includes('<div') || bodyStr.includes('<p') || bodyStr.includes('<table'));
+
+            if (isHtml) {
+                const iframe = document.createElement('iframe');
+                iframe.style.width = '100%';
+                iframe.style.height = '360px';
+                iframe.style.border = 'none';
+                iframe.style.borderRadius = '6px';
+                iframe.style.background = '#ffffff';
+                detailBox.appendChild(iframe);
+
+                const doc = iframe.contentWindow || iframe.contentDocument.document || iframe.contentDocument;
+                doc.document.open();
+                doc.document.write(bodyStr);
+                doc.document.close();
+            } else {
+                let formattedText = bodyStr;
+                const linkRegex = /(https?:\/\/[^\s]+)/g;
+                formattedText = formattedText.replace(linkRegex, url => `<a href="${url}" target="_blank" style="color: var(--accent); text-decoration: underline; word-break: break-all;">${url}</a>`);
+                
+                const otpRegex = /\b\d{4,8}\b/g;
+                formattedText = formattedText.replace(otpRegex, match => `<strong style="color: var(--accent); font-size:14px; background: rgba(99,102,241,0.25); padding: 2px 6px; border-radius:4px; border: 1px dashed var(--accent);">${match}</strong>`);
+
+                const pre = document.createElement('pre');
+                pre.style.margin = '0';
+                pre.style.fontFamily = 'inherit';
+                pre.style.whiteSpace = 'pre-wrap';
+                pre.style.wordBreak = 'break-all';
+                pre.innerHTML = formattedText;
+                detailBox.appendChild(pre);
+            }
+        }
+
         async function loadEmails(page) {
             showTableLoading('emailsTableBody', 9);
             emailsPage = page;
@@ -4274,6 +4674,10 @@
         function updateEmailActionButtons() {
             document.getElementById('emailEditBtn').disabled = selectedEmails.length !== 1;
             document.getElementById('emailDeleteBtn').disabled = selectedEmails.length === 0;
+            const bulkReadBtn = document.getElementById('emailBulkReadBtn');
+            if (bulkReadBtn) {
+                bulkReadBtn.disabled = selectedEmails.length === 0;
+            }
         }
 
         function changeEmailsPage(offset) {

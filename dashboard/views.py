@@ -336,6 +336,131 @@ class AccountsEmailsViewSet(viewsets.ModelViewSet):
         
         return Response({'success': True, 'message': 'Đã thêm tài khoản vào hệ thống thành công!'})
 
+    @action(detail=True, methods=['get'], url_path='read-mailbox')
+    def read_mailbox(self, request, pk=None):
+        email_obj = self.get_object()
+        email_addr = email_obj.email
+        password = email_obj.password
+
+        if not email_addr or not password:
+            return Response({'success': False, 'message': 'Email hoặc mật khẩu không tồn tại trong hệ thống.'}, status=400)
+
+        import imaplib
+        import email
+        from email.header import decode_header
+        import re
+
+        # Helper function to guess IMAP host
+        def get_imap_host(addr):
+            addr = addr.lower()
+            if any(dom in addr for dom in ['@hotmail.', '@live.', '@outlook.', '@msn.']):
+                return 'outlook.office365.com'
+            if '@gmail.' in addr:
+                return 'imap.gmail.com'
+            # Fallback to guessing based on MX or default to outlook
+            return 'outlook.office365.com'
+
+        server_host = get_imap_host(email_addr)
+        try:
+            # Connect using SSL with a timeout of 15 seconds
+            mail = imaplib.IMAP4_SSL(server_host, timeout=15)
+            mail.login(email_addr, password)
+            mail.select("inbox")
+
+            status, messages = mail.search(None, "ALL")
+            if status != "OK":
+                return Response({'success': True, 'emails': []})
+
+            mail_ids = messages[0].split()
+            # Fetch the last 15 emails
+            latest_ids = mail_ids[-15:]
+            latest_ids.reverse()  # Newest first
+
+            results = []
+            for mail_id in latest_ids:
+                res_status, msg_data = mail.fetch(mail_id, "(RFC822)")
+                if res_status != "OK":
+                    continue
+
+                for response_part in msg_data:
+                    if isinstance(response_part, tuple):
+                        msg = email.message_from_bytes(response_part[1])
+
+                        # Decode Subject
+                        subj_header = msg["Subject"] or ""
+                        subject = ""
+                        try:
+                            decoded = decode_header(subj_header)
+                            for part, enc in decoded:
+                                if isinstance(part, bytes):
+                                    subject += part.decode(enc or "utf-8", errors="ignore")
+                                else:
+                                    subject += part
+                        except Exception:
+                            subject = str(subj_header)
+
+                        # Decode From
+                        from_header = msg["From"] or ""
+                        from_sender = ""
+                        try:
+                            decoded = decode_header(from_header)
+                            for part, enc in decoded:
+                                if isinstance(part, bytes):
+                                    from_sender += part.decode(enc or "utf-8", errors="ignore")
+                                else:
+                                    from_sender += part
+                        except Exception:
+                            from_sender = str(from_header)
+
+                        # Date
+                        date_str = msg["Date"] or ""
+
+                        # Extract Body (Plain Text or HTML)
+                        body = ""
+                        if msg.is_multipart():
+                            for part in msg.walk():
+                                content_type = part.get_content_type()
+                                content_disposition = str(part.get("Content-Disposition"))
+                                if content_type == "text/plain" and "attachment" not in content_disposition:
+                                    payload = part.get_payload(decode=True)
+                                    body = payload.decode(part.get_content_charset() or "utf-8", errors="ignore")
+                                    break
+                                elif content_type == "text/html" and "attachment" not in content_disposition:
+                                    payload = part.get_payload(decode=True)
+                                    body = payload.decode(part.get_content_charset() or "utf-8", errors="ignore")
+                        else:
+                            payload = msg.get_payload(decode=True)
+                            body = payload.decode(msg.get_content_charset() or "utf-8", errors="ignore")
+
+                        clean_body = body.strip()
+                        # If HTML body, strip html tags for snippet preview
+                        if "<html" in clean_body.lower() or "<body" in clean_body.lower() or "<div" in clean_body.lower():
+                            clean_body = re.sub('<[^<]+?>', '', clean_body)
+                            clean_body = clean_body.replace('&nbsp;', ' ').replace('&lt;', '<').replace('&gt;', '>')
+
+                        # Clean whitespace sequences
+                        clean_body = re.sub(r'\s+', ' ', clean_body).strip()
+                        snippet = clean_body[:200] + ("..." if len(clean_body) > 200 else "")
+
+                        results.append({
+                            'from': from_sender,
+                            'subject': subject,
+                            'date': date_str,
+                            'snippet': snippet,
+                            'body': body
+                        })
+            
+            try:
+                mail.close()
+                mail.logout()
+            except Exception:
+                pass
+                
+            return Response({'success': True, 'emails': results})
+            
+        except Exception as e:
+            return Response({'success': False, 'message': f'Lỗi kết nối IMAP hoặc Đăng nhập thất bại: {str(e)}'}, status=500)
+
 
 class AccountsCreatedViewSet(viewsets.ModelViewSet):
     queryset = AccountsCreated.objects.all().order_by('-id')

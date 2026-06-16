@@ -2286,6 +2286,59 @@
         </div>
     </div>
 
+    <!-- READ MAIL MODAL -->
+    <div class="modal-overlay" id="readMailModal">
+        <div class="modal-box modal-large" style="max-width: 850px; width: 90%;">
+            <div class="modal-header">
+                <h3>Hộp Thư Email: <span id="readMailTargetAddress" style="color: var(--accent);"></span></h3>
+                <button class="modal-close" onclick="closeModal('readMailModal')">&times;</button>
+            </div>
+            <div class="modal-body" style="max-height: 80vh; overflow-y: auto; padding: 20px;">
+                <input type="hidden" id="readMailTargetId">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <span style="font-size: 13px; color: var(--text-muted);">Hiển thị tối đa 15 email mới nhất từ Inbox</span>
+                    <button class="btn btn-primary" onclick="refreshMailbox()" style="padding: 6px 12px; font-size: 13px; border-radius: 6px;">🔄 Tải lại</button>
+                </div>
+                
+                <!-- Loading State -->
+                <div id="readMailLoader" style="text-align: center; padding: 40px 0; display: none;">
+                    <div style="display: inline-block; width: 32px; height: 32px; border: 4px solid rgba(255,255,255,0.1); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 12px;"></div>
+                    <p style="color: var(--text-muted); font-size: 13px;">Đang kết nối IMAP server và tải email, vui lòng đợi...</p>
+                </div>
+                
+                <!-- Error State -->
+                <div id="readMailError" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 12px 16px; border-radius: 6px; color: var(--danger); font-size: 13px; margin-bottom: 12px; display: none; word-break: break-all;"></div>
+
+                <!-- Inbox List Panel -->
+                <div id="readMailListContainer" style="max-height: 250px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 16px; background: rgba(30, 41, 59, 0.2);">
+                    <table class="data-table" style="margin: 0; width: 100%;">
+                        <thead>
+                            <tr>
+                                <th style="width: 25%; text-align: left;">Người gửi</th>
+                                <th style="width: 55%; text-align: left;">Tiêu đề / Nội dung ngắn</th>
+                                <th style="width: 20%; text-align: center;">Thời gian</th>
+                            </tr>
+                        </thead>
+                        <tbody id="readMailListBody">
+                            <tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 20px;">Hộp thư trống hoặc chưa được tải.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Message Detail Pane -->
+                <div style="border-top: 1px solid var(--border-color); padding-top: 16px;">
+                    <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 8px; color: var(--accent);">Chi tiết Email</h4>
+                    <div id="readMailDetailBox" style="padding: 14px; background: rgba(15, 23, 42, 0.4); border-radius: 6px; border: 1px solid var(--border-color); min-height: 150px; max-height: 380px; overflow-y: auto; font-size: 13px; line-height: 1.6; white-space: pre-wrap; word-break: break-all;">
+                        Chọn một email ở trên để xem nội dung chi tiết.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('readMailModal')">Đóng</button>
+            </div>
+        </div>
+    </div>
+
     <!-- CORE JS CLIENT LOGIC -->
     <script>
         // Mobile Sidebar Helpers
@@ -3940,6 +3993,138 @@
 
         /* ---------------- EMAILS LOGIC ---------------- */
         let emailsData = [];
+        let currentMailboxEmails = [];
+
+        async function openReadMailModal(event, id) {
+            if (event) event.stopPropagation();
+            const emailObj = emailsData.find(x => x.id === id);
+            if (!emailObj) return;
+
+            document.getElementById('readMailTargetId').value = id;
+            document.getElementById('readMailTargetAddress').textContent = emailObj.email;
+            
+            // Clear previous mailbox content and details
+            document.getElementById('readMailListBody').innerHTML = `
+                <tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 20px;">Hộp thư trống hoặc chưa được tải.</td></tr>
+            `;
+            document.getElementById('readMailDetailBox').textContent = 'Chọn một email ở trên để xem nội dung chi tiết.';
+            document.getElementById('readMailError').style.display = 'none';
+
+            openModal('readMailModal');
+            refreshMailbox();
+        }
+
+        async function refreshMailbox() {
+            const id = document.getElementById('readMailTargetId').value;
+            if (!id) return;
+
+            const loader = document.getElementById('readMailLoader');
+            const errorPane = document.getElementById('readMailError');
+            const listContainer = document.getElementById('readMailListContainer');
+            const listBody = document.getElementById('readMailListBody');
+            const detailBox = document.getElementById('readMailDetailBox');
+
+            loader.style.display = 'block';
+            errorPane.style.display = 'none';
+            listContainer.style.opacity = '0.5';
+            detailBox.textContent = 'Chọn một email ở trên để xem nội dung chi tiết.';
+
+            try {
+                const response = await fetch(`/dashboard/api/emails/${id}/read-mailbox/`);
+                const data = await response.json();
+                loader.style.display = 'none';
+                listContainer.style.opacity = '1';
+
+                if (response.ok && data.success) {
+                    currentMailboxEmails = data.emails || [];
+                    listBody.innerHTML = '';
+
+                    if (currentMailboxEmails.length === 0) {
+                        listBody.innerHTML = `
+                            <tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 20px;">Hộp thư trống (Không có email nào).</td></tr>
+                        `;
+                    } else {
+                        currentMailboxEmails.forEach((mail, index) => {
+                            const tr = document.createElement('tr');
+                            tr.style.cursor = 'pointer';
+                            tr.style.transition = 'background 0.2s';
+                            tr.addEventListener('mouseover', () => tr.style.background = 'rgba(255,255,255,0.04)');
+                            tr.addEventListener('mouseout', () => {
+                                if (!tr.classList.contains('active-mail-row')) {
+                                    tr.style.background = 'transparent';
+                                }
+                            });
+                            tr.addEventListener('click', () => {
+                                // Remove active class from all rows
+                                document.querySelectorAll('#readMailListBody tr').forEach(r => {
+                                    r.classList.remove('active-mail-row');
+                                    r.style.background = 'transparent';
+                                });
+                                tr.classList.add('active-mail-row');
+                                tr.style.background = 'rgba(99, 102, 241, 0.15)';
+                                viewMailDetail(index);
+                            });
+
+                            // Parse sender address simple name
+                            const fromName = mail.from.split('<')[0].replace(/"/g, '').trim() || mail.from;
+
+                            tr.innerHTML = `
+                                <td style="font-weight: 500; font-size:12px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${fromName}</td>
+                                <td style="font-size:12px;">
+                                    <div style="font-weight: 600; color: var(--text-color); max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${mail.subject || '(Không có tiêu đề)'}</div>
+                                    <div style="font-size: 11px; color: var(--text-muted); max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${mail.snippet}</div>
+                                </td>
+                                <td style="font-size: 11px; color: var(--text-muted); text-align: center; white-space: nowrap;">${mail.date}</td>
+                            `;
+                            listBody.appendChild(tr);
+                        });
+                    }
+                } else {
+                    errorPane.textContent = data.message || 'Không thể kết nối hộp thư.';
+                    errorPane.style.display = 'block';
+                    listBody.innerHTML = `
+                        <tr><td colspan="3" style="text-align: center; color: var(--danger); padding: 20px;">Lỗi tải hộp thư.</td></tr>
+                    `;
+                }
+            } catch (err) {
+                loader.style.display = 'none';
+                listContainer.style.opacity = '1';
+                errorPane.textContent = 'Lỗi kết nối mạng hoặc server không phản hồi.';
+                errorPane.style.display = 'block';
+                listBody.innerHTML = `
+                    <tr><td colspan="3" style="text-align: center; color: var(--danger); padding: 20px;">Lỗi kết nối.</td></tr>
+                `;
+            }
+        }
+
+        function viewMailDetail(index) {
+            const mail = currentMailboxEmails[index];
+            if (!mail) return;
+
+            const detailBox = document.getElementById('readMailDetailBox');
+            detailBox.innerHTML = '';
+
+            const bodyStr = mail.body || '';
+            const isHtml = (bodyStr.includes('<html') || bodyStr.includes('<body') || bodyStr.includes('<div') || bodyStr.includes('<p') || bodyStr.includes('<table'));
+
+            if (isHtml) {
+                const iframe = document.createElement('iframe');
+                iframe.style.width = '100%';
+                iframe.style.height = '350px';
+                iframe.style.border = 'none';
+                iframe.style.borderRadius = '6px';
+                iframe.style.background = '#ffffff';
+                detailBox.appendChild(iframe);
+
+                // Set iframe content
+                const doc = iframe.contentWindow || iframe.contentDocument.document || iframe.contentDocument;
+                doc.document.open();
+                doc.document.write(bodyStr);
+                doc.document.close();
+            } else {
+                detailBox.textContent = bodyStr;
+            }
+        }
 
         async function loadEmails(page) {
             showTableLoading('emailsTableBody', 9);
@@ -3998,10 +4183,13 @@
                     <td style="text-align: center;"><span class="badge ${e.used ? 'badge-active' : 'badge-success'}">${e.used ? 'Used' : 'Free'}</span></td>
                     <td style="color: var(--text-muted); font-size: 13px;">${e.note || ''}</td>
                     <td style="text-align: center;" class="cell-action">
-                        ${e.used ? 
-                            '<span style="color: var(--text-muted); font-size: 13px;">Đã thêm</span>' : 
-                            `<button class="btn btn-success btn-action-add" onclick="addEmailToSystem(event, ${e.id})" style="padding: 2px 8px; font-size: 12px; font-weight: bold; background-color: #01ae7d; border: none; color: white; border-radius: 4px; cursor: pointer;">Thêm</button>`
-                        }
+                        <div style="display: flex; gap: 6px; justify-content: center; align-items: center;">
+                            ${e.used ? 
+                                '<span style="color: var(--text-muted); font-size: 13px;">Đã thêm</span>' : 
+                                `<button class="btn btn-success btn-action-add" onclick="addEmailToSystem(event, ${e.id})" style="padding: 2px 8px; font-size: 12px; font-weight: bold; background-color: #01ae7d; border: none; color: white; border-radius: 4px; cursor: pointer;">Thêm</button>`
+                            }
+                            <button class="btn btn-primary" onclick="openReadMailModal(event, ${e.id})" style="padding: 2px 8px; font-size: 12px; font-weight: bold; background-color: var(--primary); border: none; color: white; border-radius: 4px; cursor: pointer;">Đọc Mail</button>
+                        </div>
                     </td>
                 `;
 

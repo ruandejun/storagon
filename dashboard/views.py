@@ -329,12 +329,7 @@ class AccountsCreatedViewSet(viewsets.ModelViewSet):
 
         # 2. Resolve profile
         profile = None
-        if profile_id:
-            profile_qs = BrowserProfiles.objects.filter(pk=profile_id)
-            if profile_qs.exists():
-                profile = profile_qs[0]
-        
-        if not profile:
+        if profile_id == 'auto':
             # Create a default profile
             profile_name = email.split('@')[0] if email else 'profile'
             profile_name = re.sub(r'[^a-zA-Z0-9]', '', profile_name)
@@ -358,6 +353,13 @@ class AccountsCreatedViewSet(viewsets.ModelViewSet):
                 profile_renderer='ANGLE (Intel(R) G41 Express Chipset (Microsoft Corporation - WDDM 1.1) Direct3D9Ex vs_3_0 ps_3_0)',
                 profile_start_url='https://iphey.com'
             )
+        elif profile_id and profile_id != 'none':
+            try:
+                profile_qs = BrowserProfiles.objects.filter(pk=int(profile_id))
+                if profile_qs.exists():
+                    profile = profile_qs[0]
+            except (ValueError, TypeError):
+                pass
 
         # 3. Create the AccountsCreated record
         account = AccountsCreated.objects.create(

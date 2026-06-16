@@ -1996,14 +1996,17 @@
                         <select class="filter-select" id="addAccType" style="width: 100%;">
                             <option value="Amazon">Amazon</option>
                             <option value="Ebay">Ebay</option>
-                            <option value="Walmart">Walmart</option>
+                            <option value="Tiktok">Tiktok</option>
+                            <option value="Facebook">Facebook</option>
+                            <option value="X">X</option>
                             <option value="Other">Khác</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Browser Profile</label>
                         <select class="filter-select" id="addAccProfile" style="width: 100%;">
-                            <option value="">-- Tự động tạo profile mới --</option>
+                            <option value="none" selected>Không có (Mặc định)</option>
+                            <option value="auto">Tự động tạo profile mới</option>
                         </select>
                     </div>
                 </div>
@@ -4206,7 +4209,10 @@
             document.getElementById('addAccNote').value = '';
             
             const profileSelect = document.getElementById('addAccProfile');
-            profileSelect.innerHTML = '<option value="">-- Tự động tạo profile mới --</option>';
+            profileSelect.innerHTML = `
+                <option value="none" selected>Không có (Mặc định)</option>
+                <option value="auto">Tự động tạo profile mới</option>
+            `;
 
             // Load profiles list to select from
             try {

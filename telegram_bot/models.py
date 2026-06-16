@@ -675,6 +675,8 @@ class AccountsCreated(models.Model):
     viewed = models.PositiveSmallIntegerField(default=0, db_index=True)
     two_factor_auth = models.CharField(verbose_name=_("two_factor_auth"), blank=True, null=True, max_length=255, default='', db_index=True)
     cookies = models.TextField(verbose_name=_("cookies"), blank=True, null=True, default='')
+    subscription = models.CharField(verbose_name=_("subscription"), blank=True, null=True, max_length=255, default='', db_index=True)
+    subscription_owner = models.CharField(verbose_name=_("subscription_owner"), blank=True, null=True, max_length=255, default='', db_index=True)
     
     auto_view = models.BooleanField(verbose_name=_(
         "auto_view"), default=False, db_index=True)

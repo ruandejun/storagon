@@ -319,6 +319,8 @@ class AccountsCreatedViewSet(viewsets.ModelViewSet):
         two_factor_auth = data.get('two_factor_auth', '').strip()
         cookies = data.get('cookies', '').strip()
         note = data.get('note', '').strip()
+        subscription = data.get('subscription', '').strip()
+        subscription_owner = data.get('subscription_owner', '').strip()
 
         if not email or not password:
             return Response({'success': False, 'message': 'Email và Mật khẩu không được để trống.'}, status=400)
@@ -371,7 +373,9 @@ class AccountsCreatedViewSet(viewsets.ModelViewSet):
             browser_profiles=profile,
             two_factor_auth=two_factor_auth,
             cookies=cookies,
-            note=note
+            note=note,
+            subscription=subscription,
+            subscription_owner=subscription_owner
         )
 
         return Response({'success': True, 'message': 'Đã thêm tài khoản mới thành công!'})
@@ -436,6 +440,10 @@ class AccountsCreatedViewSet(viewsets.ModelViewSet):
             instance.cookies = data.get('cookies', '').strip()
         if 'note' in data:
             instance.note = data.get('note', '').strip()
+        if 'subscription' in data:
+            instance.subscription = data.get('subscription', '').strip()
+        if 'subscription_owner' in data:
+            instance.subscription_owner = data.get('subscription_owner', '').strip()
         if 'status' in data:
             try:
                 instance.status = int(data.get('status'))

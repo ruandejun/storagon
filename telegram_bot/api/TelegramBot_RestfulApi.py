@@ -111,6 +111,7 @@ class AccountsCreatedSerializer(serializers.ModelSerializer):
        			'phone_service','status', 'price','auto_view',
 				'viewed', 'browser_profiles', 'accounts_emails', 'username', 'signup_ip',
 				'two_factor_auth', 'cookies',
+				'subscription', 'subscription_owner',
           )
 	customer = serializers.SlugRelatedField(slug_field='username', read_only=True);
 	owner = serializers.SlugRelatedField(slug_field='username', read_only=True);

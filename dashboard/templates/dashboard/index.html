@@ -1433,10 +1433,8 @@
                             <th>Username / Email</th>
                             <th>Mật khẩu</th>
                             <th>Loại Account</th>
-                            <th>IP Đăng ký</th>
-                            <th>Phone / Service</th>
-                            <th>Socks5 / Proxy</th>
-                            <th>Profile ID</th>
+                            <th>Subscription</th>
+                            <th>Chủ sở hữu Sub</th>
                             <th>Trạng thái</th>
                             <th>Tạo bởi</th>
                             <th>2FA</th>
@@ -1999,6 +1997,7 @@
                         <label class="form-label">Loại tài khoản</label>
                         <select class="filter-select" id="addAccType" style="width: 100%;">
                             <option value="Tiktok" selected>Tiktok</option>
+                            <option value="Apple">Apple</option>
                             <option value="Amazon">Amazon</option>
                             <option value="Ebay">Ebay</option>
                             <option value="Facebook">Facebook</option>
@@ -2012,6 +2011,16 @@
                             <option value="none" selected>Không có (Mặc định)</option>
                             <option value="auto">Tự động tạo profile mới</option>
                         </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Subscription (Số lượng sub Apple)</label>
+                        <input type="text" class="form-input" id="addAccSubscription" placeholder="Số lượng sub...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Chủ sở hữu Sub</label>
+                        <input type="text" class="form-input" id="addAccSubOwner" placeholder="Chủ sở hữu...">
                     </div>
                 </div>
                 <div class="form-group">
@@ -2113,6 +2122,7 @@
                         <label class="form-label">Loại tài khoản</label>
                         <select class="filter-select" id="editAccType" style="width: 100%;">
                             <option value="Tiktok">Tiktok</option>
+                            <option value="Apple">Apple</option>
                             <option value="Amazon">Amazon</option>
                             <option value="Ebay">Ebay</option>
                             <option value="Facebook">Facebook</option>
@@ -2126,6 +2136,16 @@
                             <option value="none">Không có (Mặc định)</option>
                             <option value="auto">Tự động tạo profile mới</option>
                         </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Subscription (Số lượng sub Apple)</label>
+                        <input type="text" class="form-input" id="editAccSubscription" placeholder="Số lượng sub...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Chủ sở hữu Sub</label>
+                        <input type="text" class="form-input" id="editAccSubOwner" placeholder="Chủ sở hữu...">
                     </div>
                 </div>
                 <div class="form-row">
@@ -2180,6 +2200,86 @@
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeModal('bulkStatusModal')">Hủy</button>
                 <button class="btn btn-primary" onclick="saveBulkStatus()">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEW ACCOUNT MODAL -->
+    <div class="modal-overlay" id="viewAccountModal">
+        <div class="modal-box modal-large">
+            <div class="modal-header">
+                <h3>Chi Tiết Tài Khoản Đã Tạo</h3>
+                <button class="modal-close" onclick="closeModal('viewAccountModal')">&times;</button>
+            </div>
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px;">
+                    <div class="detail-item">
+                        <label class="form-label" style="color: var(--text-muted);">Email / Username</label>
+                        <div id="viewAccEmail" style="padding: 8px 12px; background: rgba(30, 41, 59, 0.4); border-radius: 6px; border: 1px solid var(--border-color); font-weight: 600;"></div>
+                    </div>
+                    <div class="detail-item">
+                        <label class="form-label" style="color: var(--text-muted);">Mật khẩu</label>
+                        <div id="viewAccPassword" style="padding: 8px 12px; background: rgba(30, 41, 59, 0.4); border-radius: 6px; border: 1px solid var(--border-color); font-family: monospace;"></div>
+                    </div>
+                    <div class="detail-item">
+                        <label class="form-label" style="color: var(--text-muted);">Loại tài khoản</label>
+                        <div id="viewAccType" style="padding: 8px 12px; background: rgba(30, 41, 59, 0.4); border-radius: 6px; border: 1px solid var(--border-color); font-weight: bold; color: var(--accent);"></div>
+                    </div>
+                    <div class="detail-item">
+                        <label class="form-label" style="color: var(--text-muted);">Browser Profile ID</label>
+                        <div id="viewAccProfile" style="padding: 8px 12px; background: rgba(30, 41, 59, 0.4); border-radius: 6px; border: 1px solid var(--border-color);"></div>
+                    </div>
+                    <div class="detail-item">
+                        <label class="form-label" style="color: var(--text-muted);">IP Đăng ký</label>
+                        <div id="viewAccSignupIp" style="padding: 8px 12px; background: rgba(30, 41, 59, 0.4); border-radius: 6px; border: 1px solid var(--border-color);"></div>
+                    </div>
+                    <div class="detail-item">
+                        <label class="form-label" style="color: var(--text-muted);">Phone / Service</label>
+                        <div id="viewAccPhone" style="padding: 8px 12px; background: rgba(30, 41, 59, 0.4); border-radius: 6px; border: 1px solid var(--border-color);"></div>
+                    </div>
+                    <div class="detail-item">
+                        <label class="form-label" style="color: var(--text-muted);">Socks5 / Proxy</label>
+                        <div id="viewAccProxy" style="padding: 8px 12px; background: rgba(30, 41, 59, 0.4); border-radius: 6px; border: 1px solid var(--border-color); font-family: monospace;"></div>
+                    </div>
+                    <div class="detail-item">
+                        <label class="form-label" style="color: var(--text-muted);">Trạng thái</label>
+                        <div id="viewAccStatus" style="padding: 8px 12px; background: rgba(30, 41, 59, 0.4); border-radius: 6px; border: 1px solid var(--border-color);"></div>
+                    </div>
+                    <div class="detail-item">
+                        <label class="form-label" style="color: var(--text-muted);">Tạo bởi</label>
+                        <div id="viewAccCreatedBy" style="padding: 8px 12px; background: rgba(30, 41, 59, 0.4); border-radius: 6px; border: 1px solid var(--border-color); font-weight: bold; color: var(--accent);"></div>
+                    </div>
+                    <div class="detail-item">
+                        <label class="form-label" style="color: var(--text-muted);">Ngày tạo</label>
+                        <div id="viewAccCreatedAt" style="padding: 8px 12px; background: rgba(30, 41, 59, 0.4); border-radius: 6px; border: 1px solid var(--border-color); color: var(--text-muted);"></div>
+                    </div>
+                    <div class="detail-item">
+                        <label class="form-label" style="color: var(--text-muted);">Subscription (Apple)</label>
+                        <div id="viewAccSubscription" style="padding: 8px 12px; background: rgba(30, 41, 59, 0.4); border-radius: 6px; border: 1px solid var(--border-color);"></div>
+                    </div>
+                    <div class="detail-item">
+                        <label class="form-label" style="color: var(--text-muted);">Chủ sở hữu Sub</label>
+                        <div id="viewAccSubOwner" style="padding: 8px 12px; background: rgba(30, 41, 59, 0.4); border-radius: 6px; border: 1px solid var(--border-color);"></div>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label" style="color: var(--text-muted);">2FA Secret Key / Code</label>
+                    <div id="viewAcc2FA" style="padding: 8px 12px; background: rgba(30, 41, 59, 0.4); border-radius: 6px; border: 1px solid var(--border-color); font-family: monospace; word-break: break-all;"></div>
+                </div>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label class="form-label" style="margin: 0; color: var(--text-muted);">Cookies</label>
+                        <button class="btn btn-primary" id="btnCopyViewCookies" style="padding: 2px 8px; font-size: 11px; border-radius: 4px;">Copy Cookies</button>
+                    </div>
+                    <div id="viewAccCookies" style="padding: 10px 14px; background: rgba(30, 41, 59, 0.4); border-radius: 6px; border: 1px solid var(--border-color); font-family: monospace; max-height: 120px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; font-size: 11px;"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" style="color: var(--text-muted);">Ghi chú</label>
+                    <div id="viewAccNote" style="padding: 8px 12px; background: rgba(30, 41, 59, 0.4); border-radius: 6px; border: 1px solid var(--border-color); min-height: 38px;"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('viewAccountModal')">Đóng</button>
             </div>
         </div>
     </div>
@@ -4187,7 +4287,7 @@
             body.innerHTML = '';
 
             if (accounts.length === 0) {
-                body.innerHTML = `<tr><td colspan="14" style="text-align:center; padding: 30px; color: var(--text-muted);">Không tìm thấy tài khoản nào.</td></tr>`;
+                body.innerHTML = `<tr><td colspan="12" style="text-align:center; padding: 30px; color: var(--text-muted);">Không tìm thấy tài khoản nào.</td></tr>`;
                 return;
             }
 
@@ -4219,10 +4319,8 @@
                     </td>
                     <td><code>${acc.password || ''}</code></td>
                     <td><span class="badge badge-unused">${acc.type || '-'}</span></td>
-                    <td>${acc.signup_ip || '-'}</td>
-                    <td style="font-size: 12px;">${acc.phone_number || '-'} <span style="color:var(--text-muted);">(${acc.phone_service || ''})</span></td>
-                    <td style="font-size: 12px; font-family: monospace;">${acc.socks5 || acc.proxy || '-'}</td>
-                    <td style="text-align: center; color: var(--accent); font-weight: bold;">${acc.browser_profiles || '-'}</td>
+                    <td>${acc.subscription || '-'}</td>
+                    <td>${acc.subscription_owner || '-'}</td>
                     <td style="text-align: center;"><span class="badge ${statusClass}">${statusLabel}</span></td>
                     <td style="text-align: center; font-weight: bold; color: var(--accent);">${acc.created_by || '-'}</td>
                     <td style="font-size: 11px; font-family: monospace;"><code>${acc.two_factor_auth || '-'}</code></td>
@@ -4235,6 +4333,10 @@
                         <button class="btn btn-danger" onclick="deleteSingleAccount(event, ${acc.id})" style="padding: 2px 6px; font-size: 11px;">Xóa</button>
                     </td>
                 `;
+
+                tr.addEventListener('dblclick', (ev) => {
+                    openViewAccountModal(acc.id);
+                });
 
                 tr.addEventListener('click', (ev) => {
                     if (ev.target.closest('.cell-chk') || ev.target.closest('.cell-action') || ev.target.tagName === 'INPUT' || ev.target.tagName === 'BUTTON') return;
@@ -4365,7 +4467,7 @@
             
             let rawType = acc.type || 'Tiktok';
             let formattedType = 'Other';
-            const matchedOpt = ['Tiktok', 'Amazon', 'Ebay', 'Facebook', 'X'].find(t => t.toLowerCase() === rawType.toLowerCase());
+            const matchedOpt = ['Tiktok', 'Apple', 'Amazon', 'Ebay', 'Facebook', 'X'].find(t => t.toLowerCase() === rawType.toLowerCase());
             if (matchedOpt) {
                 formattedType = matchedOpt;
             }
@@ -4375,6 +4477,8 @@
             document.getElementById('editAccCookies').value = acc.cookies || '';
             document.getElementById('editAccStatus').value = (acc.status !== undefined) ? acc.status : '0';
             document.getElementById('editAccNote').value = acc.note || '';
+            document.getElementById('editAccSubscription').value = acc.subscription || '';
+            document.getElementById('editAccSubOwner').value = acc.subscription_owner || '';
 
             const profileSelect = document.getElementById('editAccProfile');
             profileSelect.innerHTML = `
@@ -4414,6 +4518,8 @@
             const cookies = document.getElementById('editAccCookies').value.trim();
             const status = document.getElementById('editAccStatus').value;
             const note = document.getElementById('editAccNote').value.trim();
+            const subscription = document.getElementById('editAccSubscription').value.trim();
+            const subscription_owner = document.getElementById('editAccSubOwner').value.trim();
 
             if (!email || !password) {
                 alert('Email và Mật khẩu không được để trống.');
@@ -4435,7 +4541,9 @@
                         two_factor_auth: two_factor_auth,
                         cookies: cookies,
                         status: status,
-                        note: note
+                        note: note,
+                        subscription: subscription,
+                        subscription_owner: subscription_owner
                     })
                 });
 
@@ -4451,6 +4559,54 @@
                 console.error(err);
                 alert('Lỗi kết nối.');
             }
+        }
+
+        function openViewAccountModal(id) {
+            const acc = accountsData.find(a => a.id === id);
+            if (!acc) return;
+
+            document.getElementById('viewAccEmail').textContent = acc.email || acc.username || '-';
+            document.getElementById('viewAccPassword').textContent = acc.password || '-';
+            document.getElementById('viewAccType').textContent = acc.type || '-';
+            document.getElementById('viewAccProfile').textContent = acc.browser_profiles || 'Không có';
+            document.getElementById('viewAccSignupIp').textContent = acc.signup_ip || '-';
+            
+            let phoneStr = acc.phone_number || '-';
+            if (acc.phone_service) phoneStr += ` (${acc.phone_service})`;
+            document.getElementById('viewAccPhone').textContent = phoneStr;
+            
+            document.getElementById('viewAccProxy').textContent = acc.socks5 || acc.proxy || 'Không có';
+            
+            let statusLabel = 'Hoạt động (Active)';
+            if (acc.status === 1) statusLabel = 'Chưa kích hoạt (Email Not Activated)';
+            else if (acc.status === 2) statusLabel = 'Bị khóa (Banned)';
+            else if (acc.status === 3) statusLabel = 'Tạm thời (Temporary)';
+            document.getElementById('viewAccStatus').textContent = statusLabel;
+            
+            document.getElementById('viewAccCreatedBy').textContent = acc.created_by || '-';
+            document.getElementById('viewAccCreatedAt').textContent = formatDateString(acc.created);
+            document.getElementById('viewAccSubscription').textContent = acc.subscription || '-';
+            document.getElementById('viewAccSubOwner').textContent = acc.subscription_owner || '-';
+            document.getElementById('viewAcc2FA').textContent = acc.two_factor_auth || '-';
+            
+            const cookiesDiv = document.getElementById('viewAccCookies');
+            cookiesDiv.textContent = acc.cookies || 'Không có cookies';
+            
+            const btnCopy = document.getElementById('btnCopyViewCookies');
+            if (acc.cookies) {
+                btnCopy.style.display = 'inline-block';
+                btnCopy.onclick = () => {
+                    navigator.clipboard.writeText(acc.cookies)
+                        .then(() => alert('Đã copy Cookies!'))
+                        .catch(err => alert('Lỗi khi copy: ' + err));
+                };
+            } else {
+                btnCopy.style.display = 'none';
+            }
+            
+            document.getElementById('viewAccNote').textContent = acc.note || '-';
+
+            openModal('viewAccountModal');
         }
 
         function openBulkStatusModal() {
@@ -4503,6 +4659,8 @@
             document.getElementById('addAcc2FA').value = '';
             document.getElementById('addAccCookies').value = '';
             document.getElementById('addAccNote').value = '';
+            document.getElementById('addAccSubscription').value = '';
+            document.getElementById('addAccSubOwner').value = '';
             
             const profileSelect = document.getElementById('addAccProfile');
             profileSelect.innerHTML = `
@@ -4538,6 +4696,8 @@
             const two_factor_auth = document.getElementById('addAcc2FA').value.trim();
             const cookies = document.getElementById('addAccCookies').value.trim();
             const note = document.getElementById('addAccNote').value.trim();
+            const subscription = document.getElementById('addAccSubscription').value.trim();
+            const subscription_owner = document.getElementById('addAccSubOwner').value.trim();
 
             if (!email || !password) {
                 alert('Email và Mật khẩu không được để trống.');
@@ -4558,7 +4718,9 @@
                         profile_id: profile_id || null,
                         two_factor_auth: two_factor_auth,
                         cookies: cookies,
-                        note: note
+                        note: note,
+                        subscription: subscription,
+                        subscription_owner: subscription_owner
                     })
                 });
 

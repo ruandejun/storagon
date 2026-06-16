@@ -376,6 +376,99 @@ class AccountsCreatedViewSet(viewsets.ModelViewSet):
 
         return Response({'success': True, 'message': 'Đã thêm tài khoản mới thành công!'})
 
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        data = request.data
+
+        if 'email' in data:
+            instance.email = data.get('email', '').strip()
+        if 'password' in data:
+            instance.password = data.get('password', '').strip()
+        
+        if 'type' in data:
+            type_str = data.get('type', '').strip()
+            if type_str:
+                from telegram_bot.models import AccountsType
+                account_type, _ = AccountsType.objects.get_or_create(value=type_str.lower())
+                instance.type = account_type
+            else:
+                instance.type = None
+
+        if 'profile_id' in data:
+            profile_id = data.get('profile_id')
+            if profile_id == 'auto':
+                profile_name = instance.email.split('@')[0] if instance.email else 'profile'
+                profile_name = re.sub(r'[^a-zA-Z0-9]', '', profile_name)
+                profile = BrowserProfiles.objects.create(
+                    profile_owner=request.user,
+                    profile_name=profile_name,
+                    profile_os='Window',
+                    profile_browser='Chrome',
+                    profile_version='102.0.5005.63',
+                    profile_resolution='1920×1080',
+                    profile_cpu='8',
+                    profile_canvas='Noise',
+                    profile_rects='Noise',
+                    profile_font='Noise',
+                    profile_audio='Noise',
+                    profile_webgl='Noise',
+                    profile_time_zone=2, # Follow IP
+                    profile_webrtc=2,    # Follow IP
+                    profile_geo=2,       # Follow IP
+                    profile_vendor='Google Inc. (ATI Technologies Inc.)',
+                    profile_renderer='ANGLE (Intel(R) G41 Express Chipset (Microsoft Corporation - WDDM 1.1) Direct3D9Ex vs_3_0 ps_3_0)',
+                    profile_start_url='https://iphey.com'
+                )
+                instance.browser_profiles = profile
+            elif profile_id == 'none':
+                instance.browser_profiles = None
+            elif profile_id:
+                try:
+                    profile_qs = BrowserProfiles.objects.filter(pk=int(profile_id))
+                    if profile_qs.exists():
+                        instance.browser_profiles = profile_qs[0]
+                except (ValueError, TypeError):
+                    pass
+
+        if 'two_factor_auth' in data:
+            instance.two_factor_auth = data.get('two_factor_auth', '').strip()
+        if 'cookies' in data:
+            instance.cookies = data.get('cookies', '').strip()
+        if 'note' in data:
+            instance.note = data.get('note', '').strip()
+        if 'status' in data:
+            try:
+                instance.status = int(data.get('status'))
+            except (ValueError, TypeError):
+                pass
+
+        instance.save()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['post'], url_path='bulk-delete')
+    def bulk_delete(self, request):
+        ids = request.data.get('ids', [])
+        if not isinstance(ids, list):
+            return Response({'success': False, 'message': 'Danh sách ID không hợp lệ.'}, status=400)
+        deleted_count, _ = AccountsCreated.objects.filter(pk__in=ids).delete()
+        return Response({'success': True, 'message': f'Đã xóa thành công {deleted_count} tài khoản!'})
+
+    @action(detail=False, methods=['post'], url_path='bulk-status')
+    def bulk_status(self, request):
+        ids = request.data.get('ids', [])
+        status_val = request.data.get('status')
+        if not isinstance(ids, list) or status_val is None:
+            return Response({'success': False, 'message': 'Dữ liệu không hợp lệ.'}, status=400)
+        
+        try:
+            status_int = int(status_val)
+        except (ValueError, TypeError):
+            return Response({'success': False, 'message': 'Trạng thái không hợp lệ.'}, status=400)
+        
+        updated_count = AccountsCreated.objects.filter(pk__in=ids).update(status=status_int)
+        return Response({'success': True, 'message': f'Đã cập nhật trạng thái cho {updated_count} tài khoản!'})
+
 
 class UserHwidViewSet(viewsets.ModelViewSet):
     """Admin ViewSet for managing UserHwid — controls which machines can use MunLogin tool."""

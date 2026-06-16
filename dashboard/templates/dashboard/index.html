@@ -535,6 +535,8 @@
 
         .badge-success { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); }
         .badge-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); }
+        .badge-warning { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
+        .badge-info { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); }
 
         /* Inline select input */
         .inline-select {
@@ -1416,6 +1418,7 @@
                 <div class="action-buttons">
                     <button class="btn btn-secondary" onclick="loadAccounts(1)">Làm mới</button>
                     <button class="btn btn-primary" onclick="openAddAccountModal()">Thêm mới</button>
+                    <button class="btn btn-warning" id="accountBulkStatusBtn" onclick="openBulkStatusModal()" disabled>Đổi trạng thái</button>
                     <button class="btn btn-danger" id="accountDeleteBtn" onclick="deleteSelectedAccounts()" disabled>Xóa</button>
                 </div>
             </div>
@@ -1439,6 +1442,7 @@
                             <th>2FA</th>
                             <th>Cookies</th>
                             <th>Ngày tạo</th>
+                            <th style="width: 120px; text-align: center;">Hành động</th>
                         </tr>
                     </thead>
                     <tbody id="accountsTableBody">
@@ -1994,9 +1998,9 @@
                     <div class="form-group">
                         <label class="form-label">Loại tài khoản</label>
                         <select class="filter-select" id="addAccType" style="width: 100%;">
+                            <option value="Tiktok" selected>Tiktok</option>
                             <option value="Amazon">Amazon</option>
                             <option value="Ebay">Ebay</option>
-                            <option value="Tiktok">Tiktok</option>
                             <option value="Facebook">Facebook</option>
                             <option value="X">X</option>
                             <option value="Other">Khác</option>
@@ -2081,6 +2085,101 @@
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeModal('editEmailModal')">Hủy</button>
                 <button class="btn btn-primary" onclick="saveEditEmail()">Lưu thay đổi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- EDIT ACCOUNT MODAL -->
+    <div class="modal-overlay" id="editAccountModal">
+        <div class="modal-box modal-large">
+            <div class="modal-header">
+                <h3>Chỉnh Sửa Tài Khoản Đã Tạo</h3>
+                <button class="modal-close" onclick="closeModal('editAccountModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editAccId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Email / Username</label>
+                        <input type="text" class="form-input" id="editAccEmail" placeholder="example@domain.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Mật khẩu</label>
+                        <input type="text" class="form-input" id="editAccPassword">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Loại tài khoản</label>
+                        <select class="filter-select" id="editAccType" style="width: 100%;">
+                            <option value="Tiktok">Tiktok</option>
+                            <option value="Amazon">Amazon</option>
+                            <option value="Ebay">Ebay</option>
+                            <option value="Facebook">Facebook</option>
+                            <option value="X">X</option>
+                            <option value="Other">Khác</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Browser Profile</label>
+                        <select class="filter-select" id="editAccProfile" style="width: 100%;">
+                            <option value="none">Không có (Mặc định)</option>
+                            <option value="auto">Tự động tạo profile mới</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">2FA Secret Key / Code</label>
+                        <input type="text" class="form-input" id="editAcc2FA" placeholder="Dán mã bảo mật 2FA vào đây...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Trạng thái</label>
+                        <select class="filter-select" id="editAccStatus" style="width: 100%;">
+                            <option value="0">Hoạt động (Active)</option>
+                            <option value="1">Chưa kích hoạt (Email Not Activated)</option>
+                            <option value="2">Bị khóa (Banned)</option>
+                            <option value="3">Tạm thời (Temporary)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Cookies (JSON hoặc Netscape)</label>
+                    <textarea class="form-textarea" id="editAccCookies" placeholder="Dán cookie tài khoản vào đây..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Ghi chú</label>
+                    <input type="text" class="form-input" id="editAccNote" placeholder="Ghi chú thêm...">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('editAccountModal')">Hủy</button>
+                <button class="btn btn-primary" onclick="saveEditAccount()">Lưu thay đổi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BULK STATUS MODAL -->
+    <div class="modal-overlay" id="bulkStatusModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Đổi Trạng Thái Số Lượng Lớn</h3>
+                <button class="modal-close" onclick="closeModal('bulkStatusModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Chọn trạng thái mới</label>
+                    <select class="filter-select" id="bulkAccStatus" style="width: 100%;">
+                        <option value="0">Hoạt động (Active)</option>
+                        <option value="1">Chưa kích hoạt (Email Not Activated)</option>
+                        <option value="2">Bị khóa (Banned)</option>
+                        <option value="3">Tạm thời (Temporary)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('bulkStatusModal')">Hủy</button>
+                <button class="btn btn-primary" onclick="saveBulkStatus()">Xác nhận</button>
             </div>
         </div>
     </div>
@@ -4088,7 +4187,7 @@
             body.innerHTML = '';
 
             if (accounts.length === 0) {
-                body.innerHTML = `<tr><td colspan="10" style="text-align:center; padding: 30px; color: var(--text-muted);">Không tìm thấy tài khoản nào.</td></tr>`;
+                body.innerHTML = `<tr><td colspan="14" style="text-align:center; padding: 30px; color: var(--text-muted);">Không tìm thấy tài khoản nào.</td></tr>`;
                 return;
             }
 
@@ -4096,6 +4195,19 @@
                 const tr = document.createElement('tr');
                 tr.setAttribute('data-id', acc.id);
                 tr.id = `account-row-${acc.id}`;
+
+                let statusLabel = 'Hoạt động';
+                let statusClass = 'badge-success';
+                if (acc.status === 1) {
+                    statusLabel = 'Chưa kích hoạt';
+                    statusClass = 'badge-warning';
+                } else if (acc.status === 2) {
+                    statusLabel = 'Bị khóa';
+                    statusClass = 'badge-danger';
+                } else if (acc.status === 3) {
+                    statusLabel = 'Tạm thời';
+                    statusClass = 'badge-info';
+                }
 
                 tr.innerHTML = `
                     <td style="text-align: center;" class="cell-chk">
@@ -4111,17 +4223,21 @@
                     <td style="font-size: 12px;">${acc.phone_number || '-'} <span style="color:var(--text-muted);">(${acc.phone_service || ''})</span></td>
                     <td style="font-size: 12px; font-family: monospace;">${acc.socks5 || acc.proxy || '-'}</td>
                     <td style="text-align: center; color: var(--accent); font-weight: bold;">${acc.browser_profiles || '-'}</td>
-                    <td style="text-align: center;"><span class="badge badge-success">${acc.status || 'Active'}</span></td>
+                    <td style="text-align: center;"><span class="badge ${statusClass}">${statusLabel}</span></td>
                     <td style="text-align: center; font-weight: bold; color: var(--accent);">${acc.created_by || '-'}</td>
                     <td style="font-size: 11px; font-family: monospace;"><code>${acc.two_factor_auth || '-'}</code></td>
                     <td style="text-align: center;">
                         ${acc.cookies ? `<button class="btn btn-primary" style="padding: 4px 8px; font-size: 10px; border-radius: 4px; border: none; cursor: pointer; background: var(--accent); color: white;" onclick="navigator.clipboard.writeText(decodeURIComponent('${encodeURIComponent(acc.cookies)}')).then(()=>alert('Đã copy Cookies!'))">Copy</button>` : '-'}
                     </td>
                     <td style="text-align: center; color: var(--text-muted); font-size:12px;">${formatDateString(acc.created)}</td>
+                    <td style="text-align: center;" class="cell-action">
+                        <button class="btn btn-primary" onclick="openEditAccountModal(event, ${acc.id})" style="padding: 2px 6px; font-size: 11px; margin-right: 4px;">Sửa</button>
+                        <button class="btn btn-danger" onclick="deleteSingleAccount(event, ${acc.id})" style="padding: 2px 6px; font-size: 11px;">Xóa</button>
+                    </td>
                 `;
 
                 tr.addEventListener('click', (ev) => {
-                    if (ev.target.closest('.cell-chk') || ev.target.tagName === 'INPUT') return;
+                    if (ev.target.closest('.cell-chk') || ev.target.closest('.cell-action') || ev.target.tagName === 'INPUT' || ev.target.tagName === 'BUTTON') return;
                     selectAccountRowExclusively(acc.id);
                 });
 
@@ -4173,7 +4289,9 @@
         }
 
         function updateAccountActionButtons() {
-            document.getElementById('accountDeleteBtn').disabled = selectedAccounts.length === 0;
+            const hasSelection = selectedAccounts.length > 0;
+            document.getElementById('accountDeleteBtn').disabled = !hasSelection;
+            document.getElementById('accountBulkStatusBtn').disabled = !hasSelection;
         }
 
         function changeAccountsPage(offset) {
@@ -4182,20 +4300,198 @@
 
         async function deleteSelectedAccounts() {
             if (selectedAccounts.length === 0) return;
-            if (!confirm(`Bạn có thực sự muốn xóa ${selectedAccounts.length} tài khoản đã tạo đã chọn khỏi hệ thống?`)) return;
+            if (!confirm(`Bạn có thực sự muốn xóa ${selectedAccounts.length} tài khoản đã chọn khỏi hệ thống?`)) return;
 
             try {
-                const deletePromises = selectedAccounts.map(id => {
-                    return fetch(`/dashboard/api/accounts/${id}/`, {
-                        method: 'DELETE',
-                        headers: { 'X-CSRFToken': csrftoken }
-                    });
+                const response = await fetch('/dashboard/api/accounts/bulk-delete/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({
+                        ids: selectedAccounts
+                    })
                 });
-                await Promise.all(deletePromises);
-                alert('Đã xóa tài khoản thành công!');
-                loadAccounts(1);
+
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    alert(data.message || 'Đã xóa tài khoản thành công!');
+                    selectedAccounts = [];
+                    document.getElementById('selectAllAccounts').checked = false;
+                    updateAccountActionButtons();
+                    loadAccounts(1);
+                } else {
+                    alert('Lỗi: ' + (data.message || 'Không thể xóa tài khoản.'));
+                }
             } catch (err) {
-                alert('Lỗi khi xóa tài khoản.');
+                console.error(err);
+                alert('Lỗi khi kết nối đến hệ thống.');
+            }
+        }
+
+        async function deleteSingleAccount(event, id) {
+            if (event) event.stopPropagation();
+            if (!confirm('Bạn có thực sự muốn xóa tài khoản này khỏi hệ thống?')) return;
+
+            try {
+                const response = await fetch(`/dashboard/api/accounts/${id}/`, {
+                    method: 'DELETE',
+                    headers: { 'X-CSRFToken': csrftoken }
+                });
+
+                if (response.ok) {
+                    alert('Đã xóa tài khoản thành công!');
+                    selectedAccounts = selectedAccounts.filter(x => x !== id);
+                    updateAccountActionButtons();
+                    loadAccounts(1);
+                } else {
+                    alert('Lỗi khi xóa tài khoản.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Lỗi kết nối.');
+            }
+        }
+
+        async function openEditAccountModal(event, id) {
+            if (event) event.stopPropagation();
+            const acc = accountsData.find(a => a.id === id);
+            if (!acc) return;
+
+            document.getElementById('editAccId').value = acc.id;
+            document.getElementById('editAccEmail').value = acc.email || acc.username || '';
+            document.getElementById('editAccPassword').value = acc.password || '';
+            
+            let rawType = acc.type || 'Tiktok';
+            let formattedType = 'Other';
+            const matchedOpt = ['Tiktok', 'Amazon', 'Ebay', 'Facebook', 'X'].find(t => t.toLowerCase() === rawType.toLowerCase());
+            if (matchedOpt) {
+                formattedType = matchedOpt;
+            }
+            document.getElementById('editAccType').value = formattedType;
+            
+            document.getElementById('editAcc2FA').value = acc.two_factor_auth || '';
+            document.getElementById('editAccCookies').value = acc.cookies || '';
+            document.getElementById('editAccStatus').value = (acc.status !== undefined) ? acc.status : '0';
+            document.getElementById('editAccNote').value = acc.note || '';
+
+            const profileSelect = document.getElementById('editAccProfile');
+            profileSelect.innerHTML = `
+                <option value="none">Không có (Mặc định)</option>
+                <option value="auto">Tự động tạo profile mới</option>
+            `;
+
+            try {
+                const response = await fetch('/dashboard/api/profiles/?page_size=100');
+                if (response.ok) {
+                    const data = await response.json();
+                    const profiles = data.results || data;
+                    profiles.forEach(p => {
+                        const opt = document.createElement('option');
+                        opt.value = p.id;
+                        opt.textContent = `${p.profile_name} (${p.profile_os || 'No OS'})`;
+                        if (acc.browser_profiles === p.id) {
+                            opt.selected = true;
+                        }
+                        profileSelect.appendChild(opt);
+                    });
+                }
+            } catch (err) {
+                console.error("Lỗi khi load profiles list cho edit account modal:", err);
+            }
+
+            openModal('editAccountModal');
+        }
+
+        async function saveEditAccount() {
+            const id = document.getElementById('editAccId').value;
+            const email = document.getElementById('editAccEmail').value.trim();
+            const password = document.getElementById('editAccPassword').value.trim();
+            const type = document.getElementById('editAccType').value;
+            const profile_id = document.getElementById('editAccProfile').value;
+            const two_factor_auth = document.getElementById('editAcc2FA').value.trim();
+            const cookies = document.getElementById('editAccCookies').value.trim();
+            const status = document.getElementById('editAccStatus').value;
+            const note = document.getElementById('editAccNote').value.trim();
+
+            if (!email || !password) {
+                alert('Email và Mật khẩu không được để trống.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/dashboard/api/accounts/${id}/`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password,
+                        type: type,
+                        profile_id: profile_id,
+                        two_factor_auth: two_factor_auth,
+                        cookies: cookies,
+                        status: status,
+                        note: note
+                    })
+                });
+
+                if (response.ok) {
+                    alert('Cập nhật tài khoản thành công!');
+                    closeModal('editAccountModal');
+                    loadAccounts(1);
+                } else {
+                    const err = await response.json();
+                    alert('Lỗi: ' + (err.message || 'Không thể lưu thay đổi.'));
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Lỗi kết nối.');
+            }
+        }
+
+        function openBulkStatusModal() {
+            if (selectedAccounts.length === 0) return;
+            openModal('bulkStatusModal');
+        }
+
+        async function saveBulkStatus() {
+            const status = document.getElementById('bulkAccStatus').value;
+            if (selectedAccounts.length === 0) return;
+
+            try {
+                const response = await fetch('/dashboard/api/accounts/bulk-status/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({
+                        ids: selectedAccounts,
+                        status: status
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    alert(data.message || 'Đã cập nhật trạng thái thành công!');
+                    closeModal('bulkStatusModal');
+                    selectedAccounts = [];
+                    document.getElementById('selectAllAccounts').checked = false;
+                    const chks = document.querySelectorAll('.account-row-chk');
+                    chks.forEach(chk => chk.checked = false);
+                    document.querySelectorAll('#accountsTableBody tr').forEach(tr => tr.classList.remove('row-selected'));
+                    updateAccountActionButtons();
+                    loadAccounts(1);
+                } else {
+                    alert('Lỗi: ' + (data.message || 'Không thể cập nhật trạng thái.'));
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Lỗi kết nối hoặc hệ thống.');
             }
         }
 
@@ -4203,7 +4499,7 @@
             // Reset modal inputs
             document.getElementById('addAccEmail').value = '';
             document.getElementById('addAccPassword').value = '';
-            document.getElementById('addAccType').value = 'Amazon';
+            document.getElementById('addAccType').value = 'Tiktok';
             document.getElementById('addAcc2FA').value = '';
             document.getElementById('addAccCookies').value = '';
             document.getElementById('addAccNote').value = '';

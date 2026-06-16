@@ -370,6 +370,12 @@ def add_accounts_created(request):
       accounts_data.phone_number = accounts_playload['phone_number']
     if 'signup_ip' in accounts_playload:
       accounts_data.signup_ip = str(accounts_playload['signup_ip'])
+    if 'two_factor_auth' in accounts_playload:
+      accounts_data.two_factor_auth = accounts_playload['two_factor_auth']
+    if 'cookies' in accounts_playload:
+      accounts_data.cookies = accounts_playload['cookies']
+    if 'username' in accounts_playload:
+      accounts_data.username = accounts_playload['username']
     accounts_data.save()
     accounts_data.refresh_from_db()
     data_serializer = AccountsCreatedSerializer(accounts_data, many=False)

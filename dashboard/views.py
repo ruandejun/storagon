@@ -488,128 +488,281 @@ class AccountsEmailsViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'], url_path='bulk-read-mailbox')
     def bulk_read_mailbox(self, request):
-        ids = request.data.get('ids', [])
-        if not isinstance(ids, list) or not ids:
-            return Response({'success': False, 'message': 'Danh sách email ID không hợp lệ.'}, status=400)
+        accounts = request.data.get('accounts', [])
+        if not isinstance(accounts, list) or not accounts:
+            return Response({'success': False, 'message': 'Danh sách tài khoản email không hợp lệ.'}, status=400)
 
-        # Load MS Graph API configs
-        client_id = get_config('microsoft_graph_client_id', '').strip()
-        client_secret = get_config('microsoft_graph_client_secret', '').strip()
-        tenant_id = get_config('microsoft_graph_tenant_id', 'common').strip()
-        flow = get_config('microsoft_graph_flow', 'ropc').strip()
-
-        emails = AccountsEmails.objects.filter(pk__in=ids)
-        if not emails.exists():
-            return Response({'success': False, 'message': 'Không tìm thấy email nào phù hợp.'}, status=404)
+        # Config fallback values
+        config_client_id = get_config('microsoft_graph_client_id', '').strip()
+        config_client_secret = get_config('microsoft_graph_client_secret', '').strip()
+        config_tenant_id = get_config('microsoft_graph_tenant_id', 'common').strip()
+        config_flow = get_config('microsoft_graph_flow', 'ropc').strip()
 
         import requests
         results = {}
         
-        # Fetch token if using Client Credentials Flow
+        # Pre-fetch app token for Client Credentials Flow
         app_token = None
         app_token_err = None
-        if flow == 'client_credentials':
-            if not client_id or not client_secret:
-                app_token_err = "Thiếu Client ID hoặc Client Secret trong cấu hình Client Credentials."
-            else:
-                try:
-                    token_url = f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token"
-                    res = requests.post(token_url, data={
-                        'grant_type': 'client_credentials',
-                        'client_id': client_id,
-                        'client_secret': client_secret,
-                        'scope': 'https://graph.microsoft.com/.default'
-                    }, timeout=10)
-                    if res.status_code == 200:
-                        app_token = res.json().get('access_token')
-                    else:
-                        app_token_err = f"Lỗi lấy Token từ Azure: {res.text}"
-                except Exception as e:
-                    app_token_err = f"Lỗi kết nối Azure Token Endpoint: {str(e)}"
 
-        for email_obj in emails:
-            email_addr = email_obj.email
-            password = email_obj.password
+        for acc in accounts:
+            email_addr = acc.get('email', '').strip()
+            password = acc.get('password', '').strip()
+            refresh_token = acc.get('refresh_token', '').strip()
+            client_id = acc.get('client_id', '').strip()
             
             if not email_addr:
-                results[email_obj.id] = {'success': False, 'message': 'Địa chỉ email trống.'}
                 continue
+                
+            # Check or create in database
+            email_obj = AccountsEmails.objects.filter(email=email_addr).first()
+            if not email_obj:
+                email_obj = AccountsEmails.objects.create(
+                    email=email_addr,
+                    password=password,
+                    refresh_token=refresh_token,
+                    client_id=client_id,
+                    owner=request.user,
+                    created_by=request.user
+                )
+            else:
+                # Update info if provided in request to keep it in sync
+                updated = False
+                if password and email_obj.password != password:
+                    email_obj.password = password
+                    updated = True
+                if refresh_token and email_obj.refresh_token != refresh_token:
+                    email_obj.refresh_token = refresh_token
+                    updated = True
+                if client_id and email_obj.client_id != client_id:
+                    email_obj.client_id = client_id
+                    updated = True
+                if updated:
+                    email_obj.save()
 
-            # Check if it's hotmail/outlook
+            # Now perform Graph API request
             email_lower = email_addr.lower()
             is_microsoft = any(dom in email_lower for dom in ['@hotmail.', '@live.', '@outlook.', '@msn.'])
             if not is_microsoft:
-                results[email_obj.id] = {'success': False, 'message': 'Không hỗ trợ tài khoản ngoài Hotmail/Outlook qua Graph API.'}
+                # Fallback to standard IMAP
+                import imaplib
+                import email as py_email
+                from email.header import decode_header
+                import re
+
+                def get_imap_host(addr):
+                    addr = addr.lower()
+                    if '@gmail.' in addr:
+                        return 'imap.gmail.com'
+                    return 'outlook.office365.com'
+
+                try:
+                    server_host = get_imap_host(email_addr)
+                    mail = imaplib.IMAP4_SSL(server_host, timeout=10)
+                    mail.login(email_addr, password)
+                    mail.select("inbox")
+                    status, messages = mail.search(None, "ALL")
+                    if status != "OK":
+                        results[email_addr] = {'success': True, 'emails': []}
+                        continue
+                    mail_ids = messages[0].split()
+                    latest_ids = mail_ids[-10:]
+                    latest_ids.reverse()
+                    
+                    parsed_emails = []
+                    for mail_id in latest_ids:
+                        res_status, msg_data = mail.fetch(mail_id, "(RFC822)")
+                        if res_status != "OK":
+                            continue
+                        for response_part in msg_data:
+                            if isinstance(response_part, tuple):
+                                msg = py_email.message_from_bytes(response_part[1])
+                                # decode subject
+                                subj_header = msg["Subject"] or ""
+                                subject = ""
+                                try:
+                                    decoded = decode_header(subj_header)
+                                    for part, enc in decoded:
+                                        if isinstance(part, bytes):
+                                            subject += part.decode(enc or "utf-8", errors="ignore")
+                                        else:
+                                            subject += part
+                                except Exception:
+                                    subject = str(subj_header)
+                                # decode from
+                                from_header = msg["From"] or ""
+                                from_sender = ""
+                                try:
+                                    decoded = decode_header(from_header)
+                                    for part, enc in decoded:
+                                        if isinstance(part, bytes):
+                                            from_sender += part.decode(enc or "utf-8", errors="ignore")
+                                        else:
+                                            from_sender += part
+                                except Exception:
+                                    from_sender = str(from_header)
+                                date_str = msg["Date"] or ""
+                                body = ""
+                                if msg.is_multipart():
+                                    for part in msg.walk():
+                                        content_type = part.get_content_type()
+                                        content_disposition = str(part.get("Content-Disposition"))
+                                        if content_type == "text/plain" and "attachment" not in content_disposition:
+                                            body = part.get_payload(decode=True).decode(part.get_content_charset() or "utf-8", errors="ignore")
+                                            break
+                                        elif content_type == "text/html" and "attachment" not in content_disposition:
+                                            body = part.get_payload(decode=True).decode(part.get_content_charset() or "utf-8", errors="ignore")
+                                else:
+                                    body = msg.get_payload(decode=True).decode(msg.get_content_charset() or "utf-8", errors="ignore")
+                                
+                                clean_body = body.strip()
+                                if "<html" in clean_body.lower() or "<body" in clean_body.lower() or "<div" in clean_body.lower():
+                                    clean_body = re.sub('<[^<]+?>', '', clean_body)
+                                    clean_body = clean_body.replace('&nbsp;', ' ').replace('&lt;', '<').replace('&gt;', '>')
+                                clean_body = re.sub(r'\s+', ' ', clean_body).strip()
+                                snippet = clean_body[:200] + ("..." if len(clean_body) > 200 else "")
+                                parsed_emails.append({
+                                    'from': from_sender,
+                                    'subject': subject,
+                                    'date': date_str,
+                                    'snippet': snippet,
+                                    'body': body
+                                })
+                    try:
+                        mail.close()
+                        mail.logout()
+                    except Exception:
+                        pass
+                    results[email_addr] = {'success': True, 'emails': parsed_emails}
+                except Exception as e:
+                    results[email_addr] = {'success': False, 'message': f'Lỗi IMAP: {str(e)}'}
                 continue
 
-            if flow == 'client_credentials':
-                if app_token_err:
-                    results[email_obj.id] = {'success': False, 'message': app_token_err}
-                    continue
-                if not app_token:
-                    results[email_obj.id] = {'success': False, 'message': 'Không lấy được Access Token cho ứng dụng Azure.'}
-                    continue
-                
+            # Microsoft Accounts OAuth2 or Graph API
+            target_refresh_token = refresh_token or email_obj.refresh_token
+            target_client_id = client_id or email_obj.client_id or config_client_id or "9e5f94bc-e8a4-4e73-b8be-63364c29d753"
+
+            if target_refresh_token:
+                # OAuth2 Refresh Token Flow
                 try:
-                    msg_url = f"https://graph.microsoft.com/v1.0/users/{email_addr}/messages?$top=15"
-                    msg_res = requests.get(msg_url, headers={
-                        'Authorization': f'Bearer {app_token}',
-                        'Accept': 'application/json'
+                    token_url = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
+                    res = requests.post(token_url, data={
+                        'grant_type': 'refresh_token',
+                        'client_id': target_client_id,
+                        'refresh_token': target_refresh_token
                     }, timeout=10)
                     
-                    if msg_res.status_code == 200:
-                        emails_list = msg_res.json().get('value', [])
-                        parsed_emails = [parse_graph_message(m) for m in emails_list]
-                        results[email_obj.id] = {'success': True, 'emails': parsed_emails}
-                    else:
-                        results[email_obj.id] = {'success': False, 'message': f'Lỗi Graph API: {msg_res.text}'}
-                except Exception as e:
-                    results[email_obj.id] = {'success': False, 'message': f'Lỗi kết nối Graph API: {str(e)}'}
-
-            else:  # ROPC Flow
-                if not client_id:
-                    results[email_obj.id] = {'success': False, 'message': 'Chưa cấu hình Client ID cho luồng ROPC.'}
-                    continue
-                if not password:
-                    results[email_obj.id] = {'success': False, 'message': 'Mật khẩu email trống.'}
-                    continue
-
-                try:
-                    token_url = f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token"
-                    payload = {
-                        'grant_type': 'password',
-                        'client_id': client_id,
-                        'username': email_addr,
-                        'password': password,
-                        'scope': 'https://graph.microsoft.com/Mail.Read'
-                    }
-                    if client_secret:
-                        payload['client_secret'] = client_secret
-                        
-                    res = requests.post(token_url, data=payload, timeout=10)
                     if res.status_code == 200:
-                        user_token = res.json().get('access_token')
+                        res_json = res.json()
+                        access_token = res_json.get('access_token')
+                        new_refresh_token = res_json.get('refresh_token')
                         
+                        # Save the rotated refresh token
+                        if new_refresh_token and new_refresh_token != email_obj.refresh_token:
+                            email_obj.refresh_token = new_refresh_token
+                            email_obj.save()
+                            
+                        # Fetch messages
                         msg_url = "https://graph.microsoft.com/v1.0/me/messages?$top=15"
                         msg_res = requests.get(msg_url, headers={
-                            'Authorization': f'Bearer {user_token}',
+                            'Authorization': f'Bearer {access_token}',
                             'Accept': 'application/json'
                         }, timeout=10)
                         
                         if msg_res.status_code == 200:
                             emails_list = msg_res.json().get('value', [])
                             parsed_emails = [parse_graph_message(m) for m in emails_list]
-                            results[email_obj.id] = {'success': True, 'emails': parsed_emails}
+                            results[email_addr] = {'success': True, 'emails': parsed_emails}
                         else:
-                            results[email_obj.id] = {'success': False, 'message': f'Lỗi Graph API: {msg_res.text}'}
+                            results[email_addr] = {'success': False, 'message': f'Lỗi Graph API: {msg_res.text}'}
                     else:
                         try:
                             err_msg = res.json().get("error_description", res.text)
                         except Exception:
                             err_msg = res.text
-                        results[email_obj.id] = {'success': False, 'message': f'Lỗi OAuth ROPC: {err_msg}'}
+                        results[email_addr] = {'success': False, 'message': f'Lỗi OAuth Refresh: {err_msg}'}
                 except Exception as e:
-                    results[email_obj.id] = {'success': False, 'message': f'Lỗi kết nối OAuth/Graph API: {str(e)}'}
+                    results[email_addr] = {'success': False, 'message': f'Lỗi kết nối OAuth Refresh: {str(e)}'}
+
+            else:
+                # ROPC or Client Credentials
+                if config_flow == 'client_credentials':
+                    if not config_client_id or not config_client_secret:
+                        results[email_addr] = {'success': False, 'message': 'Thiếu Client ID/Secret trong cấu hình App-only.'}
+                        continue
+                    try:
+                        if not app_token:
+                            token_url = f"https://login.microsoftonline.com/{config_tenant_id}/oauth2/v2.0/token"
+                            res = requests.post(token_url, data={
+                                'grant_type': 'client_credentials',
+                                'client_id': config_client_id,
+                                'client_secret': config_client_secret,
+                                'scope': 'https://graph.microsoft.com/.default'
+                            }, timeout=10)
+                            if res.status_code == 200:
+                                app_token = res.json().get('access_token')
+                            else:
+                                app_token_err = f"Lỗi lấy App Token: {res.text}"
+                                
+                        if app_token_err:
+                            results[email_addr] = {'success': False, 'message': app_token_err}
+                            continue
+                            
+                        msg_url = f"https://graph.microsoft.com/v1.0/users/{email_addr}/messages?$top=15"
+                        msg_res = requests.get(msg_url, headers={
+                            'Authorization': f'Bearer {app_token}',
+                            'Accept': 'application/json'
+                        }, timeout=10)
+                        
+                        if msg_res.status_code == 200:
+                            emails_list = msg_res.json().get('value', [])
+                            parsed_emails = [parse_graph_message(m) for m in emails_list]
+                            results[email_addr] = {'success': True, 'emails': parsed_emails}
+                        else:
+                            results[email_addr] = {'success': False, 'message': f'Lỗi Graph API: {msg_res.text}'}
+                    except Exception as e:
+                        results[email_addr] = {'success': False, 'message': f'Lỗi kết nối Graph API (App): {str(e)}'}
+
+                else:
+                    if not target_client_id:
+                        results[email_addr] = {'success': False, 'message': 'Thiếu Client ID cho ROPC.'}
+                        continue
+                    if not password:
+                        results[email_addr] = {'success': False, 'message': 'Mật khẩu email trống.'}
+                        continue
+                    try:
+                        token_url = f"https://login.microsoftonline.com/{config_tenant_id}/oauth2/v2.0/token"
+                        payload = {
+                            'grant_type': 'password',
+                            'client_id': target_client_id,
+                            'username': email_addr,
+                            'password': password,
+                            'scope': 'https://graph.microsoft.com/Mail.Read'
+                        }
+                        if config_client_secret:
+                            payload['client_secret'] = config_client_secret
+                        res = requests.post(token_url, data=payload, timeout=10)
+                        if res.status_code == 200:
+                            user_token = res.json().get('access_token')
+                            msg_url = "https://graph.microsoft.com/v1.0/me/messages?$top=15"
+                            msg_res = requests.get(msg_url, headers={
+                                'Authorization': f'Bearer {user_token}',
+                                'Accept': 'application/json'
+                            }, timeout=10)
+                            if msg_res.status_code == 200:
+                                emails_list = msg_res.json().get('value', [])
+                                parsed_emails = [parse_graph_message(m) for m in emails_list]
+                                results[email_addr] = {'success': True, 'emails': parsed_emails}
+                            else:
+                                results[email_addr] = {'success': False, 'message': f'Lỗi Graph API: {msg_res.text}'}
+                        else:
+                            try:
+                                err_msg = res.json().get("error_description", res.text)
+                            except Exception:
+                                err_msg = res.text
+                            results[email_addr] = {'success': False, 'message': f'Lỗi ROPC: {err_msg}'}
+                    except Exception as e:
+                        results[email_addr] = {'success': False, 'message': f'Lỗi kết nối ROPC: {str(e)}'}
 
         return Response({'success': True, 'results': results})
 

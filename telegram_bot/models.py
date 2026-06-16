@@ -592,6 +592,9 @@ class AccountsEmails(models.Model):
     
     used = models.PositiveSmallIntegerField(default=0, db_index=True)
     
+    refresh_token = models.TextField(blank=True, null=True)
+    client_id = models.CharField(blank=True, null=True, max_length=255)
+    
     def save(self, *args, **kwargs):
         user = get_current_user()
         if user:

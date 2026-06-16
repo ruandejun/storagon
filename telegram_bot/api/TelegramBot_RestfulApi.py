@@ -94,7 +94,7 @@ class AccountsEmailsSerializer(serializers.ModelSerializer):
 				'socks5','state',
     			'state_ip','phone_number',
        			'phone_service','status', 'price',
-				'used',
+				'used', 'refresh_token', 'client_id',
           )
 	customer = serializers.SlugRelatedField(slug_field='username', read_only=True);
 	owner = serializers.SlugRelatedField(slug_field='username', read_only=True);

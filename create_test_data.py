@@ -11,7 +11,7 @@ from django.utils import timezone
 from datetime import timedelta
 
 def create_or_update_user(username, email, password, is_staff=False, is_superuser=False, full_name="", account_type=0, account_status=0, storage_space=10737418240, plan_id=0):
-    user, created = User.objects.get_or_create(username=username)
+    user, created = User.objects.get_or_create(username=username, defaults={'email': email})
     user.email = email
     user.is_staff = is_staff
     user.is_superuser = is_superuser
@@ -50,7 +50,7 @@ def create_card_if_not_exists(card_number, expiry_date, cvv, status, extra_info)
 print("--- Creating/Updating Test Users ---")
 # Admin User
 create_or_update_user(
-    username="admin", 
+    username="Admin", 
     email="admin@storagon.com", 
     password="admin", 
     is_staff=True, 

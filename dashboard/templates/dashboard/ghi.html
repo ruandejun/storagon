@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghi Chú Trực Tuyến - {{ note.note_id }} 📝</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Default Dark Mode */
+            --bg-color: #0b0f19;
+            --container-bg: rgba(17, 24, 39, 0.45);
+            --border-color: rgba(255, 255, 255, 0.06);
+            --text-color: #e2e8f0;
+            --text-muted: #64748b;
+            --primary-glow: #6366f1;
+            --accent-glow: #00f2fe;
+            --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            
+            --editor-bg: transparent;
+            --toolbar-bg: rgba(17, 24, 39, 0.6);
+            --modal-bg: rgba(15, 23, 42, 0.95);
+            --btn-hover: rgba(255, 255, 255, 0.08);
+            --toast-bg: rgba(99, 102, 241, 0.9);
+        }
+
+        /* Light Mode Overrides */
+        [data-theme="light"] {
+            --bg-color: #f8fafc;
+            --container-bg: rgba(255, 255, 255, 0.85);
+            --border-color: rgba(0, 0, 0, 0.06);
+            --text-color: #0f172a;
+            --text-muted: #94a3b8;
+            --primary-glow: #4f46e5;
+            --accent-glow: #0ea5e9;
+            --card-shadow: 0 8px 32px 0 rgba(148, 163, 184, 0.2);
+            
+            --editor-bg: transparent;
+            --toolbar-bg: rgba(255, 255, 255, 0.9);
+            --modal-bg: rgba(255, 255, 255, 0.98);
+            --btn-hover: rgba(0, 0, 0, 0.05);
+            --toast-bg: rgba(79, 70, 229, 0.95);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Background blur glows for premium dark styling */
+        .glowing-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(130px);
+            z-index: 1;
+            opacity: 0.18;
+            pointer-events: none;
+            transition: all 0.5s ease;
+        }
+
+        .orb-1 {
+            width: 500px;
+            height: 500px;
+            background: var(--primary-glow);
+            top: -200px;
+            left: -100px;
+        }
+
+        .orb-2 {
+            width: 400px;
+            height: 400px;
+            background: var(--accent-glow);
+            bottom: -100px;
+            right: -100px;
+        }
+
+        /* TOP NAVIGATION TOOLBAR */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 24px;
+            background: var(--toolbar-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 10;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-title {
+            font-weight: 700;
+            font-size: 20px;
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, var(--accent-glow), var(--primary-glow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            text-decoration: none;
+        }
+
+        .note-badge {
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--primary-glow);
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            letter-spacing: 0.5px;
+        }
+
+        .status-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #64748b;
+            display: inline-block;
+            transition: background-color 0.3s ease;
+        }
+
+        .status-dot.saving {
+            background-color: #eab308;
+            animation: pulse-dot 1.2s infinite ease-in-out;
+        }
+
+        .status-dot.saved {
+            background-color: #10b981;
+        }
+
+        .status-dot.offline {
+            background-color: #ef4444;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.6; }
+        }
+
+        .actions-section {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-tool {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-tool:hover {
+            background: var(--btn-hover);
+            border-color: rgba(99, 102, 241, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .btn-tool:active {
+            transform: translateY(0);
+        }
+
+        .btn-tool.active {
+            background: rgba(99, 102, 241, 0.12);
+            border-color: var(--primary-glow);
+            color: var(--primary-glow);
+        }
+
+        /* EDITOR WRAPPER */
+        .editor-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            padding: 24px;
+            z-index: 5;
+        }
+
+        .editor-card {
+            flex: 1;
+            background: var(--container-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+        }
+
+        .editor-textarea {
+            flex: 1;
+            background: var(--editor-bg);
+            border: none;
+            outline: none;
+            resize: none;
+            padding: 24px;
+            color: var(--text-color);
+            font-size: 16px;
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+
+        /* Editor Font Families */
+        .editor-textarea.font-sans {
+            font-family: 'Outfit', sans-serif;
+        }
+        .editor-textarea.font-mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 15px;
+        }
+
+        /* BOTTOM METRICS STATUS BAR */
+        .metrics-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 24px;
+            background: rgba(0, 0, 0, 0.15);
+            border-top: 1px solid var(--border-color);
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .metrics-left {
+            display: flex;
+            gap: 16px;
+        }
+
+        /* MODAL OVERLAYS */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            animation: fade-in 0.25s ease-out;
+        }
+
+        @keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-box {
+            background: var(--modal-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            padding: 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            position: relative;
+            animation: pop-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes pop-up {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .modal-body {
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .form-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: var(--text-color);
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary-glow);
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .btn {
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary {
+            background: var(--btn-hover);
+            color: var(--text-color);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.12);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-danger {
+            background: #e11d48;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #be123c;
+        }
+
+        /* TOAST NOTIFICATION */
+        .toast {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--toast-bg);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="glowing-orb orb-1"></div>
+    <div class="glowing-orb orb-2"></div>
+
+    <!-- TOOLBAR -->
+    <header class="toolbar">
+        <div class="logo-section">
+            <a href="/ghi/" class="logo-title">Ghi chú</a>
+            <span class="note-badge">{{ note.note_id }}</span>
+        </div>
+
+        <div class="status-section">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusText">Đang tải...</span>
+        </div>
+
+        <div class="actions-section">
+            <!-- Save button -->
+            <button class="btn-tool" id="saveNoteBtn" onclick="saveContent()" title="Lưu ghi chú (Ctrl+S)" style="background: var(--primary-glow); color: white; border-color: var(--primary-glow);">
+                💾 Lưu
+            </button>
+            <!-- Share link -->
+            <button class="btn-tool" onclick="copyLink()" title="Sao chép đường dẫn để chia sẻ">
+                🔗 Chia sẻ
+            </button>
+            <!-- Lock / Password -->
+            <button class="btn-tool {% if has_password %}active{% endif %}" id="lockBtn" onclick="openLockModal()" title="Thiết lập mật khẩu khóa ghi chú">
+                🔒 {% if has_password %}Mở khóa / Đổi mật khẩu{% else %}Khóa ghi chú{% endif %}
+            </button>
+            <!-- Font Style -->
+            <button class="btn-tool" id="fontToggleBtn" onclick="toggleFont()" title="Thay đổi kiểu chữ">
+                🔤 Sans-serif
+            </button>
+            <!-- Theme Toggle -->
+            <button class="btn-tool" onclick="toggleTheme()" title="Thay đổi giao diện sáng/tối">
+                🌓 Giao diện
+            </button>
+            <!-- Download -->
+            <button class="btn-tool" onclick="downloadNote()" title="Tải ghi chú về máy">
+                📥 Tải xuống
+            </button>
+        </div>
+    </header>
+
+    <!-- WRITING CONTAINER -->
+    <main class="editor-container">
+        <div class="editor-card">
+            <textarea class="editor-textarea font-sans" id="editorTextarea" placeholder="Bắt đầu ghi chép thông tin của bạn tại đây... Nhấp nút 'Lưu' hoặc nhấn Ctrl+S để lưu..."></textarea>
+        </div>
+    </main>
+
+    <!-- METRICS STATUS BAR -->
+    <footer class="metrics-bar">
+        <div class="metrics-left">
+            <span>Ký tự: <strong id="charCount">0</strong></span>
+            <span>Từ: <strong id="wordCount">0</strong></span>
+            <span>Dòng: <strong id="lineCount">0</strong></span>
+        </div>
+        <div>
+            <span>Ghi chú tự động xóa sau 6 tháng nếu không bảo mật.</span>
+        </div>
+    </footer>
+
+    <!-- SET PASSWORD MODAL -->
+    <div class="modal-overlay" id="lockModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="lockModalTitle">🔒 Đặt mật khẩu bảo vệ</h3>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5;">
+                    Đặt mật khẩu giúp ngăn chặn người khác sửa đổi hoặc xem trộm ghi chú này trừ khi họ có mật khẩu của bạn.
+                </p>
+                <div class="form-group">
+                    <label class="form-label" for="notePassword">Mật khẩu mới</label>
+                    <input type="password" id="notePassword" class="form-input" placeholder="Nhập mật khẩu...">
+                </div>
+                <div class="form-group" id="removeLockGroup" style="display: none;">
+                    <div style="border-top: 1px solid var(--border-color); margin-top: 15px; padding-top: 15px;">
+                        <button class="btn btn-danger" style="width: 100%;" onclick="removePassword()">Gỡ bỏ mật khẩu</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeLockModal()">Hủy</button>
+                <button class="btn btn-primary" onclick="savePassword()">Lưu cấu hình</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST ALERT -->
+    <div class="toast" id="toastBox">Đã sao chép liên kết ghi chú!</div>
+
+    <!-- CSRF Token Helper -->
+    <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken');
+        const noteId = "{{ note.note_id }}";
+    </script>
+
+    <!-- CORE LOGIC JS -->
+    <script>
+        const textarea = document.getElementById('editorTextarea');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const charCount = document.getElementById('charCount');
+        const wordCount = document.getElementById('wordCount');
+        const lineCount = document.getElementById('lineCount');
+        const toastBox = document.getElementById('toastBox');
+
+        let saveTimeout = null;
+        let lastServerContent = "";
+        let isSaving = false;
+        let lastTypedTime = 0;
+        let hasPasswordState = {{ has_password|yesno:"true,false" }};
+
+        // Initialize values from Django backend context
+        textarea.value = `{{ note.content|escapejs }}`;
+        lastServerContent = textarea.value;
+        updateMetrics();
+
+        // 1. Update status and metrics on input (manual save only)
+        textarea.addEventListener('input', () => {
+            updateMetrics();
+            lastTypedTime = Date.now();
+            updateStatus('typing', 'Có thay đổi chưa lưu...');
+        });
+
+        // Keyboard shortcut Ctrl+S
+        window.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                saveContent();
+            }
+        });
+
+        // 2. Perform Save API request
+        async function saveContent() {
+            if (isSaving) return;
+            isSaving = true;
+            updateStatus('saving', 'Đang lưu...');
+
+            const content = textarea.value;
+
+            try {
+                const response = await fetch(`/ghi/api/save/${noteId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({ content })
+                });
+
+                if (response.ok) {
+                    const res = await response.json();
+                    lastServerContent = content;
+                    // Remove local backup if sync succeeds
+                    localStorage.removeItem(`ghi_backup_${noteId}`);
+                    updateStatus('saved', `Đã lưu ghi chú (${res.updated_at.split(' ')[1]})`);
+                } else {
+                    saveToLocalBackup(content);
+                }
+            } catch (err) {
+                saveToLocalBackup(content);
+            } finally {
+                isSaving = false;
+            }
+        }
+
+        function saveToLocalBackup(content) {
+            localStorage.setItem(`ghi_backup_${noteId}`, content);
+            updateStatus('offline', 'Đã lưu trữ ngoại tuyến (Lỗi mạng)');
+        }
+
+        function updateStatus(state, msg) {
+            statusDot.className = 'status-dot';
+            statusDot.classList.add(state);
+            statusText.textContent = msg;
+        }
+
+        // 3. Real-time Polling for Collaboration (every 2.5 seconds)
+        setInterval(async () => {
+            // Do not fetch/overwrite if user is actively writing (idle time < 2s)
+            if (Date.now() - lastTypedTime < 2000) return;
+            // Do not fetch/overwrite if there are unsaved local changes
+            if (textarea.value !== lastServerContent) return;
+
+            try {
+                const response = await fetch(`/ghi/api/get/${noteId}/`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.content !== textarea.value) {
+                        // Safe to overwrite as user is idle
+                        const selectionStart = textarea.selectionStart;
+                        const selectionEnd = textarea.selectionEnd;
+                        const hasFocus = (document.activeElement === textarea);
+
+                        textarea.value = data.content;
+                        lastServerContent = data.content;
+                        updateMetrics();
+
+                        if (hasFocus) {
+                            textarea.setSelectionRange(selectionStart, selectionEnd);
+                        }
+                        updateStatus('saved', `Đồng bộ trực tiếp lúc ${data.updated_at.split(' ')[1]}`);
+                    }
+                    
+                    // Sync lock button state if updated elsewhere
+                    if (data.has_password !== hasPasswordState) {
+                        hasPasswordState = data.has_password;
+                        const lockBtn = document.getElementById('lockBtn');
+                        if (hasPasswordState) {
+                            lockBtn.classList.add('active');
+                            lockBtn.innerHTML = '🔒 Mở khóa / Đổi mật khẩu';
+                        } else {
+                            lockBtn.classList.remove('active');
+                            lockBtn.innerHTML = '🔒 Khóa ghi chú';
+                        }
+                    }
+                }
+            } catch (err) {
+                console.warn('Lỗi kết nối đồng bộ trực tiếp:', err);
+            }
+        }, 2500);
+
+        // 4. metrics Counters
+        function updateMetrics() {
+            const text = textarea.value;
+            charCount.textContent = text.length;
+            
+            const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+            wordCount.textContent = words;
+            
+            const lines = text ? text.split('\n').length : 0;
+            lineCount.textContent = lines;
+        }
+
+        // 5. Layout options & Theme selectors
+        // Load settings from localStorage
+        let currentTheme = localStorage.getItem('ghi_theme') || 'dark';
+        document.body.setAttribute('data-theme', currentTheme);
+
+        function toggleTheme() {
+            currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.body.setAttribute('data-theme', currentTheme);
+            localStorage.setItem('ghi_theme', currentTheme);
+            showToast(`Đã chuyển sang giao diện ${currentTheme === 'dark' ? 'Tối' : 'Sáng'}`);
+        }
+
+        let currentFont = localStorage.getItem('ghi_font') || 'sans';
+        applyFont();
+
+        function toggleFont() {
+            currentFont = currentFont === 'sans' ? 'mono' : 'sans';
+            applyFont();
+            localStorage.setItem('ghi_font', currentFont);
+            showToast(`Đã chuyển sang kiểu chữ ${currentFont === 'sans' ? 'Sans-serif' : 'Monospace'}`);
+        }
+
+        function applyFont() {
+            const btn = document.getElementById('fontToggleBtn');
+            if (currentFont === 'sans') {
+                textarea.className = 'editor-textarea font-sans';
+                btn.textContent = '🔤 Sans-serif';
+            } else {
+                textarea.className = 'editor-textarea font-mono';
+                btn.textContent = '💻 Monospace';
+            }
+        }
+
+        // 6. Share Link
+        function copyLink() {
+            const link = window.location.href;
+            navigator.clipboard.writeText(link).then(() => {
+                showToast('Đã sao chép liên kết chia sẻ!');
+            }).catch(() => {
+                alert('Không thể sao chép. Vui lòng tự copy link trình duyệt.');
+            });
+        }
+
+        function showToast(msg) {
+            toastBox.textContent = msg;
+            toastBox.classList.add('show');
+            setTimeout(() => {
+                toastBox.classList.remove('show');
+            }, 2500);
+        }
+
+        // 7. Download note as TXT
+        function downloadNote() {
+            const text = textarea.value;
+            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `ghi-note-${noteId}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast('Tải xuống file note thành công!');
+        }
+
+        // 8. Lock note / Password logic
+        function openLockModal() {
+            document.getElementById('notePassword').value = '';
+            document.getElementById('lockModalTitle').textContent = hasPasswordState 
+                ? '🔒 Đổi hoặc xóa mật khẩu' 
+                : '🔒 Đặt mật khẩu bảo vệ';
+            document.getElementById('removeLockGroup').style.display = hasPasswordState ? 'block' : 'none';
+            document.getElementById('lockModal').style.display = 'flex';
+        }
+
+        function closeLockModal() {
+            document.getElementById('lockModal').style.display = 'none';
+        }
+
+        async function savePassword() {
+            const password = document.getElementById('notePassword').value;
+            if (!password) {
+                alert('Vui lòng nhập mật khẩu hợp lệ');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/ghi/api/save/${noteId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({ set_password: password })
+                });
+
+                if (response.ok) {
+                    hasPasswordState = true;
+                    document.getElementById('lockBtn').classList.add('active');
+                    document.getElementById('lockBtn').innerHTML = '🔒 Mở khóa / Đổi mật khẩu';
+                    showToast('Đã thiết lập mật khẩu thành công!');
+                    closeLockModal();
+                } else {
+                    alert('Lỗi cấu hình mật khẩu.');
+                }
+            } catch (err) {
+                alert('Lỗi kết nối máy chủ.');
+            }
+        }
+
+        async function removePassword() {
+            if (!confirm('Bạn có chắc chắn muốn gỡ bỏ mật khẩu bảo vệ? Ai cũng có thể vào xem ghi chú này.')) return;
+
+            try {
+                const response = await fetch(`/ghi/api/save/${noteId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({ set_password: '' }) // blank removes password
+                });
+
+                if (response.ok) {
+                    hasPasswordState = false;
+                    document.getElementById('lockBtn').classList.remove('active');
+                    document.getElementById('lockBtn').innerHTML = '🔒 Khóa ghi chú';
+                    showToast('Đã gỡ bỏ mật khẩu bảo vệ!');
+                    closeLockModal();
+                } else {
+                    alert('Lỗi gỡ bỏ mật khẩu.');
+                }
+            } catch (err) {
+                alert('Lỗi kết nối máy chủ.');
+            }
+        }
+
+        // On first page load, trigger recovery if backup is found locally
+        window.addEventListener('load', () => {
+            const backup = localStorage.getItem(`ghi_backup_${noteId}`);
+            if (backup && backup !== textarea.value) {
+                if (confirm('Phát hiện có nội dung ghi chú chưa được lưu từ phiên trước của bạn. Khôi phục lại?')) {
+                    textarea.value = backup;
+                    updateMetrics();
+                    saveContent();
+                } else {
+                    localStorage.removeItem(`ghi_backup_${noteId}`);
+                }
+            }
+            updateStatus('saved', 'Ghi chú sẵn sàng');
+        });
+    </script>
+</body>
+</html>

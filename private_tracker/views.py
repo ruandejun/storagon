@@ -70,17 +70,22 @@ def announce(request):
 		logging.debug(u"Announce RequestURL: %s"%url)
 		request = urllib2.Request(url);
 		try:
-			response = urllib2.urlopen(request)
+			response = urllib2.urlopen(request, timeout=3)
 			response_body = response.read()
 			status = response.getcode()
+			content_type = response.headers.get('content-type', 'text/plain')
 		except urllib2.HTTPError as e:
 			response_body = e.read()
 			status = e.code
-			logging.error(u"Announce Error %s: %s"%(e.code,response_body))
+			logging.error(u"Announce HTTPError %s: %s"%(e.code,response_body))
 			return HttpResponse(response_body, status=status)
-		else:
-			# logging.debug(u"Announce Response Decode: %s"%bencode.bdecode(response_body));
-			return HttpResponse(response_body, status=status, content_type=response.headers['content-type'])
+		except Exception as e:
+			logging.error(u"Announce Connection/Timeout Error: %s"%str(e))
+			response_body = bencode.bencode({'interval': 1800, 'peers': ''})
+			status = 200
+			content_type = 'text/plain'
+
+		return HttpResponse(response_body, status=status, content_type=content_type)
 	else:
 		raise Http404()
 
@@ -97,16 +102,20 @@ def scrape(request):
 		logging.debug("Announce RequestURL: %s"%url)
 		request = urllib2.Request(url);
 		try:
-			response = urllib2.urlopen(request)
+			response = urllib2.urlopen(request, timeout=3)
 			response_body = response.read()
 			status = response.getcode()
+			content_type = response.headers.get('content-type', 'text/plain')
 			logging.debug("Announce Response: %s"%response_body)
 		except urllib2.HTTPError as e:
 			response_body = e.read()
 			status = e.code
 			logging.error("Announce Error %s: %s"%(e.code,response_body))
 			return HttpResponse(response_body, status=status)
-		else:
-			return HttpResponse(response_body, status=status, content_type=response.headers['content-type'])
+		except Exception as e:
+			logging.error("Scrape Connection/Timeout Error: %s"%str(e))
+			return HttpResponseNotFound("Tracker scrape failed")
+
+		return HttpResponse(response_body, status=status, content_type=content_type)
 	else:
 		raise Http404()

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng nhập Storagon Admin 🔐</title>
+    <title>Storagon Portal 🔐</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -200,6 +200,28 @@
             box-shadow: none;
         }
 
+        .auth-links {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 18px;
+            font-size: 13px;
+        }
+
+        .auth-links.center {
+            justify-content: center;
+        }
+
+        .auth-links a {
+            color: var(--primary-glow);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .auth-links a:hover {
+            color: var(--accent-glow);
+            text-decoration: underline;
+        }
+
         .footer-note {
             text-align: center;
             margin-top: 25px;
@@ -215,15 +237,16 @@
 
     <div class="login-card">
         <div class="logo-header">
-            <h1>Storagon Admin 🚀</h1>
-            <p>Hệ thống quản lý dịch vụ và khách hàng</p>
+            <h1 id="headerTitle">Storagon Portal 🚀</h1>
+            <p id="headerDesc">Hệ thống quản lý dịch vụ và khách hàng</p>
         </div>
 
         <div class="error-message" id="errorBox">Sai tài khoản hoặc mật khẩu.</div>
 
+        <input type="hidden" id="csrfToken" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+        <!-- LOGIN FORM -->
         <form id="loginForm">
-            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-            
             <div class="form-group">
                 <label class="form-label" for="username">TÀI KHOẢN</label>
                 <input class="form-input" type="text" id="username" placeholder="Nhập tên đăng nhập" required autocomplete="username">
@@ -235,24 +258,103 @@
             </div>
 
             <button type="submit" class="login-btn" id="loginBtn">Đăng Nhập</button>
+            
+            <div class="auth-links">
+                <a href="#" onclick="showForm('register')">Đăng ký tài khoản</a>
+                <a href="#" onclick="showForm('forgot')">Quên mật khẩu?</a>
+            </div>
+        </form>
+
+        <!-- REGISTER FORM -->
+        <form id="registerForm" style="display: none;">
+            <div class="form-group">
+                <label class="form-label" for="regUsername">TÊN ĐĂNG NHẬP</label>
+                <input class="form-input" type="text" id="regUsername" placeholder="Từ 6-30 ký tự (chữ, số, . _)" required autocomplete="username">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="regEmail">EMAIL</label>
+                <input class="form-input" type="email" id="regEmail" placeholder="Nhập địa chỉ email" required autocomplete="email">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="regPassword">MẬT KHẨU</label>
+                <input class="form-input" type="password" id="regPassword" placeholder="Nhập mật khẩu bảo mật" required autocomplete="new-password">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="regConfirmPassword">XÁC NHẬN MẬT KHẨU</label>
+                <input class="form-input" type="password" id="regConfirmPassword" placeholder="Nhập lại mật khẩu" required autocomplete="new-password">
+            </div>
+
+            <button type="submit" class="login-btn" id="registerBtn">Đăng Ký</button>
+            
+            <div class="auth-links center">
+                <a href="#" onclick="showForm('login')">Đã có tài khoản? Đăng nhập</a>
+            </div>
+        </form>
+
+        <!-- FORGOT PASSWORD FORM -->
+        <form id="forgotForm" style="display: none;">
+            <div class="form-group">
+                <label class="form-label" for="forgotEmail">EMAIL KHÔI PHỤC</label>
+                <input class="form-input" type="email" id="forgotEmail" placeholder="Nhập email đăng ký tài khoản" required autocomplete="email">
+            </div>
+
+            <button type="submit" class="login-btn" id="forgotBtn">Gửi Yêu Cầu</button>
+            
+            <div class="auth-links center">
+                <a href="#" onclick="showForm('login')">Quay lại Đăng nhập</a>
+            </div>
         </form>
 
         <p class="footer-note">Storagon Management Dashboard &copy; 2026. All rights reserved.</p>
     </div>
 
     <script>
-        const loginForm = document.getElementById('loginForm');
-        const loginBtn = document.getElementById('loginBtn');
         const errorBox = document.getElementById('errorBox');
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const csrfToken = document.getElementById('csrfToken').value;
 
-        // Check if there is an error in the query parameters
+        // Toggle Views
+        function showForm(formId) {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'none';
+            document.getElementById('forgotForm').style.display = 'none';
+            
+            errorBox.style.display = 'none';
+            // Reset errorBox style
+            errorBox.style.background = 'rgba(239, 68, 68, 0.1)';
+            errorBox.style.borderColor = 'rgba(239, 68, 68, 0.2)';
+            errorBox.style.color = 'var(--error-color)';
+            
+            const headerTitle = document.getElementById('headerTitle');
+            const headerDesc = document.getElementById('headerDesc');
+            
+            if (formId === 'login') {
+                document.getElementById('loginForm').style.display = 'block';
+                headerTitle.textContent = 'Storagon Portal 🚀';
+                headerDesc.textContent = 'Hệ thống quản lý dịch vụ và khách hàng';
+            } else if (formId === 'register') {
+                document.getElementById('registerForm').style.display = 'block';
+                headerTitle.textContent = 'Đăng Ký 📝';
+                headerDesc.textContent = 'Tạo tài khoản khách hàng mới';
+            } else if (formId === 'forgot') {
+                document.getElementById('forgotForm').style.display = 'block';
+                headerTitle.textContent = 'Quên Mật Khẩu 🔒';
+                headerDesc.textContent = 'Nhập email để khôi phục mật khẩu';
+            }
+        }
+
+        // Query Param Error
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('error') === 'unauthorized') {
-            errorBox.textContent = 'Bạn cần đăng nhập bằng tài khoản Quản trị viên.';
+            errorBox.textContent = 'Tài khoản không được quyền truy cập. Vui lòng đăng nhập lại.';
             errorBox.style.display = 'block';
         }
 
+        // 1. Submit Login
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             errorBox.style.display = 'none';
@@ -275,7 +377,6 @@
                 const data = await response.json();
 
                 if (response.ok && data.success) {
-                    // Redirect to dashboard on success
                     window.location.href = '/dashboard/';
                 } else {
                     errorBox.textContent = data.message || 'Lỗi đăng nhập. Vui lòng thử lại.';
@@ -288,6 +389,100 @@
                 errorBox.style.display = 'block';
                 loginBtn.disabled = false;
                 loginBtn.textContent = 'Đăng Nhập';
+            }
+        });
+
+        // 2. Submit Register
+        const registerForm = document.getElementById('registerForm');
+        const registerBtn = document.getElementById('registerBtn');
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorBox.style.display = 'none';
+            
+            const username = document.getElementById('regUsername').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const confirm_password = document.getElementById('regConfirmPassword').value;
+            
+            if (password !== confirm_password) {
+                errorBox.textContent = 'Mật khẩu xác nhận không khớp.';
+                errorBox.style.display = 'block';
+                return;
+            }
+            
+            registerBtn.disabled = true;
+            registerBtn.textContent = 'Đang đăng ký...';
+            
+            try {
+                const response = await fetch('/dashboard/register/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({ username, email, password, confirm_password })
+                });
+                
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    window.location.href = '/dashboard/';
+                } else {
+                    errorBox.textContent = data.message || 'Đăng ký thất bại. Vui lòng thử lại.';
+                    errorBox.style.display = 'block';
+                    registerBtn.disabled = false;
+                    registerBtn.textContent = 'Đăng Ký';
+                }
+            } catch (err) {
+                errorBox.textContent = 'Lỗi kết nối máy chủ. Vui lòng kiểm tra mạng.';
+                errorBox.style.display = 'block';
+                registerBtn.disabled = false;
+                registerBtn.textContent = 'Đăng Ký';
+            }
+        });
+
+        // 3. Submit Forgot Password
+        const forgotForm = document.getElementById('forgotForm');
+        const forgotBtn = document.getElementById('forgotBtn');
+        forgotForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorBox.style.display = 'none';
+            
+            const email = document.getElementById('forgotEmail').value.trim();
+            forgotBtn.disabled = true;
+            forgotBtn.textContent = 'Đang gửi yêu cầu...';
+            
+            try {
+                const response = await fetch('/dashboard/forgot-password/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({ email })
+                });
+                
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    errorBox.textContent = data.message || 'Email khôi phục mật khẩu đã được gửi.';
+                    errorBox.style.background = 'rgba(16, 185, 129, 0.1)';
+                    errorBox.style.borderColor = 'rgba(16, 185, 129, 0.2)';
+                    errorBox.style.color = '#10b981';
+                    errorBox.style.display = 'block';
+                    
+                    document.getElementById('forgotEmail').value = '';
+                    forgotBtn.disabled = false;
+                    forgotBtn.textContent = 'Gửi Yêu Cầu';
+                } else {
+                    errorBox.textContent = data.message || 'Không thể gửi yêu cầu đặt lại mật khẩu.';
+                    errorBox.style.display = 'block';
+                    forgotBtn.disabled = false;
+                    forgotBtn.textContent = 'Gửi Yêu Cầu';
+                }
+            } catch (err) {
+                errorBox.textContent = 'Lỗi kết nối máy chủ. Vui lòng kiểm tra mạng.';
+                errorBox.style.display = 'block';
+                forgotBtn.disabled = false;
+                forgotBtn.textContent = 'Gửi Yêu Cầu';
             }
         });
     </script>

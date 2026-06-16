@@ -2,6 +2,7 @@ version: '3.5'
 services:
   memcache:
     image: memcached
+    restart: always
     command: memcached -m 64
     networks:
       - backend
@@ -13,6 +14,7 @@ services:
         - build.version=${BUILD_VERSION:-local}
       args:
         - buildflag=clear_sourcecode
+    restart: always
     # command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/var/www/storagon/
@@ -56,6 +58,7 @@ services:
       - ./storagon/redis/redis.conf:/etc/redis/redis.conf
   postgredb:
     image: postgres:12-alpine
+    restart: always
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:
@@ -72,6 +75,7 @@ services:
     build:
       context: .
       dockerfile: ./storagon/nginx/Dockerfile
+    restart: always
     volumes:
       - .:/var/www/storagon
       - ./storagon/nginx/nginx.conf:/var/www/conf/nginx.conf:ro

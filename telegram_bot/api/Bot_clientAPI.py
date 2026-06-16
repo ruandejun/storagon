@@ -2132,45 +2132,21 @@ def get_tool_setting(request):
     if action == 'hwid':
         hwid = request.GET.get('hwid')
         hwid_objs = UserHwid.objects.filter(user=request.user)
-        # print(hwid_objs.count(),hwid_objs.first().value)
-        hwid_obj_check = hwid_objs.filter(value=hwid)
-        if hwid_obj_check.exists():
-            list_objects = UserCreateFunction.objects.filter(
-                    user=request.user)
-            if list_objects.exists():
-                create_datas = UserCreateFunctionSerializer(list_objects, many=True) 
-                create_data = create_datas.data
-            else:
-                create_data = []
+        # Check if matching HWID exists AND is active (status=0)
+        hwid_obj_check = hwid_objs.filter(value=hwid, status=0)
+        if hwid_obj_check.exists() or not hwid_objs.exists():
+            # First-time login: auto-register HWID (if not existing at all)
+            if not hwid_objs.exists():
+                UserHwid.objects.get_or_create(value=hwid, user=request.user, defaults={'status': 0})
             
-            check_objects = UserCheckFunction.objects.filter(
-                    user=request.user)
-            if check_objects.exists():
-                check_datas = UserCheckFunctionSerializer(check_objects, many=True)
-                check_data = check_datas.data
-            else:
-                check_data = []
+            # Load tool functions for valid/new machine
+            list_objects = UserCreateFunction.objects.filter(user=request.user)
+            create_data = list(UserCreateFunctionSerializer(list_objects, many=True).data) if list_objects.exists() else []
+            check_objects = UserCheckFunction.objects.filter(user=request.user)
+            check_data = list(UserCheckFunctionSerializer(check_objects, many=True).data) if check_objects.exists() else []
             hwid_status = True
-        elif not hwid_objs.exists():
-            hwidobj, created = UserHwid.objects.get_or_create(value=hwid, user=request.user)
-            list_objects = UserCreateFunction.objects.filter(
-                    user=request.user)
-            if list_objects.exists():
-                create_datas = UserCreateFunctionSerializer(list_objects, many=True) 
-                create_data = create_datas.data
-            else:
-                create_data = []
-            
-            check_objects = UserCheckFunction.objects.filter(
-                    user=request.user)
-            if check_objects.exists():
-                check_datas = UserCheckFunctionSerializer(check_objects, many=True)
-                check_data = check_datas.data
-            else:
-                check_data = []
-            hwid_status = True            
 
-    return successResponse({'hwid': hwid_status,'create_data':create_data, 'check_data':check_data}) 
+    return successResponse({'hwid': hwid_status, 'create_data': create_data, 'check_data': check_data})
 
 @api_view(['GET', 'POST', 'PUT'])
 @login_required_ajax()

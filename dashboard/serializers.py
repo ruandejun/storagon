@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from servermain.models import UserProfile
+from telegram_bot.models import UserHwid
 
 class DashboardUserSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(source='profile.full_name', required=False, allow_blank=True, allow_null=True)
@@ -60,3 +61,24 @@ class DashboardUserSerializer(serializers.ModelSerializer):
             profile.save()
 
         return instance
+
+
+class UserHwidSerializer(serializers.ModelSerializer):
+    """Serializer for UserHwid - HWID records for MunLogin tool access control"""
+    username = serializers.CharField(source='user.username', read_only=True)
+    user_email = serializers.CharField(source='user.email', read_only=True)
+    user_id = serializers.IntegerField(source='user.id', read_only=True)
+    status_label = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserHwid
+        fields = (
+            'id', 'user', 'user_id', 'username', 'user_email',
+            'value', 'note', 'status', 'status_label',
+            'created', 'modified'
+        )
+        read_only_fields = ('id', 'created', 'modified', 'username', 'user_email', 'user_id')
+
+    def get_status_label(self, obj):
+        STATUS_MAP = {0: 'Active', 1: 'Suspended', 2: 'Banned'}
+        return STATUS_MAP.get(obj.status, 'Unknown')

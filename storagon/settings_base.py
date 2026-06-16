@@ -459,7 +459,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # MEDIA_ROOT = os.path.join(BASE_DIR, 'assets', 'media')
 MEDIA_URL = '/media/'
 # serverfile Settings
-SERVER_MAIN_URL = 'https://munlogin.vip'
+SERVER_MAIN_URL = 'https://fitviet.com'
 SERVER_FILE_ID = 1
 # ROOT_URLCONF = 'storagon.urls_serverFile'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

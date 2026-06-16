@@ -32,6 +32,30 @@
             padding: 0;
             font-family: var(--font-family);
             -webkit-font-smoothing: antialiased;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(99, 102, 241, 0.35) rgba(7, 9, 19, 0.4);
+        }
+
+        /* Custom Premium Scrollbar Styles */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(7, 9, 19, 0.4);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.35);
+            border-radius: 4px;
+            border: 2px solid #070913;
+            transition: all 0.3s ease;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.65);
         }
 
         body {
@@ -183,6 +207,7 @@
 
         .page-view.active {
             display: block;
+            height: calc(100vh - 70px);
         }
 
         /* OVERVIEW DASHBOARD TAB */
@@ -723,27 +748,49 @@
             font-size: 22px;
             font-weight: 700;
             letter-spacing: 2px;
-            text-align: center;
+            text-align: left;
             color: white;
             margin: 15px 0;
         }
 
         .atm-footer {
             display: flex;
-            align-items: center;
+            align-items: flex-end;
+            justify-content: flex-start;
             gap: 40px;
+            width: 100%;
+        }
+
+        .atm-expiry-section {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            text-align: left;
+        }
+
+        .atm-cvv-section {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            text-align: left;
+        }
+
+        .atm-val-large {
+            font-size: 22px;
         }
 
         .atm-lbl {
-            font-size: 9px;
+            font-size: 11px;
             color: var(--text-muted);
-            font-weight: 600;
+            font-weight: 700;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
         }
 
         .atm-val {
             font-family: monospace;
-            font-size: 15px;
+            font-size: 22px;
             font-weight: 700;
             color: white;
         }
@@ -786,6 +833,196 @@
         .card-copy-btn:hover {
             background: var(--primary-hover);
         }
+
+        /* Loading Spinner */
+        .spinner-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 0;
+            gap: 12px;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(99, 102, 241, 0.15);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Sidebar Toggle Hamburger Button */
+        .sidebar-toggle-btn {
+            display: none;
+            background: transparent;
+            border: none;
+            color: var(--text-color);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+            margin-right: 15px;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            transition: background 0.2s ease;
+        }
+
+        .sidebar-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Sidebar Overlay */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(7, 9, 19, 0.6);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 99;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar-toggle-btn {
+                display: inline-flex;
+            }
+
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: -260px !important;
+                bottom: 0;
+                width: 260px;
+                transform: none !important;
+                transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+                box-shadow: none;
+                z-index: 100;
+            }
+
+            .sidebar.active {
+                left: 0 !important;
+                box-shadow: 20px 0 50px rgba(0, 0, 0, 0.8);
+            }
+
+            body {
+                overflow: auto;
+            }
+
+            .main-content {
+                width: 100%;
+                overflow: visible;
+            }
+
+            .top-header {
+                padding: 0 15px;
+                justify-content: flex-start;
+            }
+
+            .page-view {
+                padding: 15px;
+                overflow-y: visible;
+                height: auto !important;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .charts-row, .activity-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .modal-box {
+                width: 95%;
+                margin: 10px;
+                max-width: 95% !important;
+            }
+
+            .control-bar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 15px;
+            }
+
+            .control-filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            .filter-select {
+                width: 100%;
+            }
+
+            .action-buttons {
+                justify-content: flex-start;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .action-buttons .btn {
+                flex: 1 1 calc(50% - 10px);
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .modal-footer {
+                flex-direction: column-reverse;
+                gap: 10px;
+            }
+
+            .modal-footer .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .atm-card {
+                height: 180px;
+                padding: 15px;
+            }
+            .atm-number {
+                font-size: 16px;
+                margin: 10px 0;
+            }
+            .atm-val {
+                font-size: 16px;
+            }
+            .atm-val-large {
+                font-size: 16px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -797,33 +1034,36 @@
                 <h1>Storagon Admin 🚀</h1>
             </div>
             <div class="sidebar-menu">
-                <a class="menu-item active" onclick="switchTab('overview')">
+                <a class="menu-item active" data-tab="overview" onclick="switchTab('overview')">
                     📊 Tổng quan
                 </a>
-                <a class="menu-item" onclick="switchTab('cards')">
+                <a class="menu-item" data-tab="cards" onclick="switchTab('cards')">
                     💳 Quản lý Thẻ
                 </a>
-                <a class="menu-item" onclick="switchTab('users')">
+                <a class="menu-item" data-tab="users" onclick="switchTab('users')">
                     👥 Quản lý User
                 </a>
-                <a class="menu-item" onclick="switchTab('profiles')">
+                <a class="menu-item" data-tab="profiles" onclick="switchTab('profiles')">
                     🖥️ Profiles
                 </a>
-                <a class="menu-item" onclick="switchTab('proxies')">
+                <a class="menu-item" data-tab="proxies" onclick="switchTab('proxies')">
                     🌐 Tor Proxies
                 </a>
-                <a class="menu-item" onclick="switchTab('emails')">
+                <a class="menu-item" data-tab="emails" onclick="switchTab('emails')">
                     ✉️ Quản lý Email
                 </a>
-                <a class="menu-item" onclick="switchTab('accounts')">
+                <a class="menu-item" data-tab="accounts" onclick="switchTab('accounts')">
                     🔑 Tài khoản đã tạo
+                </a>
+                <a class="menu-item" data-tab="hwids" onclick="switchTab('hwids')" id="menu-hwids" style="display:none;">
+                    🖱️ HWID Manager
                 </a>
             </div>
         </div>
         <div class="sidebar-footer">
             <div class="user-info">
                 <span class="user-name" id="currentUserDisplay">{{ request.user.username }}</span>
-                <span class="user-role">Administrator</span>
+                <span class="user-role">{% if request.user.is_staff %}Quản trị viên{% else %}Khách hàng{% endif %}</span>
             </div>
             <button class="logout-btn" onclick="location.href='/dashboard/logout/'" title="Đăng xuất">
                 🚪 Thoát
@@ -835,6 +1075,7 @@
     <div class="main-content">
         <!-- TOP HEADER -->
         <div class="top-header">
+            <button class="sidebar-toggle-btn" onclick="toggleSidebar()">☰</button>
             <div class="header-title">
                 <h2 id="pageTitle">Tổng quan hệ thống</h2>
             </div>
@@ -912,10 +1153,20 @@
                         <option value="Thẻ tốt">Thẻ tốt</option>
                         <option value="Tất cả">Tất cả</option>
                     </select>
+                    <select class="filter-select" id="cardOwnerFilter" onchange="loadCards(1)" style="display: none;">
+                        <option value="all">Tất cả chủ sở hữu</option>
+                        <option value="unassigned">Chưa chỉ định</option>
+                    </select>
+                    <select class="filter-select" id="cardPageSizeFilter" onchange="changeCardsPageSize(this.value)">
+                        <option value="20" selected>20 dòng</option>
+                        <option value="50">50 dòng</option>
+                        <option value="100">100 dòng</option>
+                    </select>
                 </div>
                 <div class="action-buttons">
                     <button class="btn btn-secondary" onclick="loadCards(1)">Làm mới</button>
-                    <button class="btn btn-success" onclick="openImportModal()">Thêm thẻ</button>
+                    <button class="btn btn-success" id="cardAddBtn" onclick="openImportModal()">Thêm thẻ</button>
+                    <button class="btn btn-primary" id="cardAssignBtn" onclick="openAssignOwnerModal()" disabled>Sở hữu</button>
                     <button class="btn btn-primary" id="cardEditBtn" onclick="openEditCardModal()" disabled>Sửa</button>
                     <button class="btn btn-danger" id="cardDeleteBtn" onclick="deleteSelectedCards()" disabled>Xóa</button>
                 </div>
@@ -928,13 +1179,16 @@
                             <th style="width: 50px; text-align: center;">
                                 <input type="checkbox" class="table-chk" id="selectAllCards" onclick="toggleSelectAllCards(this)">
                             </th>
+                            <th style="width: 60px; text-align: center;">STT</th>
                             <th>Số thẻ</th>
                             <th style="text-align: center;">Ngày hết hạn</th>
                             <th style="text-align: center;">CVV</th>
                             <th style="text-align: center;">Trạng thái</th>
+                            <th style="text-align: center;">Sở hữu bởi</th>
+                            <th style="text-align: center;">Sử dụng gần nhất</th>
                             <th style="text-align: center;">Ngày tạo</th>
                             <th style="text-align: center;">Ngày cập nhật</th>
-                            <th style="text-align: center;">Số lần dùng</th>
+                            <th style="text-align: center;">Giao dịch</th>
                         </tr>
                     </thead>
                     <tbody id="cardsTableBody">
@@ -1196,6 +1450,53 @@
                 </div>
             </div>
         </div>
+
+        <!-- TAB 8: HWID MANAGEMENT (Admin Only) -->
+        <div class="page-view" id="view-hwids">
+            <div class="control-bar">
+                <div class="control-filters">
+                    <div class="search-box">
+                        <input type="text" class="search-input" id="hwidSearchInput" placeholder="Tìm HWID hoặc username..." oninput="loadHwids(1)">
+                    </div>
+                    <input type="number" class="search-input" id="hwidUserIdFilter" placeholder="Filter User ID" style="width: 140px;" oninput="loadHwids(1)">
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="openModal('addHwidModal')">➕ Thêm HWID</button>
+                    <button class="btn btn-secondary" onclick="loadHwids(1)">🔄 Làm mới</button>
+                    <button class="btn btn-danger" id="hwidDeleteBtn" onclick="deleteSelectedHwids()" disabled>🗑️ Xóa</button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="hwidsTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px; text-align: center;">
+                                <input type="checkbox" class="table-chk" id="selectAllHwids" onclick="toggleSelectAllHwids(this)">
+                            </th>
+                            <th>#</th>
+                            <th>Username</th>
+                            <th>HWID Value</th>
+                            <th>Ghi chú</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày tạo</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="hwidsTableBody">
+                        <!-- HWID data dynamically loaded -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination">
+                <span id="hwidsPaginationInfo">Hiển thị 0 - 0 của 0</span>
+                <div class="pag-btns">
+                    <button class="btn btn-secondary" id="hwidsPrevBtn" onclick="changeHwidsPage(-1)" disabled>Trước</button>
+                    <button class="btn btn-secondary" id="hwidsNextBtn" onclick="changeHwidsPage(1)" disabled>Sau</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- MODAL OVERLAYS -->
@@ -1223,10 +1524,41 @@
                         <option value="Thẻ tốt">Thẻ tốt</option>
                     </select>
                 </div>
+                <div class="form-group">
+                    <label class="form-label">Sở hữu bởi (Owner)</label>
+                    <select class="filter-select" id="importCardsOwner" style="width: 100%;">
+                        <option value="">-- Không chỉ định --</option>
+                    </select>
+                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeModal('importCardsModal')">Hủy</button>
                 <button class="btn btn-success" id="importSaveBtn" onclick="saveImportedCards()">Nhập thẻ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 1B. BULK ASSIGN OWNER MODAL -->
+    <div class="modal-overlay" id="assignOwnerModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Gán sở hữu hàng loạt</h3>
+                <button class="modal-close" onclick="closeModal('assignOwnerModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label" id="assignOwnerCountLabel">Đang chọn 0 thẻ</label>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Chỉ định sở hữu bởi</label>
+                    <select class="filter-select" id="bulkAssignOwnerSelect" style="width: 100%;">
+                        <option value="">-- Không chỉ định --</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('assignOwnerModal')">Hủy</button>
+                <button class="btn btn-primary" id="bulkAssignSaveBtn" onclick="saveBulkAssignOwner()">Gán sở hữu</button>
             </div>
         </div>
     </div>
@@ -1265,6 +1597,20 @@
                         <option value="Thẻ tốt">Thẻ tốt</option>
                     </select>
                 </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Sở hữu bởi</label>
+                        <select class="filter-select" id="editCardOwner" style="width: 100%;">
+                            <option value="">-- Không chỉ định --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Sử dụng gần nhất</label>
+                        <select class="filter-select" id="editCardUsedBy" style="width: 100%;">
+                            <option value="">-- Không chỉ định --</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="form-group">
                     <label class="form-label">Thông tin thêm (Billing, Address...)</label>
                     <textarea class="form-textarea" id="editCardExtraInfo"></textarea>
@@ -1293,11 +1639,11 @@
                     </div>
                     <div class="atm-number" id="viewAtmNumber">xxxx xxxx xxxx xxxx</div>
                     <div class="atm-footer">
-                        <div>
-                            <div class="atm-lbl">VALID THRU</div>
-                            <div class="atm-val" id="viewAtmExpiry">MM/YY</div>
+                        <div class="atm-expiry-section">
+                            <div class="atm-lbl">EXP</div>
+                            <div class="atm-val atm-val-large" id="viewAtmExpiry">MM/YY</div>
                         </div>
-                        <div>
+                        <div class="atm-cvv-section">
                             <div class="atm-lbl">CVV</div>
                             <div class="atm-val" id="viewAtmCVV">xxx</div>
                         </div>
@@ -1314,6 +1660,16 @@
                     <span class="card-row-label">Hạn dùng & CVV</span>
                     <span class="card-val-text" id="viewCardExpiryCvvText">-</span>
                     <button class="card-copy-btn" onclick="copyCardField('viewCardExpiryCvvText')">Sao chép</button>
+                </div>
+                <div class="card-row-value">
+                    <span class="card-row-label">Sở hữu bởi</span>
+                    <span class="card-val-text" id="viewCardOwnerText">-</span>
+                    <span style="width: 78px;"></span>
+                </div>
+                <div class="card-row-value">
+                    <span class="card-row-label">Sử dụng gần nhất</span>
+                    <span class="card-val-text" id="viewCardUsedByText">-</span>
+                    <span style="width: 78px;"></span>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Billing/Thông tin thêm</label>
@@ -1457,6 +1813,35 @@
     </div>
 
     <!-- 6. ADD TOR PROXY MODAL -->
+    <div class="modal-overlay" id="addHwidModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>🖱️ Thêm HWID cho User</h3>
+                <button class="modal-close" onclick="closeModal('addHwidModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">User ID *</label>
+                    <input type="number" class="form-input" id="addHwidUserId" placeholder="Nhập ID của user (xem trong tab Users)" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">HWID Value *</label>
+                    <input type="text" class="form-input" id="addHwidValue" placeholder="UUID của máy tính (vd: DESKTOP-ABC123-...)" required>
+                    <small style="color: var(--text-muted); font-size: 11px;">User có thể lấy HWID khi login bị từ chối trong MunLogin tool</small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Ghi chú (tùy chọn)</label>
+                    <input type="text" class="form-input" id="addHwidNote" placeholder="Tên máy tính, vị trí, ...">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('addHwidModal')">Hủy</button>
+                <button class="btn btn-primary" onclick="addHwid()">✅ Thêm HWID</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6b. ADD TOR PROXY MODAL -->
     <div class="modal-overlay" id="addProxyModal">
         <div class="modal-box">
             <div class="modal-header">
@@ -1639,16 +2024,94 @@
 
     <!-- CORE JS CLIENT LOGIC -->
     <script>
+        // Mobile Sidebar Helpers
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            let overlay = document.querySelector('.sidebar-overlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.className = 'sidebar-overlay';
+                overlay.onclick = toggleSidebar;
+                document.body.appendChild(overlay);
+            }
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+        function closeSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            if (sidebar) sidebar.classList.remove('active');
+            if (overlay) overlay.classList.remove('active');
+        }
+
         // Global State
         let currentTab = 'overview';
         let cardsPage = 1;
-        let cardsPageSize = 10;
+        let cardsPageSize = 20;
         let usersPage = 1;
         let usersPageSize = 10;
+
+        function showTableLoading(tableBodyId, colspan) {
+            const body = document.getElementById(tableBodyId);
+            if (body) {
+                body.innerHTML = `
+                    <tr>
+                        <td colspan="${colspan}" style="text-align: center; padding: 0;">
+                            <div class="spinner-container">
+                                <div class="spinner"></div>
+                                <span>Đang tải dữ liệu...</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
         let selectedCards = [];
         let selectedUsers = [];
         let cardsChart = null;
         let usersChart = null;
+        let allClients = [];
+
+        async function fetchClients() {
+            if (!currentUser.isStaff) return;
+            try {
+                const response = await fetch('/dashboard/api/users/?role=user');
+                if (response.ok) {
+                    const data = await response.json();
+                    allClients = data.results || data;
+                    populateOwnerDropdowns();
+                }
+            } catch (err) {
+                console.error("Lỗi fetch danh sách client:", err);
+            }
+        }
+
+        function populateOwnerDropdowns() {
+            const importOwnerSelect = document.getElementById('importCardsOwner');
+            const editOwnerSelect = document.getElementById('editCardOwner');
+            const editUsedBySelect = document.getElementById('editCardUsedBy');
+            const bulkAssignOwnerSelect = document.getElementById('bulkAssignOwnerSelect');
+
+            const optionsHtml = allClients.map(u => `<option value="${u.id}">${u.username}</option>`).join('');
+            const noneOption = '<option value="">-- Không chỉ định --</option>';
+
+            if (importOwnerSelect) {
+                importOwnerSelect.innerHTML = noneOption + optionsHtml;
+            }
+            if (editOwnerSelect) {
+                editOwnerSelect.innerHTML = noneOption + optionsHtml;
+            }
+            if (editUsedBySelect) {
+                editUsedBySelect.innerHTML = noneOption + optionsHtml;
+            }
+            if (bulkAssignOwnerSelect) {
+                bulkAssignOwnerSelect.innerHTML = noneOption + optionsHtml;
+            }
+            const cardOwnerFilter = document.getElementById('cardOwnerFilter');
+            if (cardOwnerFilter) {
+                cardOwnerFilter.innerHTML = '<option value="all">Tất cả chủ sở hữu</option><option value="unassigned">Chưa chỉ định</option>' + optionsHtml;
+            }
+        }
 
         // CSRF Token Helper
         function getCookie(name) {
@@ -1667,8 +2130,57 @@
         }
         const csrftoken = getCookie('csrftoken');
 
+        const currentUser = {
+            username: "{{ request.user.username }}",
+            isStaff: {{ request.user.is_staff|yesno:"true,false" }}
+        };
+
         // Initial setup
         window.addEventListener('DOMContentLoaded', () => {
+            if (!currentUser.isStaff) {
+                // Hide users tab in sidebar
+                const userMenuItem = document.querySelector('.menu-item[data-tab="users"]');
+                if (userMenuItem) {
+                    userMenuItem.style.display = 'none';
+                }
+                
+                // Hide card modification buttons
+                const addBtn = document.getElementById('cardAddBtn');
+                const assignBtn = document.getElementById('cardAssignBtn');
+                const editBtn = document.getElementById('cardEditBtn');
+                const deleteBtn = document.getElementById('cardDeleteBtn');
+                if (addBtn) addBtn.style.display = 'none';
+                if (assignBtn) assignBtn.style.display = 'none';
+                if (editBtn) editBtn.style.display = 'none';
+                if (deleteBtn) deleteBtn.style.display = 'none';
+                
+                // Hide recent users panel in overview
+                const recentUsersList = document.getElementById('recentUsersList');
+                if (recentUsersList && recentUsersList.parentElement) {
+                    recentUsersList.parentElement.style.display = 'none';
+                }
+
+                // Hide users and sessions stat cards
+                const usersCard = document.querySelector('.card-users');
+                const sessionsCard = document.querySelector('.card-sessions');
+                if (usersCard) usersCard.style.display = 'none';
+                if (sessionsCard) sessionsCard.style.display = 'none';
+
+                // Hide users chart panel
+                const usersChartCanvas = document.getElementById('usersChart');
+                if (usersChartCanvas) {
+                    const usersChartPanel = usersChartCanvas.closest('.chart-panel');
+                    if (usersChartPanel) usersChartPanel.style.display = 'none';
+                }
+            } else {
+                const ownerFilter = document.getElementById('cardOwnerFilter');
+                if (ownerFilter) ownerFilter.style.display = 'block';
+                fetchClients();
+                // Show HWID Manager menu for staff/admin only
+                const hwidMenu = document.getElementById('menu-hwids');
+                if (hwidMenu) hwidMenu.style.display = '';
+            }
+
             switchTab('overview');
             // Refresh stats/charts loop
             setInterval(loadStats, 60000);
@@ -1676,15 +2188,24 @@
 
         // Tab Switcher
         function switchTab(tabName) {
+            if (!currentUser.isStaff && tabName === 'users') {
+                switchTab('overview');
+                return;
+            }
+
             currentTab = tabName;
             
             // Toggle sidebar active styling
             document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
-            const indexMap = {
-                'overview': 0, 'cards': 1, 'users': 2,
-                'profiles': 3, 'proxies': 4, 'emails': 5, 'accounts': 6
-            };
-            document.querySelectorAll('.menu-item')[indexMap[tabName]].classList.add('active');
+            const activeEl = document.querySelector(`.menu-item[data-tab="${tabName}"]`);
+            if (activeEl) {
+                activeEl.classList.add('active');
+            }
+
+            // Close sidebar on mobile viewport
+            if (window.innerWidth <= 768) {
+                closeSidebar();
+            }
 
             // Toggle page content
             document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
@@ -1698,7 +2219,8 @@
                 'profiles': 'MunLogin Profiles',
                 'proxies': 'Tor Proxies Management',
                 'emails': 'Email Database Management',
-                'accounts': 'Tài khoản MunLogin đã tạo'
+                'accounts': 'Tài khoản MunLogin đã tạo',
+                'hwids': '🖱️ HWID Manager — Quản lý máy tính được phép'
             };
             document.getElementById('pageTitle').textContent = titleMap[tabName];
 
@@ -1717,6 +2239,8 @@
                 loadEmails(1);
             } else if (tabName === 'accounts') {
                 loadAccounts(1);
+            } else if (tabName === 'hwids') {
+                loadHwids(1);
             }
         }
 
@@ -1877,13 +2401,16 @@
         let cardsData = [];
 
         async function loadCards(page) {
+            showTableLoading('cardsTableBody', 11);
             cardsPage = page;
             const search = document.getElementById('cardSearchInput').value.trim();
             const status = document.getElementById('cardStatusFilter').value;
+            const owner = document.getElementById('cardOwnerFilter') ? document.getElementById('cardOwnerFilter').value : 'all';
 
-            let url = `/dashboard/api/cards/?page=${cardsPage}`;
+            let url = `/dashboard/api/cards/?page=${cardsPage}&page_size=${cardsPageSize}`;
             if (search) url += `&search=${encodeURIComponent(search)}`;
             if (status) url += `&status=${encodeURIComponent(status)}`;
+            if (owner && owner !== 'all') url += `&owner=${owner}`;
 
             try {
                 const response = await fetch(url);
@@ -1895,9 +2422,14 @@
 
                 // Setup Pagination
                 const count = data.count || cardsData.length;
-                document.getElementById('cardsPaginationInfo').textContent = `Hiển thị ${cardsData.length} dòng (Tổng: ${count})`;
-                document.getElementById('cardsPrevBtn').disabled = !data.previous;
-                document.getElementById('cardsNextBtn').disabled = !data.next;
+                let fromVal = 0;
+                let toVal = 0;
+                if (count > 0) {
+                    fromVal = (cardsPage - 1) * cardsPageSize + 1;
+                    toVal = fromVal + cardsData.length - 1;
+                }
+                document.getElementById('cardsPaginationInfo').textContent = `Hiển thị ${fromVal} - ${toVal} của ${count}`;
+                renderCardPagination(count);
 
                 // Reset Action buttons and selections
                 selectedCards = [];
@@ -1914,11 +2446,11 @@
             body.innerHTML = '';
 
             if (cards.length === 0) {
-                body.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 30px; color: var(--text-muted);">Không tìm thấy thẻ nào phù hợp.</td></tr>`;
+                body.innerHTML = `<tr><td colspan="11" style="text-align:center; padding: 30px; color: var(--text-muted);">Không tìm thấy thẻ nào phù hợp.</td></tr>`;
                 return;
             }
 
-            cards.forEach(c => {
+            cards.forEach((c, index) => {
                 const tr = document.createElement('tr');
                 tr.setAttribute('data-id', c.id);
                 tr.id = `card-row-${c.id}`;
@@ -1930,10 +2462,13 @@
                     formattedNum = `${masked.substring(0, 4)} ${masked.substring(4, 6)}** **** ${masked.substring(masked.length - 4)}`;
                 }
 
+                const stt = (cardsPage - 1) * cardsPageSize + index + 1;
+
                 tr.innerHTML = `
                     <td style="text-align: center;" class="cell-chk">
                         <input type="checkbox" class="table-chk card-row-chk" data-id="${c.id}" onclick="handleCardCheckboxClick(event, ${c.id})">
                     </td>
+                    <td style="text-align: center; font-weight: 600; color: var(--text-muted);">${stt}</td>
                     <td style="font-weight: 600;">${formattedNum}</td>
                     <td style="text-align: center; font-family: monospace;">${c.expiry_date || '**/**'}</td>
                     <td style="text-align: center; font-family: monospace;">${c.cvv || '***'}</td>
@@ -1947,6 +2482,8 @@
                             <option value="Thẻ tốt" ${c.status === 'Thẻ tốt' ? 'selected' : ''}>Thẻ tốt</option>
                         </select>
                     </td>
+                    <td style="text-align: center; font-weight: 600; color: var(--accent);">${c.owner_username || 'Chưa chỉ định'}</td>
+                    <td style="text-align: center; font-weight: 600; color: var(--success);">${c.used_by_username || '-'}</td>
                     <td style="text-align: center; color: var(--text-muted); font-size:12px;">${formatDateString(c.created_at)}</td>
                     <td style="text-align: center; color: var(--text-muted); font-size:12px;">${formatDateString(c.updated_at)}</td>
                     <td style="text-align: center; font-family: monospace; font-weight: bold; color: var(--accent);">${c.used_count}</td>
@@ -2027,15 +2564,77 @@
         }
 
         function updateCardActionButtons() {
+            const assignBtn = document.getElementById('cardAssignBtn');
             const editBtn = document.getElementById('cardEditBtn');
             const deleteBtn = document.getElementById('cardDeleteBtn');
 
+            if (assignBtn) assignBtn.disabled = (selectedCards.length === 0);
             editBtn.disabled = (selectedCards.length !== 1);
             deleteBtn.disabled = (selectedCards.length === 0);
         }
 
         function changeCardsPage(dir) {
             loadCards(cardsPage + dir);
+        }
+
+        function changeCardsPageSize(newSize) {
+            cardsPageSize = parseInt(newSize);
+            loadCards(1);
+        }
+
+        function renderCardPagination(count) {
+            const totalPages = Math.ceil(count / cardsPageSize);
+            const pagBtnsContainer = document.querySelector('#view-cards .pag-btns');
+            if (!pagBtnsContainer) return;
+
+            pagBtnsContainer.innerHTML = '';
+
+            // Previous Button
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'btn btn-secondary';
+            prevBtn.textContent = 'Trước';
+            prevBtn.disabled = (cardsPage <= 1);
+            prevBtn.onclick = () => loadCards(cardsPage - 1);
+            pagBtnsContainer.appendChild(prevBtn);
+
+            // Calculate range of page numbers to show
+            const range = [];
+            const delta = 2; // how many pages before/after current page to show
+            
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= cardsPage - delta && i <= cardsPage + delta)) {
+                    range.push(i);
+                } else if (range[range.length - 1] !== '...') {
+                    range.push('...');
+                }
+            }
+
+            range.forEach(p => {
+                if (p === '...') {
+                    const span = document.createElement('span');
+                    span.className = 'pag-dots';
+                    span.textContent = '...';
+                    span.style.padding = '0 8px';
+                    span.style.color = 'var(--text-muted)';
+                    pagBtnsContainer.appendChild(span);
+                } else {
+                    const btn = document.createElement('button');
+                    btn.className = `btn ${p === cardsPage ? 'btn-primary' : 'btn-secondary'}`;
+                    btn.textContent = p;
+                    btn.style.minWidth = '38px';
+                    btn.style.padding = '6px 12px';
+                    btn.onclick = () => loadCards(p);
+                    pagBtnsContainer.appendChild(btn);
+                }
+            });
+
+            // Next Button
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'btn btn-secondary';
+            nextBtn.textContent = 'Sau';
+            nextBtn.disabled = (cardsPage >= totalPages || totalPages === 0);
+            nextBtn.onclick = () => loadCards(cardsPage + 1);
+            pagBtnsContainer.appendChild(nextBtn);
         }
 
         // Helper Date Formatter
@@ -2095,6 +2694,8 @@
 
             document.getElementById('viewCardNumberText').textContent = currentViewingCard.card_number;
             document.getElementById('viewCardExpiryCvvText').textContent = `${currentViewingCard.expiry_date || 'MM/YY'} / ${currentViewingCard.cvv || 'xxx'}`;
+            document.getElementById('viewCardOwnerText').textContent = currentViewingCard.owner_username || 'Chưa chỉ định';
+            document.getElementById('viewCardUsedByText').textContent = currentViewingCard.used_by_username || '-';
             document.getElementById('viewCardExtraText').value = currentViewingCard.extra_info || 'Không có thông tin thêm.';
             document.getElementById('viewCardStatusSelect').value = currentViewingCard.status;
 
@@ -2162,6 +2763,8 @@
             document.getElementById('editCardExpiry').value = card.expiry_date || '';
             document.getElementById('editCardCVV').value = card.cvv || '';
             document.getElementById('editCardStatus').value = card.status;
+            document.getElementById('editCardOwner').value = card.owner || '';
+            document.getElementById('editCardUsedBy').value = card.used_by || '';
             document.getElementById('editCardExtraInfo').value = card.extra_info || '';
 
             openModal('editCardModal');
@@ -2173,12 +2776,24 @@
             const expiry_date = document.getElementById('editCardExpiry').value.trim();
             const cvv = document.getElementById('editCardCVV').value.trim();
             const status = document.getElementById('editCardStatus').value;
+            const owner = document.getElementById('editCardOwner').value;
+            const used_by = document.getElementById('editCardUsedBy').value;
             const extra_info = document.getElementById('editCardExtraInfo').value.trim();
 
             if (!card_number) {
                 alert('Vui lòng nhập số thẻ.');
                 return;
             }
+
+            const payload = {
+                card_number,
+                expiry_date,
+                cvv,
+                status,
+                extra_info,
+                owner: owner ? parseInt(owner) : null,
+                used_by: used_by ? parseInt(used_by) : null
+            };
 
             try {
                 const response = await fetch(`/dashboard/api/cards/${id}/`, {
@@ -2187,7 +2802,7 @@
                         'Content-Type': 'application/json',
                         'X-CSRFToken': csrftoken
                     },
-                    body: JSON.stringify({ card_number, expiry_date, cvv, status, extra_info })
+                    body: JSON.stringify(payload)
                 });
 
                 if (response.ok) {
@@ -2231,12 +2846,14 @@
         function openImportModal() {
             document.getElementById('importCardsText').value = '';
             document.getElementById('importCardsStatus').value = 'Chưa sử dụng';
+            document.getElementById('importCardsOwner').value = '';
             openModal('importCardsModal');
         }
 
         async function saveImportedCards() {
             const text = document.getElementById('importCardsText').value.trim();
             const status = document.getElementById('importCardsStatus').value;
+            const owner = document.getElementById('importCardsOwner').value;
 
             if (!text) {
                 alert('Vui lòng nhập dữ liệu thẻ.');
@@ -2273,6 +2890,9 @@
                             extra_info = parts.slice(4).join(' | ');
                         }
 
+                        const payload = { card_number, expiry_date, cvv, status, extra_info };
+                        if (owner) payload.owner = parseInt(owner);
+
                         // Push to batch post
                         savePromises.push(
                             fetch('/dashboard/api/cards/', {
@@ -2281,7 +2901,7 @@
                                     'Content-Type': 'application/json',
                                     'X-CSRFToken': csrftoken
                                 },
-                                body: JSON.stringify({ card_number, expiry_date, cvv, status, extra_info })
+                                body: JSON.stringify(payload)
                             })
                         );
                     }
@@ -2309,11 +2929,69 @@
             }
         }
 
+        function openAssignOwnerModal() {
+            if (selectedCards.length === 0) return;
+            const countLabel = document.getElementById('assignOwnerCountLabel');
+            if (countLabel) {
+                countLabel.textContent = `Đang chọn ${selectedCards.length} thẻ`;
+            }
+            const bulkAssignOwnerSelect = document.getElementById('bulkAssignOwnerSelect');
+            if (bulkAssignOwnerSelect) {
+                bulkAssignOwnerSelect.value = '';
+            }
+            openModal('assignOwnerModal');
+        }
+
+        async function saveBulkAssignOwner() {
+            if (selectedCards.length === 0) return;
+            const bulkAssignOwnerSelect = document.getElementById('bulkAssignOwnerSelect');
+            const ownerId = bulkAssignOwnerSelect ? bulkAssignOwnerSelect.value : '';
+            
+            const payload = {
+                card_ids: selectedCards,
+                owner_id: ownerId ? parseInt(ownerId) : null
+            };
+
+            const saveBtn = document.getElementById('bulkAssignSaveBtn');
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.textContent = 'Đang xử lý...';
+            }
+
+            try {
+                const response = await fetch('/dashboard/api/cards/bulk-assign/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    alert(`Đã gán sở hữu thành công cho ${selectedCards.length} thẻ.`);
+                    closeModal('assignOwnerModal');
+                    loadCards(cardsPage);
+                } else {
+                    const err = await response.json();
+                    alert(`Lỗi gán sở hữu: ${err.message || JSON.stringify(err)}`);
+                }
+            } catch (err) {
+                alert('Lỗi kết nối khi gán sở hữu.');
+            } finally {
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = 'Gán sở hữu';
+                }
+            }
+        }
+
 
         /* ---------------- USERS MANAGEMENT TAB LOGIC ---------------- */
         let usersData = [];
 
         async function loadUsers(page) {
+            showTableLoading('usersTableBody', 8);
             usersPage = page;
             const search = document.getElementById('userSearchInput').value.trim();
             const role = document.getElementById('userRoleFilter').value;
@@ -2630,6 +3308,7 @@
         let profilesData = [];
 
         async function loadProfiles(page) {
+            showTableLoading('profilesTableBody', 9);
             profilesPage = page;
             const search = document.getElementById('profileSearchInput').value.trim();
 
@@ -2770,6 +3449,7 @@
         let proxiesData = [];
 
         async function loadProxies(page) {
+            showTableLoading('proxiesTableBody', 7);
             proxiesPage = page;
             const search = document.getElementById('proxySearchInput').value.trim();
 
@@ -2997,6 +3677,7 @@
         let emailsData = [];
 
         async function loadEmails(page) {
+            showTableLoading('emailsTableBody', 9);
             emailsPage = page;
             const search = document.getElementById('emailSearchInput').value.trim();
 
@@ -3278,6 +3959,7 @@
         let accountsData = [];
 
         async function loadAccounts(page) {
+            showTableLoading('accountsTableBody', 10);
             accountsPage = page;
             const search = document.getElementById('accountSearchInput').value.trim();
 
@@ -3427,10 +4109,230 @@
         let emailsPageSize = 10;
         let accountsPage = 1;
         let accountsPageSize = 10;
+        let hwidsPage = 1;
+        let hwidsPageSize = 20;
         let selectedProfiles = [];
         let selectedProxies = [];
         let selectedEmails = [];
         let selectedAccounts = [];
+        let selectedHwids = [];
+
+        /* ==================== HWID MANAGER TAB ==================== */
+        async function loadHwids(page) {
+            hwidsPage = page;
+            showTableLoading('hwidsTableBody', 8);
+            
+            const searchVal = document.getElementById('hwidSearchInput').value.trim();
+            const userIdVal = document.getElementById('hwidUserIdFilter').value.trim();
+            
+            let url = `/dashboard/api/hwids/?page=${page}&page_size=${hwidsPageSize}`;
+            if (searchVal) url += `&search=${encodeURIComponent(searchVal)}`;
+            if (userIdVal) url += `&user_id=${userIdVal}`;
+            
+            try {
+                const resp = await fetch(url);
+                if (!resp.ok) throw new Error('API error');
+                const data = await resp.json();
+                const items = data.results || [];
+                const count = data.count || 0;
+                populateHwidsTable(items);
+                
+                // Update pagination info inline
+                const fromVal = count === 0 ? 0 : (page - 1) * hwidsPageSize + 1;
+                const toVal = Math.min(page * hwidsPageSize, count);
+                document.getElementById('hwidsPaginationInfo').textContent = `Hiển thị ${fromVal} - ${toVal} của ${count}`;
+                document.getElementById('hwidsPrevBtn').disabled = page <= 1;
+                document.getElementById('hwidsNextBtn').disabled = page * hwidsPageSize >= count;
+            } catch (err) {
+                document.getElementById('hwidsTableBody').innerHTML = 
+                    `<tr><td colspan="8" style="text-align:center; color:var(--danger);">Lỗi tải dữ liệu HWID</td></tr>`;
+            }
+        }
+
+        function populateHwidsTable(hwids) {
+            const body = document.getElementById('hwidsTableBody');
+            body.innerHTML = '';
+            selectedHwids = [];
+            updateHwidActionButtons();
+
+            if (!hwids || hwids.length === 0) {
+                body.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--text-muted); padding: 40px 0;">Không có HWID nào.</td></tr>`;
+                return;
+            }
+            
+            hwids.forEach((h, idx) => {
+                const tr = document.createElement('tr');
+                tr.id = `hwid-row-${h.id}`;
+                const isActive = h.status === 0;
+                const badgeClass = isActive ? 'badge-success' : 'badge-danger';
+                const statusLabel = isActive ? '✅ Active' : '🔒 Locked';
+                const shortHwid = h.value && h.value.length > 35 ? h.value.substring(0, 35) + '...' : (h.value || '-');
+                const createdDate = h.created ? new Date(h.created).toLocaleDateString('vi-VN') : '-';
+                
+                tr.innerHTML = `
+                    <td style="text-align:center;" class="cell-chk">
+                        <input type="checkbox" class="table-chk hwid-row-chk" data-id="${h.id}"
+                            onclick="handleHwidCheckboxClick(event, ${h.id})">
+                    </td>
+                    <td>${(hwidsPage - 1) * hwidsPageSize + idx + 1}</td>
+                    <td><strong>${h.username || '-'}</strong><br><small style="color:var(--text-muted)">ID: ${h.user}</small></td>
+                    <td title="${h.value || ''}">
+                        <code style="font-size: 11px; color: var(--accent); background: rgba(0,242,254,0.05); padding: 3px 6px; border-radius: 4px; cursor:pointer;"
+                              onclick="navigator.clipboard.writeText('${h.value || ''}').then(()=>alert('Đã copy HWID!'))"
+                        >${shortHwid}</code>
+                    </td>
+                    <td style="color:var(--text-muted); font-size:12px;">${h.note || '-'}</td>
+                    <td><span class="badge ${badgeClass}">${statusLabel}</span></td>
+                    <td style="color:var(--text-muted); font-size:12px;">${createdDate}</td>
+                    <td>
+                        <button class="btn btn-secondary" style="padding:5px 10px; font-size:11px;" 
+                                onclick="toggleHwidStatus(${h.id})" title="${isActive ? 'Tạm khóa HWID này' : 'Kích hoạt HWID này'}">
+                            ${isActive ? '🔒 Khóa' : '✅ Mở'}
+                        </button>
+                        <button class="btn btn-danger" style="padding:5px 10px; font-size:11px; margin-left:4px;" 
+                                onclick="deleteSingleHwid(${h.id}, '${h.username}')" title="Xóa HWID này">
+                            🗑️
+                        </button>
+                        <button class="btn btn-secondary" style="padding:5px 10px; font-size:11px; margin-left:4px; border-color:var(--warning); color:var(--warning);" 
+                                onclick="resetUserHwid(${h.user}, '${h.username}')" title="Reset tất cả HWID của user này (cho đổi máy)">
+                            🔄 Reset
+                        </button>
+                    </td>
+                `;
+                body.appendChild(tr);
+            });
+        }
+
+        function handleHwidCheckboxClick(event, id) {
+            event.stopPropagation();
+            if (event.target.checked) {
+                if (!selectedHwids.includes(id)) selectedHwids.push(id);
+                const tr = document.getElementById(`hwid-row-${id}`);
+                if (tr) tr.classList.add('row-selected');
+            } else {
+                selectedHwids = selectedHwids.filter(x => x !== id);
+                const tr = document.getElementById(`hwid-row-${id}`);
+                if (tr) tr.classList.remove('row-selected');
+            }
+            updateHwidActionButtons();
+        }
+
+        function toggleSelectAllHwids(master) {
+            selectedHwids = [];
+            document.querySelectorAll('.hwid-row-chk').forEach(chk => {
+                chk.checked = master.checked;
+                const id = parseInt(chk.getAttribute('data-id'));
+                const tr = document.getElementById(`hwid-row-${id}`);
+                if (master.checked) {
+                    selectedHwids.push(id);
+                    if (tr) tr.classList.add('row-selected');
+                } else {
+                    if (tr) tr.classList.remove('row-selected');
+                }
+            });
+            updateHwidActionButtons();
+        }
+
+        function updateHwidActionButtons() {
+            const btn = document.getElementById('hwidDeleteBtn');
+            if (btn) btn.disabled = selectedHwids.length === 0;
+        }
+
+        function changeHwidsPage(offset) {
+            loadHwids(hwidsPage + offset);
+        }
+
+        async function addHwid() {
+            const userId = document.getElementById('addHwidUserId').value.trim();
+            const hwidValue = document.getElementById('addHwidValue').value.trim();
+            const note = document.getElementById('addHwidNote').value.trim();
+
+            if (!userId || !hwidValue) {
+                alert('Vui lòng nhập User ID và HWID Value');
+                return;
+            }
+            try {
+                const resp = await fetch('/dashboard/api/hwids/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+                    body: JSON.stringify({ user: parseInt(userId), value: hwidValue, note: note, status: 0 })
+                });
+                if (!resp.ok) {
+                    const err = await resp.json();
+                    alert('Lỗi: ' + JSON.stringify(err));
+                    return;
+                }
+                closeModal('addHwidModal');
+                document.getElementById('addHwidUserId').value = '';
+                document.getElementById('addHwidValue').value = '';
+                document.getElementById('addHwidNote').value = '';
+                alert('✅ Đã thêm HWID thành công! User sẽ có thể dùng tool ngay.');
+                loadHwids(1);
+            } catch (err) {
+                alert('Lỗi kết nối.');
+            }
+        }
+
+        async function deleteSelectedHwids() {
+            if (selectedHwids.length === 0) return;
+            if (!confirm(`Xóa ${selectedHwids.length} HWID đã chọn? User sẽ không thể login bằng máy đó nữa.`)) return;
+            try {
+                await Promise.all(selectedHwids.map(id =>
+                    fetch(`/dashboard/api/hwids/${id}/`, {
+                        method: 'DELETE',
+                        headers: { 'X-CSRFToken': csrftoken }
+                    })
+                ));
+                alert('Đã xóa HWID thành công!');
+                loadHwids(1);
+            } catch (err) {
+                alert('Lỗi khi xóa HWID.');
+            }
+        }
+
+        async function deleteSingleHwid(id, username) {
+            if (!confirm(`Xóa HWID ID=${id} của user "${username}"?\nUser sẽ không thể login bằng máy này nữa.`)) return;
+            try {
+                await fetch(`/dashboard/api/hwids/${id}/`, {
+                    method: 'DELETE',
+                    headers: { 'X-CSRFToken': csrftoken }
+                });
+                alert('Đã xóa HWID!');
+                loadHwids(hwidsPage);
+            } catch (err) {
+                alert('Lỗi khi xóa HWID.');
+            }
+        }
+
+        async function resetUserHwid(userId, username) {
+            if (!confirm(`⚠️ RESET tất cả HWID của user "${username}" (ID=${userId})?\n\nSau khi reset, lần đầu user login bằng bất kỳ máy nào sẽ tự động được đăng ký là máy mới.`)) return;
+            try {
+                const resp = await fetch(`/dashboard/api/hwids/reset-user/?user_id=${userId}`, {
+                    method: 'DELETE',
+                    headers: { 'X-CSRFToken': csrftoken }
+                });
+                const data = await resp.json();
+                alert('✅ ' + (data.message || 'Đã reset HWID thành công!'));
+                loadHwids(hwidsPage);
+            } catch (err) {
+                alert('Lỗi khi reset HWID.');
+            }
+        }
+
+        async function toggleHwidStatus(id) {
+            try {
+                const resp = await fetch(`/dashboard/api/hwids/${id}/toggle-status/`, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrftoken }
+                });
+                const data = await resp.json();
+                alert(data.message || 'Đã cập nhật trạng thái.');
+                loadHwids(hwidsPage);
+            } catch (err) {
+                alert('Lỗi khi cập nhật trạng thái.');
+            }
+        }
+
     </script>
 </body>
 </html>

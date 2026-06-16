@@ -477,6 +477,12 @@ class AccountsCreatedViewSet(viewsets.ModelViewSet):
         updated_count = AccountsCreated.objects.filter(pk__in=ids).update(status=status_int)
         return Response({'success': True, 'message': f'Đã cập nhật trạng thái cho {updated_count} tài khoản!'})
 
+    @action(detail=False, methods=['get'], url_path='users-list')
+    def users_list(self, request):
+        users = User.objects.filter(is_active=True).order_by('username')
+        user_data = [{'id': u.id, 'username': u.username} for u in users]
+        return Response(user_data)
+
 
 class UserHwidViewSet(viewsets.ModelViewSet):
     """Admin ViewSet for managing UserHwid — controls which machines can use MunLogin tool."""

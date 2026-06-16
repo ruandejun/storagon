@@ -2018,7 +2018,9 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Chủ sở hữu Sub</label>
-                        <input type="text" class="form-input" id="addAccSubOwner" placeholder="Chủ sở hữu...">
+                        <select class="filter-select" id="addAccSubOwner" style="width: 100%;">
+                            <option value="">-- Không có --</option>
+                        </select>
                     </div>
                 </div>
                 <div class="form-group">
@@ -2143,7 +2145,9 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Chủ sở hữu Sub</label>
-                        <input type="text" class="form-input" id="editAccSubOwner" placeholder="Chủ sở hữu...">
+                        <select class="filter-select" id="editAccSubOwner" style="width: 100%;">
+                            <option value="">-- Không có --</option>
+                        </select>
                     </div>
                 </div>
                 <div class="form-row">
@@ -2444,6 +2448,7 @@
             switchTab('overview');
             // Refresh stats/charts loop
             setInterval(loadStats, 60000);
+            fetchSystemUsers();
         });
 
         // Tab Switcher
@@ -4249,6 +4254,39 @@
 
         /* ---------------- CREATED ACCOUNTS LOGIC ---------------- */
         let accountsData = [];
+        let systemUsers = [];
+
+        async function fetchSystemUsers() {
+            try {
+                const response = await fetch('/dashboard/api/accounts/users-list/');
+                if (response.ok) {
+                    systemUsers = await response.json();
+                    populateSubOwnerDropdowns();
+                }
+            } catch (err) {
+                console.error("Lỗi khi load danh sách system users:", err);
+            }
+        }
+
+        function populateSubOwnerDropdowns() {
+            const addSelect = document.getElementById('addAccSubOwner');
+            const editSelect = document.getElementById('editAccSubOwner');
+            
+            addSelect.innerHTML = '<option value="">-- Không có --</option>';
+            editSelect.innerHTML = '<option value="">-- Không có --</option>';
+            
+            systemUsers.forEach(u => {
+                const opt1 = document.createElement('option');
+                opt1.value = u.username;
+                opt1.textContent = u.username;
+                addSelect.appendChild(opt1);
+                
+                const opt2 = document.createElement('option');
+                opt2.value = u.username;
+                opt2.textContent = u.username;
+                editSelect.appendChild(opt2);
+            });
+        }
 
         async function loadAccounts(page) {
             showTableLoading('accountsTableBody', 13);

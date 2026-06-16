@@ -223,6 +223,42 @@ class DashboardUserViewSet(viewsets.ModelViewSet):
             
         return queryset
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # Security checks: Do not delete superusers or yourself
+        if instance.is_superuser:
+            return Response({'success': False, 'message': 'Không thể xóa tài khoản Admin hệ thống.'}, status=400)
+        if instance == request.user:
+            return Response({'success': False, 'message': 'Không thể tự xóa chính tài khoản của bạn.'}, status=400)
+
+        from django.apps import apps
+        from django.db import transaction
+
+        try:
+            with transaction.atomic():
+                # Loop through all models in the project to clean up ForeignKey and OneToOne references to User
+                for model in apps.get_models():
+                    for field in model._meta.fields:
+                        if field.related_model == User:
+                            filter_kwargs = {field.name: instance}
+                            if model.objects.filter(**filter_kwargs).exists():
+                                if field.null:
+                                    update_kwargs = {field.name: None}
+                                    model.objects.filter(**filter_kwargs).update(**update_kwargs)
+                                else:
+                                    model.objects.filter(**filter_kwargs).delete()
+
+                # Clean up UserProfile just in case
+                from servermain.models import UserProfile
+                UserProfile.objects.filter(user=instance).delete()
+
+                # Delete the user itself
+                instance.delete()
+
+            return Response({'success': True, 'message': 'Đã xóa người dùng thành công!'})
+        except Exception as e:
+            return Response({'success': False, 'message': f'Lỗi khi xóa người dùng: {str(e)}'}, status=500)
+
 
 class BrowserProfilesViewSet(viewsets.ModelViewSet):
     queryset = BrowserProfiles.objects.all().order_by('-id')

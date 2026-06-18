@@ -970,9 +970,9 @@
                 <button class="btn-tool" onclick="openTwoFaModal()" title="Lấy mã 2FA">
                     🔑 2FA
                 </button>
-                <!-- Get Email Button -->
-                <button class="btn-tool" onclick="openEmailGetModal()" title="Lấy email chưa đăng ký">
-                    ✉️ Lấy Email
+                <!-- Get Info Button -->
+                <button class="btn-tool" onclick="openEmailGetModal()" title="Lấy thông tin tài khoản hoặc email">
+                    ✉️ Lấy Info
                 </button>
                 <!-- Share link -->
                 <button class="btn-tool" onclick="copyLink()" title="Sao chép đường dẫn để chia sẻ">
@@ -1150,14 +1150,29 @@
         </div>
     </div>
 
-    <!-- EMAIL GETTER MODAL -->
+    <!-- EMAIL GETTER (INFO) MODAL -->
     <div class="modal-overlay" id="emailGetModal">
         <div class="modal-box modal-large" style="max-width: 550px;">
             <div class="modal-header">
-                <h3>✉️ Nhận Email chưa đăng ký</h3>
+                <h3>✉️ Lấy Info</h3>
                 <button class="addr-close-btn" onclick="closeEmailGetModal()" style="background: transparent; border: none; color: var(--text-muted); font-size: 16px; cursor: pointer;">✕</button>
             </div>
             <div class="modal-body">
+                <!-- Segmented Control for Uncreated / Created -->
+                <div style="margin-bottom: 15px;">
+                    <label class="form-label" style="margin-bottom: 6px; display: block; font-weight: 600; font-size: 13px;">Trạng thái tài khoản</label>
+                    <div style="display: flex; gap: 8px; width: 100%;">
+                        <label style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 10px; cursor: pointer; text-align: center; font-size: 13px; transition: all 0.3s;" id="lblUncreated">
+                            <input type="radio" name="infoSourceType" value="uncreated" checked onchange="toggleInfoSourceType('uncreated')" style="accent-color: var(--primary); cursor: pointer;">
+                            Chưa tạo (Lấy Email)
+                        </label>
+                        <label style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 10px; cursor: pointer; text-align: center; font-size: 13px; transition: all 0.3s;" id="lblCreated">
+                            <input type="radio" name="infoSourceType" value="created" onchange="toggleInfoSourceType('created')" style="accent-color: var(--primary); cursor: pointer;">
+                            Đã tạo (Lấy Acc Hoạt động)
+                        </label>
+                    </div>
+                </div>
+
                 <!-- Dropdown type & Get button in a single line -->
                 <div style="display: flex; gap: 8px; align-items: flex-end; margin-bottom: 12px;">
                     <div style="flex: 1;">
@@ -1167,10 +1182,10 @@
                             <option value="Tiktok">Tiktok</option>
                         </select>
                     </div>
-                    <button class="btn btn-primary" id="btnGetUnusedEmail" onclick="fetchUnusedEmail()" style="height: 36px; padding: 0 16px; white-space: nowrap; display: flex; align-items: center; justify-content: center; gap: 4px;">✉️ Lấy Email</button>
+                    <button class="btn btn-primary" id="btnGetUnusedEmail" onclick="handleGetInfo()" style="height: 36px; padding: 0 16px; white-space: nowrap; display: flex; align-items: center; justify-content: center; gap: 4px;">✉️ Lấy Email</button>
                 </div>
                 
-                <!-- Result Section -->
+                <!-- Result Section (Chưa tạo) -->
                 <div id="emailGetResult" style="display: none; margin-top: 12px; border-top: 1px solid var(--border-color); padding-top: 10px;">
                     <input type="hidden" id="emailGetId">
                     
@@ -1223,6 +1238,65 @@
                         <!-- Mail contents -->
                         <div id="emailGetMailContainer" style="padding: 8px; background: rgba(0, 0, 0, 0.2); border-radius: 8px; border: 1px solid var(--border-color); min-height: 48px; max-height: 100px; overflow-y: auto; font-size: 12px; line-height: 1.4;">
                             <div id="emailGetMailContent" style="white-space: pre-wrap; word-break: break-all; color: var(--text-muted);">Không có dữ liệu thư.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Result Section (Đã tạo) -->
+                <div id="emailGetResultCreated" style="display: none; margin-top: 12px; border-top: 1px solid var(--border-color); padding-top: 10px;">
+                    <input type="hidden" id="createdAccId">
+                    
+                    <div class="email-get-grid-2col">
+                        <div class="form-group" style="margin-bottom: 8px;">
+                            <label class="form-label">Username</label>
+                            <div style="display: flex; gap: 4px; align-items: center;">
+                                <input type="text" id="createdAccUsername" class="form-input" readonly style="font-weight: 600; flex: 1; height: 36px; font-size: 13px;">
+                                <button class="btn btn-primary" onclick="copyEmailField('createdAccUsername')" style="padding: 0 10px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 13px;" title="Copy">📋</button>
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 8px;">
+                            <label class="form-label">Email</label>
+                            <div style="display: flex; gap: 4px; align-items: center;">
+                                <input type="text" id="createdAccEmail" class="form-input" readonly style="font-weight: 600; flex: 1; height: 36px; font-size: 13px;">
+                                <button class="btn btn-primary" onclick="copyEmailField('createdAccEmail')" style="padding: 0 10px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 13px;" title="Copy">📋</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="email-get-grid-2col" style="margin-top: 4px;">
+                        <div class="form-group" style="margin-bottom: 8px;">
+                            <label class="form-label">Mật khẩu</label>
+                            <div style="display: flex; gap: 4px; align-items: center;">
+                                <input type="text" id="createdAccPassword" class="form-input" readonly style="font-family: monospace; flex: 1; height: 36px; font-size: 13px;">
+                                <button class="btn btn-primary" onclick="copyEmailField('createdAccPassword')" style="padding: 0 10px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 13px;" title="Copy">📋</button>
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 8px;">
+                            <label class="form-label">2FA Secret Key</label>
+                            <div style="display: flex; gap: 4px; align-items: center;">
+                                <input type="text" id="createdAcc2Fa" class="form-input" readonly style="font-family: monospace; flex: 1; height: 36px; font-size: 13px;">
+                                <button class="btn btn-primary" onclick="copyEmailField('createdAcc2Fa')" style="padding: 0 10px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 13px;" title="Copy">📋</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- OTP Code Generation section -->
+                    <div style="margin-top: 10px; border-top: 1px dashed var(--border-color); padding-top: 10px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <label class="form-label" style="margin: 0;">Mã OTP (2FA Code)</label>
+                            <button class="btn btn-primary" id="btnGetCreatedAccOtp" onclick="fetchCreatedAccOtp()" style="padding: 4px 8px; font-size: 11px; height: 26px; display: flex; align-items: center; justify-content: center; gap: 4px;">🔑 Lấy mã OTP</button>
+                        </div>
+                        
+                        <!-- OTP Loading Indicator -->
+                        <div id="createdAccOtpLoader" style="display: none; text-align: center; padding: 6px 0;">
+                            <div style="display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.1); border-top-color: var(--accent-glow); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                            <span style="font-size: 11px; color: var(--text-muted); margin-left: 6px;">Đang lấy mã OTP...</span>
+                        </div>
+
+                        <!-- OTP Display Box -->
+                        <div id="createdAccOtpContainer" style="display: flex; align-items: center; justify-content: center; gap: 12px; padding: 8px; background: rgba(0, 0, 0, 0.2); border-radius: 8px; border: 1px solid var(--border-color); min-height: 48px;">
+                            <div id="createdAccOtpValue" style="font-family: monospace; font-size: 20px; font-weight: bold; letter-spacing: 4px; color: var(--accent);">------</div>
+                            <button class="btn btn-primary" id="btnCopyCreatedAccOtp" onclick="copyCreatedAccOtpValue()" style="padding: 4px 10px; height: 30px; font-size: 12px; display: none;">Copy</button>
                         </div>
                     </div>
                 </div>
@@ -1967,12 +2041,150 @@
         function openEmailGetModal() {
             document.getElementById('emailGetModal').style.display = 'flex';
             document.getElementById('emailGetResult').style.display = 'none';
+            document.getElementById('emailGetResultCreated').style.display = 'none';
             document.getElementById('emailGetAccPassword').value = '';
             document.getElementById('emailGetAcc2Fa').value = '';
+            
+            // Reset to uncreated radio
+            const radioUncreated = document.querySelector('input[name="infoSourceType"][value="uncreated"]');
+            if (radioUncreated) radioUncreated.checked = true;
+            toggleInfoSourceType('uncreated');
         }
 
         function closeEmailGetModal() {
             document.getElementById('emailGetModal').style.display = 'none';
+        }
+
+        function toggleInfoSourceType(type) {
+            const btn = document.getElementById('btnGetUnusedEmail');
+            const resultUncreated = document.getElementById('emailGetResult');
+            const resultCreated = document.getElementById('emailGetResultCreated');
+            const lblUncreated = document.getElementById('lblUncreated');
+            const lblCreated = document.getElementById('lblCreated');
+            
+            resultUncreated.style.display = 'none';
+            resultCreated.style.display = 'none';
+            
+            if (type === 'uncreated') {
+                if (btn) btn.innerHTML = '✉️ Lấy Email';
+                if (lblUncreated) {
+                    lblUncreated.style.borderColor = 'var(--primary)';
+                    lblUncreated.style.background = 'rgba(99, 102, 241, 0.1)';
+                }
+                if (lblCreated) {
+                    lblCreated.style.borderColor = 'var(--border-color)';
+                    lblCreated.style.background = 'rgba(255, 255, 255, 0.02)';
+                }
+            } else {
+                if (btn) btn.innerHTML = '🔑 Lấy Info';
+                if (lblCreated) {
+                    lblCreated.style.borderColor = 'var(--primary)';
+                    lblCreated.style.background = 'rgba(99, 102, 241, 0.1)';
+                }
+                if (lblUncreated) {
+                    lblUncreated.style.borderColor = 'var(--border-color)';
+                    lblUncreated.style.background = 'rgba(255, 255, 255, 0.02)';
+                }
+                
+                document.getElementById('createdAccOtpValue').textContent = '------';
+                document.getElementById('btnCopyCreatedAccOtp').style.display = 'none';
+            }
+        }
+
+        function handleGetInfo() {
+            const radioVal = document.querySelector('input[name="infoSourceType"]:checked').value;
+            if (radioVal === 'uncreated') {
+                fetchUnusedEmail();
+            } else {
+                fetchActiveCreatedAccount();
+            }
+        }
+
+        async function fetchActiveCreatedAccount() {
+            const type = document.getElementById('emailSelectType').value;
+            const btn = document.getElementById('btnGetUnusedEmail');
+            btn.disabled = true;
+            btn.textContent = 'Đang lấy...';
+
+            try {
+                const resp = await fetch(`/dashboard/api/accounts/get-active-account/?type=${type}`);
+                if (resp.status === 401 || resp.status === 403) {
+                    showToast('Vui lòng đăng nhập Dashboard trước khi thực hiện chức năng này!');
+                    return;
+                }
+                const data = await resp.json();
+                
+                if (resp.ok && data.success) {
+                    const accData = data.account_data;
+                    document.getElementById('createdAccId').value = accData.id;
+                    document.getElementById('createdAccUsername').value = accData.username || '';
+                    document.getElementById('createdAccEmail').value = accData.email || '';
+                    document.getElementById('createdAccPassword').value = accData.password || '';
+                    document.getElementById('createdAcc2Fa').value = accData.two_factor_auth || '';
+                    
+                    document.getElementById('emailGetResultCreated').style.display = 'block';
+                    
+                    // Reset OTP display
+                    document.getElementById('createdAccOtpValue').textContent = '------';
+                    document.getElementById('btnCopyCreatedAccOtp').style.display = 'none';
+                } else {
+                    showToast(data.message || 'Không tìm thấy tài khoản hoạt động nào.');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Lỗi kết nối máy chủ.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔑 Lấy Info';
+            }
+        }
+
+        async function fetchCreatedAccOtp() {
+            const id = document.getElementById('createdAccId').value;
+            if (!id) return;
+
+            const btn = document.getElementById('btnGetCreatedAccOtp');
+            const loader = document.getElementById('createdAccOtpLoader');
+            const otpVal = document.getElementById('createdAccOtpValue');
+            const btnCopy = document.getElementById('btnCopyCreatedAccOtp');
+            
+            btn.disabled = true;
+            loader.style.display = 'inline-block';
+            otpVal.textContent = '------';
+            btnCopy.style.display = 'none';
+
+            try {
+                const resp = await fetch(`/dashboard/api/accounts/${id}/get-2fa/`);
+                if (resp.status === 401 || resp.status === 403) {
+                    showToast('Vui lòng đăng nhập Dashboard trước!');
+                    return;
+                }
+                const data = await resp.json();
+                
+                if (resp.ok && data.success && data.token) {
+                    otpVal.textContent = data.token;
+                    btnCopy.style.display = 'inline-block';
+                } else {
+                    showToast(data.message || 'Không thể lấy mã OTP.');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Lỗi kết nối khi lấy mã OTP.');
+            } finally {
+                btn.disabled = false;
+                loader.style.display = 'none';
+            }
+        }
+
+        function copyCreatedAccOtpValue() {
+            const val = document.getElementById('createdAccOtpValue').textContent;
+            if (val && val !== '------') {
+                navigator.clipboard.writeText(val).then(() => {
+                    showToast('Đã sao chép mã OTP: ' + val);
+                }).catch(err => {
+                    showToast('Lỗi copy: ' + err);
+                });
+            }
         }
 
         async function fetchUnusedEmail() {
@@ -2007,7 +2219,7 @@
                 showToast('Lỗi kết nối máy chủ.');
             } finally {
                 btn.disabled = false;
-                btn.textContent = 'Lấy Email';
+                btn.innerHTML = '✉️ Lấy Email';
             }
         }
 

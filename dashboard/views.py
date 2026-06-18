@@ -963,6 +963,43 @@ class AccountsCreatedViewSet(viewsets.ModelViewSet):
             
         return qs.select_related('owner', 'created_by', 'customer', 'type', 'browser_profiles', 'modified_by').order_by('-id')
 
+    @action(detail=False, methods=['get'], url_path='get-active-account')
+    def get_active_account(self, request):
+        type_val = request.query_params.get('type', '').strip().lower()
+        if not type_val:
+            return Response({'success': False, 'message': 'Vui lòng chọn loại tài khoản.'}, status=400)
+            
+        user = request.user
+        if user.is_superuser or user.is_staff:
+            qs = AccountsCreated.objects.all()
+        else:
+            from django.db.models import Q
+            qs = AccountsCreated.objects.filter(
+                Q(owner=user) | Q(created_by=user) | Q(subscription_owner=user.username)
+            )
+            
+        account_obj = qs.filter(status=0, type__value=type_val).order_by('-id').first()
+        
+        if not account_obj:
+            return Response({
+                'success': False,
+                'message': f'Không tìm thấy tài khoản hoạt động nào cho loại tài khoản "{type_val.title()}".'
+            })
+            
+        account_obj.viewed += 1
+        account_obj.save()
+        
+        return Response({
+            'success': True,
+            'account_data': {
+                'id': account_obj.id,
+                'username': account_obj.username,
+                'email': account_obj.email,
+                'password': account_obj.password,
+                'two_factor_auth': account_obj.two_factor_auth or ''
+            }
+        })
+
     @action(detail=False, methods=['post'], url_path='add-manual')
     def add_manual(self, request):
         data = request.data

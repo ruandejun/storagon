@@ -1160,6 +1160,78 @@
         @keyframes toastFadeOut {
             to { transform: translateY(-10px); opacity: 0; }
         }
+
+        /* Hover-collapsible sidebar on desktop screens */
+        .menu-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .menu-text {
+            white-space: nowrap;
+        }
+
+        @media (min-width: 769px) {
+            .sidebar {
+                width: 70px;
+                transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+                overflow: hidden;
+            }
+
+            .sidebar:hover {
+                width: 260px;
+            }
+
+            .sidebar .menu-text {
+                display: none;
+            }
+
+            .sidebar:hover .menu-text {
+                display: inline-block;
+            }
+
+            .sidebar-brand {
+                padding: 24px 15px;
+                justify-content: center;
+                transition: justify-content 0.25s;
+            }
+
+            .sidebar:hover .sidebar-brand {
+                justify-content: flex-start;
+                padding: 24px;
+            }
+
+            .sidebar-menu {
+                padding: 20px 10px;
+            }
+
+            .menu-item {
+                padding: 12px 13px;
+                gap: 15px;
+                justify-content: center;
+            }
+
+            .sidebar:hover .menu-item {
+                justify-content: flex-start;
+                padding: 12px 16px;
+            }
+
+            .sidebar-footer {
+                padding: 20px 10px;
+                justify-content: center;
+            }
+
+            .sidebar:hover .sidebar-footer {
+                padding: 20px;
+                justify-content: space-between;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1171,48 +1243,49 @@
     <div class="sidebar">
         <div>
             <div class="sidebar-brand">
-                <h1>Storagon Admin 🚀</h1>
+                <span class="menu-icon" style="font-size: 20px;">🚀</span>
+                <h1 class="menu-text">Storagon</h1>
             </div>
             <div class="sidebar-menu">
                 <a class="menu-item active" data-tab="overview" onclick="switchTab('overview')">
-                    📊 Tổng quan
+                    <span class="menu-icon">📊</span><span class="menu-text">Tổng quan</span>
                 </a>
                 <a class="menu-item" data-tab="cards" onclick="switchTab('cards')">
-                    💳 Quản lý Thẻ
+                    <span class="menu-icon">💳</span><span class="menu-text">Quản lý Thẻ</span>
                 </a>
                 <a class="menu-item" data-tab="users" onclick="switchTab('users')">
-                    👥 Quản lý User
+                    <span class="menu-icon">👥</span><span class="menu-text">Quản lý User</span>
                 </a>
                 <a class="menu-item" data-tab="profiles" onclick="switchTab('profiles')">
-                    🖥️ Profiles
+                    <span class="menu-icon">🖥️</span><span class="menu-text">Profiles</span>
                 </a>
                 <a class="menu-item" data-tab="proxies" onclick="switchTab('proxies')">
-                    🌐 Tor Proxies
+                    <span class="menu-icon">🌐</span><span class="menu-text">Tor Proxies</span>
                 </a>
                 <a class="menu-item" data-tab="emails" onclick="switchTab('emails')">
-                    ✉️ Quản lý Email
+                    <span class="menu-icon">✉️</span><span class="menu-text">Quản lý Email</span>
                 </a>
                 <a class="menu-item" data-tab="accounts" onclick="switchTab('accounts')">
-                    🔑 Tài khoản đã tạo
+                    <span class="menu-icon">🔑</span><span class="menu-text">Tài khoản đã tạo</span>
                 </a>
                 <a class="menu-item" data-tab="hwids" onclick="switchTab('hwids')" id="menu-hwids" style="display:none;">
-                    🖱️ HWID Manager
+                    <span class="menu-icon">🖱️</span><span class="menu-text">HWID Manager</span>
                 </a>
                 <a class="menu-item" data-tab="notifications" onclick="switchTab('notifications')">
-                    🔔 Thông báo <span class="badge-unread-count" id="notif-badge" style="display:none; background:var(--danger); color:white; border-radius:50%; padding:2px 6px; font-size:10px; margin-left:auto; font-weight:700;">0</span>
+                    <span class="menu-icon">🔔</span><span class="menu-text">Thông báo <span class="badge-unread-count" id="notif-badge" style="display:none; background:var(--danger); color:white; border-radius:50%; padding:2px 6px; font-size:10px; margin-left:10px; font-weight:700;">0</span></span>
                 </a>
                 <a class="menu-item" onclick="openTwoFaModal()">
-                    🔑 Trình tạo 2FA
+                    <span class="menu-icon">🔑</span><span class="menu-text">Trình tạo 2FA</span>
                 </a>
             </div>
         </div>
         <div class="sidebar-footer">
-            <div class="user-info">
+            <div class="user-info menu-text">
                 <span class="user-name" id="currentUserDisplay">{{ request.user.username }}</span>
                 <span class="user-role">{% if request.user.is_staff %}Quản trị viên{% else %}Khách hàng{% endif %}</span>
             </div>
-            <button class="logout-btn" onclick="location.href='/dashboard/logout/'" title="Đăng xuất">
-                🚪 Thoát
+            <button class="logout-btn" onclick="location.href='/dashboard/logout/'" title="Đăng xuất" style="display: flex; align-items: center; gap: 8px;">
+                <span class="menu-icon">🚪</span><span class="menu-text">Thoát</span>
             </button>
         </div>
     </div>

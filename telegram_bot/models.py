@@ -693,6 +693,32 @@ class AccountsCreated(models.Model):
     
     
     def save(self, *args, **kwargs):
+        # Auto-link to AccountsEmails if username or email is an email address
+        email_candidate = None
+        if self.username and '@' in self.username:
+            email_candidate = self.username.strip()
+            if not self.email:
+                self.email = email_candidate
+        elif self.email and '@' in self.email:
+            email_candidate = self.email.strip()
+            if not self.username:
+                self.username = email_candidate
+                
+        if email_candidate:
+            # Look up email in AccountsEmails
+            email_qs = AccountsEmails.objects.filter(email=email_candidate)
+            email_obj = None
+            if self.owner:
+                email_obj = email_qs.filter(owner=self.owner).first()
+            if not email_obj:
+                email_obj = email_qs.first()
+                
+            if email_obj:
+                self.accounts_emails = email_obj
+                # Mark email as used
+                email_obj.used = 1
+                email_obj.save()
+
         user = get_current_user()
         if user:
             self.modified_by = user

@@ -1145,6 +1145,19 @@
                             <button class="btn btn-primary" onclick="copyEmailField('emailGetPassword')" style="padding: 10px 14px;">Copy</button>
                         </div>
                     </div>
+
+                    <!-- Fields to enter when saving/importing -->
+                    <div style="margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 15px;">
+                        <div class="form-group">
+                            <label class="form-label" for="emailGetAccPassword">Mật khẩu tài khoản (Account Password)</label>
+                            <input type="text" id="emailGetAccPassword" class="form-input" placeholder="Mật khẩu của tài khoản mới tạo...">
+                        </div>
+                        <div class="form-group" style="margin-top: 12px;">
+                            <label class="form-label" for="emailGetAcc2Fa">Mã bảo mật 2FA (Secret Key)</label>
+                            <input type="text" id="emailGetAcc2Fa" class="form-input" placeholder="Ví dụ: JBSWY3DPEBLW64TBNQ...">
+                        </div>
+                        <button class="btn btn-primary" id="btnSaveCreatedAccount" onclick="saveCreatedAccountToSystem()" style="width: 100%; height: 42px; margin-top: 10px; background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);">Lưu tài khoản</button>
+                    </div>
                     
                     <!-- Inbox Details -->
                     <div style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px;">
@@ -1906,6 +1919,8 @@
         function openEmailGetModal() {
             document.getElementById('emailGetModal').style.display = 'flex';
             document.getElementById('emailGetResult').style.display = 'none';
+            document.getElementById('emailGetAccPassword').value = '';
+            document.getElementById('emailGetAcc2Fa').value = '';
         }
 
         function closeEmailGetModal() {
@@ -1977,6 +1992,60 @@
             } finally {
                 btn.disabled = false;
                 loader.style.display = 'none';
+            }
+        }
+
+        async function saveCreatedAccountToSystem() {
+            const email = document.getElementById('emailGetAddress').value;
+            const password = document.getElementById('emailGetAccPassword').value.trim();
+            const type = document.getElementById('emailSelectType').value;
+            const two_factor_auth = document.getElementById('emailGetAcc2Fa').value.trim();
+            const btn = document.getElementById('btnSaveCreatedAccount');
+
+            if (!email) {
+                showToast('Chưa có email nào được tải.');
+                return;
+            }
+            if (!password) {
+                showToast('Vui lòng nhập mật khẩu tài khoản.');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Đang lưu...';
+
+            try {
+                const response = await fetch('/dashboard/api/accounts/add-manual/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password,
+                        type: type,
+                        two_factor_auth: two_factor_auth,
+                        profile_id: 'auto'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    showToast('Đã lưu tài khoản vào hệ thống thành công! 🎉');
+                    // Reset fields
+                    document.getElementById('emailGetAccPassword').value = '';
+                    document.getElementById('emailGetAcc2Fa').value = '';
+                } else {
+                    showToast(data.message || 'Lỗi khi lưu tài khoản.');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Lỗi kết nối máy chủ.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Lưu tài khoản';
             }
         }
 

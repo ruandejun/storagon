@@ -705,8 +705,8 @@ class AccountsCreated(models.Model):
                 self.username = email_candidate
                 
         if email_candidate:
-            # Look up email in AccountsEmails
-            email_qs = AccountsEmails.objects.filter(email=email_candidate)
+            # Look up email in AccountsEmails case-insensitively
+            email_qs = AccountsEmails.objects.filter(email__iexact=email_candidate)
             email_obj = None
             if self.owner:
                 email_obj = email_qs.filter(owner=self.owner).first()

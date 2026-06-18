@@ -96,11 +96,21 @@ class AccountsEmailsSerializer(serializers.ModelSerializer):
        			'phone_service','status', 'price',
 				'used', 'refresh_token', 'client_id',
 				'latest_from', 'latest_time', 'latest_content', 'latest_code',
+				'created_accounts',
           )
 	customer = serializers.SlugRelatedField(slug_field='username', read_only=True);
 	owner = serializers.SlugRelatedField(slug_field='username', read_only=True);
 	created_by = serializers.SlugRelatedField(slug_field='username', read_only=True);
- 
+	created_accounts = serializers.SerializerMethodField()
+
+	@staticmethod
+	def get_created_accounts(obj):
+		return [
+			(acc.type.label.strip() if (acc.type.label and acc.type.label.strip()) else acc.type.value.title())
+			for acc in obj.accounts_emails_set.all()
+			if acc.type
+		]
+
 class AccountsCreatedSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = AccountsCreated

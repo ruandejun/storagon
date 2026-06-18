@@ -892,6 +892,50 @@
                 font-size: 10px;
             }
         }
+
+        /* Email retrieval modal responsive overrides */
+        .email-get-grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        @media (max-width: 576px) {
+            #emailGetModal .modal-box {
+                padding: 14px 16px;
+                max-width: 95%;
+                margin: 10px;
+            }
+            .email-get-grid-2col {
+                gap: 8px;
+            }
+            #emailGetModal .form-group {
+                margin-bottom: 6px !important;
+            }
+            #emailGetModal .form-label {
+                font-size: 11px;
+                margin-bottom: 2px;
+            }
+            #emailGetModal .form-input {
+                padding: 6px 8px;
+                font-size: 13px;
+                height: 34px;
+            }
+            #emailGetModal p {
+                font-size: 12px !important;
+                margin-bottom: 8px !important;
+            }
+            #emailGetModal .btn {
+                padding: 6px 10px;
+                font-size: 12px;
+                height: 34px !important;
+            }
+            #emailGetModal #emailGetMailContainer {
+                min-height: 44px;
+                max-height: 100px;
+                padding: 6px;
+                font-size: 11px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1114,66 +1158,70 @@
                 <button class="addr-close-btn" onclick="closeEmailGetModal()" style="background: transparent; border: none; color: var(--text-muted); font-size: 16px; cursor: pointer;">✕</button>
             </div>
             <div class="modal-body">
-                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5;">
-                    Hệ thống sẽ lọc và chọn ra một email trong cơ sở dữ liệu chưa được đăng ký cho dịch vụ tương ứng.
-                </p>
-                <div class="form-group">
-                    <label class="form-label" for="emailSelectType">Chọn loại tài khoản đăng ký</label>
-                    <select id="emailSelectType" class="form-input" style="background: rgba(8, 11, 23, 0.8); border: 1px solid var(--border-color); color: white; height: 40px; padding: 0 10px; border-radius: 8px;">
-                        <option value="Apple">Apple</option>
-                        <option value="Tiktok">Tiktok</option>
-                    </select>
-                </div>
-                <div class="form-group" style="margin-top: 15px;">
-                    <button class="btn btn-primary" id="btnGetUnusedEmail" onclick="fetchUnusedEmail()" style="width: 100%; height: 42px;">Lấy Email</button>
+                <!-- Dropdown type & Get button in a single line -->
+                <div style="display: flex; gap: 8px; align-items: flex-end; margin-bottom: 12px;">
+                    <div style="flex: 1;">
+                        <label class="form-label" for="emailSelectType" style="margin-bottom: 4px;">Loại tài khoản</label>
+                        <select id="emailSelectType" class="form-input" style="background: rgba(8, 11, 23, 0.8); border: 1px solid var(--border-color); color: white; height: 36px; padding: 0 10px; border-radius: 8px; width: 100%;">
+                            <option value="Apple">Apple</option>
+                            <option value="Tiktok">Tiktok</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" id="btnGetUnusedEmail" onclick="fetchUnusedEmail()" style="height: 36px; padding: 0 16px; white-space: nowrap; display: flex; align-items: center; justify-content: center; gap: 4px;">✉️ Lấy Email</button>
                 </div>
                 
                 <!-- Result Section -->
-                <div id="emailGetResult" style="display: none; margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                <div id="emailGetResult" style="display: none; margin-top: 12px; border-top: 1px solid var(--border-color); padding-top: 10px;">
                     <input type="hidden" id="emailGetId">
-                    <div class="form-group">
-                        <label class="form-label">Địa chỉ Email</label>
-                        <div style="display: flex; gap: 8px; align-items: center;">
-                            <input type="text" id="emailGetAddress" class="form-input" readonly style="font-weight: 600; flex: 1;">
-                            <button class="btn btn-primary" onclick="copyEmailField('emailGetAddress')" style="padding: 10px 14px;">Copy</button>
+                    
+                    <!-- Email & Password info side-by-side even on mobile -->
+                    <div class="email-get-grid-2col">
+                        <div class="form-group" style="margin-bottom: 8px;">
+                            <label class="form-label">Địa chỉ Email</label>
+                            <div style="display: flex; gap: 4px; align-items: center;">
+                                <input type="text" id="emailGetAddress" class="form-input" readonly style="font-weight: 600; flex: 1; height: 36px; font-size: 13px;">
+                                <button class="btn btn-primary" onclick="copyEmailField('emailGetAddress')" style="padding: 0 10px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 13px;" title="Copy">📋</button>
+                            </div>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Mật khẩu Email</label>
-                        <div style="display: flex; gap: 8px; align-items: center;">
-                            <input type="text" id="emailGetPassword" class="form-input" readonly style="font-family: monospace; flex: 1;">
-                            <button class="btn btn-primary" onclick="copyEmailField('emailGetPassword')" style="padding: 10px 14px;">Copy</button>
+                        <div class="form-group" style="margin-bottom: 8px;">
+                            <label class="form-label">Mật khẩu Email</label>
+                            <div style="display: flex; gap: 4px; align-items: center;">
+                                <input type="text" id="emailGetPassword" class="form-input" readonly style="font-family: monospace; flex: 1; height: 36px; font-size: 13px;">
+                                <button class="btn btn-primary" onclick="copyEmailField('emailGetPassword')" style="padding: 0 10px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 13px;" title="Copy">📋</button>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Fields to enter when saving/importing -->
-                    <div style="margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 15px;">
-                        <div class="form-group">
-                            <label class="form-label" for="emailGetAccPassword">Mật khẩu tài khoản (Account Password)</label>
-                            <input type="text" id="emailGetAccPassword" class="form-input" placeholder="Mật khẩu của tài khoản mới tạo...">
+                    <!-- Fields to enter when saving/importing - side-by-side even on mobile -->
+                    <div style="margin-top: 10px; border-top: 1px dashed var(--border-color); padding-top: 10px;">
+                        <div class="email-get-grid-2col">
+                            <div class="form-group" style="margin-bottom: 8px;">
+                                <label class="form-label" for="emailGetAccPassword">Mật khẩu mới</label>
+                                <input type="text" id="emailGetAccPassword" class="form-input" placeholder="Mật khẩu tạo..." style="height: 36px; font-size: 13px;">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 8px;">
+                                <label class="form-label" for="emailGetAcc2Fa">Khóa 2FA</label>
+                                <input type="text" id="emailGetAcc2Fa" class="form-input" placeholder="2FA Secret..." style="height: 36px; font-size: 13px;">
+                            </div>
                         </div>
-                        <div class="form-group" style="margin-top: 12px;">
-                            <label class="form-label" for="emailGetAcc2Fa">Mã bảo mật 2FA (Secret Key)</label>
-                            <input type="text" id="emailGetAcc2Fa" class="form-input" placeholder="Ví dụ: JBSWY3DPEBLW64TBNQ...">
-                        </div>
-                        <button class="btn btn-primary" id="btnSaveCreatedAccount" onclick="saveCreatedAccountToSystem()" style="width: 100%; height: 42px; margin-top: 10px; background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);">Lưu tài khoản</button>
+                        <button class="btn btn-primary" id="btnSaveCreatedAccount" onclick="saveCreatedAccountToSystem()" style="width: 100%; height: 36px; margin-top: 4px; background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); display: flex; align-items: center; justify-content: center; font-size: 13px; gap: 6px;">💾 Lưu tài khoản</button>
                     </div>
                     
                     <!-- Inbox Details -->
-                    <div style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div style="margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 10px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                             <label class="form-label" style="margin: 0;">Thư mới nhất</label>
-                            <button class="btn btn-primary" id="btnReloadEmailGet" onclick="reloadEmailGetMailbox()" style="padding: 4px 10px; font-size: 11px; height: auto;">🔄 Tải lại</button>
+                            <button class="btn btn-primary" id="btnReloadEmailGet" onclick="reloadEmailGetMailbox()" style="padding: 4px 8px; font-size: 11px; height: 26px; display: flex; align-items: center; justify-content: center; gap: 4px;">🔄 Tải lại</button>
                         </div>
                         
                         <!-- Mail Loading Indicator -->
-                        <div id="emailGetLoader" style="display: none; text-align: center; padding: 15px 0;">
-                            <div style="display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.1); border-top-color: var(--accent-glow); border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                            <span style="font-size: 12px; color: var(--text-muted); margin-left: 8px;">Đang đọc thư...</span>
+                        <div id="emailGetLoader" style="display: none; text-align: center; padding: 6px 0;">
+                            <div style="display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.1); border-top-color: var(--accent-glow); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                            <span style="font-size: 11px; color: var(--text-muted); margin-left: 6px;">Đang đọc thư...</span>
                         </div>
 
                         <!-- Mail contents -->
-                        <div id="emailGetMailContainer" style="padding: 12px; background: rgba(0, 0, 0, 0.2); border-radius: 8px; border: 1px solid var(--border-color); min-height: 80px; font-size: 12px; line-height: 1.5;">
+                        <div id="emailGetMailContainer" style="padding: 8px; background: rgba(0, 0, 0, 0.2); border-radius: 8px; border: 1px solid var(--border-color); min-height: 48px; max-height: 100px; overflow-y: auto; font-size: 12px; line-height: 1.4;">
                             <div id="emailGetMailContent" style="white-space: pre-wrap; word-break: break-all; color: var(--text-muted);">Không có dữ liệu thư.</div>
                         </div>
                     </div>

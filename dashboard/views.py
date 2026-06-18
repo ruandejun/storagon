@@ -297,8 +297,8 @@ class AccountsEmailsViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if user.is_superuser or user.is_staff:
-            return AccountsEmails.objects.all().order_by('-id')
-        return AccountsEmails.objects.filter(owner=user).order_by('-id')
+            return AccountsEmails.objects.all().order_by('-id').prefetch_related('accounts_emails_set__type')
+        return AccountsEmails.objects.filter(owner=user).order_by('-id').prefetch_related('accounts_emails_set__type')
 
     def create(self, request, *args, **kwargs):
         data = request.data
@@ -980,7 +980,7 @@ class AccountsCreatedViewSet(viewsets.ModelViewSet):
 
         # 1. Resolve or create type
         from telegram_bot.models import AccountsType
-        account_type, _ = AccountsType.objects.get_or_create(value=type_str.lower())
+        account_type, _ = AccountsType.objects.get_or_create(value=type_str.lower(), defaults={'label': type_str.title()})
 
         # 2. Resolve profile
         profile = None
@@ -1049,7 +1049,7 @@ class AccountsCreatedViewSet(viewsets.ModelViewSet):
             type_str = data.get('type', '').strip()
             if type_str:
                 from telegram_bot.models import AccountsType
-                account_type, _ = AccountsType.objects.get_or_create(value=type_str.lower())
+                account_type, _ = AccountsType.objects.get_or_create(value=type_str.lower(), defaults={'label': type_str.title()})
                 instance.type = account_type
             else:
                 instance.type = None

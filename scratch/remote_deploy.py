@@ -67,7 +67,7 @@ def deploy():
         print("\n--- Verifying container status ---")
         run_cmd("cd /root/storagon && docker compose ps")
         
-        print("\nDEPLOYMENT AND CACHE RESET COMPLETED SUCCESSFULLY! 🎉")
+        print("\nDEPLOYMENT AND CACHE RESET COMPLETED SUCCESSFULLY! [Done]")
         
     except Exception as e:
         print(f"Error during deployment: {e}")

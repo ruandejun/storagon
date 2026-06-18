@@ -895,6 +895,10 @@
                 <button class="btn-tool" onclick="openAddressModal()" title="Tạo địa chỉ Mỹ ngẫu nhiên">
                     🇺🇸 Tạo địa chỉ
                 </button>
+                <!-- 2FA Authenticator -->
+                <button class="btn-tool" onclick="openTwoFaModal()" title="Lấy mã 2FA">
+                    🔑 2FA
+                </button>
             </div>
             <!-- Login Dashboard -->
             <a href="/dashboard/" class="btn-tool btn-login" title="Đăng nhập Dashboard">
@@ -1009,6 +1013,38 @@
                 <button class="addr-btn-copyall" onclick="copyAllAddress()">
                     📑 Copy toàn bộ
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2FA AUTHENTICATOR MODAL -->
+    <div class="modal-overlay" id="twoFaModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>🔑 Trình tạo mã 2FA</h3>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5;">
+                    Nhập mã bảo mật 2FA (Base32 secret) của bạn để nhận mã xác thực OTP 6 số.
+                </p>
+                <div class="form-group">
+                    <label class="form-label" for="twoFaSecret">Mã bảo mật 2FA (Secret Key)</label>
+                    <input type="text" id="twoFaSecret" class="form-input" placeholder="Ví dụ: JBSWY3DPEBLW64TBNQ..." style="text-transform: uppercase;">
+                </div>
+                <div class="form-group" id="twoFaResultGroup" style="display: none; margin-top: 20px;">
+                    <label class="form-label">Mã xác thực của bạn (OTP Code)</label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <input type="text" id="twoFaCode" class="form-input" readonly style="font-size: 24px; font-weight: 700; text-align: center; letter-spacing: 4px; color: var(--accent-glow); background: rgba(0, 0, 0, 0.3); flex: 1;">
+                        <button class="btn btn-primary" onclick="copyTwoFaCode()" style="padding: 10px 16px;">Sao chép</button>
+                    </div>
+                    <div id="twoFaCountdown" style="font-size: 12px; color: var(--text-muted); margin-top: 8px; text-align: center;">
+                        Hiệu lực còn lại: <strong id="twoFaSeconds">30</strong> giây
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeTwoFaModal()">Đóng</button>
+                <button class="btn btn-primary" id="btnGetTwoFa" onclick="generateTwoFaCode()">Lấy mã (Get Code)</button>
             </div>
         </div>
     </div>
@@ -1521,6 +1557,152 @@
         // Close address modal on overlay click
         document.getElementById('addressModal').addEventListener('click', function(e) {
             if (e.target === this) closeAddressModal();
+        });
+
+        // 10. 2FA AUTHENTICATOR
+        function base32ToBytes(base32) {
+            const base32chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+            base32 = base32.replace(/\s/g, "").replace(/=/g, "").toUpperCase();
+            const len = base32.length;
+            const bytes = new Uint8Array(Math.floor((len * 5) / 8));
+            
+            let val = 0;
+            let bits = 0;
+            let index = 0;
+            
+            for (let i = 0; i < len; i++) {
+                const idx = base32chars.indexOf(base32[i]);
+                if (idx === -1) continue; // ignore invalid chars
+                
+                val = (val << 5) | idx;
+                bits += 5;
+                
+                if (bits >= 8) {
+                    bytes[index++] = (val >>> (bits - 8)) & 255;
+                    bits -= 8;
+                }
+            }
+            return bytes;
+        }
+
+        async function calculateTotp(secret) {
+            try {
+                const cleanSecret = secret.replace(/\s/g, "").replace(/=/g, "").toUpperCase();
+                if (!cleanSecret) return null;
+                
+                const keyBytes = base32ToBytes(cleanSecret);
+                if (keyBytes.length === 0) return null;
+                
+                const epoch = Math.floor(Date.now() / 1000 / 30);
+                
+                const counterBytes = new Uint8Array(8);
+                let temp = epoch;
+                for (let i = 7; i >= 0; i--) {
+                    counterBytes[i] = temp & 0xff;
+                    temp = Math.floor(temp / 256);
+                }
+                
+                const cryptoKey = await window.crypto.subtle.importKey(
+                    "raw",
+                    keyBytes,
+                    { name: "HMAC", hash: { name: "SHA-1" } },
+                    false,
+                    ["sign"]
+                );
+                
+                const signature = await window.crypto.subtle.sign(
+                    "HMAC",
+                    cryptoKey,
+                    counterBytes
+                );
+                
+                const hmac = new Uint8Array(signature);
+                const offset = hmac[hmac.length - 1] & 0xf;
+                const code = ((hmac[offset] & 0x7f) << 24) |
+                             ((hmac[offset + 1] & 0xff) << 16) |
+                             ((hmac[offset + 2] & 0xff) << 8) |
+                             (hmac[offset + 3] & 0xff);
+                
+                const otp = code % 1000000;
+                return otp.toString().padStart(6, '0');
+            } catch (err) {
+                console.error(err);
+                return null;
+            }
+        }
+
+        let twoFaInterval = null;
+
+        function openTwoFaModal() {
+            document.getElementById('twoFaModal').style.display = 'flex';
+            document.getElementById('twoFaSecret').focus();
+            const savedSecret = localStorage.getItem('last_2fa_secret') || '';
+            document.getElementById('twoFaSecret').value = savedSecret;
+            if (savedSecret) {
+                generateTwoFaCode();
+            }
+        }
+
+        function closeTwoFaModal() {
+            document.getElementById('twoFaModal').style.display = 'none';
+            if (twoFaInterval) {
+                clearInterval(twoFaInterval);
+                twoFaInterval = null;
+            }
+            document.getElementById('twoFaResultGroup').style.display = 'none';
+            document.getElementById('twoFaCode').value = '';
+        }
+
+        async function generateTwoFaCode() {
+            const secretInput = document.getElementById('twoFaSecret').value.trim();
+            if (!secretInput) {
+                showToast('Vui lòng nhập mã bảo mật 2FA');
+                return;
+            }
+
+            localStorage.setItem('last_2fa_secret', secretInput);
+
+            if (twoFaInterval) {
+                clearInterval(twoFaInterval);
+            }
+
+            const updateOtp = async () => {
+                const code = await calculateTotp(secretInput);
+                if (code) {
+                    document.getElementById('twoFaCode').value = code;
+                    document.getElementById('twoFaResultGroup').style.display = 'block';
+                    
+                    const remaining = 30 - (Math.floor(Date.now() / 1000) % 30);
+                    document.getElementById('twoFaSeconds').textContent = remaining;
+                } else {
+                    showToast('Mã 2FA không hợp lệ. Vui lòng kiểm tra lại.');
+                    clearInterval(twoFaInterval);
+                    twoFaInterval = null;
+                    document.getElementById('twoFaResultGroup').style.display = 'none';
+                }
+            };
+
+            await updateOtp();
+            twoFaInterval = setInterval(updateOtp, 1000);
+        }
+
+        function copyTwoFaCode() {
+            const codeInput = document.getElementById('twoFaCode');
+            if (!codeInput.value) return;
+            
+            navigator.clipboard.writeText(codeInput.value).then(() => {
+                showToast('Đã sao chép mã 2FA: ' + codeInput.value);
+            }).catch(err => {
+                codeInput.select();
+                codeInput.setSelectionRange(0, 99999);
+                document.execCommand('copy');
+                showToast('Đã sao chép mã 2FA: ' + codeInput.value);
+            });
+        }
+
+        // Close 2fa modal on overlay click
+        document.getElementById('twoFaModal').addEventListener('click', function(e) {
+            if (e.target === this) closeTwoFaModal();
         });
 
         // On first page load, trigger recovery if backup is found locally

@@ -1,4 +1,8 @@
 import paramiko
+import sys
+
+# Ensure UTF-8 output encoding to handle Vietnamese characters in git logs/errors
+sys.stdout.reconfigure(encoding='utf-8')
 
 def deploy():
     hostname = "167.233.89.198"

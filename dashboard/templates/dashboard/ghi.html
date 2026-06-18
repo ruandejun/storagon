@@ -363,6 +363,44 @@
             font-weight: 700;
         }
 
+        /* Styling tabs inside modal-header */
+        .modal-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 0px;
+            gap: 16px;
+        }
+
+        .modal-tab {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 16px;
+            font-weight: 700;
+            padding-bottom: 8px;
+            cursor: pointer;
+            position: relative;
+            transition: color 0.2s;
+        }
+
+        .modal-tab:hover {
+            color: var(--text-color);
+        }
+
+        .modal-tab.active {
+            color: var(--primary-glow);
+        }
+
+        .modal-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--primary-glow);
+        }
+
         .modal-body {
             margin-bottom: 24px;
             text-align: left;
@@ -1134,27 +1172,61 @@
         </div>
     </div>
 
-    <!-- QUICK LOGIN MODAL -->
+    <!-- QUICK LOGIN & REGISTER MODAL -->
     <div class="modal-overlay" id="quickLoginModal">
         <div class="modal-box" style="max-width: 400px;">
-            <div class="modal-header">
-                <h3>🔑 Đăng nhập nhanh</h3>
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                <div class="modal-tabs" style="display: flex; gap: 16px; border-bottom: 1px solid var(--border-color); flex: 1; margin-right: 15px;">
+                    <button class="modal-tab active" id="tabQuickLogin" onclick="switchAuthTab('login')">Đăng nhập</button>
+                    <button class="modal-tab" id="tabQuickRegister" onclick="switchAuthTab('register')">Đăng ký</button>
+                </div>
                 <button class="addr-close-btn" onclick="closeQuickLoginModal()" title="Đóng">✕</button>
             </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label" for="loginUsername">Tên đăng nhập</label>
-                    <input type="text" id="loginUsername" class="form-input" placeholder="Nhập tên đăng nhập...">
+            
+            <!-- LOGIN VIEW -->
+            <div id="quickLoginView">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="loginUsername">Tên đăng nhập</label>
+                        <input type="text" id="loginUsername" class="form-input" placeholder="Nhập tên đăng nhập...">
+                    </div>
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label class="form-label" for="loginPassword">Mật khẩu</label>
+                        <input type="password" id="loginPassword" class="form-input" placeholder="Nhập mật khẩu..." onkeydown="if(event.key === 'Enter') submitQuickLogin()">
+                    </div>
+                    <div id="loginErrorMsg" style="display: none; color: #ef4444; font-size: 13px; margin-top: 12px; text-align: center; font-weight: 600;"></div>
                 </div>
-                <div class="form-group" style="margin-top: 15px;">
-                    <label class="form-label" for="loginPassword">Mật khẩu</label>
-                    <input type="password" id="loginPassword" class="form-input" placeholder="Nhập mật khẩu..." onkeydown="if(event.key === 'Enter') submitQuickLogin()">
+                <div class="modal-footer" style="margin-top: 15px;">
+                    <button class="btn btn-secondary" onclick="closeQuickLoginModal()">Hủy</button>
+                    <button class="btn btn-primary" id="btnSubmitQuickLogin" onclick="submitQuickLogin()" style="padding: 10px 16px;">Đăng nhập</button>
                 </div>
-                <div id="loginErrorMsg" style="display: none; color: #ef4444; font-size: 13px; margin-top: 12px; text-align: center; font-weight: 600;"></div>
             </div>
-            <div class="modal-footer" style="margin-top: 15px;">
-                <button class="btn btn-secondary" onclick="closeQuickLoginModal()">Hủy</button>
-                <button class="btn btn-primary" id="btnSubmitQuickLogin" onclick="submitQuickLogin()" style="padding: 10px 16px;">Đăng nhập</button>
+
+            <!-- REGISTER VIEW -->
+            <div id="quickRegisterView" style="display: none;">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="registerUsername">Tên đăng nhập</label>
+                        <input type="text" id="registerUsername" class="form-input" placeholder="Từ 6-30 ký tự, viết liền...">
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label class="form-label" for="registerEmail">Địa chỉ Email</label>
+                        <input type="email" id="registerEmail" class="form-input" placeholder="Ví dụ: mail@example.com...">
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label class="form-label" for="registerPassword">Mật khẩu</label>
+                        <input type="password" id="registerPassword" class="form-input" placeholder="Nhập mật khẩu...">
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label class="form-label" for="registerConfirmPassword">Xác nhận mật khẩu</label>
+                        <input type="password" id="registerConfirmPassword" class="form-input" placeholder="Nhập lại mật khẩu..." onkeydown="if(event.key === 'Enter') submitQuickRegister()">
+                    </div>
+                    <div id="registerErrorMsg" style="display: none; color: #ef4444; font-size: 13px; margin-top: 12px; text-align: center; font-weight: 600;"></div>
+                </div>
+                <div class="modal-footer" style="margin-top: 15px;">
+                    <button class="btn btn-secondary" onclick="closeQuickLoginModal()">Hủy</button>
+                    <button class="btn btn-primary" id="btnSubmitQuickRegister" onclick="submitQuickRegister()" style="padding: 10px 16px;">Đăng ký</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1963,13 +2035,39 @@ ${otpBlock}
             if (e.target === this) closeEmailGetModal();
         });
 
-        // 12. QUICK LOGIN
+        // 12. QUICK LOGIN & REGISTER
+        function switchAuthTab(tab) {
+            const tabLogin = document.getElementById('tabQuickLogin');
+            const tabRegister = document.getElementById('tabQuickRegister');
+            const viewLogin = document.getElementById('quickLoginView');
+            const viewRegister = document.getElementById('quickRegisterView');
+
+            if (tab === 'login') {
+                tabLogin.classList.add('active');
+                tabRegister.classList.remove('active');
+                viewLogin.style.display = 'block';
+                viewRegister.style.display = 'none';
+                document.getElementById('loginUsername').focus();
+            } else {
+                tabLogin.classList.remove('active');
+                tabRegister.classList.add('active');
+                viewLogin.style.display = 'none';
+                viewRegister.style.display = 'block';
+                document.getElementById('registerUsername').focus();
+            }
+        }
+
         function openQuickLoginModal() {
             document.getElementById('quickLoginModal').style.display = 'flex';
             document.getElementById('loginUsername').value = '';
             document.getElementById('loginPassword').value = '';
             document.getElementById('loginErrorMsg').style.display = 'none';
-            document.getElementById('loginUsername').focus();
+            document.getElementById('registerUsername').value = '';
+            document.getElementById('registerEmail').value = '';
+            document.getElementById('registerPassword').value = '';
+            document.getElementById('registerConfirmPassword').value = '';
+            document.getElementById('registerErrorMsg').style.display = 'none';
+            switchAuthTab('login');
         }
 
         function closeQuickLoginModal() {
@@ -2020,6 +2118,61 @@ ${otpBlock}
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'Đăng nhập';
+            }
+        }
+
+        async function submitQuickRegister() {
+            const username = document.getElementById('registerUsername').value.trim();
+            const email = document.getElementById('registerEmail').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            const confirm_password = document.getElementById('registerConfirmPassword').value;
+            const errorDiv = document.getElementById('registerErrorMsg');
+            const btn = document.getElementById('btnSubmitQuickRegister');
+
+            if (!username || !email || !password || !confirm_password) {
+                errorDiv.textContent = 'Vui lòng điền đầy đủ thông tin đăng ký.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            if (password !== confirm_password) {
+                errorDiv.textContent = 'Mật khẩu xác nhận không khớp.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Đang đăng ký...';
+            errorDiv.style.display = 'none';
+
+            try {
+                const response = await fetch('/dashboard/register/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({ username, email, password, confirm_password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    showToast('Đăng ký thành công! Đang tự động đăng nhập...');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    errorDiv.textContent = data.message || 'Lỗi khi đăng ký tài khoản.';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (err) {
+                console.error(err);
+                errorDiv.textContent = 'Lỗi kết nối máy chủ.';
+                errorDiv.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Đăng ký';
             }
         }
 

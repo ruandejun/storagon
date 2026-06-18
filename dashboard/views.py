@@ -152,12 +152,13 @@ def dashboard_stats_api(request):
     status_counts = {
         'chua_su_dung': cards_qs.filter(status='Chưa sử dụng').count(),
         'dang_su_dung': cards_qs.filter(status='Đang sử dụng').count(),
-        'da_su_dung': cards_qs.filter(status='Đã sử dụng').count(),
+        'da_su_dung': 0,
         'the_chet': cards_qs.filter(status='Thẻ chết').count(),
         'the_song': cards_qs.filter(status='Thẻ sống').count(),
         'the_tot': cards_qs.filter(status='Thẻ tốt').count(),
         'the_loi': cards_qs.filter(status='Thẻ lỗi').count(),
         'sub_ok': cards_qs.filter(status='Sub OK').count(),
+        'sub_loi': cards_qs.filter(status='Sub lỗi').count(),
     }
     
     # Users Stats

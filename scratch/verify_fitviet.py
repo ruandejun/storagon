@@ -19,6 +19,8 @@ def test_choices():
     card_statuses = [c[0] for c in Card._meta.get_field('status').choices]
     print(f"Card status choices in DB: {card_statuses}")
     assert "Sub OK" in card_statuses, "Sub OK should be in Card status choices"
+    assert "Sub lỗi" in card_statuses, "Sub lỗi should be in Card status choices"
+    assert "Đã sử dụng" not in card_statuses, "Đã sử dụng should not be in Card status choices"
     print("✓ Card status choices check passed")
     
     # 2. Check account status enum
@@ -42,6 +44,7 @@ def test_api_client():
     stats_data = res.json()
     print(f"Stats API response: {stats_data}")
     assert 'sub_ok' in stats_data.get('status_counts', {}), "status_counts should include sub_ok count"
+    assert 'sub_loi' in stats_data.get('status_counts', {}), "status_counts should include sub_loi count"
     print("✓ Stats API check passed")
     
     # Check card list API
@@ -62,6 +65,8 @@ def test_template_content():
     
     # Check for Sub OK and Sub Lỗi options in HTML dropdowns
     assert 'value="Sub OK"' in html, "Should have Sub OK options for cards"
+    assert 'value="Sub lỗi"' in html, "Should have Sub lỗi options for cards"
+    assert 'value="Đã sử dụng"' not in html, "Should not have Đã sử dụng options for cards"
     assert 'value="4"' in html, "Should have option value 4 (Sub OK) for accounts"
     assert 'value="5"' in html, "Should have option value 5 (Sub Lỗi) for accounts"
     

@@ -1485,12 +1485,12 @@
                     <select class="filter-select" id="cardStatusFilter" onchange="loadCards(1)">
                         <option value="Chưa sử dụng">Chưa sử dụng</option>
                         <option value="Đang sử dụng">Đang sử dụng</option>
-                        <option value="Đã sử dụng">Đã sử dụng</option>
                         <option value="Thẻ chết">Thẻ chết</option>
                         <option value="Thẻ sống">Thẻ sống</option>
                         <option value="Thẻ tốt">Thẻ tốt</option>
                         <option value="Thẻ lỗi">Thẻ lỗi</option>
                         <option value="Sub OK">Sub OK</option>
+                        <option value="Sub lỗi">Sub lỗi</option>
                         <option value="Tất cả">Tất cả</option>
                     </select>
                     <select class="filter-select" id="cardOwnerFilter" onchange="loadCards(1)" style="display: none;">
@@ -1934,12 +1934,12 @@
                     <select class="filter-select" id="importCardsStatus" style="width: 100%;">
                         <option value="Chưa sử dụng">Chưa sử dụng</option>
                         <option value="Đang sử dụng">Đang sử dụng</option>
-                        <option value="Đã sử dụng">Đã sử dụng</option>
                         <option value="Thẻ chết">Thẻ chết</option>
                         <option value="Thẻ sống">Thẻ sống</option>
                         <option value="Thẻ tốt">Thẻ tốt</option>
                         <option value="Thẻ lỗi">Thẻ lỗi</option>
                         <option value="Sub OK">Sub OK</option>
+                        <option value="Sub lỗi">Sub lỗi</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -2009,12 +2009,12 @@
                     <select class="filter-select" id="editCardStatus" style="width: 100%;">
                         <option value="Chưa sử dụng">Chưa sử dụng</option>
                         <option value="Đang sử dụng">Đang sử dụng</option>
-                        <option value="Đã sử dụng">Đã sử dụng</option>
                         <option value="Thẻ chết">Thẻ chết</option>
                         <option value="Thẻ sống">Thẻ sống</option>
                         <option value="Thẻ tốt">Thẻ tốt</option>
                         <option value="Thẻ lỗi">Thẻ lỗi</option>
                         <option value="Sub OK">Sub OK</option>
+                        <option value="Sub lỗi">Sub lỗi</option>
                     </select>
                 </div>
                 <div class="form-row">
@@ -2107,12 +2107,12 @@
                         <option value="" disabled selected>Chọn trạng thái</option>
                         <option value="Chưa sử dụng">Chưa sử dụng</option>
                         <option value="Đang sử dụng">Đang sử dụng</option>
-                        <option value="Đã sử dụng">Đã sử dụng</option>
                         <option value="Thẻ chết">Thẻ chết</option>
                         <option value="Thẻ sống">Thẻ sống</option>
                         <option value="Thẻ tốt">Thẻ tốt</option>
                         <option value="Thẻ lỗi">Thẻ lỗi</option>
                         <option value="Sub OK">Sub OK</option>
+                        <option value="Sub lỗi">Sub lỗi</option>
                     </select>
                 </div>
             </div>
@@ -3369,19 +3369,19 @@
             cardsChart = new Chart(ctxCards, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Chưa sử dụng', 'Đang sử dụng', 'Đã sử dụng', 'Thẻ chết', 'Thẻ sống', 'Thẻ tốt', 'Thẻ lỗi', 'Sub OK'],
+                    labels: ['Chưa sử dụng', 'Đang sử dụng', 'Thẻ chết', 'Thẻ sống', 'Thẻ tốt', 'Thẻ lỗi', 'Sub OK', 'Sub lỗi'],
                     datasets: [{
                         data: [
                             cardCounts.chua_su_dung,
                             cardCounts.dang_su_dung,
-                            cardCounts.da_su_dung,
                             cardCounts.the_chet,
                             cardCounts.the_song,
                             cardCounts.the_tot,
                             cardCounts.the_loi || 0,
-                            cardCounts.sub_ok || 0
+                            cardCounts.sub_ok || 0,
+                            cardCounts.sub_loi || 0
                         ],
-                        backgroundColor: ['#64748b', '#ea580c', '#7c3aed', '#dc2626', '#059669', '#0f766e', '#ef4444', '#10b981'],
+                        backgroundColor: ['#64748b', '#ea580c', '#dc2626', '#059669', '#0f766e', '#ef4444', '#10b981', '#f43f5e'],
                         borderWidth: 1,
                         borderColor: 'rgba(255, 255, 255, 0.05)'
                     }]
@@ -3439,7 +3439,8 @@
                 'Thẻ sống': 'badge-live',
                 'Thẻ tốt': 'badge-good',
                 'Thẻ lỗi': 'badge-error',
-                'Sub OK': 'badge-sub-ok'
+                'Sub OK': 'badge-sub-ok',
+                'Sub lỗi': 'badge-sub-error'
             };
             return map[status] || 'badge-unused';
         }
@@ -3523,12 +3524,12 @@
                         <select class="inline-select ${getCardStatusBadgeClass(c.status)}" onchange="updateCardStatusInline(event, ${c.id}, this.value)">
                             <option value="Chưa sử dụng" ${c.status === 'Chưa sử dụng' ? 'selected' : ''}>Chưa sử dụng</option>
                             <option value="Đang sử dụng" ${c.status === 'Đang sử dụng' ? 'selected' : ''}>Đang sử dụng</option>
-                            <option value="Đã sử dụng" ${c.status === 'Đã sử dụng' ? 'selected' : ''}>Đã sử dụng</option>
                             <option value="Thẻ chết" ${c.status === 'Thẻ chết' ? 'selected' : ''}>Thẻ chết</option>
                             <option value="Thẻ sống" ${c.status === 'Thẻ sống' ? 'selected' : ''}>Thẻ sống</option>
                             <option value="Thẻ tốt" ${c.status === 'Thẻ tốt' ? 'selected' : ''}>Thẻ tốt</option>
                             <option value="Thẻ lỗi" ${c.status === 'Thẻ lỗi' ? 'selected' : ''}>Thẻ lỗi</option>
                             <option value="Sub OK" ${c.status === 'Sub OK' ? 'selected' : ''}>Sub OK</option>
+                            <option value="Sub lỗi" ${c.status === 'Sub lỗi' ? 'selected' : ''}>Sub lỗi</option>
                         </select>
                     </td>
                     <td style="text-align: center; font-weight: 600; color: var(--accent);">${c.owner_username || 'Chưa chỉ định'}</td>

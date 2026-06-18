@@ -5,12 +5,12 @@ class Card(models.Model):
     STATUS_CHOICES = [
         ('Chưa sử dụng', 'Chưa sử dụng'),
         ('Đang sử dụng', 'Đang sử dụng'),
-        ('Đã sử dụng', 'Đã sử dụng'),
         ('Thẻ chết', 'Thẻ chết'),
         ('Thẻ sống', 'Thẻ sống'),
         ('Thẻ tốt', 'Thẻ tốt'),
         ('Thẻ lỗi', 'Thẻ lỗi'),
         ('Sub OK', 'Sub OK'),
+        ('Sub lỗi', 'Sub lỗi'),
     ]
     card_number = models.CharField(max_length=255, unique=True)
     expiry_date = models.CharField(max_length=50, blank=True, null=True)

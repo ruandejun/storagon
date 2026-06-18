@@ -3700,15 +3700,15 @@
             document.getElementById('viewCardUsedByText').textContent = currentViewingCard.used_by_username || '-';
             document.getElementById('viewCardExtraText').value = currentViewingCard.extra_info || 'Không có thông tin thêm.';
             
-            // Default select to "Chọn trạng thái"
-            document.getElementById('viewCardStatusSelect').value = "";
-
-            openModal('viewCardModal');
-
             // Auto change status to "Đang sử dụng" if it is not already
             if (currentViewingCard.status !== 'Đang sử dụng') {
+                document.getElementById('viewCardStatusSelect').value = 'Đang sử dụng';
                 updateCardStatusFromView('Đang sử dụng');
+            } else {
+                document.getElementById('viewCardStatusSelect').value = currentViewingCard.status;
             }
+
+            openModal('viewCardModal');
         }
 
         function closeViewCardModal() {
@@ -3737,7 +3737,13 @@
                     currentViewingCard.status = newStatus;
                     // Auto-sync select element on table view
                     const rowSelect = document.querySelector(`#card-row-${id} select`);
-                    if (rowSelect) rowSelect.value = newStatus;
+                    if (rowSelect) {
+                        rowSelect.value = newStatus;
+                        rowSelect.className = `inline-select ${getCardStatusBadgeClass(newStatus)}`;
+                    }
+                    // Auto-sync select element inside the view modal
+                    const viewSelect = document.getElementById('viewCardStatusSelect');
+                    if (viewSelect) viewSelect.value = newStatus;
                 } else {
                     alert('Lỗi cập nhật trạng thái thẻ.');
                 }

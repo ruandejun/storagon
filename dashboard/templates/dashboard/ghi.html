@@ -913,10 +913,16 @@
                     📥 Tải xuống
                 </button>
             </div>
-            <!-- Login Dashboard -->
-            <a href="/dashboard/" class="btn-tool btn-login" title="Đăng nhập Dashboard">
-                🔑 Đăng nhập
+            <!-- Login Dashboard / User Info -->
+            {% if request.user.is_authenticated %}
+            <a href="/dashboard/" class="btn-tool btn-login" title="Vào trang quản trị ({{ request.user.username }})">
+                👤 {{ request.user.username }}
             </a>
+            {% else %}
+            <button class="btn-tool btn-login" onclick="openQuickLoginModal()" title="Đăng nhập nhanh">
+                🔑 Đăng nhập
+            </button>
+            {% endif %}
         </div>
     </header>
 
@@ -1124,6 +1130,31 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeEmailGetModal()">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- QUICK LOGIN MODAL -->
+    <div class="modal-overlay" id="quickLoginModal">
+        <div class="modal-box" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>🔑 Đăng nhập nhanh</h3>
+                <button class="addr-close-btn" onclick="closeQuickLoginModal()" title="Đóng">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label" for="loginUsername">Tên đăng nhập</label>
+                    <input type="text" id="loginUsername" class="form-input" placeholder="Nhập tên đăng nhập...">
+                </div>
+                <div class="form-group" style="margin-top: 15px;">
+                    <label class="form-label" for="loginPassword">Mật khẩu</label>
+                    <input type="password" id="loginPassword" class="form-input" placeholder="Nhập mật khẩu..." onkeydown="if(event.key === 'Enter') submitQuickLogin()">
+                </div>
+                <div id="loginErrorMsg" style="display: none; color: #ef4444; font-size: 13px; margin-top: 12px; text-align: center; font-weight: 600;"></div>
+            </div>
+            <div class="modal-footer" style="margin-top: 15px;">
+                <button class="btn btn-secondary" onclick="closeQuickLoginModal()">Hủy</button>
+                <button class="btn btn-primary" id="btnSubmitQuickLogin" onclick="submitQuickLogin()" style="padding: 10px 16px;">Đăng nhập</button>
             </div>
         </div>
     </div>
@@ -1930,6 +1961,71 @@ ${otpBlock}
         // Close email getter modal on overlay click
         document.getElementById('emailGetModal').addEventListener('click', function(e) {
             if (e.target === this) closeEmailGetModal();
+        });
+
+        // 12. QUICK LOGIN
+        function openQuickLoginModal() {
+            document.getElementById('quickLoginModal').style.display = 'flex';
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+            document.getElementById('loginErrorMsg').style.display = 'none';
+            document.getElementById('loginUsername').focus();
+        }
+
+        function closeQuickLoginModal() {
+            document.getElementById('quickLoginModal').style.display = 'none';
+        }
+
+        async function submitQuickLogin() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const errorDiv = document.getElementById('loginErrorMsg');
+            const btn = document.getElementById('btnSubmitQuickLogin');
+
+            if (!username || !password) {
+                errorDiv.textContent = 'Vui lòng điền đầy đủ tên đăng nhập và mật khẩu.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Đang đăng nhập...';
+            errorDiv.style.display = 'none';
+
+            try {
+                const response = await fetch('/dashboard/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    showToast('Đăng nhập thành công! Đang tải lại...');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    errorDiv.textContent = data.message || 'Tài khoản hoặc mật khẩu không chính xác.';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (err) {
+                console.error(err);
+                errorDiv.textContent = 'Lỗi kết nối máy chủ.';
+                errorDiv.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Đăng nhập';
+            }
+        }
+
+        // Close quick login modal on overlay click
+        document.getElementById('quickLoginModal').addEventListener('click', function(e) {
+            if (e.target === this) closeQuickLoginModal();
         });
 
         // On first page load, trigger recovery if backup is found locally

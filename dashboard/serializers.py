@@ -82,3 +82,10 @@ class UserHwidSerializer(serializers.ModelSerializer):
     def get_status_label(self, obj):
         STATUS_MAP = {0: 'Active', 1: 'Suspended', 2: 'Banned'}
         return STATUS_MAP.get(obj.status, 'Unknown')
+
+from .models import Notification
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ('id', 'message', 'is_read', 'created_at')

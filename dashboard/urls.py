@@ -6,7 +6,7 @@ from .views import (
     dashboard_stats_api, DashboardUserViewSet, CardViewSet,
     BrowserProfilesViewSet, MunProxiesViewSet,
     AccountsEmailsViewSet, AccountsCreatedViewSet,
-    UserHwidViewSet
+    UserHwidViewSet, NotificationViewSet
 )
 
 router = DefaultRouter()
@@ -17,6 +17,7 @@ router.register(r'proxies', MunProxiesViewSet, basename='dashboard-proxy')
 router.register(r'emails', AccountsEmailsViewSet, basename='dashboard-email')
 router.register(r'accounts', AccountsCreatedViewSet, basename='dashboard-account')
 router.register(r'hwids', UserHwidViewSet, basename='dashboard-hwid')
+router.register(r'notifications', NotificationViewSet, basename='dashboard-notification')
 
 urlpatterns = [
     url(r'^$', dashboard_index, name='dashboard_index'),

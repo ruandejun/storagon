@@ -17,7 +17,8 @@ from system_configure.controllers.Tool import StandardResultsSetPagination
 
 from servermain.models import UserProfile
 
-from .serializers import DashboardUserSerializer, UserHwidSerializer
+from .serializers import DashboardUserSerializer, UserHwidSerializer, NotificationSerializer
+from .models import Notification
 
 from telegram_bot.models import BrowserProfiles, MunProxies, AccountsEmails, AccountsCreated, UserHwid
 from telegram_bot.api.TelegramBot_RestfulApi import (
@@ -999,6 +1000,9 @@ class AccountsCreatedViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         data = request.data
 
+        old_sub_owner = instance.subscription_owner
+        old_status = instance.status
+
         if 'email' in data:
             instance.email = data.get('email', '').strip()
         if 'password' in data:
@@ -1066,6 +1070,38 @@ class AccountsCreatedViewSet(viewsets.ModelViewSet):
                 pass
 
         instance.save()
+        
+        try:
+            if old_sub_owner != instance.subscription_owner and instance.subscription_owner:
+                try:
+                    target_user = User.objects.get(username=instance.subscription_owner)
+                    Notification.objects.create(
+                        user=target_user,
+                        message=f"Bạn đã được gán sở hữu tài khoản sub: {instance.email}."
+                    )
+                except User.DoesNotExist:
+                    pass
+
+            if instance.subscription_owner:
+                changes = []
+                if old_status != instance.status:
+                    status_labels = {0: 'Hoạt động', 1: 'Chưa kích hoạt', 2: 'Đã khóa', 3: 'Tạm thời', 4: 'Sub OK', 5: 'Sub Lỗi'}
+                    old_label = status_labels.get(old_status, str(old_status))
+                    new_label = status_labels.get(instance.status, str(instance.status))
+                    changes.append(f"trạng thái từ '{old_label}' sang '{new_label}'")
+                
+                if changes:
+                    try:
+                        target_user = User.objects.get(username=instance.subscription_owner)
+                        Notification.objects.create(
+                            user=target_user,
+                            message=f"Tài khoản sub {instance.email} của bạn đã thay đổi: {', '.join(changes)}."
+                        )
+                    except User.DoesNotExist:
+                        pass
+        except Exception as e:
+            print(f"Error creating account update notification: {e}")
+
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
@@ -1089,7 +1125,31 @@ class AccountsCreatedViewSet(viewsets.ModelViewSet):
         except (ValueError, TypeError):
             return Response({'success': False, 'message': 'Trạng thái không hợp lệ.'}, status=400)
         
+        accounts_to_notify = list(self.get_queryset().filter(pk__in=ids))
         updated_count = self.get_queryset().filter(pk__in=ids).update(status=status_int)
+        
+        try:
+            status_labels = {0: 'Hoạt động', 1: 'Chưa kích hoạt', 2: 'Đã khóa', 3: 'Tạm thời', 4: 'Sub OK', 5: 'Sub Lỗi'}
+            new_label = status_labels.get(status_int, str(status_int))
+            for acc in accounts_to_notify:
+                if acc.status != status_int:
+                    if acc.subscription_owner:
+                        try:
+                            target_user = User.objects.get(username=acc.subscription_owner)
+                            Notification.objects.create(
+                                user=target_user,
+                                message=f"Tài khoản sub {acc.email} của bạn đã thay đổi trạng thái sang '{new_label}'."
+                            )
+                        except User.DoesNotExist:
+                            pass
+                    if acc.owner and acc.owner.username != acc.subscription_owner:
+                        Notification.objects.create(
+                            user=acc.owner,
+                            message=f"Tài khoản {acc.email} của bạn đã thay đổi trạng thái sang '{new_label}'."
+                        )
+        except Exception as e:
+            print(f"Error creating bulk status notifications: {e}")
+            
         return Response({'success': True, 'message': f'Đã cập nhật trạng thái cho {updated_count} tài khoản!'})
 
     @action(detail=False, methods=['get'], url_path='users-list')
@@ -1131,7 +1191,20 @@ class AccountsCreatedViewSet(viewsets.ModelViewSet):
             return Response({'success': False, 'message': 'Dữ liệu không hợp lệ.'}, status=400)
         
         sub_owner_str = (sub_owner or '').strip()
+        accounts_to_notify = list(self.get_queryset().filter(pk__in=ids))
         updated_count = self.get_queryset().filter(pk__in=ids).update(subscription_owner=sub_owner_str)
+        
+        if sub_owner_str:
+            try:
+                target_user = User.objects.get(username=sub_owner_str)
+                for acc in accounts_to_notify:
+                    if acc.subscription_owner != sub_owner_str:
+                        Notification.objects.create(
+                            user=target_user,
+                            message=f"Bạn đã được gán sở hữu tài khoản sub: {acc.email} qua gán hàng loạt."
+                        )
+            except User.DoesNotExist:
+                pass
         return Response({'success': True, 'message': f'Đã gán sở hữu sub cho {updated_count} tài khoản!'})
 
 
@@ -1177,3 +1250,16 @@ class UserHwidViewSet(viewsets.ModelViewSet):
         obj.save()
         label = 'Đã kích hoạt' if obj.status == 0 else 'Đã tạm khóa'
         return Response({'success': True, 'message': label, 'status': obj.status})
+
+class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = NotificationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [SessionAuthentication]
+
+    def get_queryset(self):
+        return Notification.objects.filter(user=self.request.user).order_by('-created_at')
+
+    @action(detail=False, methods=['post'], url_path='mark-read-all')
+    def mark_read_all(self, request):
+        Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+        return Response({'success': True})

@@ -50,6 +50,16 @@ class CardViewSet(viewsets.ModelViewSet):
                 if card_obj.owner_id != owner_val:
                     card_obj.owner_id = owner_val
                     updated = True
+                    if owner_val:
+                        try:
+                            from dashboard.models import Notification
+                            target_user = User.objects.get(id=owner_val)
+                            Notification.objects.create(
+                                user=target_user,
+                                message=f"Bạn đã được gán quyền sở hữu thẻ {card_obj.card_number} (CVV: {card_obj.cvv})."
+                            )
+                        except Exception:
+                            pass
 
             if updated:
                 card_obj.save()
@@ -100,7 +110,34 @@ class CardViewSet(viewsets.ModelViewSet):
                 used_by=user
             )
         else:
+            old_instance = self.get_object()
+            old_owner = old_instance.owner
+            old_status = old_instance.status
+            old_extra = old_instance.extra_info
             serializer.save()
+            new_instance = serializer.instance
+            new_owner = new_instance.owner
+            
+            try:
+                from dashboard.models import Notification
+                if old_owner != new_owner and new_owner:
+                    Notification.objects.create(
+                        user=new_owner,
+                        message=f"Bạn đã được gán quyền sở hữu thẻ {new_instance.card_number} (CVV: {new_instance.cvv})."
+                    )
+                if new_owner:
+                    changes = []
+                    if old_status != new_instance.status:
+                        changes.append(f"trạng thái từ '{old_status}' sang '{new_instance.status}'")
+                    if old_extra != new_instance.extra_info:
+                        changes.append("thông tin bổ sung")
+                    if changes:
+                        Notification.objects.create(
+                            user=new_owner,
+                            message=f"Thẻ {new_instance.card_number} của bạn đã thay đổi: {', '.join(changes)}."
+                        )
+            except Exception as e:
+                print(f"Error creating card notification: {e}")
 
     @action(detail=False, methods=['post'], url_path='bulk-assign', permission_classes=[IsAdminUser])
     def bulk_assign(self, request):
@@ -117,5 +154,19 @@ class CardViewSet(viewsets.ModelViewSet):
             except User.DoesNotExist:
                 return Response({'success': False, 'message': 'Người dùng không tồn tại.'}, status=404)
                 
+        cards_to_notify = list(Card.objects.filter(id__in=card_ids))
         Card.objects.filter(id__in=card_ids).update(owner=owner)
+        
+        if owner:
+            try:
+                from dashboard.models import Notification
+                for card in cards_to_notify:
+                    if card.owner != owner:
+                        Notification.objects.create(
+                            user=owner,
+                            message=f"Bạn đã được gán quyền sở hữu thẻ {card.card_number} (CVV: {card.cvv}) qua gán hàng loạt."
+                        )
+            except Exception as e:
+                print(f"Error creating bulk card notification: {e}")
+                
         return Response({'success': True, 'message': f'Đã gán sở hữu thành công cho {len(card_ids)} thẻ.'})

@@ -1132,6 +1132,7 @@
                     // Remove local backup if sync succeeds
                     localStorage.removeItem(`ghi_backup_${noteId}`);
                     updateStatus('saved', `Đã lưu ghi chú (${res.updated_at.split(' ')[1]})`);
+                    showToast('Đã lưu ghi chú thành công! 💾');
                 } else {
                     saveToLocalBackup(content);
                 }

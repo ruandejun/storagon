@@ -9,6 +9,8 @@ class Card(models.Model):
         ('Thẻ chết', 'Thẻ chết'),
         ('Thẻ sống', 'Thẻ sống'),
         ('Thẻ tốt', 'Thẻ tốt'),
+        ('Thẻ lỗi', 'Thẻ lỗi'),
+        ('Sub OK', 'Sub OK'),
     ]
     card_number = models.CharField(max_length=255, unique=True)
     expiry_date = models.CharField(max_length=50, blank=True, null=True)

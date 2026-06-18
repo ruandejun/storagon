@@ -28,6 +28,8 @@ class AccountStatus(EnumBase):
 	emailNotActivated = 1
 	banned = 2
 	temporary = 3
+	subOk = 4
+	subError = 5
 
 
 class FolderType(EnumBase):

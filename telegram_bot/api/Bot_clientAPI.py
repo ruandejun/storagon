@@ -153,6 +153,27 @@ def coinbase_bot(request):
     return successResponse({"ok": "POST request processed"})
 
 
+def _get_pagination_params(request):
+    page = None
+    page_size = None
+    if hasattr(request, 'query_params') and request.query_params:
+        page = request.query_params.get('page')
+        page_size = request.query_params.get('page_size')
+    if not page and hasattr(request, 'GET') and request.GET:
+        page = request.GET.get('page')
+    if not page_size and hasattr(request, 'GET') and request.GET:
+        page_size = request.GET.get('page_size')
+    if not page and hasattr(request, 'data') and isinstance(request.data, dict):
+        page = request.data.get('page')
+    if not page_size and hasattr(request, 'data') and isinstance(request.data, dict):
+        page_size = request.data.get('page_size')
+    if not page and hasattr(request, 'POST') and request.POST:
+        page = request.POST.get('page')
+    if not page_size and hasattr(request, 'POST') and request.POST:
+        page_size = request.POST.get('page_size')
+    return page, page_size
+
+
 @api_view(['GET', 'POST', 'PUT'])
 @login_required_ajax()
 @signature_test()
@@ -160,6 +181,26 @@ def coinbase_bot(request):
 def get_browser_profiles(request):
     browser_profiles = BrowserProfiles.objects.filter(profile_owner=request.user).order_by('-id')
 
+    page, page_size = _get_pagination_params(request)
+    if page or page_size:
+        from system_configure.controllers.Tool import StandardResultsSetPagination
+        paginator = StandardResultsSetPagination()
+        if page_size:
+            try:
+                paginator.page_size = int(page_size)
+            except ValueError:
+                pass
+        paginated_qs = paginator.paginate_queryset(browser_profiles, request)
+        if paginated_qs is not None:
+            profile_data = BrowserProfilesSerializer(paginated_qs, many=True)
+            return successResponse({
+                'count': paginator.page.paginator.count,
+                'next': paginator.get_next_link(),
+                'previous': paginator.get_previous_link(),
+                'data': profile_data.data
+            })
+
+    browser_profiles = browser_profiles[:1000]
     profile_data = BrowserProfilesSerializer(browser_profiles, many=True)
 
     ##
@@ -190,6 +231,27 @@ def get_accounts_emails(request):
         # list_objects.update(status=3)  
       else:
         list_objects = list_objects.filter(accounts_emails_set__type__value=account_type)
+
+    page, page_size = _get_pagination_params(request)
+    if page or page_size:
+        from system_configure.controllers.Tool import StandardResultsSetPagination
+        paginator = StandardResultsSetPagination()
+        if page_size:
+            try:
+                paginator.page_size = int(page_size)
+            except ValueError:
+                pass
+        paginated_qs = paginator.paginate_queryset(list_objects, request)
+        if paginated_qs is not None:
+            accounts_data = AccountsEmailsSerializer(paginated_qs, many=True)
+            return successResponse({
+                'count': paginator.page.paginator.count,
+                'next': paginator.get_next_link(),
+                'previous': paginator.get_previous_link(),
+                'data': accounts_data.data
+            })
+
+    list_objects = list_objects[:1000]
     accounts_data = AccountsEmailsSerializer(list_objects, many=True)
 
     return successResponse({'data':accounts_data.data})
@@ -204,6 +266,7 @@ def add_accounts_emails(request):
     objs = [
     AccountsEmails(
         owner=request.user,
+        created_by=request.user,
         email=e['email'],
         password=e['password']
       ) for e in list_emails
@@ -225,7 +288,7 @@ def update_accounts_emails(request):
     if accounts_emails_obj.exists():
       accounts_emails_obj.update(**update_post['update_data'])
       accounts_emails_obj = AccountsEmails.objects.get(
-          pk=update_post['id'], profile_owner=request.user)
+          pk=update_post['id'], owner=request.user)
       accounts_emails_data = AccountsEmailsSerializer(accounts_emails_obj)
     return successResponse({'data':accounts_emails_data.data})
   
@@ -237,6 +300,26 @@ def update_accounts_emails(request):
 def get_mun_proxies(request):
     list_objects = MunProxies.objects.filter(owner=request.user).order_by('-id')
 
+    page, page_size = _get_pagination_params(request)
+    if page or page_size:
+        from system_configure.controllers.Tool import StandardResultsSetPagination
+        paginator = StandardResultsSetPagination()
+        if page_size:
+            try:
+                paginator.page_size = int(page_size)
+            except ValueError:
+                pass
+        paginated_qs = paginator.paginate_queryset(list_objects, request)
+        if paginated_qs is not None:
+            object_data = MunProxiesSerializer(paginated_qs, many=True)
+            return successResponse({
+                'count': paginator.page.paginator.count,
+                'next': paginator.get_next_link(),
+                'previous': paginator.get_previous_link(),
+                'data': object_data.data
+            })
+
+    list_objects = list_objects[:1000]
     object_data = MunProxiesSerializer(list_objects, many=True)
 
     ##
@@ -330,6 +413,26 @@ def get_accounts_created(request):
     else:
         list_objects = AccountsCreated.objects.filter(owner=request.user).order_by('-id')
 
+        page, page_size = _get_pagination_params(request)
+        if page or page_size:
+            from system_configure.controllers.Tool import StandardResultsSetPagination
+            paginator = StandardResultsSetPagination()
+            if page_size:
+                try:
+                    paginator.page_size = int(page_size)
+                except ValueError:
+                    pass
+            paginated_qs = paginator.paginate_queryset(list_objects, request)
+            if paginated_qs is not None:
+                accounts_data = AccountsCreatedSerializer(paginated_qs, many=True)
+                return successResponse({
+                    'count': paginator.page.paginator.count,
+                    'next': paginator.get_next_link(),
+                    'previous': paginator.get_previous_link(),
+                    'data': accounts_data.data
+                })
+
+        list_objects = list_objects[:1000]
         accounts_data = AccountsCreatedSerializer(list_objects, many=True)
 
     return successResponse({'data':accounts_data.data})
@@ -420,7 +523,28 @@ def get_accounts_data(request):
         random_obj = AccountsData.objects.filter(pk=random_pk)
         accounts_data = AccountsDataSerializer(random_obj, many=True)
     else:
-        list_objects = AccountsData.objects.filter(owner=request.user)
+        list_objects = AccountsData.objects.filter(owner=request.user).order_by('-id')
+
+        page, page_size = _get_pagination_params(request)
+        if page or page_size:
+            from system_configure.controllers.Tool import StandardResultsSetPagination
+            paginator = StandardResultsSetPagination()
+            if page_size:
+                try:
+                    paginator.page_size = int(page_size)
+                except ValueError:
+                    pass
+            paginated_qs = paginator.paginate_queryset(list_objects, request)
+            if paginated_qs is not None:
+                accounts_data = AccountsDataSerializer(paginated_qs, many=True)
+                return successResponse({
+                    'count': paginator.page.paginator.count,
+                    'next': paginator.get_next_link(),
+                    'previous': paginator.get_previous_link(),
+                    'data': accounts_data.data
+                })
+
+        list_objects = list_objects[:1000]
         accounts_data = AccountsDataSerializer(list_objects, many=True)
     return successResponse({'data':accounts_data.data})
 

@@ -15,6 +15,51 @@ class CardViewSet(viewsets.ModelViewSet):
     search_fields = ['card_number', 'status']
     pagination_class = Tool.StandardResultsSetPagination
 
+    def create(self, request, *args, **kwargs):
+        card_number = request.data.get('card_number')
+        if not card_number:
+            return Response({'success': False, 'message': 'Thiếu số thẻ.'}, status=400)
+
+        card_obj = Card.objects.filter(card_number=card_number).first()
+        if card_obj:
+            # Update info if provided in request to keep it in sync and prevent duplicates
+            updated = False
+            expiry_date = request.data.get('expiry_date')
+            cvv = request.data.get('cvv')
+            status = request.data.get('status')
+            extra_info = request.data.get('extra_info')
+            owner_id = request.data.get('owner')
+
+            if expiry_date and card_obj.expiry_date != expiry_date:
+                card_obj.expiry_date = expiry_date
+                updated = True
+            if cvv and card_obj.cvv != cvv:
+                card_obj.cvv = cvv
+                updated = True
+            if status and card_obj.status != status:
+                card_obj.status = status
+                updated = True
+            if extra_info and card_obj.extra_info != extra_info:
+                card_obj.extra_info = extra_info
+                updated = True
+            if owner_id is not None:
+                try:
+                    owner_val = int(owner_id) if owner_id else None
+                except ValueError:
+                    owner_val = None
+                if card_obj.owner_id != owner_val:
+                    card_obj.owner_id = owner_val
+                    updated = True
+
+            if updated:
+                card_obj.save()
+
+            serializer = self.get_serializer(card_obj)
+            return Response(serializer.data)
+
+        return super().create(request, *args, **kwargs)
+
+
     def get_permissions(self):
         if self.action in ['create', 'destroy', 'bulk_assign']:
             return [IsAdminUser()]

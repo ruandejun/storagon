@@ -532,6 +532,9 @@
         .badge-dead { background: rgba(127, 29, 29, 0.5); color: #fca5a5; border: 1px solid #dc2626; }
         .badge-live { background: rgba(6, 78, 59, 0.5); color: #6ee7b7; border: 1px solid #059669; }
         .badge-good { background: rgba(17, 94, 89, 0.5); color: #2dd4bf; border: 1px solid #0f766e; }
+        .badge-error { background: rgba(220, 38, 38, 0.25); color: #fca5a5; border: 1px solid #ef4444; }
+        .badge-sub-ok { background: rgba(16, 185, 129, 0.2); color: #a7f3d0; border: 1px solid #10b981; }
+        .badge-sub-error { background: rgba(244, 63, 94, 0.2); color: #fecdd3; border: 1px solid #f43f5e; }
 
         .badge-success { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); }
         .badge-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); }
@@ -1153,6 +1156,8 @@
                         <option value="Thẻ chết">Thẻ chết</option>
                         <option value="Thẻ sống">Thẻ sống</option>
                         <option value="Thẻ tốt">Thẻ tốt</option>
+                        <option value="Thẻ lỗi">Thẻ lỗi</option>
+                        <option value="Sub OK">Sub OK</option>
                         <option value="Tất cả">Tất cả</option>
                     </select>
                     <select class="filter-select" id="cardOwnerFilter" onchange="loadCards(1)" style="display: none;">
@@ -1226,6 +1231,12 @@
                         <option value="active">Đang hoạt động</option>
                         <option value="inactive">Bị khóa</option>
                     </select>
+                    <select class="filter-select" id="userPageSizeFilter" onchange="changeUsersPageSize(this.value)">
+                        <option value="10" selected>10 dòng</option>
+                        <option value="20">20 dòng</option>
+                        <option value="50">50 dòng</option>
+                        <option value="100">100 dòng</option>
+                    </select>
                 </div>
                 <div class="action-buttons">
                     <button class="btn btn-secondary" onclick="loadUsers(1)">Làm mới</button>
@@ -1273,6 +1284,12 @@
                     <div class="search-box">
                         <input type="text" class="search-input" id="profileSearchInput" placeholder="Tìm kiếm Profile..." oninput="loadProfiles(1)">
                     </div>
+                    <select class="filter-select" id="profilePageSizeFilter" onchange="changeProfilesPageSize(this.value)">
+                        <option value="10" selected>10 dòng</option>
+                        <option value="20">20 dòng</option>
+                        <option value="50">50 dòng</option>
+                        <option value="100">100 dòng</option>
+                    </select>
                 </div>
                 <div class="action-buttons">
                     <button class="btn btn-secondary" onclick="loadProfiles(1)">Làm mới</button>
@@ -1319,6 +1336,12 @@
                     <div class="search-box">
                         <input type="text" class="search-input" id="proxySearchInput" placeholder="Tìm kiếm Proxy..." oninput="loadProxies(1)">
                     </div>
+                    <select class="filter-select" id="proxyPageSizeFilter" onchange="changeProxiesPageSize(this.value)">
+                        <option value="10" selected>10 dòng</option>
+                        <option value="20">20 dòng</option>
+                        <option value="50">50 dòng</option>
+                        <option value="100">100 dòng</option>
+                    </select>
                 </div>
                 <div class="action-buttons">
                     <button class="btn btn-secondary" onclick="loadProxies(1)">Làm mới</button>
@@ -1365,6 +1388,12 @@
                     <div class="search-box">
                         <input type="text" class="search-input" id="emailSearchInput" placeholder="Tìm kiếm Email..." oninput="loadEmails(1)">
                     </div>
+                    <select class="filter-select" id="emailPageSizeFilter" onchange="changeEmailsPageSize(this.value)">
+                        <option value="10" selected>10 dòng</option>
+                        <option value="20">20 dòng</option>
+                        <option value="50">50 dòng</option>
+                        <option value="100">100 dòng</option>
+                    </select>
                 </div>
                 <div class="action-buttons">
                     <button class="btn btn-secondary" onclick="loadEmails(1)">Làm mới</button>
@@ -1385,12 +1414,11 @@
                             </th>
                             <th>Email</th>
                             <th>Mật khẩu</th>
-                            <th>Phân loại</th>
-                            <th>Proxy</th>
-                            <th>Socks5</th>
-                            <th>Trạng thái</th>
-                            <th>Sử dụng</th>
-                            <th>Ghi chú</th>
+                            <th>Tạo bởi</th>
+                            <th>From</th>
+                            <th>Time</th>
+                            <th>Content</th>
+                            <th style="text-align: center; width: 120px;">Code</th>
                             <th style="width: 100px; text-align: center;">Hành động</th>
                         </tr>
                     </thead>
@@ -1416,10 +1444,30 @@
                     <div class="search-box">
                         <input type="text" class="search-input" id="accountSearchInput" placeholder="Tìm kiếm tài khoản..." oninput="loadAccounts(1)">
                     </div>
+                    <select class="filter-select" id="accountTypeFilter" onchange="loadAccounts(1)">
+                        <option value="">Tất cả phân loại</option>
+                        <option value="Tiktok">Tiktok</option>
+                        <option value="Apple">Apple</option>
+                        <option value="Amazon">Amazon</option>
+                        <option value="Ebay">Ebay</option>
+                        <option value="Facebook">Facebook</option>
+                        <option value="X">X</option>
+                        <option value="Other">Khác</option>
+                    </select>
+                    <select class="filter-select" id="accountCreatedByFilter" onchange="loadAccounts(1)">
+                        <option value="">Tất cả người tạo</option>
+                    </select>
+                    <select class="filter-select" id="accountPageSizeFilter" onchange="changeAccountsPageSize(this.value)">
+                        <option value="10" selected>10 dòng</option>
+                        <option value="20">20 dòng</option>
+                        <option value="50">50 dòng</option>
+                        <option value="100">100 dòng</option>
+                    </select>
                 </div>
                 <div class="action-buttons">
                     <button class="btn btn-secondary" onclick="loadAccounts(1)">Làm mới</button>
                     <button class="btn btn-primary" onclick="openAddAccountModal()">Thêm mới</button>
+                    <button class="btn btn-info" id="accountBulkSubOwnerBtn" onclick="openBulkSubOwnerModal()" disabled>Gán sở hữu Sub</button>
                     <button class="btn btn-warning" id="accountBulkStatusBtn" onclick="openBulkStatusModal()" disabled>Đổi trạng thái</button>
                     <button class="btn btn-danger" id="accountDeleteBtn" onclick="deleteSelectedAccounts()" disabled>Xóa</button>
                 </div>
@@ -1466,6 +1514,11 @@
                         <input type="text" class="search-input" id="hwidSearchInput" placeholder="Tìm HWID hoặc username..." oninput="loadHwids(1)">
                     </div>
                     <input type="number" class="search-input" id="hwidUserIdFilter" placeholder="Filter User ID" style="width: 140px;" oninput="loadHwids(1)">
+                    <select class="filter-select" id="hwidPageSizeFilter" onchange="changeHwidsPageSize(this.value)">
+                        <option value="20" selected>20 dòng</option>
+                        <option value="50">50 dòng</option>
+                        <option value="100">100 dòng</option>
+                    </select>
                 </div>
                 <div class="action-buttons">
                     <button class="btn btn-primary" onclick="openModal('addHwidModal')">➕ Thêm HWID</button>
@@ -1529,6 +1582,8 @@
                         <option value="Thẻ chết">Thẻ chết</option>
                         <option value="Thẻ sống">Thẻ sống</option>
                         <option value="Thẻ tốt">Thẻ tốt</option>
+                        <option value="Thẻ lỗi">Thẻ lỗi</option>
+                        <option value="Sub OK">Sub OK</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -1602,6 +1657,8 @@
                         <option value="Thẻ chết">Thẻ chết</option>
                         <option value="Thẻ sống">Thẻ sống</option>
                         <option value="Thẻ tốt">Thẻ tốt</option>
+                        <option value="Thẻ lỗi">Thẻ lỗi</option>
+                        <option value="Sub OK">Sub OK</option>
                     </select>
                 </div>
                 <div class="form-row">
@@ -1635,7 +1692,7 @@
         <div class="modal-box">
             <div class="modal-header">
                 <h3>Chi tiết thẻ</h3>
-                <button class="modal-close" onclick="closeModal('viewCardModal')">&times;</button>
+                <button class="modal-close" onclick="closeViewCardModal()">&times;</button>
             </div>
             <div class="modal-body">
                 <!-- ATM CARD WIDGET -->
@@ -1644,26 +1701,32 @@
                         <div class="atm-chip"></div>
                         <span class="atm-brand">PREMIUM CARD</span>
                     </div>
-                    <div class="atm-number" id="viewAtmNumber">xxxx xxxx xxxx xxxx</div>
-                    <div class="atm-footer">
-                        <div class="atm-expiry-section">
-                            <div class="atm-lbl">EXP</div>
-                            <div class="atm-val atm-val-large" id="viewAtmExpiry">MM/YY</div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 15px 0;">
+                        <div class="atm-number" id="viewAtmNumber" style="margin: 0;">xxxx xxxx xxxx xxxx</div>
+                        <button type="button" class="card-copy-btn" onclick="copyCardField('viewCardNumberText')" style="padding: 4px 8px; font-size: 11px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; color: white; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'" title="Sao chép số thẻ">📋 Copy</button>
+                    </div>
+                    <div class="atm-footer" style="display: flex; align-items: flex-end; justify-content: space-between; width: 100%;">
+                        <div style="display: flex; gap: 40px;">
+                            <div class="atm-expiry-section">
+                                <div class="atm-lbl">EXP</div>
+                                <div class="atm-val atm-val-large" id="viewAtmExpiry">MM/YY</div>
+                            </div>
+                            <div class="atm-cvv-section">
+                                <div class="atm-lbl">CVV</div>
+                                <div class="atm-val" id="viewAtmCVV">xxx</div>
+                            </div>
                         </div>
-                        <div class="atm-cvv-section">
-                            <div class="atm-lbl">CVV</div>
-                            <div class="atm-val" id="viewAtmCVV">xxx</div>
-                        </div>
+                        <button type="button" class="card-copy-btn" onclick="copyCardField('viewCardExpiryCvvText')" style="padding: 4px 8px; font-size: 11px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; color: white; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'" title="Sao chép Hạn dùng & CVV">📋 Copy Exp/CVV</button>
                     </div>
                 </div>
 
                 <!-- Details Copy Rows -->
-                <div class="card-row-value">
+                <div class="card-row-value" style="display: none;">
                     <span class="card-row-label">Số thẻ</span>
                     <span class="card-val-text" id="viewCardNumberText">-</span>
                     <button class="card-copy-btn" onclick="copyCardField('viewCardNumberText')">Sao chép</button>
                 </div>
-                <div class="card-row-value">
+                <div class="card-row-value" style="display: none;">
                     <span class="card-row-label">Hạn dùng & CVV</span>
                     <span class="card-val-text" id="viewCardExpiryCvvText">-</span>
                     <button class="card-copy-btn" onclick="copyCardField('viewCardExpiryCvvText')">Sao chép</button>
@@ -1685,18 +1748,21 @@
                 <div class="form-group">
                     <label class="form-label">Thay đổi trạng thái thẻ</label>
                     <select class="filter-select" id="viewCardStatusSelect" style="width: 100%;" onchange="updateCardStatusFromView(this.value)">
+                        <option value="" disabled selected>Chọn trạng thái</option>
                         <option value="Chưa sử dụng">Chưa sử dụng</option>
                         <option value="Đang sử dụng">Đang sử dụng</option>
                         <option value="Đã sử dụng">Đã sử dụng</option>
                         <option value="Thẻ chết">Thẻ chết</option>
                         <option value="Thẻ sống">Thẻ sống</option>
                         <option value="Thẻ tốt">Thẻ tốt</option>
+                        <option value="Thẻ lỗi">Thẻ lỗi</option>
+                        <option value="Sub OK">Sub OK</option>
                     </select>
                 </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="copyOriginalRow()">Sao chép dòng gốc</button>
-                <button class="btn btn-primary" onclick="closeModal('viewCardModal')">Đóng</button>
+                <button class="btn btn-primary" onclick="closeViewCardModal()">Đóng</button>
             </div>
         </div>
     </div>
@@ -1934,8 +2000,8 @@
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label class="form-label">Nhập bulk (Định dạng: email|password hoặc email|password|type|proxy|socks5, mỗi dòng 1 email)</label>
-                    <textarea class="form-textarea" id="addEmailBulkText" placeholder="example1@gmail.com|pass123&#10;example2@gmail.com|pass456|hotmail|127.0.0.1:8080|socks5://127.0.0.1:1080"></textarea>
+                    <label class="form-label">Nhập bulk (Định dạng: <code>email|password</code> hoặc <code>email|password|api</code> hoặc <code>email|password|api|client_id</code>, mỗi dòng 1 email)</label>
+                    <textarea class="form-textarea" id="addEmailBulkText" placeholder="katherine7wn4lfpoling@hotmail.com|On7wzi108LoO|M.C509_...&#10;another_user@gmail.com|pass123"></textarea>
                 </div>
                 <div style="text-align: center; margin: 10px 0; font-size: 13px; color: var(--text-muted);">Hoặc điền thủ công 1 email bên dưới</div>
                 <div class="form-row">
@@ -1950,17 +2016,13 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label">Loại email / Phân loại</label>
-                        <input type="text" class="form-input" id="addEmailType" placeholder="gmail, hotmail...">
-                    </div>
-                    <div class="form-group">
                         <label class="form-label">Proxy (HTTP)</label>
                         <input type="text" class="form-input" id="addEmailProxy" placeholder="127.0.0.1:8080">
                     </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Socks5 Proxy</label>
-                    <input type="text" class="form-input" id="addEmailSocks5" placeholder="socks5://127.0.0.1:1080">
+                    <div class="form-group">
+                        <label class="form-label">Socks5 Proxy</label>
+                        <input type="text" class="form-input" id="addEmailSocks5" placeholder="socks5://127.0.0.1:1080">
+                    </div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Ghi chú</label>
@@ -1989,7 +2051,10 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Mật khẩu</label>
-                        <input type="text" class="form-input" id="addAccPassword">
+                        <div style="display: flex; gap: 8px; width: 100%;">
+                            <input type="text" class="form-input" id="addAccPassword" style="flex-grow: 1;">
+                            <button type="button" class="btn btn-secondary" style="padding: 0 12px; font-size: 13px; font-weight: 500; white-space: nowrap;" onclick="document.getElementById('addAccPassword').value = 'Zxcv@123'" title="Tự động điền mật khẩu mặc định (Zxcv@123)">🔑 Mặc định</button>
+                        </div>
                     </div>
                 </div>
                 <div class="form-row">
@@ -2066,17 +2131,13 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label">Phân loại</label>
-                        <input type="text" class="form-input" id="editEmailType">
-                    </div>
-                    <div class="form-group">
                         <label class="form-label">Proxy</label>
                         <input type="text" class="form-input" id="editEmailProxy">
                     </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Socks5</label>
-                    <input type="text" class="form-input" id="editEmailSocks5">
+                    <div class="form-group">
+                        <label class="form-label">Socks5</label>
+                        <input type="text" class="form-input" id="editEmailSocks5">
+                    </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group" style="flex-direction: row; gap: 8px; align-items: center;">
@@ -2164,6 +2225,8 @@
                             <option value="1">Chưa kích hoạt (Email Not Activated)</option>
                             <option value="2">Bị khóa (Banned)</option>
                             <option value="3">Tạm thời (Temporary)</option>
+                            <option value="4">Sub OK</option>
+                            <option value="5">Sub Lỗi</option>
                         </select>
                     </div>
                 </div>
@@ -2198,12 +2261,37 @@
                         <option value="1">Chưa kích hoạt (Email Not Activated)</option>
                         <option value="2">Bị khóa (Banned)</option>
                         <option value="3">Tạm thời (Temporary)</option>
+                        <option value="4">Sub OK</option>
+                        <option value="5">Sub Lỗi</option>
                     </select>
                 </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeModal('bulkStatusModal')">Hủy</button>
                 <button class="btn btn-primary" onclick="saveBulkStatus()">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BULK SUB OWNER MODAL -->
+    <div class="modal-overlay" id="bulkSubOwnerModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Gán Sở Hữu Sub Số Lượng Lớn</h3>
+                <button class="modal-close" onclick="closeModal('bulkSubOwnerModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Chọn người sở hữu Sub</label>
+                    <select class="filter-select" id="bulkAccSubOwner" style="width: 100%;">
+                        <option value="">-- Không có (Bỏ gán) --</option>
+                        <!-- Dynamic users populated here -->
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('bulkSubOwnerModal')">Hủy</button>
+                <button class="btn btn-primary" onclick="saveBulkSubOwner()">Xác nhận</button>
             </div>
         </div>
     </div>
@@ -2267,7 +2355,13 @@
                     </div>
                 </div>
                 <div class="form-group" style="margin-bottom: 16px;">
-                    <label class="form-label" style="color: var(--text-muted);">2FA Secret Key / Code</label>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label class="form-label" style="margin: 0; color: var(--text-muted);">2FA Secret Key / Code</label>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span id="viewAcc2FACode" style="display: none; padding: 2px 8px; background: #059669; color: #fff; font-weight: bold; border-radius: 4px; font-family: monospace; font-size: 12px; cursor: pointer;" title="Click để copy mã OTP"></span>
+                            <button class="btn btn-primary" id="btnGet2FACode" style="padding: 2px 8px; font-size: 11px; border-radius: 4px;">Lấy mã OTP</button>
+                        </div>
+                    </div>
                     <div id="viewAcc2FA" style="padding: 8px 12px; background: rgba(30, 41, 59, 0.4); border-radius: 6px; border: 1px solid var(--border-color); font-family: monospace; word-break: break-all;"></div>
                 </div>
                 <div class="form-group" style="margin-bottom: 16px;">
@@ -2412,7 +2506,7 @@
                     <div class="search-box" style="flex: 1;">
                         <input type="text" class="search-input" id="bulkMailSearchInput" placeholder="Tìm kiếm OTP, mã code hoặc nội dung thư..." oninput="filterBulkMails()" style="width: 100%;">
                     </div>
-                    <button class="btn btn-primary" onclick="refreshBulkMailbox()" style="padding: 8px 16px; font-size: 13px; border-radius: 6px; white-space: nowrap;">🔄 Quét lại</button>
+                    <button class="btn btn-primary" onclick="refreshBulkMailbox()" style="padding: 8px 16px; font-size: 13px; border-radius: 6px; white-space: nowrap;">⚡ Đọc mail</button>
                 </div>
 
                 <!-- Combined Email Grid -->
@@ -2492,6 +2586,108 @@
                     </tr>
                 `;
             }
+        }
+
+        function renderGenericPagination(containerSelector, currentPage, pageSize, totalCount, loadPageFunc) {
+            const container = document.querySelector(containerSelector);
+            if (!container) return;
+            container.innerHTML = '';
+
+            const totalPages = Math.ceil(totalCount / pageSize);
+            if (totalPages <= 1) {
+                // Renders basic buttons even for single page for visual consistency
+                const prevBtn = document.createElement('button');
+                prevBtn.className = 'btn btn-secondary';
+                prevBtn.textContent = 'Trước';
+                prevBtn.disabled = true;
+                container.appendChild(prevBtn);
+
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-primary';
+                btn.textContent = '1';
+                btn.style.minWidth = '38px';
+                btn.style.padding = '6px 12px';
+                btn.disabled = true;
+                container.appendChild(btn);
+
+                const nextBtn = document.createElement('button');
+                nextBtn.className = 'btn btn-secondary';
+                nextBtn.textContent = 'Sau';
+                nextBtn.disabled = true;
+                container.appendChild(nextBtn);
+                return;
+            }
+
+            // Previous Button
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'btn btn-secondary';
+            prevBtn.textContent = 'Trước';
+            prevBtn.disabled = (currentPage <= 1);
+            prevBtn.onclick = () => loadPageFunc(currentPage - 1);
+            container.appendChild(prevBtn);
+
+            // Calculate range
+            const range = [];
+            const delta = 2;
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
+                    range.push(i);
+                } else if (range[range.length - 1] !== '...') {
+                    range.push('...');
+                }
+            }
+
+            range.forEach(p => {
+                if (p === '...') {
+                    const span = document.createElement('span');
+                    span.className = 'pag-dots';
+                    span.textContent = '...';
+                    span.style.padding = '0 8px';
+                    span.style.color = 'var(--text-muted)';
+                    container.appendChild(span);
+                } else {
+                    const btn = document.createElement('button');
+                    btn.className = `btn ${p === currentPage ? 'btn-primary' : 'btn-secondary'}`;
+                    btn.textContent = p;
+                    btn.style.minWidth = '38px';
+                    btn.style.padding = '6px 12px';
+                    btn.onclick = () => loadPageFunc(p);
+                    container.appendChild(btn);
+                }
+            });
+
+            // Next Button
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'btn btn-secondary';
+            nextBtn.textContent = 'Sau';
+            nextBtn.disabled = (currentPage >= totalPages || totalPages === 0);
+            nextBtn.onclick = () => loadPageFunc(currentPage + 1);
+            container.appendChild(nextBtn);
+        }
+
+        function changeUsersPageSize(newSize) {
+            usersPageSize = parseInt(newSize);
+            loadUsers(1);
+        }
+        function changeProfilesPageSize(newSize) {
+            profilesPageSize = parseInt(newSize);
+            loadProfiles(1);
+        }
+        function changeProxiesPageSize(newSize) {
+            proxiesPageSize = parseInt(newSize);
+            loadProxies(1);
+        }
+        function changeEmailsPageSize(newSize) {
+            emailsPageSize = parseInt(newSize);
+            loadEmails(1);
+        }
+        function changeAccountsPageSize(newSize) {
+            accountsPageSize = parseInt(newSize);
+            loadAccounts(1);
+        }
+        function changeHwidsPageSize(newSize) {
+            hwidsPageSize = parseInt(newSize);
+            loadHwids(1);
         }
         let selectedCards = [];
         let selectedUsers = [];
@@ -2754,7 +2950,7 @@
             cardsChart = new Chart(ctxCards, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Chưa sử dụng', 'Đang sử dụng', 'Đã sử dụng', 'Thẻ chết', 'Thẻ sống', 'Thẻ tốt'],
+                    labels: ['Chưa sử dụng', 'Đang sử dụng', 'Đã sử dụng', 'Thẻ chết', 'Thẻ sống', 'Thẻ tốt', 'Thẻ lỗi', 'Sub OK'],
                     datasets: [{
                         data: [
                             cardCounts.chua_su_dung,
@@ -2762,9 +2958,11 @@
                             cardCounts.da_su_dung,
                             cardCounts.the_chet,
                             cardCounts.the_song,
-                            cardCounts.the_tot
+                            cardCounts.the_tot,
+                            cardCounts.the_loi || 0,
+                            cardCounts.sub_ok || 0
                         ],
-                        backgroundColor: ['#64748b', '#ea580c', '#7c3aed', '#dc2626', '#059669', '#0f766e'],
+                        backgroundColor: ['#64748b', '#ea580c', '#7c3aed', '#dc2626', '#059669', '#0f766e', '#ef4444', '#10b981'],
                         borderWidth: 1,
                         borderColor: 'rgba(255, 255, 255, 0.05)'
                     }]
@@ -2820,7 +3018,9 @@
                 'Đã sử dụng': 'badge-used',
                 'Thẻ chết': 'badge-dead',
                 'Thẻ sống': 'badge-live',
-                'Thẻ tốt': 'badge-good'
+                'Thẻ tốt': 'badge-good',
+                'Thẻ lỗi': 'badge-error',
+                'Sub OK': 'badge-sub-ok'
             };
             return map[status] || 'badge-unused';
         }
@@ -2901,13 +3101,15 @@
                     <td style="text-align: center; font-family: monospace;">${c.expiry_date || '**/**'}</td>
                     <td style="text-align: center; font-family: monospace;">${c.cvv || '***'}</td>
                     <td style="text-align: center;" class="cell-status">
-                        <select class="inline-select" onchange="updateCardStatusInline(event, ${c.id}, this.value)">
+                        <select class="inline-select ${getCardStatusBadgeClass(c.status)}" onchange="updateCardStatusInline(event, ${c.id}, this.value)">
                             <option value="Chưa sử dụng" ${c.status === 'Chưa sử dụng' ? 'selected' : ''}>Chưa sử dụng</option>
                             <option value="Đang sử dụng" ${c.status === 'Đang sử dụng' ? 'selected' : ''}>Đang sử dụng</option>
                             <option value="Đã sử dụng" ${c.status === 'Đã sử dụng' ? 'selected' : ''}>Đã sử dụng</option>
                             <option value="Thẻ chết" ${c.status === 'Thẻ chết' ? 'selected' : ''}>Thẻ chết</option>
                             <option value="Thẻ sống" ${c.status === 'Thẻ sống' ? 'selected' : ''}>Thẻ sống</option>
                             <option value="Thẻ tốt" ${c.status === 'Thẻ tốt' ? 'selected' : ''}>Thẻ tốt</option>
+                            <option value="Thẻ lỗi" ${c.status === 'Thẻ lỗi' ? 'selected' : ''}>Thẻ lỗi</option>
+                            <option value="Sub OK" ${c.status === 'Sub OK' ? 'selected' : ''}>Sub OK</option>
                         </select>
                     </td>
                     <td style="text-align: center; font-weight: 600; color: var(--accent);">${c.owner_username || 'Chưa chỉ định'}</td>
@@ -3011,58 +3213,7 @@
         }
 
         function renderCardPagination(count) {
-            const totalPages = Math.ceil(count / cardsPageSize);
-            const pagBtnsContainer = document.querySelector('#view-cards .pag-btns');
-            if (!pagBtnsContainer) return;
-
-            pagBtnsContainer.innerHTML = '';
-
-            // Previous Button
-            const prevBtn = document.createElement('button');
-            prevBtn.className = 'btn btn-secondary';
-            prevBtn.textContent = 'Trước';
-            prevBtn.disabled = (cardsPage <= 1);
-            prevBtn.onclick = () => loadCards(cardsPage - 1);
-            pagBtnsContainer.appendChild(prevBtn);
-
-            // Calculate range of page numbers to show
-            const range = [];
-            const delta = 2; // how many pages before/after current page to show
-            
-            for (let i = 1; i <= totalPages; i++) {
-                if (i === 1 || i === totalPages || (i >= cardsPage - delta && i <= cardsPage + delta)) {
-                    range.push(i);
-                } else if (range[range.length - 1] !== '...') {
-                    range.push('...');
-                }
-            }
-
-            range.forEach(p => {
-                if (p === '...') {
-                    const span = document.createElement('span');
-                    span.className = 'pag-dots';
-                    span.textContent = '...';
-                    span.style.padding = '0 8px';
-                    span.style.color = 'var(--text-muted)';
-                    pagBtnsContainer.appendChild(span);
-                } else {
-                    const btn = document.createElement('button');
-                    btn.className = `btn ${p === cardsPage ? 'btn-primary' : 'btn-secondary'}`;
-                    btn.textContent = p;
-                    btn.style.minWidth = '38px';
-                    btn.style.padding = '6px 12px';
-                    btn.onclick = () => loadCards(p);
-                    pagBtnsContainer.appendChild(btn);
-                }
-            });
-
-            // Next Button
-            const nextBtn = document.createElement('button');
-            nextBtn.className = 'btn btn-secondary';
-            nextBtn.textContent = 'Sau';
-            nextBtn.disabled = (cardsPage >= totalPages || totalPages === 0);
-            nextBtn.onclick = () => loadCards(cardsPage + 1);
-            pagBtnsContainer.appendChild(nextBtn);
+            renderGenericPagination('#view-cards .pag-btns', cardsPage, cardsPageSize, count, loadCards);
         }
 
         // Helper Date Formatter
@@ -3081,6 +3232,7 @@
         // Inline status changes (updates directly in background)
         async function updateCardStatusInline(e, id, newStatus) {
             e.stopPropagation();
+            const selectEl = e.target;
             try {
                 const response = await fetch(`/dashboard/api/cards/${id}/`, {
                     method: 'PATCH',
@@ -3095,6 +3247,7 @@
                     // Smooth reload card object locally
                     const updatedCard = cardsData.find(c => c.id === id);
                     if (updatedCard) updatedCard.status = newStatus;
+                    selectEl.className = 'inline-select ' + getCardStatusBadgeClass(newStatus);
                 } else {
                     alert('Lỗi cập nhật trạng thái thẻ.');
                 }
@@ -3125,9 +3278,25 @@
             document.getElementById('viewCardOwnerText').textContent = currentViewingCard.owner_username || 'Chưa chỉ định';
             document.getElementById('viewCardUsedByText').textContent = currentViewingCard.used_by_username || '-';
             document.getElementById('viewCardExtraText').value = currentViewingCard.extra_info || 'Không có thông tin thêm.';
-            document.getElementById('viewCardStatusSelect').value = currentViewingCard.status;
+            
+            // Default select to "Chọn trạng thái"
+            document.getElementById('viewCardStatusSelect').value = "";
 
             openModal('viewCardModal');
+
+            // Auto change status to "Đang sử dụng" if it is not already
+            if (currentViewingCard.status !== 'Đang sử dụng') {
+                updateCardStatusFromView('Đang sử dụng');
+            }
+        }
+
+        function closeViewCardModal() {
+            const statusVal = document.getElementById('viewCardStatusSelect').value;
+            if (!statusVal) {
+                alert('Bạn chưa chọn trạng thái cho thẻ! Vui lòng chọn trạng thái trước khi đóng.');
+                return;
+            }
+            closeModal('viewCardModal');
         }
 
         async function updateCardStatusFromView(newStatus) {
@@ -3159,7 +3328,7 @@
         function copyCardField(id) {
             const text = document.getElementById(id).textContent;
             navigator.clipboard.writeText(text).then(() => {
-                alert('Đã sao chép vào Clipboard!');
+                alert('Đã copy thành công!');
             });
         }
 
@@ -3175,7 +3344,7 @@
             }
 
             navigator.clipboard.writeText(line).then(() => {
-                alert('Đã sao chép định dạng dòng gốc vào Clipboard!');
+                alert('Đã copy thành công!');
             });
         }
 
@@ -3425,7 +3594,7 @@
             const role = document.getElementById('userRoleFilter').value;
             const status = document.getElementById('userStatusFilter').value;
 
-            let url = `/dashboard/api/users/?page=${usersPage}`;
+            let url = `/dashboard/api/users/?page=${usersPage}&page_size=${usersPageSize}`;
             if (search) url += `&search=${encodeURIComponent(search)}`;
             if (role !== 'all') url += `&role=${role}`;
             if (status !== 'all') url += `&status=${status}`;
@@ -3439,9 +3608,14 @@
                 populateUsersTable(usersData);
 
                 const count = data.count || usersData.length;
-                document.getElementById('usersPaginationInfo').textContent = `Hiển thị ${usersData.length} dòng (Tổng: ${count})`;
-                document.getElementById('usersPrevBtn').disabled = !data.previous;
-                document.getElementById('usersNextBtn').disabled = !data.next;
+                let fromVal = 0;
+                let toVal = 0;
+                if (count > 0) {
+                    fromVal = (usersPage - 1) * usersPageSize + 1;
+                    toVal = fromVal + usersData.length - 1;
+                }
+                document.getElementById('usersPaginationInfo').textContent = `Hiển thị ${fromVal} - ${toVal} của ${count}`;
+                renderGenericPagination('#view-users .pag-btns', usersPage, usersPageSize, count, loadUsers);
 
                 selectedUsers = [];
                 document.getElementById('selectAllUsers').checked = false;
@@ -3740,7 +3914,7 @@
             profilesPage = page;
             const search = document.getElementById('profileSearchInput').value.trim();
 
-            let url = `/dashboard/api/profiles/?page=${profilesPage}`;
+            let url = `/dashboard/api/profiles/?page=${profilesPage}&page_size=${profilesPageSize}`;
             if (search) url += `&search=${encodeURIComponent(search)}`;
 
             try {
@@ -3752,9 +3926,14 @@
                 populateProfilesTable(profilesData);
 
                 const count = data.count || profilesData.length;
-                document.getElementById('profilesPaginationInfo').textContent = `Hiển thị ${profilesData.length} dòng (Tổng: ${count})`;
-                document.getElementById('profilesPrevBtn').disabled = !data.previous;
-                document.getElementById('profilesNextBtn').disabled = !data.next;
+                let fromVal = 0;
+                let toVal = 0;
+                if (count > 0) {
+                    fromVal = (profilesPage - 1) * profilesPageSize + 1;
+                    toVal = fromVal + profilesData.length - 1;
+                }
+                document.getElementById('profilesPaginationInfo').textContent = `Hiển thị ${fromVal} - ${toVal} của ${count}`;
+                renderGenericPagination('#view-profiles .pag-btns', profilesPage, profilesPageSize, count, loadProfiles);
 
                 selectedProfiles = [];
                 document.getElementById('selectAllProfiles').checked = false;
@@ -3881,7 +4060,7 @@
             proxiesPage = page;
             const search = document.getElementById('proxySearchInput').value.trim();
 
-            let url = `/dashboard/api/proxies/?page=${proxiesPage}`;
+            let url = `/dashboard/api/proxies/?page=${proxiesPage}&page_size=${proxiesPageSize}`;
             if (search) url += `&search=${encodeURIComponent(search)}`;
 
             try {
@@ -3893,9 +4072,14 @@
                 populateProxiesTable(proxiesData);
 
                 const count = data.count || proxiesData.length;
-                document.getElementById('proxiesPaginationInfo').textContent = `Hiển thị ${proxiesData.length} dòng (Tổng: ${count})`;
-                document.getElementById('proxiesPrevBtn').disabled = !data.previous;
-                document.getElementById('proxiesNextBtn').disabled = !data.next;
+                let fromVal = 0;
+                let toVal = 0;
+                if (count > 0) {
+                    fromVal = (proxiesPage - 1) * proxiesPageSize + 1;
+                    toVal = fromVal + proxiesData.length - 1;
+                }
+                document.getElementById('proxiesPaginationInfo').textContent = `Hiển thị ${fromVal} - ${toVal} của ${count}`;
+                renderGenericPagination('#view-proxies .pag-btns', proxiesPage, proxiesPageSize, count, loadProxies);
 
                 selectedProxies = [];
                 document.getElementById('selectAllProxies').checked = false;
@@ -4587,12 +4771,79 @@
             }
         }
 
+        async function refreshEmailRow(id) {
+            const tr = document.getElementById(`email-row-${id}`);
+            if (!tr) return;
+
+            const fromCell = tr.querySelector('.email-from-cell');
+            const timeCell = tr.querySelector('.email-time-cell');
+            const contentCell = tr.querySelector('.email-content-cell');
+            const codeCell = tr.querySelector('.email-code-cell');
+
+            if (fromCell && (!fromCell.textContent || fromCell.textContent === '-')) {
+                fromCell.innerHTML = `<span style="color: var(--text-muted); font-size:11px; font-style: italic;">Đang đọc...</span>`;
+            }
+            if (codeCell && !codeCell.querySelector('strong')) {
+                codeCell.innerHTML = `<span style="color: var(--text-muted); font-size:11px;">🔄 Đang quét...</span>`;
+            }
+
+            try {
+                const response = await fetch(`/dashboard/api/emails/${id}/read-mailbox/`);
+                const data = await response.json();
+                
+                const currentTr = document.getElementById(`email-row-${id}`);
+                if (!currentTr) return;
+
+                const currentFromCell = currentTr.querySelector('.email-from-cell');
+                const currentTimeCell = currentTr.querySelector('.email-time-cell');
+                const currentContentCell = currentTr.querySelector('.email-content-cell');
+                const currentCodeCell = currentTr.querySelector('.email-code-cell');
+
+                if (response.ok && data.success && data.email_data) {
+                    const emailData = data.email_data;
+                    if (currentFromCell) {
+                        currentFromCell.textContent = emailData.latest_from || '-';
+                        currentFromCell.title = emailData.latest_from || '';
+                    }
+                    if (currentTimeCell) {
+                        currentTimeCell.textContent = emailData.latest_time || '-';
+                    }
+                    if (currentContentCell) {
+                        currentContentCell.textContent = emailData.latest_content || '-';
+                        currentContentCell.title = emailData.latest_content || '';
+                    }
+                    if (currentCodeCell) {
+                        const codeHtml = emailData.latest_code ? 
+                            `<strong style="color: #ffb703; background: rgba(255, 183, 3, 0.15); padding: 4px 8px; border-radius: 4px; font-size: 13px; font-weight: 800; border: 1px solid rgba(255,183,3,0.3); font-family: monospace;">${emailData.latest_code}</strong>` : 
+                            `<span style="color: var(--text-muted);">-</span>`;
+                        currentCodeCell.innerHTML = codeHtml;
+                    }
+                } else {
+                    if (currentCodeCell && !currentCodeCell.querySelector('strong')) {
+                        currentCodeCell.innerHTML = `<span style="color: var(--danger); font-size: 11px;" title="${data.message || 'Lỗi đọc mail'}">❌ Lỗi</span>`;
+                    }
+                    if (currentFromCell && (currentFromCell.textContent.includes('Đang đọc') || !currentFromCell.textContent)) {
+                        currentFromCell.textContent = '-';
+                    }
+                }
+            } catch (err) {
+                console.error("Lỗi khi quét mail cho email ID " + id, err);
+                const currentTr = document.getElementById(`email-row-${id}`);
+                if (currentTr) {
+                    const currentCodeCell = currentTr.querySelector('.email-code-cell');
+                    if (currentCodeCell && !currentCodeCell.querySelector('strong')) {
+                        currentCodeCell.innerHTML = `<span style="color: var(--danger); font-size: 11px;">❌ Lỗi kết nối</span>`;
+                    }
+                }
+            }
+        }
+
         async function loadEmails(page) {
             showTableLoading('emailsTableBody', 9);
             emailsPage = page;
             const search = document.getElementById('emailSearchInput').value.trim();
 
-            let url = `/dashboard/api/emails/?page=${emailsPage}`;
+            let url = `/dashboard/api/emails/?page=${emailsPage}&page_size=${emailsPageSize}`;
             if (search) url += `&search=${encodeURIComponent(search)}`;
 
             try {
@@ -4604,9 +4855,14 @@
                 populateEmailsTable(emailsData);
 
                 const count = data.count || emailsData.length;
-                document.getElementById('emailsPaginationInfo').textContent = `Hiển thị ${emailsData.length} dòng (Tổng: ${count})`;
-                document.getElementById('emailsPrevBtn').disabled = !data.previous;
-                document.getElementById('emailsNextBtn').disabled = !data.next;
+                let fromVal = 0;
+                let toVal = 0;
+                if (count > 0) {
+                    fromVal = (emailsPage - 1) * emailsPageSize + 1;
+                    toVal = fromVal + emailsData.length - 1;
+                }
+                document.getElementById('emailsPaginationInfo').textContent = `Hiển thị ${fromVal} - ${toVal} của ${count}`;
+                renderGenericPagination('#view-emails .pag-btns', emailsPage, emailsPageSize, count, loadEmails);
 
                 selectedEmails = [];
                 document.getElementById('selectAllEmails').checked = false;
@@ -4622,7 +4878,7 @@
             body.innerHTML = '';
 
             if (emails.length === 0) {
-                body.innerHTML = `<tr><td colspan="10" style="text-align:center; padding: 30px; color: var(--text-muted);">Không tìm thấy email nào.</td></tr>`;
+                body.innerHTML = `<tr><td colspan="9" style="text-align:center; padding: 30px; color: var(--text-muted);">Không tìm thấy email nào.</td></tr>`;
                 return;
             }
 
@@ -4631,26 +4887,24 @@
                 tr.setAttribute('data-id', e.id);
                 tr.id = `email-row-${e.id}`;
 
+                // Extract and format code
+                const codeHtml = e.latest_code ? 
+                    `<strong style="color: #ffb703; background: rgba(255, 183, 3, 0.15); padding: 4px 8px; border-radius: 4px; font-size: 13px; font-weight: 800; border: 1px solid rgba(255,183,3,0.3); font-family: monospace;">${e.latest_code}</strong>` : 
+                    `<span style="color: var(--text-muted);">-</span>`;
+
                 tr.innerHTML = `
                     <td style="text-align: center;" class="cell-chk">
                         <input type="checkbox" class="table-chk email-row-chk" data-id="${e.id}" onclick="handleEmailCheckboxClick(event, ${e.id})">
                     </td>
                     <td style="font-weight: 600;">${e.email}</td>
                     <td><code>${e.password}</code></td>
-                    <td><span class="badge badge-unused">${e.type || 'gmail'}</span></td>
-                    <td>${e.proxy || '-'}</td>
-                    <td>${e.socks5 || '-'}</td>
-                    <td style="text-align: center;"><span class="badge ${e.status === 'Live' ? 'badge-good' : 'badge-dead'}">${e.status || 'Live'}</span></td>
-                    <td style="text-align: center;"><span class="badge ${e.used ? 'badge-active' : 'badge-success'}">${e.used ? 'Used' : 'Free'}</span></td>
-                    <td style="color: var(--text-muted); font-size: 13px;">${e.note || ''}</td>
+                    <td style="font-size: 12px; color: var(--text-muted); font-weight: 500;">${e.created_by || e.owner || '-'}</td>
+                    <td class="email-from-cell" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${e.latest_from || ''}">${e.latest_from || '-'}</td>
+                    <td class="email-time-cell" style="font-size: 12px; color: var(--text-muted); white-space: nowrap;">${e.latest_time || '-'}</td>
+                    <td class="email-content-cell" style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${e.latest_content || ''}">${e.latest_content || '-'}</td>
+                    <td class="email-code-cell" style="text-align: center;">${codeHtml}</td>
                     <td style="text-align: center;" class="cell-action">
-                        <div style="display: flex; gap: 6px; justify-content: center; align-items: center;">
-                            ${e.used ? 
-                                '<span style="color: var(--text-muted); font-size: 13px;">Đã thêm</span>' : 
-                                `<button class="btn btn-success btn-action-add" onclick="addEmailToSystem(event, ${e.id})" style="padding: 2px 8px; font-size: 12px; font-weight: bold; background-color: #01ae7d; border: none; color: white; border-radius: 4px; cursor: pointer;">Thêm</button>`
-                            }
-                            <button class="btn btn-primary" onclick="openReadMailModal(event, ${e.id})" style="padding: 2px 8px; font-size: 12px; font-weight: bold; background-color: var(--primary); border: none; color: white; border-radius: 4px; cursor: pointer;">Đọc Mail</button>
-                        </div>
+                        <button class="btn btn-primary" onclick="openReadMailModal(event, ${e.id})" style="padding: 4px 10px; font-size: 12px; font-weight: bold; background-color: var(--primary); border: none; color: white; border-radius: 4px; cursor: pointer;">Đọc Mail</button>
                     </td>
                 `;
 
@@ -4660,6 +4914,9 @@
                 });
 
                 body.appendChild(tr);
+
+                // Auto-refresh this row's latest email stats in the background
+                refreshEmailRow(e.id);
             });
         }
 
@@ -4745,7 +5002,6 @@
             document.getElementById('addEmailBulkText').value = '';
             document.getElementById('addEmailAddress').value = '';
             document.getElementById('addEmailPassword').value = '';
-            document.getElementById('addEmailType').value = 'gmail';
             document.getElementById('addEmailProxy').value = '';
             document.getElementById('addEmailSocks5').value = '';
             document.getElementById('addEmailNote').value = '';
@@ -4762,17 +5018,16 @@
                     const parts = l.split('|');
                     if (parts.length >= 2) {
                         list_emails.push({
-                            email: parts[0],
-                            password: parts[1],
-                            type: parts[2] || 'gmail',
-                            proxy: parts[3] || '',
-                            socks5: parts[4] || ''
+                            email: parts[0].trim(),
+                            password: parts[1].trim(),
+                            refresh_token: parts[2] ? parts[2].trim() : '',
+                            client_id: parts[3] ? parts[3].trim() : ''
                         });
                     }
                 });
 
                 if (list_emails.length === 0) {
-                    alert('Định dạng bulk import không đúng.');
+                    alert('Định dạng bulk import không đúng. Vui lòng nhập theo định dạng: email|password|api hoặc email|password|api|client_id');
                     return;
                 }
 
@@ -4787,20 +5042,31 @@
                             body: JSON.stringify(payload)
                         });
                     });
-                    await Promise.all(promises);
+                    const responses = await Promise.all(promises);
+                    const createdEmails = [];
+                    for (const resp of responses) {
+                        if (resp.ok) {
+                            const data = await resp.json();
+                            createdEmails.push(data);
+                        }
+                    }
                     closeModal('addEmailModal');
-                    loadEmails(1);
-                    alert(`Đã nhập bulk thành công ${list_emails.length} email!`);
+                    await loadEmails(1);
+                    
+                    // Automatically trigger reading for all newly added emails
+                    createdEmails.forEach(e => {
+                        refreshEmailRow(e.id);
+                    });
                 } catch (err) {
+                    console.error(err);
                     alert('Lỗi nhập bulk emails.');
                 }
             } else {
                 const email = document.getElementById('addEmailAddress').value.trim();
                 const password = document.getElementById('addEmailPassword').value.trim();
-                const type = document.getElementById('addEmailType').value;
-                const proxy = document.getElementById('addEmailProxy').value;
-                const socks5 = document.getElementById('addEmailSocks5').value;
-                const note = document.getElementById('addEmailNote').value;
+                const proxy = document.getElementById('addEmailProxy').value.trim();
+                const socks5 = document.getElementById('addEmailSocks5').value.trim();
+                const note = document.getElementById('addEmailNote').value.trim();
 
                 if (!email || !password) {
                     alert('Email và Mật khẩu không được để trống.');
@@ -4814,11 +5080,13 @@
                             'Content-Type': 'application/json',
                             'X-CSRFToken': csrftoken
                         },
-                        body: JSON.stringify({ email, password, type, proxy, socks5, note })
+                        body: JSON.stringify({ email, password, proxy, socks5, note })
                     });
                     if (response.ok) {
+                        const data = await response.json();
                         closeModal('addEmailModal');
-                        loadEmails(1);
+                        await loadEmails(1);
+                        refreshEmailRow(data.id);
                     } else {
                         const err = await response.json();
                         alert(`Lỗi: ${JSON.stringify(err)}`);
@@ -4837,7 +5105,6 @@
             document.getElementById('editEmailId').value = email.id;
             document.getElementById('editEmailAddress').value = email.email;
             document.getElementById('editEmailPassword').value = email.password;
-            document.getElementById('editEmailType').value = email.type || 'gmail';
             document.getElementById('editEmailProxy').value = email.proxy || '';
             document.getElementById('editEmailSocks5').value = email.socks5 || '';
             document.getElementById('editEmailUsed').checked = email.used;
@@ -4851,13 +5118,12 @@
             const id = document.getElementById('editEmailId').value;
             const email = document.getElementById('editEmailAddress').value.trim();
             const password = document.getElementById('editEmailPassword').value.trim();
-            const type = document.getElementById('editEmailType').value;
-            const proxy = document.getElementById('editEmailProxy').value;
-            const socks5 = document.getElementById('editEmailSocks5').value;
+            const proxy = document.getElementById('editEmailProxy').value.trim();
+            const socks5 = document.getElementById('editEmailSocks5').value.trim();
             const used = document.getElementById('editEmailUsed').checked;
             const isBlacklist = document.getElementById('editEmailStatus').checked;
             const status = isBlacklist ? 'Blacklist' : 'Live';
-            const note = document.getElementById('editEmailNote').value;
+            const note = document.getElementById('editEmailNote').value.trim();
 
             try {
                 const response = await fetch(`/dashboard/api/emails/${id}/`, {
@@ -4866,7 +5132,7 @@
                         'Content-Type': 'application/json',
                         'X-CSRFToken': csrftoken
                     },
-                    body: JSON.stringify({ email, password, type, proxy, socks5, used, status, note })
+                    body: JSON.stringify({ email, password, proxy, socks5, used, status, note })
                 });
 
                 if (response.ok) {
@@ -4920,9 +5186,11 @@
         function populateSubOwnerDropdowns() {
             const addSelect = document.getElementById('addAccSubOwner');
             const editSelect = document.getElementById('editAccSubOwner');
+            const bulkSelect = document.getElementById('bulkAccSubOwner');
             
             addSelect.innerHTML = '<option value="">-- Không có --</option>';
             editSelect.innerHTML = '<option value="">-- Không có --</option>';
+            if (bulkSelect) bulkSelect.innerHTML = '<option value="">-- Không có (Bỏ gán) --</option>';
             
             systemUsers.forEach(u => {
                 const opt1 = document.createElement('option');
@@ -4934,16 +5202,38 @@
                 opt2.value = u.username;
                 opt2.textContent = u.username;
                 editSelect.appendChild(opt2);
+
+                if (bulkSelect) {
+                    const opt3 = document.createElement('option');
+                    opt3.value = u.username;
+                    opt3.textContent = u.username;
+                    bulkSelect.appendChild(opt3);
+                }
             });
+
+            const filterSelect = document.getElementById('accountCreatedByFilter');
+            if (filterSelect) {
+                filterSelect.innerHTML = '<option value="">Tất cả người tạo</option>';
+                systemUsers.forEach(u => {
+                    const opt = document.createElement('option');
+                    opt.value = u.username;
+                    opt.textContent = u.username;
+                    filterSelect.appendChild(opt);
+                });
+            }
         }
 
         async function loadAccounts(page) {
             showTableLoading('accountsTableBody', 13);
             accountsPage = page;
             const search = document.getElementById('accountSearchInput').value.trim();
+            const typeFilter = document.getElementById('accountTypeFilter').value;
+            const createdByFilter = document.getElementById('accountCreatedByFilter').value;
 
-            let url = `/dashboard/api/accounts/?page=${accountsPage}`;
+            let url = `/dashboard/api/accounts/?page=${accountsPage}&page_size=${accountsPageSize}`;
             if (search) url += `&search=${encodeURIComponent(search)}`;
+            if (typeFilter) url += `&type=${encodeURIComponent(typeFilter)}`;
+            if (createdByFilter) url += `&created_by=${encodeURIComponent(createdByFilter)}`;
 
             try {
                 const response = await fetch(url);
@@ -4954,9 +5244,14 @@
                 populateAccountsTable(accountsData);
 
                 const count = data.count || accountsData.length;
-                document.getElementById('accountsPaginationInfo').textContent = `Hiển thị ${accountsData.length} dòng (Tổng: ${count})`;
-                document.getElementById('accountsPrevBtn').disabled = !data.previous;
-                document.getElementById('accountsNextBtn').disabled = !data.next;
+                let fromVal = 0;
+                let toVal = 0;
+                if (count > 0) {
+                    fromVal = (accountsPage - 1) * accountsPageSize + 1;
+                    toVal = fromVal + accountsData.length - 1;
+                }
+                document.getElementById('accountsPaginationInfo').textContent = `Hiển thị ${fromVal} - ${toVal} của ${count}`;
+                renderGenericPagination('#view-accounts .pag-btns', accountsPage, accountsPageSize, count, loadAccounts);
 
                 selectedAccounts = [];
                 document.getElementById('selectAllAccounts').checked = false;
@@ -4992,6 +5287,12 @@
                 } else if (acc.status === 3) {
                     statusLabel = 'Tạm thời';
                     statusClass = 'badge-info';
+                } else if (acc.status === 4) {
+                    statusLabel = 'Sub OK';
+                    statusClass = 'badge-sub-ok';
+                } else if (acc.status === 5) {
+                    statusLabel = 'Sub Lỗi';
+                    statusClass = 'badge-sub-error';
                 }
 
                 tr.innerHTML = `
@@ -5075,6 +5376,7 @@
             const hasSelection = selectedAccounts.length > 0;
             document.getElementById('accountDeleteBtn').disabled = !hasSelection;
             document.getElementById('accountBulkStatusBtn').disabled = !hasSelection;
+            document.getElementById('accountBulkSubOwnerBtn').disabled = !hasSelection;
         }
 
         function changeAccountsPage(offset) {
@@ -5139,54 +5441,65 @@
 
         async function openEditAccountModal(event, id) {
             if (event) event.stopPropagation();
-            const acc = accountsData.find(a => a.id === id);
-            if (!acc) return;
-
-            document.getElementById('editAccId').value = acc.id;
-            document.getElementById('editAccEmail').value = acc.email || acc.username || '';
-            document.getElementById('editAccPassword').value = acc.password || '';
-            
-            let rawType = acc.type || 'Tiktok';
-            let formattedType = 'Other';
-            const matchedOpt = ['Tiktok', 'Apple', 'Amazon', 'Ebay', 'Facebook', 'X'].find(t => t.toLowerCase() === rawType.toLowerCase());
-            if (matchedOpt) {
-                formattedType = matchedOpt;
-            }
-            document.getElementById('editAccType').value = formattedType;
-            
-            document.getElementById('editAcc2FA').value = acc.two_factor_auth || '';
-            document.getElementById('editAccCookies').value = acc.cookies || '';
-            document.getElementById('editAccStatus').value = (acc.status !== undefined) ? acc.status : '0';
-            document.getElementById('editAccNote').value = acc.note || '';
-            document.getElementById('editAccSubscription').value = acc.subscription || '';
-            document.getElementById('editAccSubOwner').value = acc.subscription_owner || '';
-
-            const profileSelect = document.getElementById('editAccProfile');
-            profileSelect.innerHTML = `
-                <option value="none">Không có (Mặc định)</option>
-                <option value="auto">Tự động tạo profile mới</option>
-            `;
 
             try {
-                const response = await fetch('/dashboard/api/profiles/?page_size=100');
-                if (response.ok) {
-                    const data = await response.json();
-                    const profiles = data.results || data;
-                    profiles.forEach(p => {
-                        const opt = document.createElement('option');
-                        opt.value = p.id;
-                        opt.textContent = `${p.profile_name} (${p.profile_os || 'No OS'})`;
-                        if (acc.browser_profiles === p.id) {
-                            opt.selected = true;
-                        }
-                        profileSelect.appendChild(opt);
-                    });
+                const response = await fetch(`/dashboard/api/accounts/${id}/`);
+                if (!response.ok) {
+                    alert('Không thể tải chi tiết tài khoản để sửa.');
+                    return;
                 }
-            } catch (err) {
-                console.error("Lỗi khi load profiles list cho edit account modal:", err);
-            }
+                const acc = await response.json();
 
-            openModal('editAccountModal');
+                document.getElementById('editAccId').value = acc.id;
+                document.getElementById('editAccEmail').value = acc.email || acc.username || '';
+                document.getElementById('editAccPassword').value = acc.password || '';
+                
+                let rawType = acc.type || 'Tiktok';
+                let formattedType = 'Other';
+                const matchedOpt = ['Tiktok', 'Apple', 'Amazon', 'Ebay', 'Facebook', 'X'].find(t => t.toLowerCase() === rawType.toLowerCase());
+                if (matchedOpt) {
+                    formattedType = matchedOpt;
+                }
+                document.getElementById('editAccType').value = formattedType;
+                
+                document.getElementById('editAcc2FA').value = acc.two_factor_auth || '';
+                document.getElementById('editAccCookies').value = acc.cookies || '';
+                document.getElementById('editAccStatus').value = (acc.status !== undefined) ? acc.status : '0';
+                document.getElementById('editAccNote').value = acc.note || '';
+                document.getElementById('editAccSubscription').value = acc.subscription || '';
+                document.getElementById('editAccSubOwner').value = acc.subscription_owner || '';
+
+                const profileSelect = document.getElementById('editAccProfile');
+                profileSelect.innerHTML = `
+                    <option value="none">Không có (Mặc định)</option>
+                    <option value="auto">Tự động tạo profile mới</option>
+                `;
+
+                try {
+                    const responseProf = await fetch('/dashboard/api/profiles/?page_size=100');
+                    if (responseProf.ok) {
+                        const data = await responseProf.json();
+                        const profiles = data.results || data;
+                        profiles.forEach(p => {
+                            const opt = document.createElement('option');
+                            opt.value = p.id;
+                            opt.textContent = `${p.profile_name} (${p.profile_os || 'No OS'})`;
+                            if (acc.browser_profiles === p.id) {
+                                opt.selected = true;
+                            }
+                            profileSelect.appendChild(opt);
+                        });
+                    }
+                } catch (err) {
+                    console.error("Lỗi khi load profiles list cho edit account modal:", err);
+                }
+
+                openModal('editAccountModal');
+
+            } catch (err) {
+                console.error("Lỗi tải thông tin sửa tài khoản: ", err);
+                alert("Lỗi kết nối khi tải dữ liệu tài khoản.");
+            }
         }
 
         async function saveEditAccount() {
@@ -5242,52 +5555,125 @@
             }
         }
 
-        function openViewAccountModal(id) {
-            const acc = accountsData.find(a => a.id === id);
-            if (!acc) return;
+        async function openViewAccountModal(id) {
+            // Clear fields first to prevent displaying old data
+            document.getElementById('viewAccEmail').textContent = 'Đang tải...';
+            document.getElementById('viewAccPassword').textContent = 'Đang tải...';
+            document.getElementById('viewAccType').textContent = 'Đang tải...';
+            document.getElementById('viewAccProfile').textContent = 'Đang tải...';
+            document.getElementById('viewAccSignupIp').textContent = 'Đang tải...';
+            document.getElementById('viewAccPhone').textContent = 'Đang tải...';
+            document.getElementById('viewAccProxy').textContent = 'Đang tải...';
+            document.getElementById('viewAccStatus').textContent = 'Đang tải...';
+            document.getElementById('viewAccCreatedBy').textContent = 'Đang tải...';
+            document.getElementById('viewAccCreatedAt').textContent = 'Đang tải...';
+            document.getElementById('viewAccSubscription').textContent = 'Đang tải...';
+            document.getElementById('viewAccSubOwner').textContent = 'Đang tải...';
+            document.getElementById('viewAcc2FA').textContent = 'Đang tải...';
+            document.getElementById('viewAccCookies').textContent = 'Đang tải...';
+            document.getElementById('viewAccNote').textContent = 'Đang tải...';
 
-            document.getElementById('viewAccEmail').textContent = acc.email || acc.username || '-';
-            document.getElementById('viewAccPassword').textContent = acc.password || '-';
-            document.getElementById('viewAccType').textContent = acc.type || '-';
-            document.getElementById('viewAccProfile').textContent = acc.browser_profiles || 'Không có';
-            document.getElementById('viewAccSignupIp').textContent = acc.signup_ip || '-';
-            
-            let phoneStr = acc.phone_number || '-';
-            if (acc.phone_service) phoneStr += ` (${acc.phone_service})`;
-            document.getElementById('viewAccPhone').textContent = phoneStr;
-            
-            document.getElementById('viewAccProxy').textContent = acc.socks5 || acc.proxy || 'Không có';
-            
-            let statusLabel = 'Hoạt động (Active)';
-            if (acc.status === 1) statusLabel = 'Chưa kích hoạt (Email Not Activated)';
-            else if (acc.status === 2) statusLabel = 'Bị khóa (Banned)';
-            else if (acc.status === 3) statusLabel = 'Tạm thời (Temporary)';
-            document.getElementById('viewAccStatus').textContent = statusLabel;
-            
-            document.getElementById('viewAccCreatedBy').textContent = acc.created_by || '-';
-            document.getElementById('viewAccCreatedAt').textContent = formatDateString(acc.created);
-            document.getElementById('viewAccSubscription').textContent = acc.subscription || '-';
-            document.getElementById('viewAccSubOwner').textContent = acc.subscription_owner || '-';
-            document.getElementById('viewAcc2FA').textContent = acc.two_factor_auth || '-';
-            
-            const cookiesDiv = document.getElementById('viewAccCookies');
-            cookiesDiv.textContent = acc.cookies || 'Không có cookies';
-            
-            const btnCopy = document.getElementById('btnCopyViewCookies');
-            if (acc.cookies) {
-                btnCopy.style.display = 'inline-block';
-                btnCopy.onclick = () => {
-                    navigator.clipboard.writeText(acc.cookies)
-                        .then(() => alert('Đã copy Cookies!'))
-                        .catch(err => alert('Lỗi khi copy: ' + err));
-                };
-            } else {
-                btnCopy.style.display = 'none';
-            }
-            
-            document.getElementById('viewAccNote').textContent = acc.note || '-';
+            document.getElementById('btnGet2FACode').style.display = 'none';
+            document.getElementById('btnCopyViewCookies').style.display = 'none';
+            document.getElementById('viewAcc2FACode').style.display = 'none';
+            document.getElementById('viewAcc2FACode').textContent = '';
 
             openModal('viewAccountModal');
+
+            try {
+                const response = await fetch(`/dashboard/api/accounts/${id}/`);
+                if (!response.ok) {
+                    alert('Không thể tải chi tiết tài khoản.');
+                    closeModal('viewAccountModal');
+                    return;
+                }
+                const acc = await response.json();
+
+                document.getElementById('viewAccEmail').textContent = acc.email || acc.username || '-';
+                document.getElementById('viewAccPassword').textContent = acc.password || '-';
+                document.getElementById('viewAccType').textContent = acc.type || '-';
+                document.getElementById('viewAccProfile').textContent = acc.browser_profiles || 'Không có';
+                document.getElementById('viewAccSignupIp').textContent = acc.signup_ip || '-';
+                
+                let phoneStr = acc.phone_number || '-';
+                if (acc.phone_service) phoneStr += ` (${acc.phone_service})`;
+                document.getElementById('viewAccPhone').textContent = phoneStr;
+                
+                document.getElementById('viewAccProxy').textContent = acc.socks5 || acc.proxy || 'Không có';
+                
+                let statusLabel = 'Hoạt động (Active)';
+                if (acc.status === 1) statusLabel = 'Chưa kích hoạt (Email Not Activated)';
+                else if (acc.status === 2) statusLabel = 'Bị khóa (Banned)';
+                else if (acc.status === 3) statusLabel = 'Tạm thời (Temporary)';
+                else if (acc.status === 4) statusLabel = 'Sub OK';
+                else if (acc.status === 5) statusLabel = 'Sub Lỗi';
+                document.getElementById('viewAccStatus').textContent = statusLabel;
+                
+                document.getElementById('viewAccCreatedBy').textContent = acc.created_by || '-';
+                document.getElementById('viewAccCreatedAt').textContent = formatDateString(acc.created);
+                document.getElementById('viewAccSubscription').textContent = acc.subscription || '-';
+                document.getElementById('viewAccSubOwner').textContent = acc.subscription_owner || '-';
+                document.getElementById('viewAcc2FA').textContent = acc.two_factor_auth || '-';
+                
+                const tokenBadge = document.getElementById('viewAcc2FACode');
+                tokenBadge.style.display = 'none';
+                tokenBadge.textContent = '';
+                
+                const btnGet2FA = document.getElementById('btnGet2FACode');
+                if (acc.two_factor_auth) {
+                    btnGet2FA.style.display = 'inline-block';
+                    btnGet2FA.onclick = async () => {
+                        try {
+                            btnGet2FA.disabled = true;
+                            btnGet2FA.textContent = 'Đang lấy...';
+                            tokenBadge.style.display = 'none';
+                            const res = await fetch(`/dashboard/api/accounts/${acc.id}/get-2fa/`);
+                            const resData = await res.json();
+                            if (res.ok && resData.success && resData.token) {
+                                tokenBadge.textContent = resData.token;
+                                tokenBadge.style.display = 'inline-block';
+                                tokenBadge.onclick = () => {
+                                    navigator.clipboard.writeText(resData.token)
+                                        .then(() => alert('Đã copy thành công mã OTP: ' + resData.token))
+                                        .catch(err => alert('Lỗi copy: ' + err));
+                                };
+                            } else {
+                                alert('Lỗi: ' + (resData.message || 'Không thể lấy mã code.'));
+                            }
+                        } catch (e) {
+                            console.error(e);
+                            alert('Lỗi kết nối khi lấy mã OTP.');
+                        } finally {
+                            btnGet2FA.disabled = false;
+                            btnGet2FA.textContent = 'Lấy mã OTP';
+                        }
+                    };
+                } else {
+                    btnGet2FA.style.display = 'none';
+                }
+                
+                const cookiesDiv = document.getElementById('viewAccCookies');
+                cookiesDiv.textContent = acc.cookies || 'Không có cookies';
+                
+                const btnCopy = document.getElementById('btnCopyViewCookies');
+                if (acc.cookies) {
+                    btnCopy.style.display = 'inline-block';
+                    btnCopy.onclick = () => {
+                         navigator.clipboard.writeText(acc.cookies)
+                             .then(() => alert('Đã copy thành công Cookies!'))
+                             .catch(err => alert('Lỗi khi copy: ' + err));
+                    };
+                } else {
+                    btnCopy.style.display = 'none';
+                }
+                
+                document.getElementById('viewAccNote').textContent = acc.note || '-';
+
+            } catch (err) {
+                console.error("Lỗi lấy chi tiết tài khoản: ", err);
+                alert("Lỗi khi kết nối đến hệ thống.");
+                closeModal('viewAccountModal');
+            }
         }
 
         function openBulkStatusModal() {
@@ -5325,6 +5711,48 @@
                     loadAccounts(1);
                 } else {
                     alert('Lỗi: ' + (data.message || 'Không thể cập nhật trạng thái.'));
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Lỗi kết nối hoặc hệ thống.');
+            }
+        }
+
+        function openBulkSubOwnerModal() {
+            if (selectedAccounts.length === 0) return;
+            openModal('bulkSubOwnerModal');
+        }
+
+        async function saveBulkSubOwner() {
+            const subOwner = document.getElementById('bulkAccSubOwner').value;
+            if (selectedAccounts.length === 0) return;
+
+            try {
+                const response = await fetch('/dashboard/api/accounts/bulk-sub-owner/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({
+                        ids: selectedAccounts,
+                        subscription_owner: subOwner
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    alert(data.message || 'Đã gán sở hữu sub thành công!');
+                    closeModal('bulkSubOwnerModal');
+                    selectedAccounts = [];
+                    document.getElementById('selectAllAccounts').checked = false;
+                    const chks = document.querySelectorAll('.account-row-chk');
+                    chks.forEach(chk => chk.checked = false);
+                    document.querySelectorAll('#accountsTableBody tr').forEach(tr => tr.classList.remove('row-selected'));
+                    updateAccountActionButtons();
+                    loadAccounts(accountsPage);
+                } else {
+                    alert('Lỗi: ' + (data.message || 'Không thể cập nhật sở hữu sub.'));
                 }
             } catch (err) {
                 console.error(err);
@@ -5461,8 +5889,7 @@
                 const fromVal = count === 0 ? 0 : (page - 1) * hwidsPageSize + 1;
                 const toVal = Math.min(page * hwidsPageSize, count);
                 document.getElementById('hwidsPaginationInfo').textContent = `Hiển thị ${fromVal} - ${toVal} của ${count}`;
-                document.getElementById('hwidsPrevBtn').disabled = page <= 1;
-                document.getElementById('hwidsNextBtn').disabled = page * hwidsPageSize >= count;
+                renderGenericPagination('#view-hwids .pag-btns', hwidsPage, hwidsPageSize, count, loadHwids);
             } catch (err) {
                 document.getElementById('hwidsTableBody').innerHTML = 
                     `<tr><td colspan="8" style="text-align:center; color:var(--danger);">Lỗi tải dữ liệu HWID</td></tr>`;
@@ -5498,7 +5925,7 @@
                     <td><strong>${h.username || '-'}</strong><br><small style="color:var(--text-muted)">ID: ${h.user}</small></td>
                     <td title="${h.value || ''}">
                         <code style="font-size: 11px; color: var(--accent); background: rgba(0,242,254,0.05); padding: 3px 6px; border-radius: 4px; cursor:pointer;"
-                              onclick="navigator.clipboard.writeText('${h.value || ''}').then(()=>alert('Đã copy HWID!'))"
+                              onclick="navigator.clipboard.writeText('${h.value || ''}').then(()=>alert('Đã copy thành công HWID!'))"
                         >${shortHwid}</code>
                     </td>
                     <td style="color:var(--text-muted); font-size:12px;">${h.note || '-'}</td>

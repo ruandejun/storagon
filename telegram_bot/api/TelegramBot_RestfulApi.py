@@ -95,9 +95,11 @@ class AccountsEmailsSerializer(serializers.ModelSerializer):
     			'state_ip','phone_number',
        			'phone_service','status', 'price',
 				'used', 'refresh_token', 'client_id',
+				'latest_from', 'latest_time', 'latest_content', 'latest_code',
           )
 	customer = serializers.SlugRelatedField(slug_field='username', read_only=True);
 	owner = serializers.SlugRelatedField(slug_field='username', read_only=True);
+	created_by = serializers.SlugRelatedField(slug_field='username', read_only=True);
  
 class AccountsCreatedSerializer(serializers.ModelSerializer):
 	class Meta:
@@ -124,6 +126,21 @@ class AccountsCreatedSerializer(serializers.ModelSerializer):
 			return accounts_created.browser_profiles.profile_os
 		else:
 			return ''
+
+class AccountsCreatedListSerializer(AccountsCreatedSerializer):
+	class Meta:
+		model = AccountsCreated
+		fields = ('id', 'created', 'modified', 'created_by','customer','profile_os',
+				'modified_by', 'type', 'owner',
+				'note', 'email',
+				'password', 'proxy',
+				'socks5','state','proxy_username', 'proxy_password',
+				'state_ip','phone_number',
+				'phone_service','status', 'price','auto_view',
+				'viewed', 'browser_profiles', 'accounts_emails', 'username', 'signup_ip',
+				'subscription', 'subscription_owner',
+          )
+
 class LinkCheckoutSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = LinkCheckout

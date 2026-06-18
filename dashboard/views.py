@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from django.contrib.auth.models import User
 from cards_manager.models import Card
 from cards_manager.views import CardViewSet
+from system_configure.controllers.Tool import StandardResultsSetPagination
 
 from servermain.models import UserProfile
 
@@ -21,7 +22,8 @@ from .serializers import DashboardUserSerializer, UserHwidSerializer
 from telegram_bot.models import BrowserProfiles, MunProxies, AccountsEmails, AccountsCreated, UserHwid
 from telegram_bot.api.TelegramBot_RestfulApi import (
     BrowserProfilesSerializer, MunProxiesSerializer,
-    AccountsEmailsSerializer, AccountsCreatedSerializer
+    AccountsEmailsSerializer, AccountsCreatedSerializer,
+    AccountsCreatedListSerializer
 )
 
 # Wrap MongoDB imports to handle failures gracefully
@@ -153,6 +155,8 @@ def dashboard_stats_api(request):
         'the_chet': cards_qs.filter(status='Thẻ chết').count(),
         'the_song': cards_qs.filter(status='Thẻ sống').count(),
         'the_tot': cards_qs.filter(status='Thẻ tốt').count(),
+        'the_loi': cards_qs.filter(status='Thẻ lỗi').count(),
+        'sub_ok': cards_qs.filter(status='Sub OK').count(),
     }
     
     # Users Stats
@@ -200,6 +204,7 @@ def dashboard_stats_api(request):
 
 class DashboardUserViewSet(viewsets.ModelViewSet):
     serializer_class = DashboardUserSerializer
+    pagination_class = StandardResultsSetPagination
     authentication_classes = [SessionAuthentication]
     permission_classes = [permissions.IsAdminUser]
     filter_backends = [filters.SearchFilter]
@@ -263,6 +268,7 @@ class DashboardUserViewSet(viewsets.ModelViewSet):
 class BrowserProfilesViewSet(viewsets.ModelViewSet):
     queryset = BrowserProfiles.objects.all().order_by('-id')
     serializer_class = BrowserProfilesSerializer
+    pagination_class = StandardResultsSetPagination
     authentication_classes = [SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [filters.SearchFilter]
@@ -272,6 +278,7 @@ class BrowserProfilesViewSet(viewsets.ModelViewSet):
 class MunProxiesViewSet(viewsets.ModelViewSet):
     queryset = MunProxies.objects.all().order_by('-id')
     serializer_class = MunProxiesSerializer
+    pagination_class = StandardResultsSetPagination
     authentication_classes = [SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [filters.SearchFilter]
@@ -279,12 +286,92 @@ class MunProxiesViewSet(viewsets.ModelViewSet):
 
 
 class AccountsEmailsViewSet(viewsets.ModelViewSet):
-    queryset = AccountsEmails.objects.all().order_by('-id')
     serializer_class = AccountsEmailsSerializer
+    pagination_class = StandardResultsSetPagination
     authentication_classes = [SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [filters.SearchFilter]
     search_fields = ['email', 'type']
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_superuser or user.is_staff:
+            return AccountsEmails.objects.all().order_by('-id')
+        return AccountsEmails.objects.filter(owner=user).order_by('-id')
+
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        email_addr = data.get('email', '').strip()
+        password = data.get('password', '').strip()
+        refresh_token = data.get('refresh_token', '').strip()
+        client_id = data.get('client_id', '').strip()
+        proxy = data.get('proxy', '').strip()
+        socks5 = data.get('socks5', '').strip()
+        note = data.get('note', '').strip()
+
+        if not email_addr:
+            return Response({'error': 'Email không được để trống.'}, status=400)
+
+        # Detect email type
+        email_lower = email_addr.lower()
+        if any(dom in email_lower for dom in ['@hotmail.', '@outlook.', '@live.', '@msn.']):
+            detected_type = 'hotmail'
+        elif '@gmail.' in email_lower:
+            detected_type = 'gmail'
+        else:
+            if '@' in email_lower:
+                detected_type = email_lower.split('@')[1].split('.')[0]
+            else:
+                detected_type = 'gmail'
+
+        from telegram_bot.models import AccountsType
+        account_type, _ = AccountsType.objects.get_or_create(
+            value=detected_type.lower(),
+            defaults={'label': detected_type.title()}
+        )
+
+        email_obj = AccountsEmails.objects.filter(email=email_addr, owner=request.user).first()
+        if email_obj:
+            updated = False
+            if password and email_obj.password != password:
+                email_obj.password = password
+                updated = True
+            if refresh_token and email_obj.refresh_token != refresh_token:
+                email_obj.refresh_token = refresh_token
+                updated = True
+            if client_id and email_obj.client_id != client_id:
+                email_obj.client_id = client_id
+                updated = True
+            if email_obj.type != account_type:
+                email_obj.type = account_type
+                updated = True
+            if proxy and email_obj.proxy != proxy:
+                email_obj.proxy = proxy
+                updated = True
+            if socks5 and email_obj.socks5 != socks5:
+                email_obj.socks5 = socks5
+                updated = True
+            if note and email_obj.note != note:
+                email_obj.note = note
+                updated = True
+            if updated:
+                email_obj.save()
+        else:
+            email_obj = AccountsEmails.objects.create(
+                email=email_addr,
+                password=password,
+                refresh_token=refresh_token,
+                client_id=client_id,
+                type=account_type,
+                proxy=proxy,
+                socks5=socks5,
+                note=note,
+                owner=request.user,
+                created_by=request.user
+            )
+
+        serializer = self.get_serializer(email_obj)
+        return Response(serializer.data, status=201)
 
     @action(detail=True, methods=['post'], url_path='add-to-system')
     def add_to_system(self, request, pk=None):
@@ -339,127 +426,18 @@ class AccountsEmailsViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'], url_path='read-mailbox')
     def read_mailbox(self, request, pk=None):
         email_obj = self.get_object()
-        email_addr = email_obj.email
-        password = email_obj.password
-
-        if not email_addr or not password:
-            return Response({'success': False, 'message': 'Email hoặc mật khẩu không tồn tại trong hệ thống.'}, status=400)
-
-        import imaplib
-        import email
-        from email.header import decode_header
-        import re
-
-        # Helper function to guess IMAP host
-        def get_imap_host(addr):
-            addr = addr.lower()
-            if any(dom in addr for dom in ['@hotmail.', '@live.', '@outlook.', '@msn.']):
-                return 'outlook.office365.com'
-            if '@gmail.' in addr:
-                return 'imap.gmail.com'
-            # Fallback to guessing based on MX or default to outlook
-            return 'outlook.office365.com'
-
-        server_host = get_imap_host(email_addr)
-        try:
-            # Connect using SSL with a timeout of 15 seconds
-            mail = imaplib.IMAP4_SSL(server_host, timeout=15)
-            mail.login(email_addr, password)
-            mail.select("inbox")
-
-            status, messages = mail.search(None, "ALL")
-            if status != "OK":
-                return Response({'success': True, 'emails': []})
-
-            mail_ids = messages[0].split()
-            # Fetch the last 15 emails
-            latest_ids = mail_ids[-15:]
-            latest_ids.reverse()  # Newest first
-
-            results = []
-            for mail_id in latest_ids:
-                res_status, msg_data = mail.fetch(mail_id, "(RFC822)")
-                if res_status != "OK":
-                    continue
-
-                for response_part in msg_data:
-                    if isinstance(response_part, tuple):
-                        msg = email.message_from_bytes(response_part[1])
-
-                        # Decode Subject
-                        subj_header = msg["Subject"] or ""
-                        subject = ""
-                        try:
-                            decoded = decode_header(subj_header)
-                            for part, enc in decoded:
-                                if isinstance(part, bytes):
-                                    subject += part.decode(enc or "utf-8", errors="ignore")
-                                else:
-                                    subject += part
-                        except Exception:
-                            subject = str(subj_header)
-
-                        # Decode From
-                        from_header = msg["From"] or ""
-                        from_sender = ""
-                        try:
-                            decoded = decode_header(from_header)
-                            for part, enc in decoded:
-                                if isinstance(part, bytes):
-                                    from_sender += part.decode(enc or "utf-8", errors="ignore")
-                                else:
-                                    from_sender += part
-                        except Exception:
-                            from_sender = str(from_header)
-
-                        # Date
-                        date_str = msg["Date"] or ""
-
-                        # Extract Body (Plain Text or HTML)
-                        body = ""
-                        if msg.is_multipart():
-                            for part in msg.walk():
-                                content_type = part.get_content_type()
-                                content_disposition = str(part.get("Content-Disposition"))
-                                if content_type == "text/plain" and "attachment" not in content_disposition:
-                                    payload = part.get_payload(decode=True)
-                                    body = payload.decode(part.get_content_charset() or "utf-8", errors="ignore")
-                                    break
-                                elif content_type == "text/html" and "attachment" not in content_disposition:
-                                    payload = part.get_payload(decode=True)
-                                    body = payload.decode(part.get_content_charset() or "utf-8", errors="ignore")
-                        else:
-                            payload = msg.get_payload(decode=True)
-                            body = payload.decode(msg.get_content_charset() or "utf-8", errors="ignore")
-
-                        clean_body = body.strip()
-                        # If HTML body, strip html tags for snippet preview
-                        if "<html" in clean_body.lower() or "<body" in clean_body.lower() or "<div" in clean_body.lower():
-                            clean_body = re.sub('<[^<]+?>', '', clean_body)
-                            clean_body = clean_body.replace('&nbsp;', ' ').replace('&lt;', '<').replace('&gt;', '>')
-
-                        # Clean whitespace sequences
-                        clean_body = re.sub(r'\s+', ' ', clean_body).strip()
-                        snippet = clean_body[:200] + ("..." if len(clean_body) > 200 else "")
-
-                        results.append({
-                            'from': from_sender,
-                            'subject': subject,
-                            'date': date_str,
-                            'snippet': snippet,
-                            'body': body
-                        })
-            
-            try:
-                mail.close()
-                mail.logout()
-            except Exception:
-                pass
-                
-            return Response({'success': True, 'emails': results})
-            
-        except Exception as e:
-            return Response({'success': False, 'message': f'Lỗi kết nối IMAP hoặc Đăng nhập thất bại: {str(e)}'}, status=500)
+        res = read_single_mailbox_helper(email_obj, request.user)
+        if res.get('success'):
+            email_obj.refresh_from_db()
+            from telegram_bot.api.TelegramBot_RestfulApi import AccountsEmailsSerializer
+            serializer = AccountsEmailsSerializer(email_obj)
+            return Response({
+                'success': True,
+                'emails': res.get('emails', []),
+                'email_data': serializer.data
+            })
+        else:
+            return Response({'success': False, 'message': res.get('message', 'Không thể đọc hộp thư.')}, status=500)
 
     @action(detail=False, methods=['get'], url_path='get-graph-config')
     def get_graph_config(self, request):
@@ -492,19 +470,7 @@ class AccountsEmailsViewSet(viewsets.ModelViewSet):
         if not isinstance(accounts, list) or not accounts:
             return Response({'success': False, 'message': 'Danh sách tài khoản email không hợp lệ.'}, status=400)
 
-        # Config fallback values
-        config_client_id = get_config('microsoft_graph_client_id', '').strip()
-        config_client_secret = get_config('microsoft_graph_client_secret', '').strip()
-        config_tenant_id = get_config('microsoft_graph_tenant_id', 'common').strip()
-        config_flow = get_config('microsoft_graph_flow', 'ropc').strip()
-
-        import requests
         results = {}
-        
-        # Pre-fetch app token for Client Credentials Flow
-        app_token = None
-        app_token_err = None
-
         for acc in accounts:
             email_addr = acc.get('email', '').strip()
             password = acc.get('password', '').strip()
@@ -513,20 +479,38 @@ class AccountsEmailsViewSet(viewsets.ModelViewSet):
             
             if not email_addr:
                 continue
+
+            # Detect email type
+            email_lower = email_addr.lower()
+            if any(dom in email_lower for dom in ['@hotmail.', '@outlook.', '@live.', '@msn.']):
+                detected_type = 'hotmail'
+            elif '@gmail.' in email_lower:
+                detected_type = 'gmail'
+            else:
+                if '@' in email_lower:
+                    detected_type = email_lower.split('@')[1].split('.')[0]
+                else:
+                    detected_type = 'gmail'
+
+            from telegram_bot.models import AccountsType
+            account_type, _ = AccountsType.objects.get_or_create(
+                value=detected_type.lower(),
+                defaults={'label': detected_type.title()}
+            )
                 
             # Check or create in database
-            email_obj = AccountsEmails.objects.filter(email=email_addr).first()
+            email_obj = AccountsEmails.objects.filter(email=email_addr, owner=request.user).first()
             if not email_obj:
                 email_obj = AccountsEmails.objects.create(
                     email=email_addr,
                     password=password,
                     refresh_token=refresh_token,
                     client_id=client_id,
+                    type=account_type,
                     owner=request.user,
                     created_by=request.user
                 )
             else:
-                # Update info if provided in request to keep it in sync
                 updated = False
                 if password and email_obj.password != password:
                     email_obj.password = password
@@ -537,234 +521,313 @@ class AccountsEmailsViewSet(viewsets.ModelViewSet):
                 if client_id and email_obj.client_id != client_id:
                     email_obj.client_id = client_id
                     updated = True
+                if email_obj.type != account_type:
+                    email_obj.type = account_type
+                    updated = True
                 if updated:
                     email_obj.save()
 
-            # Now perform Graph API request
-            email_lower = email_addr.lower()
-            is_microsoft = any(dom in email_lower for dom in ['@hotmail.', '@live.', '@outlook.', '@msn.'])
-            if not is_microsoft:
-                # Fallback to standard IMAP
-                import imaplib
-                import email as py_email
-                from email.header import decode_header
-                import re
-
-                def get_imap_host(addr):
-                    addr = addr.lower()
-                    if '@gmail.' in addr:
-                        return 'imap.gmail.com'
-                    return 'outlook.office365.com'
-
-                try:
-                    server_host = get_imap_host(email_addr)
-                    mail = imaplib.IMAP4_SSL(server_host, timeout=10)
-                    mail.login(email_addr, password)
-                    mail.select("inbox")
-                    status, messages = mail.search(None, "ALL")
-                    if status != "OK":
-                        results[email_addr] = {'success': True, 'emails': []}
-                        continue
-                    mail_ids = messages[0].split()
-                    latest_ids = mail_ids[-10:]
-                    latest_ids.reverse()
-                    
-                    parsed_emails = []
-                    for mail_id in latest_ids:
-                        res_status, msg_data = mail.fetch(mail_id, "(RFC822)")
-                        if res_status != "OK":
-                            continue
-                        for response_part in msg_data:
-                            if isinstance(response_part, tuple):
-                                msg = py_email.message_from_bytes(response_part[1])
-                                # decode subject
-                                subj_header = msg["Subject"] or ""
-                                subject = ""
-                                try:
-                                    decoded = decode_header(subj_header)
-                                    for part, enc in decoded:
-                                        if isinstance(part, bytes):
-                                            subject += part.decode(enc or "utf-8", errors="ignore")
-                                        else:
-                                            subject += part
-                                except Exception:
-                                    subject = str(subj_header)
-                                # decode from
-                                from_header = msg["From"] or ""
-                                from_sender = ""
-                                try:
-                                    decoded = decode_header(from_header)
-                                    for part, enc in decoded:
-                                        if isinstance(part, bytes):
-                                            from_sender += part.decode(enc or "utf-8", errors="ignore")
-                                        else:
-                                            from_sender += part
-                                except Exception:
-                                    from_sender = str(from_header)
-                                date_str = msg["Date"] or ""
-                                body = ""
-                                if msg.is_multipart():
-                                    for part in msg.walk():
-                                        content_type = part.get_content_type()
-                                        content_disposition = str(part.get("Content-Disposition"))
-                                        if content_type == "text/plain" and "attachment" not in content_disposition:
-                                            body = part.get_payload(decode=True).decode(part.get_content_charset() or "utf-8", errors="ignore")
-                                            break
-                                        elif content_type == "text/html" and "attachment" not in content_disposition:
-                                            body = part.get_payload(decode=True).decode(part.get_content_charset() or "utf-8", errors="ignore")
-                                else:
-                                    body = msg.get_payload(decode=True).decode(msg.get_content_charset() or "utf-8", errors="ignore")
-                                
-                                clean_body = body.strip()
-                                if "<html" in clean_body.lower() or "<body" in clean_body.lower() or "<div" in clean_body.lower():
-                                    clean_body = re.sub('<[^<]+?>', '', clean_body)
-                                    clean_body = clean_body.replace('&nbsp;', ' ').replace('&lt;', '<').replace('&gt;', '>')
-                                clean_body = re.sub(r'\s+', ' ', clean_body).strip()
-                                snippet = clean_body[:200] + ("..." if len(clean_body) > 200 else "")
-                                parsed_emails.append({
-                                    'from': from_sender,
-                                    'subject': subject,
-                                    'date': date_str,
-                                    'snippet': snippet,
-                                    'body': body
-                                })
-                    try:
-                        mail.close()
-                        mail.logout()
-                    except Exception:
-                        pass
-                    results[email_addr] = {'success': True, 'emails': parsed_emails}
-                except Exception as e:
-                    results[email_addr] = {'success': False, 'message': f'Lỗi IMAP: {str(e)}'}
-                continue
-
-            # Microsoft Accounts OAuth2 or Graph API
-            target_refresh_token = refresh_token or email_obj.refresh_token
-            target_client_id = client_id or email_obj.client_id or config_client_id or "9e5f94bc-e8a4-4e73-b8be-63364c29d753"
-
-            if target_refresh_token:
-                # OAuth2 Refresh Token Flow
-                try:
-                    token_url = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
-                    res = requests.post(token_url, data={
-                        'grant_type': 'refresh_token',
-                        'client_id': target_client_id,
-                        'refresh_token': target_refresh_token
-                    }, timeout=10)
-                    
-                    if res.status_code == 200:
-                        res_json = res.json()
-                        access_token = res_json.get('access_token')
-                        new_refresh_token = res_json.get('refresh_token')
-                        
-                        # Save the rotated refresh token
-                        if new_refresh_token and new_refresh_token != email_obj.refresh_token:
-                            email_obj.refresh_token = new_refresh_token
-                            email_obj.save()
-                            
-                        # Fetch messages
-                        msg_url = "https://graph.microsoft.com/v1.0/me/messages?$top=15"
-                        msg_res = requests.get(msg_url, headers={
-                            'Authorization': f'Bearer {access_token}',
-                            'Accept': 'application/json'
-                        }, timeout=10)
-                        
-                        if msg_res.status_code == 200:
-                            emails_list = msg_res.json().get('value', [])
-                            parsed_emails = [parse_graph_message(m) for m in emails_list]
-                            results[email_addr] = {'success': True, 'emails': parsed_emails}
-                        else:
-                            results[email_addr] = {'success': False, 'message': f'Lỗi Graph API: {msg_res.text}'}
-                    else:
-                        try:
-                            err_msg = res.json().get("error_description", res.text)
-                        except Exception:
-                            err_msg = res.text
-                        results[email_addr] = {'success': False, 'message': f'Lỗi OAuth Refresh: {err_msg}'}
-                except Exception as e:
-                    results[email_addr] = {'success': False, 'message': f'Lỗi kết nối OAuth Refresh: {str(e)}'}
-
-            else:
-                # ROPC or Client Credentials
-                if config_flow == 'client_credentials':
-                    if not config_client_id or not config_client_secret:
-                        results[email_addr] = {'success': False, 'message': 'Thiếu Client ID/Secret trong cấu hình App-only.'}
-                        continue
-                    try:
-                        if not app_token:
-                            token_url = f"https://login.microsoftonline.com/{config_tenant_id}/oauth2/v2.0/token"
-                            res = requests.post(token_url, data={
-                                'grant_type': 'client_credentials',
-                                'client_id': config_client_id,
-                                'client_secret': config_client_secret,
-                                'scope': 'https://graph.microsoft.com/.default'
-                            }, timeout=10)
-                            if res.status_code == 200:
-                                app_token = res.json().get('access_token')
-                            else:
-                                app_token_err = f"Lỗi lấy App Token: {res.text}"
-                                
-                        if app_token_err:
-                            results[email_addr] = {'success': False, 'message': app_token_err}
-                            continue
-                            
-                        msg_url = f"https://graph.microsoft.com/v1.0/users/{email_addr}/messages?$top=15"
-                        msg_res = requests.get(msg_url, headers={
-                            'Authorization': f'Bearer {app_token}',
-                            'Accept': 'application/json'
-                        }, timeout=10)
-                        
-                        if msg_res.status_code == 200:
-                            emails_list = msg_res.json().get('value', [])
-                            parsed_emails = [parse_graph_message(m) for m in emails_list]
-                            results[email_addr] = {'success': True, 'emails': parsed_emails}
-                        else:
-                            results[email_addr] = {'success': False, 'message': f'Lỗi Graph API: {msg_res.text}'}
-                    except Exception as e:
-                        results[email_addr] = {'success': False, 'message': f'Lỗi kết nối Graph API (App): {str(e)}'}
-
-                else:
-                    if not target_client_id:
-                        results[email_addr] = {'success': False, 'message': 'Thiếu Client ID cho ROPC.'}
-                        continue
-                    if not password:
-                        results[email_addr] = {'success': False, 'message': 'Mật khẩu email trống.'}
-                        continue
-                    try:
-                        token_url = f"https://login.microsoftonline.com/{config_tenant_id}/oauth2/v2.0/token"
-                        payload = {
-                            'grant_type': 'password',
-                            'client_id': target_client_id,
-                            'username': email_addr,
-                            'password': password,
-                            'scope': 'https://graph.microsoft.com/Mail.Read'
-                        }
-                        if config_client_secret:
-                            payload['client_secret'] = config_client_secret
-                        res = requests.post(token_url, data=payload, timeout=10)
-                        if res.status_code == 200:
-                            user_token = res.json().get('access_token')
-                            msg_url = "https://graph.microsoft.com/v1.0/me/messages?$top=15"
-                            msg_res = requests.get(msg_url, headers={
-                                'Authorization': f'Bearer {user_token}',
-                                'Accept': 'application/json'
-                            }, timeout=10)
-                            if msg_res.status_code == 200:
-                                emails_list = msg_res.json().get('value', [])
-                                parsed_emails = [parse_graph_message(m) for m in emails_list]
-                                results[email_addr] = {'success': True, 'emails': parsed_emails}
-                            else:
-                                results[email_addr] = {'success': False, 'message': f'Lỗi Graph API: {msg_res.text}'}
-                        else:
-                            try:
-                                err_msg = res.json().get("error_description", res.text)
-                            except Exception:
-                                err_msg = res.text
-                            results[email_addr] = {'success': False, 'message': f'Lỗi ROPC: {err_msg}'}
-                    except Exception as e:
-                        results[email_addr] = {'success': False, 'message': f'Lỗi kết nối ROPC: {str(e)}'}
+            res = read_single_mailbox_helper(email_obj, request.user)
+            results[email_addr] = res
 
         return Response({'success': True, 'results': results})
+
+
+def extract_verification_code(subject, body):
+    import re
+    # Combine subject and body
+    text = f"{subject}\n{body}"
+    
+    # Strip HTML tags
+    if "<html" in text.lower() or "<body" in text.lower() or "<div" in text.lower():
+        text = re.sub('<[^<]+?>', ' ', text)
+        text = text.replace('&nbsp;', ' ').replace('&lt;', '<').replace('&gt;', '>')
+        
+    # Search patterns: find numeric / alphanumeric code (4 to 8 characters)
+    # preceded by words like code, otp, pin, verify, verify code, confirmation, confirm, mã, xác minh, xác thực, xác nhận
+    patterns = [
+        r'(?:code|otp|pin|verify|xác minh|xác thực|mã|confirm|xác nhận)\b[^.\n]*?(\b[a-zA-Z0-9-]{4,8}\b)',
+    ]
+    
+    for pattern in patterns:
+        matches = re.findall(pattern, text, re.IGNORECASE)
+        for match in matches:
+            code = match.strip()
+            if code.isdigit():
+                if 4 <= len(code) <= 8:
+                    return code
+            elif any(c.isdigit() for c in code) and 4 <= len(code) <= 8:
+                return code
+                
+    # Fallback to any 4-8 digit numbers in the subject first
+    subj_matches = re.findall(r'\b(\d{4,8})\b', subject)
+    if subj_matches:
+        return subj_matches[0]
+        
+    # Fallback: search for any 4-8 digit number anywhere
+    fallback_matches = re.findall(r'\b(\d{4,8})\b', text)
+    if fallback_matches:
+        return fallback_matches[0]
+        
+    return ""
+
+
+def update_email_latest_stats(email_obj, latest_email):
+    if not latest_email:
+        return
+    
+    from_sender = latest_email.get('from', '')
+    date_str = latest_email.get('date', '')
+    subject = latest_email.get('subject', '')
+    snippet = latest_email.get('snippet', '')
+    body = latest_email.get('body', '')
+    
+    code = extract_verification_code(subject, body)
+    
+    email_obj.latest_from = from_sender
+    email_obj.latest_time = date_str
+    email_obj.latest_content = f"{subject} - {snippet}" if subject and snippet else (subject or snippet)
+    email_obj.latest_code = code
+    email_obj.save(update_fields=['latest_from', 'latest_time', 'latest_content', 'latest_code'])
+
+
+def read_single_mailbox_helper(email_obj, user):
+    import requests
+    email_addr = email_obj.email
+    password = email_obj.password
+    refresh_token = email_obj.refresh_token
+    client_id = email_obj.client_id
+    
+    if not email_addr:
+        return {'success': False, 'message': 'Email trống.'}
+        
+    email_lower = email_addr.lower()
+    is_microsoft = any(dom in email_lower for dom in ['@hotmail.', '@live.', '@outlook.', '@msn.'])
+    
+    parsed_emails = []
+    
+    if not is_microsoft:
+        # Standard IMAP
+        import imaplib
+        import email as py_email
+        from email.header import decode_header
+        import re
+
+        def get_imap_host(addr):
+            addr = addr.lower()
+            if '@gmail.' in addr:
+                return 'imap.gmail.com'
+            return 'outlook.office365.com'
+
+        try:
+            server_host = get_imap_host(email_addr)
+            mail = imaplib.IMAP4_SSL(server_host, timeout=10)
+            mail.login(email_addr, password)
+            mail.select("inbox")
+            status, messages = mail.search(None, "ALL")
+            if status != "OK":
+                return {'success': True, 'emails': []}
+            mail_ids = messages[0].split()
+            latest_ids = mail_ids[-15:]
+            latest_ids.reverse()
+            
+            for mail_id in latest_ids:
+                res_status, msg_data = mail.fetch(mail_id, "(RFC822)")
+                if res_status != "OK":
+                    continue
+                for response_part in msg_data:
+                    if isinstance(response_part, tuple):
+                        msg = py_email.message_from_bytes(response_part[1])
+                        # decode subject
+                        subj_header = msg["Subject"] or ""
+                        subject = ""
+                        try:
+                            decoded = decode_header(subj_header)
+                            for part, enc in decoded:
+                                if isinstance(part, bytes):
+                                    subject += part.decode(enc or "utf-8", errors="ignore")
+                                else:
+                                    subject += part
+                        except Exception:
+                            subject = str(subj_header)
+                        # decode from
+                        from_header = msg["From"] or ""
+                        from_sender = ""
+                        try:
+                            decoded = decode_header(from_header)
+                            for part, enc in decoded:
+                                if isinstance(part, bytes):
+                                    from_sender += part.decode(enc or "utf-8", errors="ignore")
+                                else:
+                                    from_sender += part
+                        except Exception:
+                            from_sender = str(from_header)
+                        date_str = msg["Date"] or ""
+                        body = ""
+                        if msg.is_multipart():
+                            for part in msg.walk():
+                                content_type = part.get_content_type()
+                                content_disposition = str(part.get("Content-Disposition"))
+                                if content_type == "text/plain" and "attachment" not in content_disposition:
+                                    body = part.get_payload(decode=True).decode(part.get_content_charset() or "utf-8", errors="ignore")
+                                    break
+                                elif content_type == "text/html" and "attachment" not in content_disposition:
+                                    body = part.get_payload(decode=True).decode(part.get_content_charset() or "utf-8", errors="ignore")
+                        else:
+                            body = msg.get_payload(decode=True).decode(msg.get_content_charset() or "utf-8", errors="ignore")
+                        
+                        clean_body = body.strip()
+                        if "<html" in clean_body.lower() or "<body" in clean_body.lower() or "<div" in clean_body.lower():
+                            clean_body = re.sub('<[^<]+?>', '', clean_body)
+                            clean_body = clean_body.replace('&nbsp;', ' ').replace('&lt;', '<').replace('&gt;', '>')
+                        clean_body = re.sub(r'\s+', ' ', clean_body).strip()
+                        snippet = clean_body[:200] + ("..." if len(clean_body) > 200 else "")
+                        parsed_emails.append({
+                            'from': from_sender,
+                            'subject': subject,
+                            'date': date_str,
+                            'snippet': snippet,
+                            'body': body
+                        })
+            try:
+                mail.close()
+                mail.logout()
+            except Exception:
+                pass
+            
+            if parsed_emails:
+                update_email_latest_stats(email_obj, parsed_emails[0])
+            return {'success': True, 'emails': parsed_emails}
+        except Exception as e:
+            return {'success': False, 'message': f'Lỗi IMAP: {str(e)}'}
+
+    # Microsoft Account Graph API
+    config_client_id = get_config('microsoft_graph_client_id', '').strip()
+    config_client_secret = get_config('microsoft_graph_client_secret', '').strip()
+    config_tenant_id = get_config('microsoft_graph_tenant_id', 'common').strip()
+    config_flow = get_config('microsoft_graph_flow', 'ropc').strip()
+
+    target_refresh_token = refresh_token
+    target_client_id = client_id or config_client_id or "9e5f94bc-e8a4-4e73-b8be-63364c29d753"
+
+    if target_refresh_token:
+        # OAuth2 Refresh Token Flow
+        try:
+            token_url = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
+            res = requests.post(token_url, data={
+                'grant_type': 'refresh_token',
+                'client_id': target_client_id,
+                'refresh_token': target_refresh_token
+            }, timeout=10)
+            
+            if res.status_code == 200:
+                res_json = res.json()
+                access_token = res_json.get('access_token')
+                new_refresh_token = res_json.get('refresh_token')
+                
+                # Save the rotated refresh token
+                if new_refresh_token and new_refresh_token != email_obj.refresh_token:
+                    email_obj.refresh_token = new_refresh_token
+                    email_obj.save()
+                    
+                # Fetch messages
+                msg_url = "https://graph.microsoft.com/v1.0/me/messages?$top=15"
+                msg_res = requests.get(msg_url, headers={
+                    'Authorization': f'Bearer {access_token}',
+                    'Accept': 'application/json'
+                }, timeout=10)
+                
+                if msg_res.status_code == 200:
+                    emails_list = msg_res.json().get('value', [])
+                    parsed_emails = [parse_graph_message(m) for m in emails_list]
+                    if parsed_emails:
+                        update_email_latest_stats(email_obj, parsed_emails[0])
+                    return {'success': True, 'emails': parsed_emails}
+                else:
+                    return {'success': False, 'message': f'Lỗi Graph API: {msg_res.text}'}
+            else:
+                try:
+                    err_msg = res.json().get("error_description", res.text)
+                except Exception:
+                    err_msg = res.text
+                return {'success': False, 'message': f'Lỗi OAuth Refresh: {err_msg}'}
+        except Exception as e:
+            return {'success': False, 'message': f'Lỗi kết nối OAuth Refresh: {str(e)}'}
+
+    else:
+        # ROPC or Client Credentials
+        if config_flow == 'client_credentials':
+            if not config_client_id or not config_client_secret:
+                return {'success': False, 'message': 'Thiếu Client ID/Secret trong cấu hình App-only.'}
+            try:
+                token_url = f"https://login.microsoftonline.com/{config_tenant_id}/oauth2/v2.0/token"
+                res = requests.post(token_url, data={
+                    'grant_type': 'client_credentials',
+                    'client_id': config_client_id,
+                    'client_secret': config_client_secret,
+                    'scope': 'https://graph.microsoft.com/.default'
+                }, timeout=10)
+                if res.status_code == 200:
+                    app_token = res.json().get('access_token')
+                    msg_url = f"https://graph.microsoft.com/v1.0/users/{email_addr}/messages?$top=15"
+                    msg_res = requests.get(msg_url, headers={
+                        'Authorization': f'Bearer {app_token}',
+                        'Accept': 'application/json'
+                    }, timeout=10)
+                    
+                    if msg_res.status_code == 200:
+                        emails_list = msg_res.json().get('value', [])
+                        parsed_emails = [parse_graph_message(m) for m in emails_list]
+                        if parsed_emails:
+                            update_email_latest_stats(email_obj, parsed_emails[0])
+                        return {'success': True, 'emails': parsed_emails}
+                    else:
+                        return {'success': False, 'message': f'Lỗi Graph API: {msg_res.text}'}
+                else:
+                    return {'success': False, 'message': f'Lỗi lấy App Token: {res.text}'}
+            except Exception as e:
+                return {'success': False, 'message': f'Lỗi kết nối Graph API (App): {str(e)}'}
+
+        else:
+            if not target_client_id:
+                return {'success': False, 'message': 'Thiếu Client ID cho ROPC.'}
+            if not password:
+                return {'success': False, 'message': 'Mật khẩu email trống.'}
+            try:
+                token_url = f"https://login.microsoftonline.com/{config_tenant_id}/oauth2/v2.0/token"
+                payload = {
+                    'grant_type': 'password',
+                    'client_id': target_client_id,
+                    'username': email_addr,
+                    'password': password,
+                    'scope': 'https://graph.microsoft.com/Mail.Read'
+                }
+                if config_client_secret:
+                    payload['client_secret'] = config_client_secret
+                res = requests.post(token_url, data=payload, timeout=10)
+                if res.status_code == 200:
+                    user_token = res.json().get('access_token')
+                    msg_url = "https://graph.microsoft.com/v1.0/me/messages?$top=15"
+                    msg_res = requests.get(msg_url, headers={
+                        'Authorization': f'Bearer {user_token}',
+                        'Accept': 'application/json'
+                    }, timeout=10)
+                    if msg_res.status_code == 200:
+                        emails_list = msg_res.json().get('value', [])
+                        parsed_emails = [parse_graph_message(m) for m in emails_list]
+                        if parsed_emails:
+                            update_email_latest_stats(email_obj, parsed_emails[0])
+                        return {'success': True, 'emails': parsed_emails}
+                    else:
+                        return {'success': False, 'message': f'Lỗi Graph API: {msg_res.text}'}
+                else:
+                    try:
+                        err_msg = res.json().get("error_description", res.text)
+                    except Exception:
+                        err_msg = res.text
+                    return {'success': False, 'message': f'Lỗi ROPC: {err_msg}'}
+            except Exception as e:
+                return {'success': False, 'message': f'Lỗi kết nối ROPC: {str(e)}'}
 
 
 def get_config(key, default=""):
@@ -827,12 +890,39 @@ def parse_graph_message(m):
 
 
 class AccountsCreatedViewSet(viewsets.ModelViewSet):
-    queryset = AccountsCreated.objects.all().order_by('-id')
     serializer_class = AccountsCreatedSerializer
+    pagination_class = StandardResultsSetPagination
     authentication_classes = [SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [filters.SearchFilter]
     search_fields = ['username', 'email', 'type']
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return AccountsCreatedListSerializer
+        return AccountsCreatedSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_superuser or user.is_staff:
+            qs = AccountsCreated.objects.all()
+        else:
+            from django.db.models import Q
+            qs = AccountsCreated.objects.filter(
+                Q(owner=user) | Q(created_by=user) | Q(subscription_owner=user.username)
+            )
+        
+        type_param = self.request.query_params.get('type')
+        if type_param:
+            qs = qs.filter(type__value=type_param.lower())
+            
+        created_by_param = self.request.query_params.get('created_by')
+        if not created_by_param and hasattr(self.request, 'data') and isinstance(self.request.data, dict):
+            created_by_param = self.request.data.get('created_by')
+        if created_by_param:
+            qs = qs.filter(created_by__username=created_by_param)
+            
+        return qs.select_related('owner', 'created_by', 'customer', 'type', 'browser_profiles', 'modified_by').order_by('-id')
 
     @action(detail=False, methods=['post'], url_path='add-manual')
     def add_manual(self, request):
@@ -984,7 +1074,7 @@ class AccountsCreatedViewSet(viewsets.ModelViewSet):
         ids = request.data.get('ids', [])
         if not isinstance(ids, list):
             return Response({'success': False, 'message': 'Danh sách ID không hợp lệ.'}, status=400)
-        deleted_count, _ = AccountsCreated.objects.filter(pk__in=ids).delete()
+        deleted_count, _ = self.get_queryset().filter(pk__in=ids).delete()
         return Response({'success': True, 'message': f'Đã xóa thành công {deleted_count} tài khoản!'})
 
     @action(detail=False, methods=['post'], url_path='bulk-status')
@@ -999,7 +1089,7 @@ class AccountsCreatedViewSet(viewsets.ModelViewSet):
         except (ValueError, TypeError):
             return Response({'success': False, 'message': 'Trạng thái không hợp lệ.'}, status=400)
         
-        updated_count = AccountsCreated.objects.filter(pk__in=ids).update(status=status_int)
+        updated_count = self.get_queryset().filter(pk__in=ids).update(status=status_int)
         return Response({'success': True, 'message': f'Đã cập nhật trạng thái cho {updated_count} tài khoản!'})
 
     @action(detail=False, methods=['get'], url_path='users-list')
@@ -1008,10 +1098,47 @@ class AccountsCreatedViewSet(viewsets.ModelViewSet):
         user_data = [{'id': u.id, 'username': u.username} for u in users]
         return Response(user_data)
 
+    @action(detail=True, methods=['get'], url_path='get-2fa')
+    def get_2fa_code(self, request, pk=None):
+        instance = self.get_object()
+        secret = (instance.two_factor_auth or '').strip()
+        if not secret:
+            return Response({'success': False, 'message': 'Tài khoản không có cấu hình 2FA Secret Key.'}, status=400)
+        
+        import urllib.request
+        import json
+        
+        secret_clean = secret.replace(' ', '')
+        try:
+            url = f"https://2fa.live/tok/{secret_clean}"
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, timeout=5) as response:
+                res_data = response.read().decode('utf-8')
+                res_json = json.loads(res_data)
+                token = res_json.get('token')
+                if token:
+                    return Response({'success': True, 'token': token})
+                else:
+                    return Response({'success': False, 'message': 'Không thể lấy mã code từ API. Phản hồi không đúng định dạng.'}, status=500)
+        except Exception as e:
+            return Response({'success': False, 'message': f'Lỗi khi lấy mã code: {str(e)}'}, status=500)
+
+    @action(detail=False, methods=['post'], url_path='bulk-sub-owner')
+    def bulk_sub_owner(self, request):
+        ids = request.data.get('ids', [])
+        sub_owner = request.data.get('subscription_owner')
+        if not isinstance(ids, list):
+            return Response({'success': False, 'message': 'Dữ liệu không hợp lệ.'}, status=400)
+        
+        sub_owner_str = (sub_owner or '').strip()
+        updated_count = self.get_queryset().filter(pk__in=ids).update(subscription_owner=sub_owner_str)
+        return Response({'success': True, 'message': f'Đã gán sở hữu sub cho {updated_count} tài khoản!'})
+
 
 class UserHwidViewSet(viewsets.ModelViewSet):
     """Admin ViewSet for managing UserHwid — controls which machines can use MunLogin tool."""
     serializer_class = UserHwidSerializer
+    pagination_class = StandardResultsSetPagination
     authentication_classes = [SessionAuthentication]
     permission_classes = [permissions.IsAdminUser]  # Admin only
     filter_backends = [filters.SearchFilter]

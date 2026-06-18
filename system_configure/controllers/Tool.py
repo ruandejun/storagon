@@ -67,11 +67,65 @@ class LargeResultsSetPagination(PageNumberPagination):
 	page_size_query_param = 'page_size'
 	max_page_size = 1000
 
+	def get_page_number(self, request, paginator):
+		page = request.query_params.get(self.page_query_param)
+		if not page and hasattr(request, 'data') and isinstance(request.data, dict):
+			page = request.data.get(self.page_query_param)
+		if not page and hasattr(request, 'GET'):
+			page = request.GET.get(self.page_query_param)
+		if not page and hasattr(request, 'POST'):
+			page = request.POST.get(self.page_query_param)
+		if not page:
+			page = 1
+		return page
+
+	def get_page_size(self, request):
+		val = request.query_params.get(self.page_size_query_param)
+		if not val and hasattr(request, 'data') and isinstance(request.data, dict):
+			val = request.data.get(self.page_size_query_param)
+		if not val and hasattr(request, 'GET'):
+			val = request.GET.get(self.page_size_query_param)
+		if not val and hasattr(request, 'POST'):
+			val = request.POST.get(self.page_size_query_param)
+		if val:
+			try:
+				return min(int(val), self.max_page_size)
+			except (ValueError, TypeError):
+				pass
+		return self.page_size
+
 
 class StandardResultsSetPagination(PageNumberPagination):
 	page_size = 10
 	page_size_query_param = 'page_size'
 	max_page_size = 100
+
+	def get_page_number(self, request, paginator):
+		page = request.query_params.get(self.page_query_param)
+		if not page and hasattr(request, 'data') and isinstance(request.data, dict):
+			page = request.data.get(self.page_query_param)
+		if not page and hasattr(request, 'GET'):
+			page = request.GET.get(self.page_query_param)
+		if not page and hasattr(request, 'POST'):
+			page = request.POST.get(self.page_query_param)
+		if not page:
+			page = 1
+		return page
+
+	def get_page_size(self, request):
+		val = request.query_params.get(self.page_size_query_param)
+		if not val and hasattr(request, 'data') and isinstance(request.data, dict):
+			val = request.data.get(self.page_size_query_param)
+		if not val and hasattr(request, 'GET'):
+			val = request.GET.get(self.page_size_query_param)
+		if not val and hasattr(request, 'POST'):
+			val = request.POST.get(self.page_size_query_param)
+		if val:
+			try:
+				return min(int(val), self.max_page_size)
+			except (ValueError, TypeError):
+				pass
+		return self.page_size
 
 
 class BadRequest(exceptions.APIException):

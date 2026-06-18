@@ -595,6 +595,11 @@ class AccountsEmails(models.Model):
     refresh_token = models.TextField(blank=True, null=True)
     client_id = models.CharField(blank=True, null=True, max_length=255)
     
+    latest_from = models.CharField(blank=True, null=True, max_length=255)
+    latest_time = models.CharField(blank=True, null=True, max_length=255)
+    latest_content = models.TextField(blank=True, null=True)
+    latest_code = models.CharField(blank=True, null=True, max_length=255)
+    
     def save(self, *args, **kwargs):
         user = get_current_user()
         if user:

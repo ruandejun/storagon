@@ -16,7 +16,7 @@ def generate_random_note_id(length=6):
 
 def ghi_redirect(request):
     note_id = generate_random_note_id()
-    return redirect('ghi_editor', note_id=note_id)
+    return redirect(f'/{note_id}/')
 
 @ensure_csrf_cookie
 def ghi_editor(request, note_id):

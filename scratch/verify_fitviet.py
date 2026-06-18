@@ -4,7 +4,7 @@ import django
 
 # Add project path to sys.path
 sys.path.append(os.getcwd())
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "storagon.settings_dev")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "storagon.settings")
 django.setup()
 
 from django.test import Client

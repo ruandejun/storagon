@@ -907,6 +907,91 @@
         }
 
         @media (max-width: 768px) {
+            /* Responsive card-like tables on mobile viewports */
+            .table-container {
+                border: none !important;
+                background: transparent !important;
+                backdrop-filter: none !important;
+                box-shadow: none !important;
+                margin-bottom: 15px;
+                overflow-x: visible !important;
+            }
+
+            .table-container table, 
+            .table-container thead, 
+            .table-container tbody, 
+            .table-container th, 
+            .table-container td, 
+            .table-container tr {
+                display: block !important;
+                width: 100% !important;
+            }
+
+            .table-container thead tr {
+                position: absolute !important;
+                top: -9999px !important;
+                left: -9999px !important;
+            }
+
+            .table-container tr {
+                margin-bottom: 16px !important;
+                background: var(--panel-bg) !important;
+                border: 1px solid var(--border-color) !important;
+                border-radius: 12px !important;
+                padding: 12px 16px !important;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+                position: relative !important;
+            }
+
+            .table-container td {
+                border: none !important;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.03) !important;
+                position: relative !important;
+                padding: 10px 0 10px 45% !important;
+                text-align: right !important;
+                min-height: 44px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: flex-end !important;
+                font-size: 13px !important;
+                word-break: break-all !important;
+            }
+
+            .table-container td:last-child {
+                border-bottom: none !important;
+            }
+
+            /* Display the headers using data-label attribute */
+            .table-container td[data-label]::before {
+                content: attr(data-label);
+                position: absolute !important;
+                left: 0 !important;
+                width: 40% !important;
+                padding-right: 10px !important;
+                text-align: left !important;
+                font-weight: 700 !important;
+                color: var(--text-muted) !important;
+                font-size: 11px !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.5px !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+            }
+
+            /* Center checkboxes/row selections on mobile cards */
+            .table-container td.cell-chk {
+                justify-content: flex-start !important;
+                padding-left: 0 !important;
+                border-bottom: 1px dashed var(--border-color) !important;
+                margin-bottom: 8px !important;
+                padding-bottom: 8px !important;
+            }
+
+            .table-container td.cell-chk::before {
+                display: none !important;
+            }
+
             .sidebar-toggle-btn {
                 display: inline-flex;
             }
@@ -2857,6 +2942,29 @@
             if (overlay) overlay.classList.remove('active');
         }
 
+        // Helper to format table cells for responsive display on mobile
+        function makeTableResponsive(tableId) {
+            const table = document.getElementById(tableId);
+            if (!table) return;
+            const ths = Array.from(table.querySelectorAll('thead th'));
+            const rows = table.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                const tds = row.querySelectorAll('td');
+                tds.forEach((td, idx) => {
+                    if (idx < ths.length) {
+                        const label = ths[idx].innerText.trim();
+                        // Skip checkbox cells and action cells
+                        if (label && label !== 'STT' && !td.querySelector('input[type="checkbox"]') && !td.classList.contains('cell-chk')) {
+                            td.setAttribute('data-label', label);
+                        } else {
+                            td.removeAttribute('data-label');
+                        }
+                    }
+                });
+            });
+        }
+
         // Global State
         let currentTab = 'overview';
         let cardsPage = 1;
@@ -3435,6 +3543,7 @@
 
                 body.appendChild(tr);
             });
+            makeTableResponsive('cardsTable');
         }
 
         // Exclusive select: checks clicked row, clears others
@@ -3977,6 +4086,7 @@
 
                 body.appendChild(tr);
             });
+            makeTableResponsive('usersTable');
         }
 
         function selectUserRowExclusively(id) {
@@ -4278,6 +4388,7 @@
 
                 body.appendChild(tr);
             });
+            makeTableResponsive('profilesTable');
         }
 
         function handleProfileCheckboxClick(event, id) {
@@ -4422,6 +4533,7 @@
 
                 body.appendChild(tr);
             });
+            makeTableResponsive('proxiesTable');
         }
 
         function handleProxyCheckboxClick(event, id) {
@@ -5225,6 +5337,7 @@
                 // Auto-refresh this row's latest email stats in the background
                 refreshEmailRow(e.id);
             });
+            makeTableResponsive('emailsTable');
         }
 
         function handleEmailCheckboxClick(event, id) {
@@ -5634,6 +5747,7 @@
 
                 body.appendChild(tr);
             });
+            makeTableResponsive('accountsTable');
         }
 
         function handleAccountCheckboxClick(event, id) {
@@ -6255,6 +6369,7 @@
                 `;
                 body.appendChild(tr);
             });
+            makeTableResponsive('hwidsTable');
         }
 
         function handleHwidCheckboxClick(event, id) {

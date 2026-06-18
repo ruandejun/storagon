@@ -888,6 +888,10 @@
                 <button class="btn-tool" onclick="openTwoFaModal()" title="Lấy mã 2FA">
                     🔑 2FA
                 </button>
+                <!-- Get Email Button -->
+                <button class="btn-tool" onclick="openEmailGetModal()" title="Lấy email chưa đăng ký">
+                    ✉️ Lấy Email
+                </button>
                 <!-- Share link -->
                 <button class="btn-tool" onclick="copyLink()" title="Sao chép đường dẫn để chia sẻ">
                     🔗 Chia sẻ
@@ -1054,6 +1058,72 @@
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeTwoFaModal()">Đóng</button>
                 <button class="btn btn-primary" id="btnGetTwoFa" onclick="generateTwoFaCode()">Lấy mã (Get Code)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- EMAIL GETTER MODAL -->
+    <div class="modal-overlay" id="emailGetModal">
+        <div class="modal-box modal-large" style="max-width: 550px;">
+            <div class="modal-header">
+                <h3>✉️ Nhận Email chưa đăng ký</h3>
+                <button class="addr-close-btn" onclick="closeEmailGetModal()" style="background: transparent; border: none; color: var(--text-muted); font-size: 16px; cursor: pointer;">✕</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5;">
+                    Hệ thống sẽ lọc và chọn ra một email trong cơ sở dữ liệu chưa được đăng ký cho dịch vụ tương ứng.
+                </p>
+                <div class="form-group">
+                    <label class="form-label" for="emailSelectType">Chọn loại tài khoản đăng ký</label>
+                    <select id="emailSelectType" class="form-input" style="background: rgba(8, 11, 23, 0.8); border: 1px solid var(--border-color); color: white; height: 40px; padding: 0 10px; border-radius: 8px;">
+                        <option value="Apple">Apple</option>
+                        <option value="Tiktok">Tiktok</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-top: 15px;">
+                    <button class="btn btn-primary" id="btnGetUnusedEmail" onclick="fetchUnusedEmail()" style="width: 100%; height: 42px;">Lấy Email</button>
+                </div>
+                
+                <!-- Result Section -->
+                <div id="emailGetResult" style="display: none; margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                    <input type="hidden" id="emailGetId">
+                    <div class="form-group">
+                        <label class="form-label">Địa chỉ Email</label>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="text" id="emailGetAddress" class="form-input" readonly style="font-weight: 600; flex: 1;">
+                            <button class="btn btn-primary" onclick="copyEmailField('emailGetAddress')" style="padding: 10px 14px;">Copy</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Mật khẩu Email</label>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="text" id="emailGetPassword" class="form-input" readonly style="font-family: monospace; flex: 1;">
+                            <button class="btn btn-primary" onclick="copyEmailField('emailGetPassword')" style="padding: 10px 14px;">Copy</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Inbox Details -->
+                    <div style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <label class="form-label" style="margin: 0;">Thư mới nhất</label>
+                            <button class="btn btn-primary" id="btnReloadEmailGet" onclick="reloadEmailGetMailbox()" style="padding: 4px 10px; font-size: 11px; height: auto;">🔄 Tải lại</button>
+                        </div>
+                        
+                        <!-- Mail Loading Indicator -->
+                        <div id="emailGetLoader" style="display: none; text-align: center; padding: 15px 0;">
+                            <div style="display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.1); border-top-color: var(--accent-glow); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                            <span style="font-size: 12px; color: var(--text-muted); margin-left: 8px;">Đang đọc thư...</span>
+                        </div>
+
+                        <!-- Mail contents -->
+                        <div id="emailGetMailContainer" style="padding: 12px; background: rgba(0, 0, 0, 0.2); border-radius: 8px; border: 1px solid var(--border-color); min-height: 80px; font-size: 12px; line-height: 1.5;">
+                            <div id="emailGetMailContent" style="white-space: pre-wrap; word-break: break-all; color: var(--text-muted);">Không có dữ liệu thư.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeEmailGetModal()">Đóng</button>
             </div>
         </div>
     </div>
@@ -1727,6 +1797,139 @@
         // Close 2fa modal on overlay click
         document.getElementById('twoFaModal').addEventListener('click', function(e) {
             if (e.target === this) closeTwoFaModal();
+        });
+
+        // 11. UNUSED EMAIL GETTER & MAIL READER
+        function openEmailGetModal() {
+            document.getElementById('emailGetModal').style.display = 'flex';
+            document.getElementById('emailGetResult').style.display = 'none';
+        }
+
+        function closeEmailGetModal() {
+            document.getElementById('emailGetModal').style.display = 'none';
+        }
+
+        async function fetchUnusedEmail() {
+            const type = document.getElementById('emailSelectType').value;
+            const btn = document.getElementById('btnGetUnusedEmail');
+            btn.disabled = true;
+            btn.textContent = 'Đang lấy...';
+
+            try {
+                const resp = await fetch(`/dashboard/api/emails/get-unused-email/?type=${type}`);
+                if (resp.status === 401 || resp.status === 403) {
+                    showToast('Vui lòng đăng nhập Dashboard trước khi thực hiện chức năng này!');
+                    return;
+                }
+                const data = await resp.json();
+                
+                if (resp.ok && data.success) {
+                    const emailData = data.email_data;
+                    document.getElementById('emailGetId').value = emailData.id;
+                    document.getElementById('emailGetAddress').value = emailData.email;
+                    document.getElementById('emailGetPassword').value = emailData.password;
+                    
+                    document.getElementById('emailGetResult').style.display = 'block';
+                    
+                    // Display latest emails
+                    renderEmailGetMailbox(data.emails);
+                } else {
+                    showToast(data.message || 'Không tìm thấy email khả dụng.');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Lỗi kết nối máy chủ.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Lấy Email';
+            }
+        }
+
+        async function reloadEmailGetMailbox() {
+            const id = document.getElementById('emailGetId').value;
+            if (!id) return;
+
+            const btn = document.getElementById('btnReloadEmailGet');
+            const loader = document.getElementById('emailGetLoader');
+            btn.disabled = true;
+            loader.style.display = 'inline-block';
+
+            try {
+                const resp = await fetch(`/dashboard/api/emails/${id}/read-mailbox/`);
+                if (resp.status === 401 || resp.status === 403) {
+                    showToast('Vui lòng đăng nhập Dashboard trước!');
+                    return;
+                }
+                const data = await resp.json();
+                
+                if (resp.ok && data.success) {
+                    renderEmailGetMailbox(data.emails);
+                    showToast('Đã tải lại hộp thư thành công!');
+                } else {
+                    showToast(data.message || 'Lỗi khi đọc hộp thư.');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Lỗi kết nối khi tải lại hộp thư.');
+            } finally {
+                btn.disabled = false;
+                loader.style.display = 'none';
+            }
+        }
+
+        function renderEmailGetMailbox(emails) {
+            const container = document.getElementById('emailGetMailContent');
+            if (!container) return;
+
+            if (!emails || emails.length === 0) {
+                container.innerHTML = '<span style="color: var(--text-muted);">Hộp thư trống hoặc không thể tải thư mới nhất.</span>';
+                return;
+            }
+
+            const latest = emails[0];
+            const dateStr = latest.date || '';
+            const fromStr = latest.from || '';
+            const subjectStr = latest.subject || '';
+            const snippetStr = latest.snippet || '';
+
+            // Extract validation code
+            let otpBlock = '';
+            let code = '';
+            const combined = `${subjectStr} ${snippetStr}`;
+            const matches = combined.match(/\b(\d{4,8})\b/);
+            if (matches) {
+                code = matches[0];
+            }
+
+            if (code) {
+                otpBlock = `<div style="margin-top: 10px; padding: 10px; background: rgba(16, 185, 129, 0.1); border: 1px solid var(--success); border-radius: 6px; font-weight: 700; text-align: center; font-size: 16px; color: var(--accent-glow);">Mã OTP: ${code} <button class="btn btn-primary" onclick="navigator.clipboard.writeText('${code}').then(()=>showToast('Đã copy OTP: ${code}'))" style="padding: 2px 8px; font-size: 11px; margin-left: 8px; vertical-align: middle; height: auto;">Copy OTP</button></div>`;
+            }
+
+            container.innerHTML = `
+<div><strong>Người gửi:</strong> ${fromStr}</div>
+<div><strong>Thời gian:</strong> ${dateStr}</div>
+<div><strong>Tiêu đề:</strong> ${subjectStr}</div>
+<div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.05); color: var(--text-color); font-family: monospace; font-size: 11px;">${snippetStr}</div>
+${otpBlock}
+            `;
+        }
+
+        function copyEmailField(inputId) {
+            const input = document.getElementById(inputId);
+            if (!input || !input.value) return;
+            
+            navigator.clipboard.writeText(input.value).then(() => {
+                showToast('Đã sao chép: ' + input.value);
+            }).catch(err => {
+                input.select();
+                document.execCommand('copy');
+                showToast('Đã sao chép: ' + input.value);
+            });
+        }
+
+        // Close email getter modal on overlay click
+        document.getElementById('emailGetModal').addEventListener('click', function(e) {
+            if (e.target === this) closeEmailGetModal();
         });
 
         // On first page load, trigger recovery if backup is found locally

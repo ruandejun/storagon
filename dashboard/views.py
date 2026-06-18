@@ -440,6 +440,43 @@ class AccountsEmailsViewSet(viewsets.ModelViewSet):
         else:
             return Response({'success': False, 'message': res.get('message', 'Không thể đọc hộp thư.')}, status=500)
 
+    @action(detail=False, methods=['get'], url_path='get-unused-email')
+    def get_unused_email(self, request):
+        type_val = request.query_params.get('type', '').strip().lower()
+        if not type_val:
+            return Response({'success': False, 'message': 'Vui lòng chọn loại tài khoản.'}, status=400)
+            
+        # Get emails already used for this type
+        registered_emails = AccountsCreated.objects.filter(type__value=type_val).values_list('email', flat=True)
+        
+        # Get an email that is not registered yet
+        user = request.user
+        if user.is_superuser or user.is_staff:
+            email_qs = AccountsEmails.objects.all()
+        else:
+            email_qs = AccountsEmails.objects.filter(owner=user)
+            
+        email_obj = email_qs.exclude(email__in=registered_emails).order_by('-id').first()
+        
+        if not email_obj:
+            return Response({
+                'success': False,
+                'message': f'Không tìm thấy email nào chưa đăng ký loại tài khoản "{type_val.title()}".'
+            })
+            
+        # Read the mailbox once to get the latest messages
+        res = read_single_mailbox_helper(email_obj, request.user)
+        email_obj.refresh_from_db()
+        
+        from telegram_bot.api.TelegramBot_RestfulApi import AccountsEmailsSerializer
+        serializer = AccountsEmailsSerializer(email_obj)
+        
+        return Response({
+            'success': True,
+            'email_data': serializer.data,
+            'emails': res.get('emails', []) if res.get('success') else []
+        })
+
     @action(detail=False, methods=['get'], url_path='get-graph-config')
     def get_graph_config(self, request):
         return Response({

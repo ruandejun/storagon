@@ -989,6 +989,26 @@ class AccountsCreatedViewSet(viewsets.ModelViewSet):
         account_obj.viewed += 1
         account_obj.save()
         
+        # Try to find corresponding AccountsEmails ID for mailbox reading
+        from telegram_bot.models import AccountsEmails
+        email_id = None
+        if account_obj.accounts_emails_id:
+            email_id = account_obj.accounts_emails_id
+        else:
+            email_candidates = []
+            if account_obj.email:
+                email_candidates.append(account_obj.email.strip())
+            if account_obj.username and '@' in account_obj.username:
+                email_candidates.append(account_obj.username.strip())
+                
+            if email_candidates:
+                email_qs = AccountsEmails.objects.filter(email__in=email_candidates)
+                if not (user.is_superuser or user.is_staff):
+                    email_qs = email_qs.filter(owner=user)
+                email_match = email_qs.first()
+                if email_match:
+                    email_id = email_match.id
+        
         return Response({
             'success': True,
             'account_data': {
@@ -996,7 +1016,8 @@ class AccountsCreatedViewSet(viewsets.ModelViewSet):
                 'username': account_obj.username,
                 'email': account_obj.email,
                 'password': account_obj.password,
-                'two_factor_auth': account_obj.two_factor_auth or ''
+                'two_factor_auth': account_obj.two_factor_auth or '',
+                'email_id': email_id
             }
         })
 

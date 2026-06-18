@@ -1280,23 +1280,38 @@
                         </div>
                     </div>
 
-                    <!-- OTP Code Generation section -->
-                    <div style="margin-top: 10px; border-top: 1px dashed var(--border-color); padding-top: 10px;">
+                    <!-- OTP Code Generation section (Single Line) -->
+                    <div style="margin-top: 10px; border-top: 1px dashed var(--border-color); padding-top: 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span class="form-label" style="margin: 0; font-size: 13px; font-weight: 600; white-space: nowrap;">Mã OTP:</span>
+                            <span id="createdAccOtpValue" style="font-family: monospace; font-size: 16px; font-weight: bold; color: var(--accent); letter-spacing: 1px;">------</span>
+                            <span id="createdAccOtpLoader" style="display: none; align-items: center; vertical-align: middle;">
+                                <span style="display: inline-block; width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.1); border-top-color: var(--accent-glow); border-radius: 50%; animation: spin 1s linear infinite; vertical-align: middle;"></span>
+                            </span>
+                        </div>
+                        <div style="display: flex; gap: 4px;">
+                            <button class="btn btn-primary" id="btnGetCreatedAccOtp" onclick="fetchCreatedAccOtp()" style="padding: 0 10px; font-size: 12px; height: 30px; display: flex; align-items: center; justify-content: center; gap: 4px;">🔑 Lấy OTP</button>
+                            <button class="btn btn-success" id="btnCopyCreatedAccOtp" onclick="copyCreatedAccOtpValue()" style="padding: 0 10px; font-size: 12px; height: 30px; display: none; align-items: center; justify-content: center;">📋 Copy</button>
+                        </div>
+                    </div>
+
+                    <!-- Inbox Details -->
+                    <div id="createdAccInboxSection" style="margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 10px; display: none;">
+                        <input type="hidden" id="createdAccEmailId">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                            <label class="form-label" style="margin: 0;">Mã OTP (2FA Code)</label>
-                            <button class="btn btn-primary" id="btnGetCreatedAccOtp" onclick="fetchCreatedAccOtp()" style="padding: 4px 8px; font-size: 11px; height: 26px; display: flex; align-items: center; justify-content: center; gap: 4px;">🔑 Lấy mã OTP</button>
+                            <label class="form-label" style="margin: 0;">Thư mới nhất</label>
+                            <button class="btn btn-primary" id="btnReloadCreatedAccMail" onclick="reloadCreatedAccMailbox()" style="padding: 4px 8px; font-size: 11px; height: 26px; display: flex; align-items: center; justify-content: center; gap: 4px;">🔄 Tải lại</button>
                         </div>
                         
-                        <!-- OTP Loading Indicator -->
-                        <div id="createdAccOtpLoader" style="display: none; text-align: center; padding: 6px 0;">
+                        <!-- Mail Loading Indicator -->
+                        <div id="createdAccMailLoader" style="display: none; text-align: center; padding: 6px 0;">
                             <div style="display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.1); border-top-color: var(--accent-glow); border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                            <span style="font-size: 11px; color: var(--text-muted); margin-left: 6px;">Đang lấy mã OTP...</span>
+                            <span style="font-size: 11px; color: var(--text-muted); margin-left: 6px;">Đang đọc thư...</span>
                         </div>
 
-                        <!-- OTP Display Box -->
-                        <div id="createdAccOtpContainer" style="display: flex; align-items: center; justify-content: center; gap: 12px; padding: 8px; background: rgba(0, 0, 0, 0.2); border-radius: 8px; border: 1px solid var(--border-color); min-height: 48px;">
-                            <div id="createdAccOtpValue" style="font-family: monospace; font-size: 20px; font-weight: bold; letter-spacing: 4px; color: var(--accent);">------</div>
-                            <button class="btn btn-primary" id="btnCopyCreatedAccOtp" onclick="copyCreatedAccOtpValue()" style="padding: 4px 10px; height: 30px; font-size: 12px; display: none;">Copy</button>
+                        <!-- Mail contents -->
+                        <div id="createdAccMailContainer" style="padding: 8px; background: rgba(0, 0, 0, 0.2); border-radius: 8px; border: 1px solid var(--border-color); min-height: 48px; max-height: 100px; overflow-y: auto; font-size: 12px; line-height: 1.4;">
+                            <div id="createdAccMailContent" style="white-space: pre-wrap; word-break: break-all; color: var(--text-muted);">Không có dữ liệu thư.</div>
                         </div>
                     </div>
                 </div>
@@ -2117,8 +2132,21 @@
                 if (resp.ok && data.success) {
                     const accData = data.account_data;
                     document.getElementById('createdAccId').value = accData.id;
-                    document.getElementById('createdAccUsername').value = accData.username || '';
-                    document.getElementById('createdAccEmail').value = accData.email || '';
+                    
+                    // Parse and separate username and email based on presence of "@"
+                    let emailVal = '';
+                    let usernameVal = '';
+                    const candidates = [accData.email, accData.username].filter(Boolean);
+                    candidates.forEach(c => {
+                        if (c.includes('@')) {
+                            emailVal = c;
+                        } else {
+                            usernameVal = c;
+                        }
+                    });
+                    
+                    document.getElementById('createdAccUsername').value = usernameVal;
+                    document.getElementById('createdAccEmail').value = emailVal;
                     document.getElementById('createdAccPassword').value = accData.password || '';
                     document.getElementById('createdAcc2Fa').value = accData.two_factor_auth || '';
                     
@@ -2127,6 +2155,22 @@
                     // Reset OTP display
                     document.getElementById('createdAccOtpValue').textContent = '------';
                     document.getElementById('btnCopyCreatedAccOtp').style.display = 'none';
+                    
+                    // Handle Inbox section
+                    const inboxSection = document.getElementById('createdAccInboxSection');
+                    const emailIdInput = document.getElementById('createdAccEmailId');
+                    const mailContent = document.getElementById('createdAccMailContent');
+                    
+                    if (accData.email_id) {
+                        emailIdInput.value = accData.email_id;
+                        inboxSection.style.display = 'block';
+                        mailContent.innerHTML = '<span style="color: var(--text-muted);">Đang tải thư...</span>';
+                        reloadCreatedAccMailbox(); // Auto load emails
+                    } else {
+                        emailIdInput.value = '';
+                        inboxSection.style.display = 'none';
+                        mailContent.innerHTML = '';
+                    }
                 } else {
                     showToast(data.message || 'Không tìm thấy tài khoản hoạt động nào.');
                 }
@@ -2149,7 +2193,7 @@
             const btnCopy = document.getElementById('btnCopyCreatedAccOtp');
             
             btn.disabled = true;
-            loader.style.display = 'inline-block';
+            if (loader) loader.style.display = 'inline-block';
             otpVal.textContent = '------';
             btnCopy.style.display = 'none';
 
@@ -2172,7 +2216,7 @@
                 showToast('Lỗi kết nối khi lấy mã OTP.');
             } finally {
                 btn.disabled = false;
-                loader.style.display = 'none';
+                if (loader) loader.style.display = 'none';
             }
         }
 
@@ -2185,6 +2229,74 @@
                     showToast('Lỗi copy: ' + err);
                 });
             }
+        }
+
+        async function reloadCreatedAccMailbox() {
+            const id = document.getElementById('createdAccEmailId').value;
+            if (!id) return;
+
+            const btn = document.getElementById('btnReloadCreatedAccMail');
+            const loader = document.getElementById('createdAccMailLoader');
+            if (btn) btn.disabled = true;
+            if (loader) loader.style.display = 'inline-block';
+
+            try {
+                const resp = await fetch(`/dashboard/api/emails/${id}/read-mailbox/`);
+                if (resp.status === 401 || resp.status === 403) {
+                    showToast('Vui lòng đăng nhập Dashboard trước!');
+                    return;
+                }
+                const data = await resp.json();
+                
+                if (resp.ok && data.success) {
+                    renderCreatedAccMailbox(data.emails);
+                } else {
+                    showToast(data.message || 'Không thể đọc hộp thư.');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Lỗi kết nối máy chủ.');
+            } finally {
+                if (btn) btn.disabled = false;
+                if (loader) loader.style.display = 'none';
+            }
+        }
+
+        function renderCreatedAccMailbox(emails) {
+            const container = document.getElementById('createdAccMailContent');
+            if (!container) return;
+
+            if (!emails || emails.length === 0) {
+                container.innerHTML = '<span style="color: var(--text-muted);">Hộp thư trống hoặc không thể tải thư mới nhất.</span>';
+                return;
+            }
+
+            const latest = emails[0];
+            const dateStr = latest.date || '';
+            const fromStr = latest.from || '';
+            const subjectStr = latest.subject || '';
+            const snippetStr = latest.snippet || '';
+
+            // Extract validation code
+            let otpBlock = '';
+            let code = '';
+            const combined = `${subjectStr} ${snippetStr}`;
+            const matches = combined.match(/\b(\d{4,8})\b/);
+            if (matches) {
+                code = matches[0];
+            }
+
+            if (code) {
+                otpBlock = `<div style="margin-top: 10px; padding: 10px; background: rgba(16, 185, 129, 0.1); border: 1px solid var(--success); border-radius: 6px; font-weight: 700; text-align: center; font-size: 16px; color: var(--accent-glow);">Mã OTP: ${code} <button class="btn btn-primary" onclick="navigator.clipboard.writeText('${code}').then(()=>showToast('Đã copy OTP: ${code}'))" style="padding: 2px 8px; font-size: 11px; margin-left: 8px; vertical-align: middle; height: auto;">Copy OTP</button></div>`;
+            }
+
+            container.innerHTML = `
+<div><strong>Người gửi:</strong> ${fromStr}</div>
+<div><strong>Thời gian:</strong> ${dateStr}</div>
+<div><strong>Tiêu đề:</strong> ${subjectStr}</div>
+<div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.05); color: var(--text-color); font-family: monospace; font-size: 11px;">${snippetStr}</div>
+${otpBlock}
+            `;
         }
 
         async function fetchUnusedEmail() {

@@ -298,8 +298,15 @@ class AccountsEmailsViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if user.is_superuser or user.is_staff:
-            return AccountsEmails.objects.all().order_by('-id').prefetch_related('accounts_emails_set__type')
-        return AccountsEmails.objects.filter(owner=user).order_by('-id').prefetch_related('accounts_emails_set__type')
+            queryset = AccountsEmails.objects.all().order_by('-id').prefetch_related('accounts_emails_set__type')
+        else:
+            queryset = AccountsEmails.objects.filter(owner=user).order_by('-id').prefetch_related('accounts_emails_set__type')
+        
+        status = self.request.query_params.get('status')
+        if status is not None and status != '':
+            queryset = queryset.filter(status=status)
+            
+        return queryset
 
     def create(self, request, *args, **kwargs):
         data = request.data

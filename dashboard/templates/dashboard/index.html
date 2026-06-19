@@ -1721,6 +1721,16 @@
                     <div class="search-box">
                         <input type="text" class="search-input" id="emailSearchInput" placeholder="Tìm kiếm Email..." oninput="loadEmails(1)">
                     </div>
+                    <select class="filter-select" id="emailStatusFilter" onchange="loadEmails(1)">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="0">Hoạt động (Active)</option>
+                        <option value="1">Chưa kích hoạt (Email Not Activated)</option>
+                        <option value="2">Bị khóa (Banned)</option>
+                        <option value="3">Tạm thời (Temporary)</option>
+                        <option value="4">Sub OK</option>
+                        <option value="5">Sub Lỗi</option>
+                        <option value="6">Đang sử dụng</option>
+                    </select>
                     <select class="filter-select" id="emailPageSizeFilter" onchange="changeEmailsPageSize(this.value)">
                         <option value="10" selected>10 dòng</option>
                         <option value="20">20 dòng</option>
@@ -1748,6 +1758,7 @@
                             <th>Email</th>
                             <th>Mật khẩu</th>
                             <th>Tạo bởi</th>
+                            <th style="width: 120px; text-align: center;">Trạng thái</th>
                             <th>From</th>
                             <th>Time</th>
                             <th>Content</th>
@@ -2496,13 +2507,21 @@
                     </div>
                 </div>
                 <div class="form-row">
-                    <div class="form-group" style="flex-direction: row; gap: 8px; align-items: center;">
+                    <div class="form-group" style="flex-direction: row; gap: 8px; align-items: center; margin-top: 20px;">
                         <input type="checkbox" id="editEmailUsed" class="table-chk">
                         <label for="editEmailUsed" class="form-label" style="margin: 0; cursor: pointer;">Đã sử dụng (Used)</label>
                     </div>
-                    <div class="form-group" style="flex-direction: row; gap: 8px; align-items: center;">
-                        <input type="checkbox" id="editEmailStatus" class="table-chk">
-                        <label for="editEmailStatus" class="form-label" style="margin: 0; cursor: pointer;">Khóa / Lỗi (Blacklist)</label>
+                    <div class="form-group">
+                        <label class="form-label">Trạng thái</label>
+                        <select class="filter-select" id="editEmailStatus" style="width: 100%;">
+                            <option value="0">Hoạt động (Active)</option>
+                            <option value="1">Chưa kích hoạt (Email Not Activated)</option>
+                            <option value="2">Bị khóa (Banned)</option>
+                            <option value="3">Tạm thời (Temporary)</option>
+                            <option value="4">Sub OK</option>
+                            <option value="5">Sub Lỗi</option>
+                            <option value="6">Đang sử dụng</option>
+                        </select>
                     </div>
                 </div>
                 <div class="form-group">
@@ -5272,12 +5291,14 @@
         }
 
         async function loadEmails(page) {
-            showTableLoading('emailsTableBody', 9);
+            showTableLoading('emailsTableBody', 10);
             emailsPage = page;
             const search = document.getElementById('emailSearchInput').value.trim();
+            const status = document.getElementById('emailStatusFilter').value;
 
             let url = `/dashboard/api/emails/?page=${emailsPage}&page_size=${emailsPageSize}`;
             if (search) url += `&search=${encodeURIComponent(search)}`;
+            if (status !== '') url += `&status=${status}`;
 
             try {
                 const response = await fetch(url);
@@ -5311,7 +5332,7 @@
             body.innerHTML = '';
 
             if (emails.length === 0) {
-                body.innerHTML = `<tr><td colspan="9" style="text-align:center; padding: 30px; color: var(--text-muted);">Không tìm thấy email nào.</td></tr>`;
+                body.innerHTML = `<tr><td colspan="10" style="text-align:center; padding: 30px; color: var(--text-muted);">Không tìm thấy email nào.</td></tr>`;
                 return;
             }
 
@@ -5333,6 +5354,29 @@
                     ).join('');
                 }
 
+                // Render email status badge
+                let statusLabel = 'Hoạt động';
+                let statusClass = 'badge-success';
+                if (e.status === 1) {
+                    statusLabel = 'Chưa kích hoạt';
+                    statusClass = 'badge-warning';
+                } else if (e.status === 2) {
+                    statusLabel = 'Bị khóa';
+                    statusClass = 'badge-danger';
+                } else if (e.status === 3) {
+                    statusLabel = 'Tạm thời';
+                    statusClass = 'badge-info';
+                } else if (e.status === 4) {
+                    statusLabel = 'Sub OK';
+                    statusClass = 'badge-sub-ok';
+                } else if (e.status === 5) {
+                    statusLabel = 'Sub Lỗi';
+                    statusClass = 'badge-sub-error';
+                } else if (e.status === 6) {
+                    statusLabel = 'Đang sử dụng';
+                    statusClass = 'badge-active';
+                }
+
                 tr.innerHTML = `
                     <td style="text-align: center;" class="cell-chk">
                         <input type="checkbox" class="table-chk email-row-chk" data-id="${e.id}" onclick="handleEmailCheckboxClick(event, ${e.id})">
@@ -5340,6 +5384,7 @@
                     <td style="font-weight: 600;">${e.email}${createdBadgesHtml}</td>
                     <td><code>${e.password}</code></td>
                     <td style="font-size: 12px; color: var(--text-muted); font-weight: 500;">${e.created_by || e.owner || '-'}</td>
+                    <td style="text-align: center;"><span class="badge ${statusClass}">${statusLabel}</span></td>
                     <td class="email-from-cell" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${e.latest_from || ''}">${e.latest_from || '-'}</td>
                     <td class="email-time-cell" style="font-size: 12px; color: var(--text-muted); white-space: nowrap;">${e.latest_time || '-'}</td>
                     <td class="email-content-cell" style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${e.latest_content || ''}">${e.latest_content || '-'}</td>
@@ -5550,7 +5595,7 @@
             document.getElementById('editEmailProxy').value = email.proxy || '';
             document.getElementById('editEmailSocks5').value = email.socks5 || '';
             document.getElementById('editEmailUsed').checked = email.used;
-            document.getElementById('editEmailStatus').checked = (email.status === 'Blacklist');
+            document.getElementById('editEmailStatus').value = email.status !== undefined ? email.status : 0;
             document.getElementById('editEmailNote').value = email.note || '';
 
             openModal('editEmailModal');
@@ -5563,8 +5608,7 @@
             const proxy = document.getElementById('editEmailProxy').value.trim();
             const socks5 = document.getElementById('editEmailSocks5').value.trim();
             const used = document.getElementById('editEmailUsed').checked;
-            const isBlacklist = document.getElementById('editEmailStatus').checked;
-            const status = isBlacklist ? 'Blacklist' : 'Live';
+            const status = parseInt(document.getElementById('editEmailStatus').value);
             const note = document.getElementById('editEmailNote').value.trim();
 
             try {

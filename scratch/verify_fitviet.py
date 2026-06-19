@@ -24,9 +24,10 @@ def test_choices():
     print("✓ Card status choices check passed")
     
     # 2. Check account status enum
-    print(f"Account status values: normal={AccountStatus.normal}, emailNotActivated={AccountStatus.emailNotActivated}, banned={AccountStatus.banned}, temporary={AccountStatus.temporary}, subOk={AccountStatus.subOk}, subError={AccountStatus.subError}")
+    print(f"Account status values: normal={AccountStatus.normal}, emailNotActivated={AccountStatus.emailNotActivated}, banned={AccountStatus.banned}, temporary={AccountStatus.temporary}, subOk={AccountStatus.subOk}, subError={AccountStatus.subError}, inUse={AccountStatus.inUse}")
     assert AccountStatus.subOk == 4, "subOk value should be 4"
     assert AccountStatus.subError == 5, "subError value should be 5"
+    assert AccountStatus.inUse == 6, "inUse value should be 6"
     print("✓ Account status enum check passed")
 
 def test_api_client():
@@ -70,6 +71,7 @@ def test_template_content():
     assert 'value="Đã sử dụng"' not in html, "Should not have Đã sử dụng options for cards"
     assert 'value="4"' in html, "Should have option value 4 (Sub OK) for accounts"
     assert 'value="5"' in html, "Should have option value 5 (Sub Lỗi) for accounts"
+    assert 'value="6"' in html, "Should have option value 6 (Đang sử dụng) for accounts"
     
     # Check for badge styling classes
     assert 'badge-sub-ok' in html, "Should have CSS class badge-sub-ok"

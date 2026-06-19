@@ -1225,7 +1225,10 @@
                     <!-- Inbox Details -->
                     <div style="margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 10px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                            <label class="form-label" style="margin: 0;">Thư mới nhất</label>
+                            <label class="form-label" style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                                Thư mới nhất
+                                <span id="emailGetOtpDisplay" style="display: none; align-items: center; gap: 4px; background: rgba(16, 185, 129, 0.2); border: 1px solid var(--success); color: var(--accent); padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 13px;"></span>
+                            </label>
                             <button class="btn btn-primary" id="btnReloadEmailGet" onclick="reloadEmailGetMailbox()" style="padding: 4px 8px; font-size: 11px; height: 26px; display: flex; align-items: center; justify-content: center; gap: 4px;">🔄 Tải lại</button>
                         </div>
                         
@@ -1299,7 +1302,10 @@
                     <div id="createdAccInboxSection" style="margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 10px; display: none;">
                         <input type="hidden" id="createdAccEmailId">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                            <label class="form-label" style="margin: 0;">Thư mới nhất</label>
+                            <label class="form-label" style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                                Thư mới nhất
+                                <span id="createdAccOtpDisplay" style="display: none; align-items: center; gap: 4px; background: rgba(16, 185, 129, 0.2); border: 1px solid var(--success); color: var(--accent); padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 13px;"></span>
+                            </label>
                             <button class="btn btn-primary" id="btnReloadCreatedAccMail" onclick="reloadCreatedAccMailbox()" style="padding: 4px 8px; font-size: 11px; height: 26px; display: flex; align-items: center; justify-content: center; gap: 4px;">🔄 Tải lại</button>
                         </div>
                         
@@ -1313,6 +1319,20 @@
                         <div id="createdAccMailContainer" style="padding: 8px; background: rgba(0, 0, 0, 0.2); border-radius: 8px; border: 1px solid var(--border-color); min-height: 48px; max-height: 100px; overflow-y: auto; font-size: 12px; line-height: 1.4;">
                             <div id="createdAccMailContent" style="white-space: pre-wrap; word-break: break-all; color: var(--text-muted);">Không có dữ liệu thư.</div>
                         </div>
+                    </div>
+                    <!-- Status Update Selection on Close -->
+                    <div id="statusUpdateSection" style="display: none; margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                        <label class="form-label" for="modalStatusSelect" style="margin-bottom: 6px; display: block; font-weight: 600; font-size: 13px;">Chọn trạng thái cuối cùng (Bắt buộc trước khi đóng)</label>
+                        <select id="modalStatusSelect" class="form-input" style="background: rgba(8, 11, 23, 0.8); border: 1px solid var(--border-color); color: white; height: 36px; padding: 0 10px; border-radius: 8px; width: 100%;">
+                            <option value="">-- Vui lòng chọn trạng thái --</option>
+                            <option value="0">Hoạt động (Active)</option>
+                            <option value="1">Chưa kích hoạt (Email Not Activated)</option>
+                            <option value="2">Bị khóa (Banned)</option>
+                            <option value="3">Tạm thời (Temporary)</option>
+                            <option value="4">Sub OK</option>
+                            <option value="5">Sub Lỗi</option>
+                            <option value="6">Đang sử dụng (In Use)</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -2060,13 +2080,86 @@
             document.getElementById('emailGetAccPassword').value = '';
             document.getElementById('emailGetAcc2Fa').value = '';
             
+            document.getElementById('statusUpdateSection').style.display = 'none';
+            document.getElementById('modalStatusSelect').value = '';
+            const otpDisplayGet = document.getElementById('emailGetOtpDisplay');
+            const otpDisplayCreated = document.getElementById('createdAccOtpDisplay');
+            if (otpDisplayGet) { otpDisplayGet.style.display = 'none'; otpDisplayGet.innerHTML = ''; }
+            if (otpDisplayCreated) { otpDisplayCreated.style.display = 'none'; otpDisplayCreated.innerHTML = ''; }
+
             // Reset to uncreated radio
             const radioUncreated = document.querySelector('input[name="infoSourceType"][value="uncreated"]');
             if (radioUncreated) radioUncreated.checked = true;
             toggleInfoSourceType('uncreated');
         }
 
-        function closeEmailGetModal() {
+        async function updateFetchedItemStatus(id, type, statusValue) {
+            const url = type === 'created' ? `/dashboard/api/accounts/${id}/` : `/dashboard/api/emails/${id}/`;
+            try {
+                const response = await fetch(url, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({ status: parseInt(statusValue) })
+                });
+                return response.ok;
+            } catch (err) {
+                console.error('Error updating status:', err);
+                return false;
+            }
+        }
+
+        async function closeEmailGetModal() {
+            const emailGetId = document.getElementById('emailGetId').value;
+            const createdAccId = document.getElementById('createdAccId').value;
+            const statusSelect = document.getElementById('modalStatusSelect');
+            
+            // If an item was fetched, require selecting a status
+            if (emailGetId || createdAccId) {
+                const statusVal = statusSelect.value;
+                if (!statusVal) {
+                    showToast('⚠️ Vui lòng chọn trạng thái trước khi đóng bảng!');
+                    return;
+                }
+                
+                statusSelect.disabled = true;
+                const closeBtn = document.querySelector('#emailGetModal .modal-footer .btn-secondary');
+                if (closeBtn) {
+                    closeBtn.disabled = true;
+                    closeBtn.textContent = 'Đang lưu...';
+                }
+                
+                let success = false;
+                if (createdAccId) {
+                    success = await updateFetchedItemStatus(createdAccId, 'created', statusVal);
+                } else if (emailGetId) {
+                    success = await updateFetchedItemStatus(emailGetId, 'email', statusVal);
+                }
+                
+                statusSelect.disabled = false;
+                if (closeBtn) {
+                    closeBtn.disabled = false;
+                    closeBtn.textContent = 'Đóng';
+                }
+                
+                if (!success) {
+                    showToast('❌ Lỗi cập nhật trạng thái lên hệ thống!');
+                    return;
+                }
+                
+                showToast('✅ Đã lưu trạng thái thành công!');
+            }
+            
+            // Reset fields and close modal
+            document.getElementById('emailGetId').value = '';
+            document.getElementById('createdAccId').value = '';
+            document.getElementById('emailGetResult').style.display = 'none';
+            document.getElementById('emailGetResultCreated').style.display = 'none';
+            document.getElementById('statusUpdateSection').style.display = 'none';
+            statusSelect.value = '';
+            
             document.getElementById('emailGetModal').style.display = 'none';
         }
 
@@ -2079,6 +2172,12 @@
             
             resultUncreated.style.display = 'none';
             resultCreated.style.display = 'none';
+            document.getElementById('statusUpdateSection').style.display = 'none';
+            document.getElementById('modalStatusSelect').value = '';
+            const otpDisplayGet = document.getElementById('emailGetOtpDisplay');
+            const otpDisplayCreated = document.getElementById('createdAccOtpDisplay');
+            if (otpDisplayGet) { otpDisplayGet.style.display = 'none'; otpDisplayGet.innerHTML = ''; }
+            if (otpDisplayCreated) { otpDisplayCreated.style.display = 'none'; otpDisplayCreated.innerHTML = ''; }
             
             if (type === 'uncreated') {
                 if (btn) btn.innerHTML = '✉️ Lấy Email';
@@ -2151,6 +2250,8 @@
                     document.getElementById('createdAcc2Fa').value = accData.two_factor_auth || '';
                     
                     document.getElementById('emailGetResultCreated').style.display = 'block';
+                    document.getElementById('statusUpdateSection').style.display = 'block';
+                    document.getElementById('modalStatusSelect').value = '';
                     
                     // Reset OTP display
                     document.getElementById('createdAccOtpValue').textContent = '------';
@@ -2286,16 +2387,22 @@
                 code = matches[0];
             }
 
+            const otpDisplay = document.getElementById('createdAccOtpDisplay');
             if (code) {
-                otpBlock = `<div style="margin-top: 10px; padding: 10px; background: rgba(16, 185, 129, 0.1); border: 1px solid var(--success); border-radius: 6px; font-weight: 700; text-align: center; font-size: 16px; color: var(--accent-glow);">Mã OTP: ${code} <button class="btn btn-primary" onclick="navigator.clipboard.writeText('${code}').then(()=>showToast('Đã copy OTP: ${code}'))" style="padding: 2px 8px; font-size: 11px; margin-left: 8px; vertical-align: middle; height: auto;">Copy OTP</button></div>`;
+                otpDisplay.style.display = 'inline-flex';
+                otpDisplay.innerHTML = `OTP: ${code} <span style="cursor: pointer; font-size: 11px; margin-left: 6px; text-decoration: underline;" onclick="event.stopPropagation(); navigator.clipboard.writeText('${code}').then(()=>showToast('Đã copy OTP: ${code}'))">Copy</span>`;
+                otpBlock = `<div style="margin-bottom: 10px; padding: 10px; background: rgba(16, 185, 129, 0.15); border: 1px solid var(--success); border-radius: 6px; font-weight: 700; text-align: center; font-size: 16px; color: var(--accent-glow); display: flex; align-items: center; justify-content: center; gap: 8px;">Mã OTP: ${code} <button class="btn btn-success" onclick="navigator.clipboard.writeText('${code}').then(()=>showToast('Đã copy OTP: ${code}'))" style="padding: 4px 10px; font-size: 11px; height: auto;">Copy OTP</button></div>`;
+            } else {
+                otpDisplay.style.display = 'none';
+                otpDisplay.innerHTML = '';
             }
 
             container.innerHTML = `
+${otpBlock}
 <div><strong>Người gửi:</strong> ${fromStr}</div>
 <div><strong>Thời gian:</strong> ${dateStr}</div>
 <div><strong>Tiêu đề:</strong> ${subjectStr}</div>
 <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.05); color: var(--text-color); font-family: monospace; font-size: 11px;">${snippetStr}</div>
-${otpBlock}
             `;
         }
 
@@ -2320,6 +2427,8 @@ ${otpBlock}
                     document.getElementById('emailGetPassword').value = emailData.password;
                     
                     document.getElementById('emailGetResult').style.display = 'block';
+                    document.getElementById('statusUpdateSection').style.display = 'block';
+                    document.getElementById('modalStatusSelect').value = '';
                     
                     // Display latest emails
                     renderEmailGetMailbox(data.emails);
@@ -2445,16 +2554,22 @@ ${otpBlock}
                 code = matches[0];
             }
 
+            const otpDisplay = document.getElementById('emailGetOtpDisplay');
             if (code) {
-                otpBlock = `<div style="margin-top: 10px; padding: 10px; background: rgba(16, 185, 129, 0.1); border: 1px solid var(--success); border-radius: 6px; font-weight: 700; text-align: center; font-size: 16px; color: var(--accent-glow);">Mã OTP: ${code} <button class="btn btn-primary" onclick="navigator.clipboard.writeText('${code}').then(()=>showToast('Đã copy OTP: ${code}'))" style="padding: 2px 8px; font-size: 11px; margin-left: 8px; vertical-align: middle; height: auto;">Copy OTP</button></div>`;
+                otpDisplay.style.display = 'inline-flex';
+                otpDisplay.innerHTML = `OTP: ${code} <span style="cursor: pointer; font-size: 11px; margin-left: 6px; text-decoration: underline;" onclick="event.stopPropagation(); navigator.clipboard.writeText('${code}').then(()=>showToast('Đã copy OTP: ${code}'))">Copy</span>`;
+                otpBlock = `<div style="margin-bottom: 10px; padding: 10px; background: rgba(16, 185, 129, 0.15); border: 1px solid var(--success); border-radius: 6px; font-weight: 700; text-align: center; font-size: 16px; color: var(--accent-glow); display: flex; align-items: center; justify-content: center; gap: 8px;">Mã OTP: ${code} <button class="btn btn-success" onclick="navigator.clipboard.writeText('${code}').then(()=>showToast('Đã copy OTP: ${code}'))" style="padding: 4px 10px; font-size: 11px; height: auto;">Copy OTP</button></div>`;
+            } else {
+                otpDisplay.style.display = 'none';
+                otpDisplay.innerHTML = '';
             }
 
             container.innerHTML = `
+${otpBlock}
 <div><strong>Người gửi:</strong> ${fromStr}</div>
 <div><strong>Thời gian:</strong> ${dateStr}</div>
 <div><strong>Tiêu đề:</strong> ${subjectStr}</div>
 <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.05); color: var(--text-color); font-family: monospace; font-size: 11px;">${snippetStr}</div>
-${otpBlock}
             `;
         }
 
@@ -2471,9 +2586,9 @@ ${otpBlock}
             });
         }
 
-        // Close email getter modal on overlay click
+        // Close email getter modal on overlay click (disabled to force status selection on close)
         document.getElementById('emailGetModal').addEventListener('click', function(e) {
-            if (e.target === this) closeEmailGetModal();
+            // Do not close on overlay click to prevent accidental dismissal
         });
 
         // 12. QUICK LOGIN & REGISTER

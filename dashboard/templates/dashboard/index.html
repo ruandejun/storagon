@@ -2583,6 +2583,7 @@
                             <option value="3">Tạm thời (Temporary)</option>
                             <option value="4">Sub OK</option>
                             <option value="5">Sub Lỗi</option>
+                            <option value="6">Đang sử dụng</option>
                         </select>
                     </div>
                 </div>
@@ -2619,6 +2620,7 @@
                         <option value="3">Tạm thời (Temporary)</option>
                         <option value="4">Sub OK</option>
                         <option value="5">Sub Lỗi</option>
+                        <option value="6">Đang sử dụng</option>
                     </select>
                 </div>
             </div>
@@ -5733,6 +5735,9 @@
                 } else if (acc.status === 5) {
                     statusLabel = 'Sub Lỗi';
                     statusClass = 'badge-sub-error';
+                } else if (acc.status === 6) {
+                    statusLabel = 'Đang sử dụng';
+                    statusClass = 'badge-active';
                 }
 
                 tr.innerHTML = `

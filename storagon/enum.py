@@ -30,6 +30,7 @@ class AccountStatus(EnumBase):
 	temporary = 3
 	subOk = 4
 	subError = 5
+	inUse = 6
 
 
 class FolderType(EnumBase):

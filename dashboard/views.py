@@ -453,9 +453,9 @@ class AccountsEmailsViewSet(viewsets.ModelViewSet):
         # Get an email that is not registered yet
         user = request.user
         if user.is_superuser or user.is_staff:
-            email_qs = AccountsEmails.objects.all()
+            email_qs = AccountsEmails.objects.filter(status=0)
         else:
-            email_qs = AccountsEmails.objects.filter(owner=user)
+            email_qs = AccountsEmails.objects.filter(owner=user, status=0)
             
         email_obj = email_qs.exclude(email__in=registered_emails).order_by('-id').first()
         
@@ -465,6 +465,10 @@ class AccountsEmailsViewSet(viewsets.ModelViewSet):
                 'message': f'Không tìm thấy email nào chưa đăng ký loại tài khoản "{type_val.title()}".'
             })
             
+        # Set status to 6 (Đang sử dụng)
+        email_obj.status = 6
+        email_obj.save()
+        
         # Read the mailbox once to get the latest messages
         res = read_single_mailbox_helper(email_obj, request.user)
         email_obj.refresh_from_db()
@@ -987,6 +991,7 @@ class AccountsCreatedViewSet(viewsets.ModelViewSet):
             })
             
         account_obj.viewed += 1
+        account_obj.status = 6
         account_obj.save()
         
         # Try to find corresponding AccountsEmails ID for mailbox reading

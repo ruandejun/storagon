@@ -179,7 +179,7 @@ def _get_pagination_params(request):
 @signature_test()
 @user_passes_test(banned_check)
 def get_browser_profiles(request):
-    browser_profiles = BrowserProfiles.objects.filter(profile_owner=request.user).order_by('-id')
+    browser_profiles = BrowserProfiles.objects.filter(profile_owner=request.user).select_related('profile_owner').order_by('-id')
 
     page, page_size = _get_pagination_params(request)
     if page or page_size:
@@ -216,7 +216,7 @@ def get_accounts_emails(request):
     account_type = request.GET.get('account_type')
     action = request.GET.get('action')
     from django.db.models import Q
-    list_objects = AccountsEmails.objects.filter(Q(owner=request.user) | Q(created_by=request.user)).order_by('-id')
+    list_objects = AccountsEmails.objects.filter(Q(owner=request.user) | Q(created_by=request.user)).select_related('customer', 'owner', 'created_by', 'type').prefetch_related('accounts_emails_set__type').order_by('-id')
     if account_type:
       if action == 'create_accounts':
         list_objects = list_objects.exclude(accounts_emails_set__type__value=account_type).filter(status=0)
@@ -413,7 +413,9 @@ def get_accounts_created(request):
         random_obj = AccountsCreated.objects.filter(pk=random_pk)
         accounts_data = AccountsCreatedSerializer(random_obj, many=True) 
     else:
-        list_objects = AccountsCreated.objects.filter(owner=request.user).order_by('-id')
+        list_objects = AccountsCreated.objects.filter(owner=request.user).select_related(
+            'customer', 'owner', 'created_by', 'type', 'browser_profiles', 'accounts_emails'
+        ).order_by('-id')
 
         page, page_size = _get_pagination_params(request)
         if page or page_size:
@@ -525,7 +527,9 @@ def get_accounts_data(request):
         random_obj = AccountsData.objects.filter(pk=random_pk)
         accounts_data = AccountsDataSerializer(random_obj, many=True)
     else:
-        list_objects = AccountsData.objects.filter(owner=request.user).order_by('-id')
+        list_objects = AccountsData.objects.filter(owner=request.user).select_related(
+            'customer', 'owner', 'type'
+        ).order_by('-id')
 
         page, page_size = _get_pagination_params(request)
         if page or page_size:

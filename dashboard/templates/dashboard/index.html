@@ -1734,6 +1734,8 @@
                         <option value="5">Sub Lỗi</option>
                         <option value="6">Đang sử dụng</option>
                     </select>
+                    <select class="filter-select" id="emailOwnerFilter" onchange="loadEmails(1)" style="display: none;"></select>
+                    <select class="filter-select" id="emailCreatedByFilter" onchange="loadEmails(1)" style="display: none;"></select>
                     <select class="filter-select" id="emailPageSizeFilter" onchange="changeEmailsPageSize(this.value)">
                         <option value="10" selected>10 dòng</option>
                         <option value="20">20 dòng</option>
@@ -3316,6 +3318,14 @@
             if (cardOwnerFilter) {
                 cardOwnerFilter.innerHTML = '<option value="all">Tất cả chủ sở hữu</option><option value="unassigned">Chưa chỉ định</option>' + optionsHtml;
             }
+            const emailOwnerFilter = document.getElementById('emailOwnerFilter');
+            if (emailOwnerFilter) {
+                emailOwnerFilter.innerHTML = '<option value="all">Tất cả chủ sở hữu</option><option value="unassigned">Chưa chỉ định</option>' + optionsHtml;
+            }
+            const emailCreatedByFilter = document.getElementById('emailCreatedByFilter');
+            if (emailCreatedByFilter) {
+                emailCreatedByFilter.innerHTML = '<option value="all">Tất cả người tạo</option>' + optionsHtml;
+            }
         }
 
         // CSRF Token Helper
@@ -3380,6 +3390,10 @@
             } else {
                 const ownerFilter = document.getElementById('cardOwnerFilter');
                 if (ownerFilter) ownerFilter.style.display = 'block';
+                const emailOwnerFilter = document.getElementById('emailOwnerFilter');
+                if (emailOwnerFilter) emailOwnerFilter.style.display = 'block';
+                const emailCreatedByFilter = document.getElementById('emailCreatedByFilter');
+                if (emailCreatedByFilter) emailCreatedByFilter.style.display = 'block';
                 fetchClients();
                 // Show HWID Manager menu for staff/admin only
                 const hwidMenu = document.getElementById('menu-hwids');
@@ -5449,10 +5463,14 @@
             emailsPage = page;
             const search = document.getElementById('emailSearchInput').value.trim();
             const status = document.getElementById('emailStatusFilter').value;
+            const owner = document.getElementById('emailOwnerFilter') ? document.getElementById('emailOwnerFilter').value : 'all';
+            const createdBy = document.getElementById('emailCreatedByFilter') ? document.getElementById('emailCreatedByFilter').value : 'all';
 
             let url = `/dashboard/api/emails/?page=${emailsPage}&page_size=${emailsPageSize}`;
             if (search) url += `&search=${encodeURIComponent(search)}`;
             if (status !== '') url += `&status=${status}`;
+            if (owner && owner !== 'all') url += `&owner=${owner}`;
+            if (createdBy && createdBy !== 'all') url += `&created_by=${createdBy}`;
 
             try {
                 const response = await fetch(url);

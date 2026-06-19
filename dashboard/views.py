@@ -339,6 +339,23 @@ class AccountsEmailsViewSet(viewsets.ModelViewSet):
         status = self.request.query_params.get('status')
         if status is not None and status != '':
             queryset = queryset.filter(status=status)
+
+        owner = self.request.query_params.get('owner')
+        if owner:
+            if owner == 'unassigned':
+                queryset = queryset.filter(owner__isnull=True)
+            elif owner != 'all':
+                try:
+                    queryset = queryset.filter(owner_id=int(owner))
+                except ValueError:
+                    pass
+
+        created_by = self.request.query_params.get('created_by')
+        if created_by and created_by != 'all':
+            try:
+                queryset = queryset.filter(created_by_id=int(created_by))
+            except ValueError:
+                pass
             
         return queryset
 

@@ -326,7 +326,7 @@ class AccountsEmailsViewSet(viewsets.ModelViewSet):
     authentication_classes = [SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [filters.SearchFilter]
-    search_fields = ['email', 'type']
+    search_fields = ['email', 'type__value', 'type__label']
 
     def get_queryset(self):
         user = self.request.user
@@ -992,7 +992,7 @@ class AccountsCreatedViewSet(viewsets.ModelViewSet):
     authentication_classes = [SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [filters.SearchFilter]
-    search_fields = ['username', 'email', 'type']
+    search_fields = ['username', 'email', 'type__value', 'type__label']
 
     def get_serializer_class(self):
         if self.action == 'list':

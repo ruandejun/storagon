@@ -213,7 +213,7 @@ class DashboardUserViewSet(viewsets.ModelViewSet):
     search_fields = ['username', 'email', 'profile__full_name']
 
     def get_queryset(self):
-        queryset = User.objects.all().order_by('-id')
+        queryset = User.objects.all().select_related('profile').order_by('-id')
         status = self.request.query_params.get('status')
         if status == 'active':
             queryset = queryset.filter(is_active=True)
@@ -287,7 +287,7 @@ class DashboardUserViewSet(viewsets.ModelViewSet):
 
 
 class BrowserProfilesViewSet(viewsets.ModelViewSet):
-    queryset = BrowserProfiles.objects.all().order_by('-id')
+    queryset = BrowserProfiles.objects.all().select_related('profile_owner', 'created_by', 'modified_by').order_by('-id')
     serializer_class = BrowserProfilesSerializer
     pagination_class = StandardResultsSetPagination
     authentication_classes = [SessionAuthentication]
@@ -331,9 +331,9 @@ class AccountsEmailsViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if user.is_superuser or user.is_staff:
-            queryset = AccountsEmails.objects.all().order_by('-id').prefetch_related('accounts_emails_set__type')
+            queryset = AccountsEmails.objects.all().select_related('type', 'owner', 'customer', 'created_by').prefetch_related('accounts_emails_set__type').order_by('-id')
         else:
-            queryset = AccountsEmails.objects.filter(owner=user).order_by('-id').prefetch_related('accounts_emails_set__type')
+            queryset = AccountsEmails.objects.filter(owner=user).select_related('type', 'owner', 'customer', 'created_by').prefetch_related('accounts_emails_set__type').order_by('-id')
         
         status = self.request.query_params.get('status')
         if status is not None and status != '':
@@ -1019,7 +1019,7 @@ class AccountsCreatedViewSet(viewsets.ModelViewSet):
         if created_by_param:
             qs = qs.filter(created_by__username=created_by_param)
             
-        return qs.select_related('owner', 'created_by', 'customer', 'type', 'browser_profiles', 'modified_by').order_by('-id')
+        return qs.select_related('owner', 'created_by', 'customer', 'type', 'browser_profiles', 'modified_by', 'accounts_emails').order_by('-id')
 
     @action(detail=False, methods=['get'], url_path='get-active-account')
     def get_active_account(self, request):

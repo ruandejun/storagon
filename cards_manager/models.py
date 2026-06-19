@@ -15,12 +15,12 @@ class Card(models.Model):
     card_number = models.CharField(max_length=255, unique=True)
     expiry_date = models.CharField(max_length=50, blank=True, null=True)
     cvv = models.CharField(max_length=50, blank=True, null=True)
-    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Chưa sử dụng')
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Chưa sử dụng', db_index=True)
     extra_info = models.TextField(blank=True, null=True)
     used_count = models.IntegerField(default=0)
     owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='owned_cards')
     used_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='used_cards')
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

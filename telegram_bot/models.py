@@ -331,10 +331,10 @@ class UserCreateFunction(models.Model):
     def __unicode__(self): return self.value    
 
 class UserHwid(models.Model):
-    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True)
+    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True, db_index=True)
     modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
     user = models.ForeignKey(User, related_name='hwid', on_delete=models.DO_NOTHING)
-    value = models.CharField(verbose_name=_("value"), max_length=255)
+    value = models.CharField(verbose_name=_("value"), max_length=255, db_index=True)
     note = models.TextField(verbose_name=_("note"), blank=True, null=True, default='')
     status = models.PositiveSmallIntegerField(choices=AccountStatus.ChoiceList(), default=AccountStatus.normal,
                                                    db_index=True)      

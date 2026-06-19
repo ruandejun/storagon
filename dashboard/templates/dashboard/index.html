@@ -4959,6 +4959,244 @@
             refreshMailbox();
         }
 
+        function isMicrosoftEmail(email) {
+            if (!email) return false;
+            const emailLower = email.toLowerCase();
+            return ['@hotmail.', '@outlook.', '@live.', '@msn.'].some(dom => emailLower.includes(dom));
+        }
+
+        async function readMailboxClientSide(emailId, emailObj = null) {
+            if (!emailObj) {
+                const resp = await fetch(`/dashboard/api/emails/${emailId}/`);
+                if (!resp.ok) {
+                    throw new Error(`Không thể lấy thông tin email ID: ${emailId}`);
+                }
+                emailObj = await resp.json();
+            }
+
+            const emailAddr = emailObj.email;
+            if (!isMicrosoftEmail(emailAddr)) {
+                const resp = await fetch(`/dashboard/api/emails/${emailId}/read-mailbox/`);
+                const data = await resp.json();
+                if (!resp.ok || !data.success) {
+                    throw new Error(data.message || 'Lỗi IMAP khi đọc hộp thư.');
+                }
+                return data;
+            }
+
+            let graphConfig = { client_id: '', client_secret: '', tenant_id: 'common', flow: 'ropc' };
+            try {
+                const configResp = await fetch('/dashboard/api/emails/get-graph-config/');
+                if (configResp.ok) {
+                    const configData = await configResp.json();
+                    if (configData.success) {
+                        graphConfig = configData;
+                    }
+                }
+            } catch (err) {
+                console.error("Lỗi khi tải cấu hình Graph API:", err);
+            }
+
+            const targetRefreshToken = emailObj.refresh_token ? emailObj.refresh_token.trim() : '';
+            const configClientId = graphConfig.client_id ? graphConfig.client_id.trim() : '';
+            const configClientSecret = graphConfig.client_secret ? graphConfig.client_secret.trim() : '';
+            const configTenantId = graphConfig.tenant_id ? graphConfig.tenant_id.trim() : 'common';
+            const configFlow = graphConfig.flow ? graphConfig.flow.trim() : 'ropc';
+            const targetClientId = (emailObj.client_id ? emailObj.client_id.trim() : '') || configClientId || "9e5f94bc-e8a4-4e73-b8be-63364c29d753";
+
+            let accessToken = '';
+            let newRefreshToken = '';
+
+            if (targetRefreshToken) {
+                const tokenUrl = "https://login.microsoftonline.com/common/oauth2/v2.0/token";
+                const params = new URLSearchParams();
+                params.append('grant_type', 'refresh_token');
+                params.append('client_id', targetClientId);
+                params.append('refresh_token', targetRefreshToken);
+
+                const tokenResp = await fetch(tokenUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: params
+                });
+
+                if (tokenResp.ok) {
+                    const tokenData = await tokenResp.json();
+                    accessToken = tokenData.access_token;
+                    newRefreshToken = tokenData.refresh_token;
+                } else {
+                    let errMsg = 'Lỗi OAuth Refresh';
+                    try {
+                        const errData = await tokenResp.json();
+                        errMsg = errData.error_description || errData.error || errMsg;
+                    } catch (e) {
+                        errMsg = await tokenResp.text();
+                    }
+                    throw new Error(`Lỗi OAuth Refresh: ${errMsg}`);
+                }
+            } else {
+                if (configFlow === 'client_credentials') {
+                    if (!configClientId || !configClientSecret) {
+                        throw new Error('Thiếu Client ID/Secret trong cấu hình App-only.');
+                    }
+                    const tokenUrl = `https://login.microsoftonline.com/${configTenantId}/oauth2/v2.0/token`;
+                    const params = new URLSearchParams();
+                    params.append('grant_type', 'client_credentials');
+                    params.append('client_id', configClientId);
+                    params.append('client_secret', configClientSecret);
+                    params.append('scope', 'https://graph.microsoft.com/.default');
+
+                    const tokenResp = await fetch(tokenUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: params
+                    });
+
+                    if (tokenResp.ok) {
+                        const tokenData = await tokenResp.json();
+                        accessToken = tokenData.access_token;
+                    } else {
+                        let errMsg = 'Lỗi Client Credentials';
+                        try {
+                            const errData = await tokenResp.json();
+                            errMsg = errData.error_description || errData.error || errMsg;
+                        } catch (e) {
+                            errMsg = await tokenResp.text();
+                        }
+                        throw new Error(`Lỗi lấy App Token: ${errMsg}`);
+                    }
+                } else {
+                    if (!targetClientId) {
+                        throw new Error('Thiếu Client ID cho ROPC.');
+                    }
+                    if (!emailObj.password) {
+                        throw new Error('Mật khẩu email trống.');
+                    }
+                    const tokenUrl = `https://login.microsoftonline.com/${configTenantId}/oauth2/v2.0/token`;
+                    const params = new URLSearchParams();
+                    params.append('grant_type', 'password');
+                    params.append('client_id', targetClientId);
+                    params.append('username', emailAddr);
+                    params.append('password', emailObj.password);
+                    params.append('scope', 'https://graph.microsoft.com/Mail.Read');
+                    if (configClientSecret) {
+                        params.append('client_secret', configClientSecret);
+                    }
+
+                    const tokenResp = await fetch(tokenUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: params
+                    });
+
+                    if (tokenResp.ok) {
+                        const tokenData = await tokenResp.json();
+                        accessToken = tokenData.access_token;
+                    } else {
+                        let errMsg = 'Lỗi ROPC Flow';
+                        try {
+                            const errData = await tokenResp.json();
+                            errMsg = errData.error_description || errData.error || errMsg;
+                        } catch (e) {
+                            errMsg = await tokenResp.text();
+                        }
+                        throw new Error(`Lỗi ROPC: ${errMsg}`);
+                    }
+                }
+            }
+
+            let msgUrl = "https://graph.microsoft.com/v1.0/me/messages?$top=15";
+            if (!targetRefreshToken && configFlow === 'client_credentials') {
+                msgUrl = `https://graph.microsoft.com/v1.0/users/${emailAddr}/messages?$top=15`;
+            }
+
+            const msgResp = await fetch(msgUrl, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (!msgResp.ok) {
+                const msgErrText = await msgResp.text();
+                throw new Error(`Lỗi Graph API: ${msgErrText}`);
+            }
+
+            const msgData = await msgResp.json();
+            const emailsList = msgData.value || [];
+            
+            const parsedEmails = emailsList.map(m => {
+                const fromDict = m.from || m.sender || {};
+                const emailAddrObj = fromDict.emailAddress || {};
+                const fromName = emailAddrObj.name || '';
+                const fromEmail = emailAddrObj.address || '';
+                const fromSender = fromName ? `${fromName} <${fromEmail}>` : fromEmail;
+
+                const subject = m.subject || '(Không có tiêu đề)';
+                const receivedTime = m.receivedDateTime || '';
+                let dateStr = receivedTime;
+                if (receivedTime.includes('T') && receivedTime.includes('Z')) {
+                    try {
+                        const dt = receivedTime.replace('Z', '').split('.')[0];
+                        const parts = dt.split('T');
+                        dateStr = `${parts[0]} ${parts[1]}`;
+                    } catch (err) {}
+                }
+
+                const bodyDict = m.body || {};
+                const bodyContent = bodyDict.content || '';
+                let snippet = m.bodyPreview || '';
+                if (!snippet && bodyContent) {
+                    let cleanBody = bodyContent.trim();
+                    if (cleanBody.toLowerCase().includes('<html') || cleanBody.toLowerCase().includes('<body') || cleanBody.toLowerCase().includes('<div')) {
+                        cleanBody = cleanBody.replace(/<[^>]+>/g, '');
+                        cleanBody = cleanBody.replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+                    }
+                    cleanBody = cleanBody.replace(/\s+/g, ' ').trim();
+                    snippet = cleanBody.slice(0, 200) + (cleanBody.length > 200 ? '...' : '');
+                }
+
+                return {
+                    from: fromSender,
+                    subject: subject,
+                    date: dateStr,
+                    snippet: snippet,
+                    body: bodyContent
+                };
+            });
+
+            const savePayload = {};
+            if (newRefreshToken && newRefreshToken !== targetRefreshToken) {
+                savePayload.refresh_token = newRefreshToken;
+            }
+            if (parsedEmails.length > 0) {
+                savePayload.latest_email = parsedEmails[0];
+            }
+
+            const saveResp = await fetch(`/dashboard/api/emails/${emailId}/save-mailbox-results/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken') || (typeof csrftoken !== 'undefined' ? csrftoken : '')
+                },
+                body: JSON.stringify(savePayload)
+            });
+
+            let updatedEmailData = emailObj;
+            if (saveResp.ok) {
+                const saveData = await saveResp.json();
+                if (saveData.success) {
+                    updatedEmailData = saveData.email_data;
+                }
+            }
+
+            return {
+                success: true,
+                emails: parsedEmails,
+                email_data: updatedEmailData
+            };
+        }
+
         async function refreshMailbox() {
             const id = document.getElementById('readMailTargetId').value;
             if (!id) return;
@@ -4975,12 +5213,12 @@
             detailBox.textContent = 'Chọn một email ở trên để xem nội dung chi tiết.';
 
             try {
-                const response = await fetch(`/dashboard/api/emails/${id}/read-mailbox/`);
-                const data = await response.json();
+                const emailObj = emailsData.find(x => x.id == id);
+                const data = await readMailboxClientSide(id, emailObj);
                 loader.style.display = 'none';
                 listContainer.style.opacity = '1';
 
-                if (response.ok && data.success) {
+                if (data.success) {
                     currentMailboxEmails = data.emails || [];
                     listBody.innerHTML = '';
 
@@ -5000,7 +5238,6 @@
                                 }
                             });
                             tr.addEventListener('click', () => {
-                                // Remove active class from all rows
                                 document.querySelectorAll('#readMailListBody tr').forEach(r => {
                                     r.classList.remove('active-mail-row');
                                     r.style.background = 'transparent';
@@ -5010,7 +5247,6 @@
                                 viewMailDetail(index);
                             });
 
-                            // Parse sender address simple name
                             const fromName = mail.from.split('<')[0].replace(/"/g, '').trim() || mail.from;
 
                             tr.innerHTML = `
@@ -5035,7 +5271,7 @@
             } catch (err) {
                 loader.style.display = 'none';
                 listContainer.style.opacity = '1';
-                errorPane.textContent = 'Lỗi kết nối mạng hoặc server không phản hồi.';
+                errorPane.textContent = err.message || 'Lỗi kết nối mạng hoặc server không phản hồi.';
                 errorPane.style.display = 'block';
                 listBody.innerHTML = `
                     <tr><td colspan="3" style="text-align: center; color: var(--danger); padding: 20px;">Lỗi kết nối.</td></tr>
@@ -5216,7 +5452,7 @@
                 itemDiv.style.gap = '6px';
                 itemDiv.innerHTML = `
                     <span style="font-weight: 500;">${acc.email}</span>: 
-                    <span id="bulk-status-badge-${sanitizeEmailId}" style="color: var(--text-muted);">🔄 Đang quét...</span>
+                    <span id="bulk-status-badge-${sanitizeEmailId}" style="color: var(--text-muted);">🔄 Đang chờ...</span>
                 `;
                 statusContainer.appendChild(itemDiv);
             });
@@ -5228,59 +5464,85 @@
                 </td></tr>
             `;
 
+            bulkEmailsData = [];
+            let successCount = 0;
+            let failCount = 0;
+
             try {
-                const res = await fetch('/dashboard/api/emails/bulk-read-mailbox/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrftoken
-                    },
-                    body: JSON.stringify({ accounts: accounts })
-                });
-
-                if (!res.ok) {
-                    const errorData = await res.json();
-                    summary.textContent = `Lỗi hệ thống: ${errorData.message || 'Không thể thực thi quét.'}`;
-                    summary.style.color = 'var(--danger)';
-                    listBody.innerHTML = `<tr><td style="text-align: center; color: var(--danger); padding: 20px;">Lỗi thực thi quét bulk email.</td></tr>`;
-                    return;
-                }
-
-                const data = await res.json();
-                const results = data.results || {};
-                
-                bulkEmailsData = [];
-                let successCount = 0;
-                let failCount = 0;
-
-                accounts.forEach(acc => {
+                for (const acc of accounts) {
                     const sanitizeEmailId = acc.email.replace(/[^a-zA-Z0-9]/g, '_');
                     const badge = document.getElementById(`bulk-status-badge-${sanitizeEmailId}`);
-                    const accountResult = results[acc.email];
-
-                    if (accountResult) {
-                        if (accountResult.success) {
-                            successCount++;
-                            const emailsList = accountResult.emails || [];
-                            badge.textContent = `✅ Thành công (${emailsList.length} thư)`;
-                            badge.style.color = 'var(--success)';
-                            
-                            emailsList.forEach(m => {
-                                m.sourceEmail = acc.email;
-                                bulkEmailsData.push(m);
-                            });
-                        } else {
-                            failCount++;
-                            badge.textContent = `❌ ${accountResult.message || 'Thất bại'}`;
-                            badge.style.color = 'var(--danger)';
-                            badge.title = accountResult.message || '';
+                    
+                    try {
+                        badge.textContent = `🔄 Đang đồng bộ DB...`;
+                        badge.style.color = 'var(--accent)';
+                        
+                        // Ensure the email exists in the database
+                        const ensureResp = await fetch('/dashboard/api/emails/ensure-email/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': csrftoken
+                            },
+                            body: JSON.stringify(acc)
+                        });
+                        
+                        if (!ensureResp.ok) {
+                            throw new Error("Không thể khởi tạo email");
                         }
-                    } else {
+                        
+                        const ensureData = await ensureResp.json();
+                        if (!ensureData.success) {
+                            throw new Error(ensureData.message || "Lỗi tạo email record");
+                        }
+                        
+                        const emailObj = ensureData.email_data;
+                        const emailId = emailObj.id;
+                        
+                        if (isMicrosoftEmail(acc.email)) {
+                            badge.textContent = `🔑 Đang xác thực & tải thư...`;
+                            const data = await readMailboxClientSide(emailId, emailObj);
+                            if (data.success) {
+                                successCount++;
+                                const emailsList = data.emails || [];
+                                badge.textContent = `✅ Thành công (${emailsList.length} thư)`;
+                                badge.style.color = 'var(--success)';
+                                
+                                emailsList.forEach(m => {
+                                    m.sourceEmail = acc.email;
+                                    bulkEmailsData.push(m);
+                                });
+                            } else {
+                                throw new Error(data.message || "Lỗi đọc hộp thư");
+                            }
+                        } else {
+                            // Standard IMAP
+                            badge.textContent = `🌐 Đang kết nối IMAP...`;
+                            const readResp = await fetch(`/dashboard/api/emails/${emailId}/read-mailbox/`);
+                            const data = await readResp.json();
+                            if (readResp.ok && data.success) {
+                                successCount++;
+                                const emailsList = data.emails || [];
+                                badge.textContent = `✅ Thành công (${emailsList.length} thư)`;
+                                badge.style.color = 'var(--success)';
+                                
+                                emailsList.forEach(m => {
+                                    m.sourceEmail = acc.email;
+                                    bulkEmailsData.push(m);
+                                });
+                            } else {
+                                throw new Error(data.message || "Lỗi IMAP");
+                            }
+                        }
+                    } catch (err) {
                         failCount++;
-                        badge.textContent = `❌ Lỗi kết nối`;
+                        badge.textContent = `❌ ${err.message || 'Thất bại'}`;
                         badge.style.color = 'var(--danger)';
+                        badge.title = err.message || '';
                     }
-                });
+                    
+                    summary.textContent = `Đang quét: ${successCount + failCount}/${accounts.length} (Thành công: ${successCount} | Thất bại: ${failCount})`;
+                }
 
                 summary.textContent = `Đã hoàn thành! Thành công: ${successCount}/${accounts.length} | Thất bại: ${failCount}`;
                 summary.style.color = successCount === accounts.length ? 'var(--success)' : 'var(--warning)';

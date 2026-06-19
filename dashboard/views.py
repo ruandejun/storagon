@@ -529,6 +529,31 @@ class AccountsEmailsViewSet(viewsets.ModelViewSet):
         else:
             return Response({'success': False, 'message': res.get('message', 'Không thể đọc hộp thư.')}, status=500)
 
+    @action(detail=True, methods=['post'], url_path='save-mailbox-results')
+    def save_mailbox_results(self, request, pk=None):
+        email_obj = self.get_object()
+        data = request.data
+        
+        # 1. Update rotated refresh token if provided
+        new_refresh_token = data.get('refresh_token')
+        if new_refresh_token and new_refresh_token != email_obj.refresh_token:
+            email_obj.refresh_token = new_refresh_token
+            email_obj.save(update_fields=['refresh_token'])
+            
+        # 2. Update latest email statistics
+        latest_email = data.get('latest_email')
+        if latest_email:
+            update_email_latest_stats(email_obj, latest_email)
+            
+        # 3. Return updated email serializer data
+        email_obj.refresh_from_db()
+        from telegram_bot.api.TelegramBot_RestfulApi import AccountsEmailsSerializer
+        serializer = AccountsEmailsSerializer(email_obj)
+        return Response({
+            'success': True,
+            'email_data': serializer.data
+        })
+
     @action(detail=False, methods=['get'], url_path='get-unused-email')
     def get_unused_email(self, request):
         type_val = request.query_params.get('type', '').strip().lower()
@@ -558,8 +583,15 @@ class AccountsEmailsViewSet(viewsets.ModelViewSet):
         email_obj.status = 6
         email_obj.save()
         
-        # Read the mailbox once to get the latest messages
-        res = read_single_mailbox_helper(email_obj, request.user)
+        # Read the mailbox once to get the latest messages (skip for Microsoft/Graph emails to avoid blocking)
+        email_lower = email_obj.email.lower()
+        is_microsoft = any(dom in email_lower for dom in ['@hotmail.', '@live.', '@outlook.', '@msn.'])
+        
+        if is_microsoft:
+            res = {'success': True, 'emails': []}
+        else:
+            res = read_single_mailbox_helper(email_obj, request.user)
+            
         email_obj.refresh_from_db()
         
         from telegram_bot.api.TelegramBot_RestfulApi import AccountsEmailsSerializer
@@ -570,6 +602,63 @@ class AccountsEmailsViewSet(viewsets.ModelViewSet):
             'email_data': serializer.data,
             'emails': res.get('emails', []) if res.get('success') else []
         })
+
+    @action(detail=False, methods=['post'], url_path='ensure-email')
+    def ensure_email(self, request):
+        email_addr = request.data.get('email', '').strip()
+        password = request.data.get('password', '').strip()
+        refresh_token = request.data.get('refresh_token', '').strip()
+        client_id = request.data.get('client_id', '').strip()
+        
+        if not email_addr:
+            return Response({'success': False, 'message': 'Email không được để trống.'}, status=400)
+            
+        email_lower = email_addr.lower()
+        if any(dom in email_lower for dom in ['@hotmail.', '@outlook.', '@live.', '@msn.']):
+            detected_type = 'hotmail'
+        elif '@gmail.' in email_lower:
+            detected_type = 'gmail'
+        else:
+            detected_type = email_lower.split('@')[1].split('.')[0] if '@' in email_lower else 'gmail'
+            
+        from telegram_bot.models import AccountsType
+        account_type, _ = AccountsType.objects.get_or_create(
+            value=detected_type.lower(),
+            defaults={'label': detected_type.title()}
+        )
+        
+        from django.db.models import Q
+        email_obj = AccountsEmails.objects.filter(
+            Q(email=email_addr) & (Q(owner=request.user) | Q(created_by=request.user))
+        ).first()
+        
+        if not email_obj:
+            email_obj = AccountsEmails.objects.create(
+                email=email_addr,
+                password=password,
+                refresh_token=refresh_token,
+                client_id=client_id,
+                type=account_type,
+                owner=request.user,
+                created_by=request.user
+            )
+        else:
+            updated = False
+            if password and email_obj.password != password:
+                email_obj.password = password
+                updated = True
+            if refresh_token and email_obj.refresh_token != refresh_token:
+                email_obj.refresh_token = refresh_token
+                updated = True
+            if client_id and email_obj.client_id != client_id:
+                email_obj.client_id = client_id
+                updated = True
+            if updated:
+                email_obj.save()
+                
+        from telegram_bot.api.TelegramBot_RestfulApi import AccountsEmailsSerializer
+        serializer = AccountsEmailsSerializer(email_obj)
+        return Response({'success': True, 'email_data': serializer.data})
 
     @action(detail=False, methods=['get'], url_path='get-graph-config')
     def get_graph_config(self, request):

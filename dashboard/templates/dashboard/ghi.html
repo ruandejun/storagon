@@ -1565,129 +1565,24 @@
                 return data;
             }
 
-            let graphConfig = { client_id: '', client_secret: '', tenant_id: 'common', flow: 'ropc' };
-            try {
-                const configResp = await fetch('/dashboard/api/emails/get-graph-config/');
-                if (configResp.ok) {
-                    const configData = await configResp.json();
-                    if (configData.success) {
-                        graphConfig = configData;
-                    }
-                }
-            } catch (err) {
-                console.error("Lỗi khi tải cấu hình Graph API:", err);
+            // 1. Fetch access token from backend (avoids CORS blocks completely)
+            const tokenResp = await fetch(`/dashboard/api/emails/${emailId}/get-access-token/`);
+            if (!tokenResp.ok) {
+                let errMsg = 'Không thể lấy access token từ backend.';
+                try {
+                    const errData = await tokenResp.json();
+                    errMsg = errData.message || errMsg;
+                } catch (e) {}
+                throw new Error(errMsg);
             }
+            const tokenData = await tokenResp.json();
+            const accessToken = tokenData.access_token;
+            const configFlow = tokenData.flow || 'ropc';
+            const hasRefreshToken = tokenData.has_refresh_token;
 
-            const targetRefreshToken = emailObj.refresh_token ? emailObj.refresh_token.trim() : '';
-            const configClientId = graphConfig.client_id ? graphConfig.client_id.trim() : '';
-            const configClientSecret = graphConfig.client_secret ? graphConfig.client_secret.trim() : '';
-            const configTenantId = graphConfig.tenant_id ? graphConfig.tenant_id.trim() : 'common';
-            const configFlow = graphConfig.flow ? graphConfig.flow.trim() : 'ropc';
-            const targetClientId = (emailObj.client_id ? emailObj.client_id.trim() : '') || configClientId || "9e5f94bc-e8a4-4e73-b8be-63364c29d753";
-
-            let accessToken = '';
-            let newRefreshToken = '';
-
-            if (targetRefreshToken) {
-                const tokenUrl = "https://login.microsoftonline.com/common/oauth2/v2.0/token";
-                const params = new URLSearchParams();
-                params.append('grant_type', 'refresh_token');
-                params.append('client_id', targetClientId);
-                params.append('refresh_token', targetRefreshToken);
-
-                const tokenResp = await fetch(tokenUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: params
-                });
-
-                if (tokenResp.ok) {
-                    const tokenData = await tokenResp.json();
-                    accessToken = tokenData.access_token;
-                    newRefreshToken = tokenData.refresh_token;
-                } else {
-                    let errMsg = 'Lỗi OAuth Refresh';
-                    try {
-                        const errData = await tokenResp.json();
-                        errMsg = errData.error_description || errData.error || errMsg;
-                    } catch (e) {
-                        errMsg = await tokenResp.text();
-                    }
-                    throw new Error(`Lỗi OAuth Refresh: ${errMsg}`);
-                }
-            } else {
-                if (configFlow === 'client_credentials') {
-                    if (!configClientId || !configClientSecret) {
-                        throw new Error('Thiếu Client ID/Secret trong cấu hình App-only.');
-                    }
-                    const tokenUrl = `https://login.microsoftonline.com/${configTenantId}/oauth2/v2.0/token`;
-                    const params = new URLSearchParams();
-                    params.append('grant_type', 'client_credentials');
-                    params.append('client_id', configClientId);
-                    params.append('client_secret', configClientSecret);
-                    params.append('scope', 'https://graph.microsoft.com/.default');
-
-                    const tokenResp = await fetch(tokenUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: params
-                    });
-
-                    if (tokenResp.ok) {
-                        const tokenData = await tokenResp.json();
-                        accessToken = tokenData.access_token;
-                    } else {
-                        let errMsg = 'Lỗi Client Credentials';
-                        try {
-                            const errData = await tokenResp.json();
-                            errMsg = errData.error_description || errData.error || errMsg;
-                        } catch (e) {
-                            errMsg = await tokenResp.text();
-                        }
-                        throw new Error(`Lỗi lấy App Token: ${errMsg}`);
-                    }
-                } else {
-                    if (!targetClientId) {
-                        throw new Error('Thiếu Client ID cho ROPC.');
-                    }
-                    if (!emailObj.password) {
-                        throw new Error('Mật khẩu email trống.');
-                    }
-                    const tokenUrl = `https://login.microsoftonline.com/${configTenantId}/oauth2/v2.0/token`;
-                    const params = new URLSearchParams();
-                    params.append('grant_type', 'password');
-                    params.append('client_id', targetClientId);
-                    params.append('username', emailAddr);
-                    params.append('password', emailObj.password);
-                    params.append('scope', 'https://graph.microsoft.com/Mail.Read');
-                    if (configClientSecret) {
-                        params.append('client_secret', configClientSecret);
-                    }
-
-                    const tokenResp = await fetch(tokenUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: params
-                    });
-
-                    if (tokenResp.ok) {
-                        const tokenData = await tokenResp.json();
-                        accessToken = tokenData.access_token;
-                    } else {
-                        let errMsg = 'Lỗi ROPC Flow';
-                        try {
-                            const errData = await tokenResp.json();
-                            errMsg = errData.error_description || errData.error || errMsg;
-                        } catch (e) {
-                            errMsg = await tokenResp.text();
-                        }
-                        throw new Error(`Lỗi ROPC: ${errMsg}`);
-                    }
-                }
-            }
-
+            // 2. Fetch messages from Microsoft Graph API directly from the browser (fully allowed by Microsoft CORS policies with Bearer token)
             let msgUrl = "https://graph.microsoft.com/v1.0/me/messages?$top=15";
-            if (!targetRefreshToken && configFlow === 'client_credentials') {
+            if (!hasRefreshToken && configFlow === 'client_credentials') {
                 msgUrl = `https://graph.microsoft.com/v1.0/users/${emailAddr}/messages?$top=15`;
             }
 
@@ -1746,10 +1641,8 @@
                 };
             });
 
+            // 3. Save latest email details back to Django database
             const savePayload = {};
-            if (newRefreshToken && newRefreshToken !== targetRefreshToken) {
-                savePayload.refresh_token = newRefreshToken;
-            }
             if (parsedEmails.length > 0) {
                 savePayload.latest_email = parsedEmails[0];
             }

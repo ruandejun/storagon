@@ -554,6 +554,24 @@ class AccountsEmailsViewSet(viewsets.ModelViewSet):
             'email_data': serializer.data
         })
 
+    @action(detail=True, methods=['get'], url_path='get-access-token')
+    def get_access_token(self, request, pk=None):
+        email_obj = self.get_object()
+        res = get_microsoft_access_token_helper(email_obj)
+        if res.get('success'):
+            return Response({
+                'success': True,
+                'access_token': res.get('access_token'),
+                'email': email_obj.email,
+                'flow': get_config('microsoft_graph_flow', 'ropc').strip(),
+                'has_refresh_token': bool(email_obj.refresh_token)
+            })
+        else:
+            return Response({
+                'success': False,
+                'message': res.get('message', 'Không thể lấy access token.')
+            }, status=400)
+
     @action(detail=False, methods=['get'], url_path='get-unused-email')
     def get_unused_email(self, request):
         type_val = request.query_params.get('type', '').strip().lower()
@@ -864,6 +882,121 @@ def update_email_latest_stats(email_obj, latest_email):
     email_obj.latest_content = f"{subject} - {snippet}" if subject and snippet else (subject or snippet)
     email_obj.latest_code = code
     email_obj.save(update_fields=['latest_from', 'latest_time', 'latest_content', 'latest_code'])
+
+
+def get_microsoft_access_token_helper(email_obj):
+    from django.core.cache import cache
+    import requests
+    
+    # 1. Check cache first
+    cache_key = f"ms_token_{email_obj.id}"
+    cached_token = cache.get(cache_key)
+    if cached_token:
+        return {'success': True, 'access_token': cached_token}
+        
+    email_addr = email_obj.email
+    password = email_obj.password
+    refresh_token = email_obj.refresh_token
+    client_id = email_obj.client_id
+    
+    config_client_id = get_config('microsoft_graph_client_id', '').strip()
+    config_client_secret = get_config('microsoft_graph_client_secret', '').strip()
+    config_tenant_id = get_config('microsoft_graph_tenant_id', 'common').strip()
+    config_flow = get_config('microsoft_graph_flow', 'ropc').strip()
+
+    target_refresh_token = refresh_token
+    target_client_id = client_id or config_client_id or "9e5f94bc-e8a4-4e73-b8be-63364c29d753"
+
+    access_token = None
+    expires_in = 3000 # default 50 mins cache
+
+    if target_refresh_token:
+        # OAuth2 Refresh Token Flow
+        try:
+            token_url = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
+            res = requests.post(token_url, data={
+                'grant_type': 'refresh_token',
+                'client_id': target_client_id,
+                'refresh_token': target_refresh_token
+            }, timeout=10)
+            
+            if res.status_code == 200:
+                res_json = res.json()
+                access_token = res_json.get('access_token')
+                new_refresh_token = res_json.get('refresh_token')
+                expires_in = int(res_json.get('expires_in', 3000))
+                
+                if new_refresh_token and new_refresh_token != email_obj.refresh_token:
+                    email_obj.refresh_token = new_refresh_token
+                    email_obj.save(update_fields=['refresh_token'])
+            else:
+                try:
+                    err_msg = res.json().get("error_description", res.text)
+                except Exception:
+                    err_msg = res.text
+                return {'success': False, 'message': f'Lỗi OAuth Refresh: {err_msg}'}
+        except Exception as e:
+            return {'success': False, 'message': f'Lỗi kết nối OAuth Refresh: {str(e)}'}
+
+    else:
+        # ROPC or Client Credentials
+        if config_flow == 'client_credentials':
+            if not config_client_id or not config_client_secret:
+                return {'success': False, 'message': 'Thiếu Client ID/Secret trong cấu hình App-only.'}
+            try:
+                token_url = f"https://login.microsoftonline.com/{config_tenant_id}/oauth2/v2.0/token"
+                res = requests.post(token_url, data={
+                    'grant_type': 'client_credentials',
+                    'client_id': config_client_id,
+                    'client_secret': config_client_secret,
+                    'scope': 'https://graph.microsoft.com/.default'
+                }, timeout=10)
+                if res.status_code == 200:
+                    res_json = res.json()
+                    access_token = res_json.get('access_token')
+                    expires_in = int(res_json.get('expires_in', 3000))
+                else:
+                    return {'success': False, 'message': f'Lỗi lấy App Token: {res.text}'}
+            except Exception as e:
+                return {'success': False, 'message': f'Lỗi kết nối Graph API (App): {str(e)}'}
+        else:
+            # ROPC (password flow)
+            if not target_client_id:
+                return {'success': False, 'message': 'Thiếu Client ID cho ROPC.'}
+            if not password:
+                return {'success': False, 'message': 'Mật khẩu email trống.'}
+            try:
+                token_url = f"https://login.microsoftonline.com/{config_tenant_id}/oauth2/v2.0/token"
+                payload = {
+                    'grant_type': 'password',
+                    'client_id': target_client_id,
+                    'username': email_addr,
+                    'password': password,
+                    'scope': 'https://graph.microsoft.com/Mail.Read'
+                }
+                if config_client_secret:
+                    payload['client_secret'] = config_client_secret
+                res = requests.post(token_url, data=payload, timeout=10)
+                if res.status_code == 200:
+                    res_json = res.json()
+                    access_token = res_json.get('access_token')
+                    expires_in = int(res_json.get('expires_in', 3000))
+                else:
+                    try:
+                        err_msg = res.json().get("error_description", res.text)
+                    except Exception:
+                        err_msg = res.text
+                    return {'success': False, 'message': f'Lỗi ROPC: {err_msg}'}
+            except Exception as e:
+                return {'success': False, 'message': f'Lỗi kết nối ROPC: {str(e)}'}
+
+    if access_token:
+        # Cache for a slightly shorter duration than expiry (minimum 60s)
+        cache_duration = max(60, expires_in - 300)
+        cache.set(cache_key, access_token, cache_duration)
+        return {'success': True, 'access_token': access_token}
+        
+    return {'success': False, 'message': 'Không thể lấy access token.'}
 
 
 def read_single_mailbox_helper(email_obj, user):

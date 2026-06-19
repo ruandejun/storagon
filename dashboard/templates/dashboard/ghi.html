@@ -1348,23 +1348,9 @@
                             <label class="form-label">2FA Secret Key</label>
                             <div style="display: flex; gap: 4px; align-items: center;">
                                 <input type="text" id="createdAcc2Fa" class="form-input" readonly style="font-family: monospace; flex: 1; height: 36px; font-size: 13px;">
-                                <button class="btn btn-primary" onclick="copyEmailField('createdAcc2Fa')" style="padding: 0 10px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 13px;" title="Copy">📋</button>
+                                <button class="btn btn-primary" id="btnGetCreatedAccOtp" onclick="fetchCreatedAccOtp()" style="padding: 0 10px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 13px;" title="Lấy mã OTP" type="button">🔑</button>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- OTP Code Generation section (Single Line) -->
-                    <div style="margin-top: 10px; border-top: 1px dashed var(--border-color); padding-top: 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-                        <div style="display: flex; align-items: center; gap: 6px;">
-                            <span class="form-label" style="margin: 0; font-size: 13px; font-weight: 600; white-space: nowrap;">Mã OTP:</span>
-                            <span id="createdAccOtpValue" style="font-family: monospace; font-size: 16px; font-weight: bold; color: var(--otp-text); letter-spacing: 1px;">------</span>
-                            <span id="createdAccOtpLoader" style="display: none; align-items: center; vertical-align: middle;">
-                                <span style="display: inline-block; width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.1); border-top-color: var(--accent-glow); border-radius: 50%; animation: spin 1s linear infinite; vertical-align: middle;"></span>
-                            </span>
-                        </div>
-                        <div style="display: flex; gap: 4px;">
-                            <button class="btn btn-primary" id="btnGetCreatedAccOtp" onclick="fetchCreatedAccOtp()" style="padding: 0 10px; font-size: 12px; height: 30px; display: flex; align-items: center; justify-content: center; gap: 4px;">🔑 Lấy OTP</button>
-                            <button class="btn btn-success" id="btnCopyCreatedAccOtp" onclick="copyCreatedAccOtpValue()" style="padding: 0 10px; font-size: 12px; height: 30px; display: none; align-items: center; justify-content: center;">📋 Copy</button>
+                            <div id="createdAccOtpDisplayBadge" style="display: none; font-size: 13px; font-weight: bold; color: var(--otp-text); margin-top: 4px; background: var(--otp-bg); border: 1px solid var(--otp-border); padding: 4px 8px; border-radius: 4px; text-align: center; cursor: pointer;" onclick="copyCreatedAccOtpBadge()"></div>
                         </div>
                     </div>
 
@@ -2344,6 +2330,9 @@
             const otpDisplay2Fa = document.getElementById('emailGetAcc2FaOtpDisplay');
             if (otpDisplay2Fa) { otpDisplay2Fa.style.display = 'none'; otpDisplay2Fa.innerHTML = ''; }
 
+            const otpDisplayBadge = document.getElementById('createdAccOtpDisplayBadge');
+            if (otpDisplayBadge) { otpDisplayBadge.style.display = 'none'; otpDisplayBadge.innerHTML = ''; }
+
             document.getElementById('statusUpdateSection').style.display = 'none';
             document.getElementById('modalStatusSelect').value = '';
             const otpDisplayGet = document.getElementById('emailGetOtpDisplay');
@@ -2427,6 +2416,9 @@
             const otpDisplay2Fa = document.getElementById('emailGetAcc2FaOtpDisplay');
             if (otpDisplay2Fa) { otpDisplay2Fa.style.display = 'none'; otpDisplay2Fa.innerHTML = ''; }
 
+            const otpDisplayBadge = document.getElementById('createdAccOtpDisplayBadge');
+            if (otpDisplayBadge) { otpDisplayBadge.style.display = 'none'; otpDisplayBadge.innerHTML = ''; }
+
             document.getElementById('emailGetModal').style.display = 'none';
         }
 
@@ -2451,6 +2443,9 @@
             
             const otpDisplay2Fa = document.getElementById('emailGetAcc2FaOtpDisplay');
             if (otpDisplay2Fa) { otpDisplay2Fa.style.display = 'none'; otpDisplay2Fa.innerHTML = ''; }
+
+            const otpDisplayBadge = document.getElementById('createdAccOtpDisplayBadge');
+            if (otpDisplayBadge) { otpDisplayBadge.style.display = 'none'; otpDisplayBadge.innerHTML = ''; }
 
             // Reset labels border and background
             [lblUncreated, lblCreated, lblAddress].forEach(lbl => {
@@ -2477,8 +2472,8 @@
                     lblCreated.style.borderColor = 'var(--primary)';
                     lblCreated.style.background = 'rgba(99, 102, 241, 0.1)';
                 }
-                document.getElementById('createdAccOtpValue').textContent = '------';
-                document.getElementById('btnCopyCreatedAccOtp').style.display = 'none';
+                const badge = document.getElementById('createdAccOtpDisplayBadge');
+                if (badge) { badge.style.display = 'none'; badge.textContent = ''; }
             } else if (type === 'address') {
                 if (inputsWrapper) inputsWrapper.style.display = 'none';
                 if (lblAddress) {
@@ -2543,8 +2538,8 @@
                     document.getElementById('modalStatusSelect').value = '';
                     
                     // Reset OTP display
-                    document.getElementById('createdAccOtpValue').textContent = '------';
-                    document.getElementById('btnCopyCreatedAccOtp').style.display = 'none';
+                    const badge = document.getElementById('createdAccOtpDisplayBadge');
+                    if (badge) { badge.style.display = 'none'; badge.textContent = ''; }
                     
                     // Handle Inbox section
                     const inboxSection = document.getElementById('createdAccInboxSection');
@@ -2578,14 +2573,16 @@
             if (!id) return;
 
             const btn = document.getElementById('btnGetCreatedAccOtp');
-            const loader = document.getElementById('createdAccOtpLoader');
-            const otpVal = document.getElementById('createdAccOtpValue');
-            const btnCopy = document.getElementById('btnCopyCreatedAccOtp');
+            const displayBox = document.getElementById('createdAccOtpDisplayBadge');
             
-            btn.disabled = true;
-            if (loader) loader.style.display = 'inline-block';
-            otpVal.textContent = '------';
-            btnCopy.style.display = 'none';
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = '⏳';
+            }
+            if (displayBox) {
+                displayBox.style.display = 'none';
+                displayBox.textContent = '';
+            }
 
             try {
                 const resp = await fetch(`/dashboard/api/accounts/${id}/get-2fa/`);
@@ -2596,8 +2593,15 @@
                 const data = await resp.json();
                 
                 if (resp.ok && data.success && data.token) {
-                    otpVal.textContent = data.token;
-                    btnCopy.style.display = 'inline-block';
+                    if (displayBox) {
+                        displayBox.textContent = `Mã OTP: ${data.token} (Nhấp để copy)`;
+                        displayBox.style.display = 'block';
+                    }
+                    navigator.clipboard.writeText(data.token).then(() => {
+                        showToast(`✅ OTP: ${data.token} (Đã copy vào bộ nhớ tạm)`);
+                    }).catch(() => {
+                        showToast(`OTP: ${data.token}`);
+                    });
                 } else {
                     showToast(data.message || 'Không thể lấy mã OTP.');
                 }
@@ -2605,18 +2609,21 @@
                 console.error(err);
                 showToast('Lỗi kết nối khi lấy mã OTP.');
             } finally {
-                btn.disabled = false;
-                if (loader) loader.style.display = 'none';
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = '🔑';
+                }
             }
         }
 
-        function copyCreatedAccOtpValue() {
-            const val = document.getElementById('createdAccOtpValue').textContent;
-            if (val && val !== '------') {
-                navigator.clipboard.writeText(val).then(() => {
-                    showToast('Đã sao chép mã OTP: ' + val);
-                }).catch(err => {
-                    showToast('Lỗi copy: ' + err);
+        function copyCreatedAccOtpBadge() {
+            const box = document.getElementById('createdAccOtpDisplayBadge');
+            if (!box) return;
+            const match = box.textContent.match(/Mã OTP:\s*([0-9]{6})/);
+            if (match && match[1]) {
+                const code = match[1];
+                navigator.clipboard.writeText(code).then(() => {
+                    showToast(`✅ Đã copy mã OTP: ${code}`);
                 });
             }
         }

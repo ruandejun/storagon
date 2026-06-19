@@ -1275,11 +1275,18 @@
                         <div class="email-get-grid-2col">
                             <div class="form-group" style="margin-bottom: 8px;">
                                 <label class="form-label" for="emailGetAccPassword">Mật khẩu mới</label>
-                                <input type="text" id="emailGetAccPassword" class="form-input" placeholder="Mật khẩu tạo..." style="height: 36px; font-size: 13px;">
+                                <div style="display: flex; gap: 4px; align-items: center;">
+                                    <input type="text" id="emailGetAccPassword" class="form-input" placeholder="Mật khẩu tạo..." style="flex: 1; height: 36px; font-size: 13px;">
+                                    <button class="btn btn-secondary" onclick="document.getElementById('emailGetAccPassword').value = 'Zxcv@123'" style="padding: 0 10px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 13px;" title="Mật khẩu mặc định" type="button">🔒</button>
+                                </div>
                             </div>
                             <div class="form-group" style="margin-bottom: 8px;">
                                 <label class="form-label" for="emailGetAcc2Fa">Khóa 2FA</label>
-                                <input type="text" id="emailGetAcc2Fa" class="form-input" placeholder="2FA Secret..." style="height: 36px; font-size: 13px;">
+                                <div style="display: flex; gap: 4px; align-items: center;">
+                                    <input type="text" id="emailGetAcc2Fa" class="form-input" placeholder="2FA Secret..." style="flex: 1; height: 36px; font-size: 13px;">
+                                    <button class="btn btn-primary" onclick="getOtpForUncreatedAcc()" style="padding: 0 10px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 12px; white-space: nowrap;" title="Lấy OTP" type="button">Mã OTP</button>
+                                </div>
+                                <div id="emailGetAcc2FaOtpDisplay" style="display: none; font-size: 13px; font-weight: bold; color: var(--otp-text); margin-top: 4px; background: var(--otp-bg); border: 1px solid var(--otp-border); padding: 4px 8px; border-radius: 4px; text-align: center; cursor: pointer;" onclick="copyEmailGetAcc2FaOtp()"></div>
                             </div>
                         </div>
                         <button class="btn btn-primary" id="btnSaveCreatedAccount" onclick="saveCreatedAccountToSystem()" style="width: 100%; height: 36px; margin-top: 4px; background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); display: flex; align-items: center; justify-content: center; font-size: 13px; gap: 6px;">💾 Lưu tài khoản</button>
@@ -2144,6 +2151,42 @@
             });
         }
 
+        // --- NEW OTP FUNCTIONS FOR UNCREATED SECTION ---
+        async function getOtpForUncreatedAcc() {
+            const secret = document.getElementById('emailGetAcc2Fa').value.trim();
+            if (!secret) {
+                showToast('⚠️ Vui lòng nhập hoặc dán Khóa 2FA trước!');
+                return;
+            }
+            const code = await calculateTotp(secret);
+            if (!code) {
+                showToast('❌ Khóa 2FA không hợp lệ!');
+                return;
+            }
+            const displayBox = document.getElementById('emailGetAcc2FaOtpDisplay');
+            if (displayBox) {
+                displayBox.textContent = `Mã OTP: ${code} (Nhấp để copy)`;
+                displayBox.style.display = 'block';
+            }
+            navigator.clipboard.writeText(code).then(() => {
+                showToast(`✅ OTP: ${code} (Đã copy vào bộ nhớ tạm)`);
+            }).catch(() => {
+                showToast(`OTP: ${code}`);
+            });
+        }
+
+        function copyEmailGetAcc2FaOtp() {
+            const box = document.getElementById('emailGetAcc2FaOtpDisplay');
+            if (!box) return;
+            const match = box.textContent.match(/Mã OTP:\s*([0-9]{6})/);
+            if (match && match[1]) {
+                const code = match[1];
+                navigator.clipboard.writeText(code).then(() => {
+                    showToast(`✅ Đã copy mã OTP: ${code}`);
+                });
+            }
+        }
+
         // 10. 2FA AUTHENTICATOR
         function base32ToBytes(base32) {
             const base32chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
@@ -2298,6 +2341,9 @@
             document.getElementById('emailGetAccPassword').value = '';
             document.getElementById('emailGetAcc2Fa').value = '';
             
+            const otpDisplay2Fa = document.getElementById('emailGetAcc2FaOtpDisplay');
+            if (otpDisplay2Fa) { otpDisplay2Fa.style.display = 'none'; otpDisplay2Fa.innerHTML = ''; }
+
             document.getElementById('statusUpdateSection').style.display = 'none';
             document.getElementById('modalStatusSelect').value = '';
             const otpDisplayGet = document.getElementById('emailGetOtpDisplay');
@@ -2378,6 +2424,9 @@
             document.getElementById('statusUpdateSection').style.display = 'none';
             statusSelect.value = '';
             
+            const otpDisplay2Fa = document.getElementById('emailGetAcc2FaOtpDisplay');
+            if (otpDisplay2Fa) { otpDisplay2Fa.style.display = 'none'; otpDisplay2Fa.innerHTML = ''; }
+
             document.getElementById('emailGetModal').style.display = 'none';
         }
 
@@ -2399,6 +2448,9 @@
             const otpDisplayCreated = document.getElementById('createdAccOtpDisplay');
             if (otpDisplayGet) { otpDisplayGet.style.display = 'none'; otpDisplayGet.innerHTML = ''; }
             if (otpDisplayCreated) { otpDisplayCreated.style.display = 'none'; otpDisplayCreated.innerHTML = ''; }
+            
+            const otpDisplay2Fa = document.getElementById('emailGetAcc2FaOtpDisplay');
+            if (otpDisplay2Fa) { otpDisplay2Fa.style.display = 'none'; otpDisplay2Fa.innerHTML = ''; }
 
             // Reset labels border and background
             [lblUncreated, lblCreated, lblAddress].forEach(lbl => {

@@ -1014,9 +1014,9 @@
             </div>
             <!-- Login Dashboard / User Info -->
             {% if request.user.is_authenticated %}
-            <a href="/dashboard/" class="btn-tool btn-login" title="Vào trang quản trị ({{ request.user.username }})">
+            <button class="btn-tool btn-login" onclick="openUserInfoModal(event)" title="Xem thông tin và đăng xuất ({{ request.user.username }})">
                 👤 {{ request.user.username }}
-            </a>
+            </button>
             {% else %}
             <button class="btn-tool btn-login" onclick="openQuickLoginModal()" title="Đăng nhập nhanh">
                 🔑 Đăng nhập
@@ -1043,6 +1043,48 @@
             <span>Ghi chú tự động xóa sau 6 tháng nếu không bảo mật.</span>
         </div>
     </footer>
+
+    <!-- USER INFO / LOGOUT MODAL -->
+    <div class="modal-overlay" id="userInfoModal">
+        <div class="modal-box" style="max-width: 400px;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="margin: 0;">👤 Thông tin tài khoản</h3>
+                <button class="addr-close-btn" onclick="closeUserInfoModal()" style="background: transparent; border: none; color: var(--text-muted); font-size: 18px; cursor: pointer;">✕</button>
+            </div>
+            <div class="modal-body" style="padding: 10px 0;">
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                        <span style="color: var(--text-muted); font-size: 13px;">Tên đăng nhập:</span>
+                        <strong style="color: white; font-size: 13px;">{{ request.user.username }}</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                        <span style="color: var(--text-muted); font-size: 13px;">Email:</span>
+                        <strong style="color: white; font-size: 13px;">{{ request.user.email|default:"-" }}</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                        <span style="color: var(--text-muted); font-size: 13px;">Vai trò:</span>
+                        <strong style="color: white; font-size: 13px;">
+                            {% if request.user.is_superuser %}
+                            Quản trị viên cấp cao
+                            {% elif request.user.is_staff %}
+                            Quản trị viên
+                            {% else %}
+                            Thành viên
+                            {% endif %}
+                        </strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding-bottom: 8px;">
+                        <span style="color: var(--text-muted); font-size: 13px;">Ngày tham gia:</span>
+                        <strong style="color: white; font-size: 13px;">{{ request.user.date_joined|date:"d-m-Y" }}</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end; padding-top: 15px; border-top: 1px solid var(--border-color);">
+                <a href="/dashboard/" class="btn btn-primary" style="text-decoration: none; flex: 1; text-align: center; display: inline-flex; align-items: center; justify-content: center; height: 36px; font-size: 13px;">Vào quản trị</a>
+                <a href="/dashboard/logout/" class="btn btn-danger" style="text-decoration: none; flex: 1; text-align: center; display: inline-flex; align-items: center; justify-content: center; height: 36px; font-size: 13px; background-color: var(--danger-color, #dc2626); color: white;">Đăng xuất</a>
+            </div>
+        </div>
+    </div>
 
     <!-- SET PASSWORD MODAL -->
     <div class="modal-overlay" id="lockModal">
@@ -1186,6 +1228,10 @@
                         <label style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 10px; cursor: pointer; text-align: center; font-size: 13px; transition: all 0.3s;" id="lblCreated">
                             <input type="radio" name="infoSourceType" value="created" onchange="toggleInfoSourceType('created')" style="accent-color: var(--primary); cursor: pointer;">
                             Đã tạo (Lấy Acc Hoạt động)
+                        </label>
+                        <label style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 10px; cursor: pointer; text-align: center; font-size: 13px; transition: all 0.3s;" id="lblAddress">
+                            <input type="radio" name="infoSourceType" value="address" onchange="toggleInfoSourceType('address')" style="accent-color: var(--primary); cursor: pointer;">
+                            🇺🇸 Địa chỉ ngẫu nhiên
                         </label>
                     </div>
                 </div>
@@ -1338,6 +1384,63 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Result Section (Địa chỉ ngẫu nhiên) -->
+                <div id="emailGetResultAddress" style="display: none; margin-top: 12px; border-top: 1px solid var(--border-color); padding-top: 10px;">
+                    <div id="tabAddressFields">
+                        <div class="addr-field" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding: 8px 0;">
+                            <div class="addr-field-info">
+                                <div class="addr-field-label" style="font-size: 11px; color: var(--text-muted);">Họ và tên (Full Name)</div>
+                                <div class="addr-field-value" id="tabAddrName" style="font-weight: 600; color: white;">—</div>
+                            </div>
+                            <button class="addr-copy-btn" onclick="copyTabAddrField('tabAddrName', this)" style="padding: 4px 8px; font-size: 11px; height: 26px;">📋 Copy</button>
+                        </div>
+                        <div class="addr-field" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding: 8px 0;">
+                            <div class="addr-field-info">
+                                <div class="addr-field-label" style="font-size: 11px; color: var(--text-muted);">Địa chỉ (Address)</div>
+                                <div class="addr-field-value" id="tabAddrAddress" style="font-weight: 600; color: white;">—</div>
+                            </div>
+                            <button class="addr-copy-btn" onclick="copyTabAddrField('tabAddrAddress', this)" style="padding: 4px 8px; font-size: 11px; height: 26px;">📋 Copy</button>
+                        </div>
+                        <div class="addr-field" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding: 8px 0;">
+                            <div class="addr-field-info">
+                                <div class="addr-field-label" style="font-size: 11px; color: var(--text-muted);">Thành phố (City)</div>
+                                <div class="addr-field-value" id="tabAddrCity" style="font-weight: 600; color: white;">—</div>
+                            </div>
+                            <button class="addr-copy-btn" onclick="copyTabAddrField('tabAddrCity', this)" style="padding: 4px 8px; font-size: 11px; height: 26px;">📋 Copy</button>
+                        </div>
+                        <div class="addr-field" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding: 8px 0;">
+                            <div class="addr-field-info">
+                                <div class="addr-field-label" style="font-size: 11px; color: var(--text-muted);">Bang (State)</div>
+                                <div class="addr-field-value" id="tabAddrState" style="font-weight: 600; color: white;">—</div>
+                            </div>
+                            <button class="addr-copy-btn" onclick="copyTabAddrField('tabAddrState', this)" style="padding: 4px 8px; font-size: 11px; height: 26px;">📋 Copy</button>
+                        </div>
+                        <div class="addr-field" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding: 8px 0;">
+                            <div class="addr-field-info">
+                                <div class="addr-field-label" style="font-size: 11px; color: var(--text-muted);">Mã bưu chính (Zip Code)</div>
+                                <div class="addr-field-value" id="tabAddrZip" style="font-weight: 600; color: white;">—</div>
+                            </div>
+                            <button class="addr-copy-btn" onclick="copyTabAddrField('tabAddrZip', this)" style="padding: 4px 8px; font-size: 11px; height: 26px;">📋 Copy</button>
+                        </div>
+                        <div class="addr-field" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding: 8px 0;">
+                            <div class="addr-field-info">
+                                <div class="addr-field-label" style="font-size: 11px; color: var(--text-muted);">Số điện thoại (Phone)</div>
+                                <div class="addr-field-value" id="tabAddrPhone" style="font-weight: 600; color: white;">—</div>
+                            </div>
+                            <button class="addr-copy-btn" onclick="copyTabAddrField('tabAddrPhone', this)" style="padding: 4px 8px; font-size: 11px; height: 26px;">📋 Copy</button>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px; margin-top: 12px;">
+                        <button class="btn btn-primary" style="flex: 1; height: 36px; display: flex; align-items: center; justify-content: center; gap: 4px;" onclick="generateTabAddress()">
+                            🎲 Tạo địa chỉ mới
+                        </button>
+                        <button class="btn btn-secondary" style="flex: 1; height: 36px; display: flex; align-items: center; justify-content: center; gap: 4px;" onclick="copyAllTabAddress()">
+                            📑 Copy toàn bộ
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Status Update Selection on Close -->
                 <div id="statusUpdateSection" style="display: none; margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px;">
                     <label class="form-label" for="modalStatusSelect" style="margin-bottom: 6px; display: block; font-weight: 600; font-size: 13px;">Chọn trạng thái cuối cùng (Bắt buộc trước khi đóng)</label>
@@ -1877,6 +1980,16 @@
             document.getElementById('addressModal').style.display = 'none';
         }
 
+        // --- NEW USER INFO MODAL FUNCTIONS ---
+        function openUserInfoModal(event) {
+            if (event) event.preventDefault();
+            document.getElementById('userInfoModal').style.display = 'flex';
+        }
+
+        function closeUserInfoModal() {
+            document.getElementById('userInfoModal').style.display = 'none';
+        }
+
         function copyAddrField(fieldId, btn) {
             const text = document.getElementById(fieldId).textContent;
             if (text === '—') return;
@@ -1942,6 +2055,94 @@
         document.getElementById('addressModal').addEventListener('click', function(e) {
             if (e.target === this) closeAddressModal();
         });
+
+        document.getElementById('userInfoModal').addEventListener('click', function(e) {
+            if (e.target === this) closeUserInfoModal();
+        });
+
+        // --- NEW TAB ADDRESS FUNCTIONS ---
+        function generateTabAddress() {
+            const addr = randItem(US_ADDRESSES);
+            const firstName = randItem(US_FIRST_NAMES);
+            const lastName = randItem(US_LAST_NAMES);
+            const fullName = `${firstName} ${lastName}`;
+            const phone = generateUSPhone();
+
+            document.getElementById('tabAddrName').textContent = fullName;
+            document.getElementById('tabAddrAddress').textContent = addr.address;
+            document.getElementById('tabAddrCity').textContent = addr.city;
+            document.getElementById('tabAddrState').textContent = US_STATE_NAMES[addr.state] || addr.state;
+            document.getElementById('tabAddrZip').textContent = addr.zip;
+            document.getElementById('tabAddrPhone').textContent = phone;
+
+            // Reset copy button states in the tab
+            document.querySelectorAll('#tabAddressFields .addr-copy-btn').forEach(btn => {
+                btn.classList.remove('copied');
+                btn.innerHTML = '📋 Copy';
+            });
+
+            showToast('🇺🇸 Đã tạo địa chỉ mới!');
+        }
+
+        function copyTabAddrField(fieldId, btn) {
+            const text = document.getElementById(fieldId).textContent;
+            if (text === '—') return;
+
+            navigator.clipboard.writeText(text).then(() => {
+                btn.classList.add('copied');
+                btn.innerHTML = '✅ Đã copy';
+                showToast(`Đã copy: ${text}`);
+
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    btn.innerHTML = '📋 Copy';
+                }, 2000);
+            }).catch(() => {
+                const tempInput = document.createElement('input');
+                tempInput.value = text;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+
+                btn.classList.add('copied');
+                btn.innerHTML = '✅ Đã copy';
+                showToast(`Đã copy: ${text}`);
+
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    btn.innerHTML = '📋 Copy';
+                }, 2000);
+            });
+        }
+
+        function copyAllTabAddress() {
+            const name = document.getElementById('tabAddrName').textContent;
+            const address = document.getElementById('tabAddrAddress').textContent;
+            const city = document.getElementById('tabAddrCity').textContent;
+            const state = document.getElementById('tabAddrState').textContent;
+            const zip = document.getElementById('tabAddrZip').textContent;
+            const phone = document.getElementById('tabAddrPhone').textContent;
+
+            if (name === '—') {
+                showToast('Vui lòng tạo địa chỉ trước!');
+                return;
+            }
+
+            const fullText = `${name}\n${address}\n${city}, ${state} ${zip}\nPhone: ${phone}`;
+
+            navigator.clipboard.writeText(fullText).then(() => {
+                showToast('📑 Đã copy toàn bộ địa chỉ!');
+            }).catch(() => {
+                const tempInput = document.createElement('textarea');
+                tempInput.value = fullText;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+                showToast('📑 Đã copy toàn bộ địa chỉ!');
+            });
+        }
 
         // 10. 2FA AUTHENTICATOR
         function base32ToBytes(base32) {
@@ -2184,41 +2385,60 @@
             const btn = document.getElementById('btnGetUnusedEmail');
             const resultUncreated = document.getElementById('emailGetResult');
             const resultCreated = document.getElementById('emailGetResultCreated');
+            const resultAddress = document.getElementById('emailGetResultAddress');
             const lblUncreated = document.getElementById('lblUncreated');
             const lblCreated = document.getElementById('lblCreated');
-            
+            const lblAddress = document.getElementById('lblAddress');
+
             resultUncreated.style.display = 'none';
             resultCreated.style.display = 'none';
+            if (resultAddress) resultAddress.style.display = 'none';
             document.getElementById('statusUpdateSection').style.display = 'none';
             document.getElementById('modalStatusSelect').value = '';
             const otpDisplayGet = document.getElementById('emailGetOtpDisplay');
             const otpDisplayCreated = document.getElementById('createdAccOtpDisplay');
             if (otpDisplayGet) { otpDisplayGet.style.display = 'none'; otpDisplayGet.innerHTML = ''; }
             if (otpDisplayCreated) { otpDisplayCreated.style.display = 'none'; otpDisplayCreated.innerHTML = ''; }
-            
+
+            // Reset labels border and background
+            [lblUncreated, lblCreated, lblAddress].forEach(lbl => {
+                if (lbl) {
+                    lbl.style.borderColor = 'var(--border-color)';
+                    lbl.style.background = 'rgba(255, 255, 255, 0.02)';
+                }
+            });
+
+            // Target the Dropdown type & Get button wrapper
+            const inputsWrapper = document.getElementById('emailSelectType').closest('div').parentElement;
+
             if (type === 'uncreated') {
+                if (inputsWrapper) inputsWrapper.style.display = 'flex';
                 if (btn) btn.innerHTML = '✉️ Lấy Email';
                 if (lblUncreated) {
                     lblUncreated.style.borderColor = 'var(--primary)';
                     lblUncreated.style.background = 'rgba(99, 102, 241, 0.1)';
                 }
-                if (lblCreated) {
-                    lblCreated.style.borderColor = 'var(--border-color)';
-                    lblCreated.style.background = 'rgba(255, 255, 255, 0.02)';
-                }
-            } else {
+            } else if (type === 'created') {
+                if (inputsWrapper) inputsWrapper.style.display = 'flex';
                 if (btn) btn.innerHTML = '🔑 Lấy Info';
                 if (lblCreated) {
                     lblCreated.style.borderColor = 'var(--primary)';
                     lblCreated.style.background = 'rgba(99, 102, 241, 0.1)';
                 }
-                if (lblUncreated) {
-                    lblUncreated.style.borderColor = 'var(--border-color)';
-                    lblUncreated.style.background = 'rgba(255, 255, 255, 0.02)';
-                }
-                
                 document.getElementById('createdAccOtpValue').textContent = '------';
                 document.getElementById('btnCopyCreatedAccOtp').style.display = 'none';
+            } else if (type === 'address') {
+                if (inputsWrapper) inputsWrapper.style.display = 'none';
+                if (lblAddress) {
+                    lblAddress.style.borderColor = 'var(--primary)';
+                    lblAddress.style.background = 'rgba(99, 102, 241, 0.1)';
+                }
+                if (resultAddress) {
+                    resultAddress.style.display = 'block';
+                    if (document.getElementById('tabAddrName').textContent === '—') {
+                        generateTabAddress();
+                    }
+                }
             }
         }
 

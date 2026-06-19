@@ -1509,6 +1509,7 @@
                     <button class="btn btn-primary" id="cardAssignBtn" onclick="openAssignOwnerModal()" disabled>Sở hữu</button>
                     <button class="btn btn-primary" id="cardEditBtn" onclick="openEditCardModal()" disabled>Sửa</button>
                     <button class="btn btn-danger" id="cardDeleteBtn" onclick="deleteSelectedCards()" disabled>Xóa</button>
+                    <button class="btn btn-warning" id="cardBulkStatusBtn" onclick="openBulkCardStatusModal()" disabled>Đổi trạng thái</button>
                 </div>
             </div>
 
@@ -1576,6 +1577,7 @@
                     <button class="btn btn-primary" onclick="openAddUserModal()">Thêm User</button>
                     <button class="btn btn-primary" id="userEditBtn" onclick="openEditUserModal()" disabled>Sửa</button>
                     <button class="btn btn-danger" id="userDeleteBtn" onclick="deleteSelectedUsers()" disabled>Xóa</button>
+                    <button class="btn btn-warning" id="userBulkStatusBtn" onclick="openBulkUserStatusModal()" disabled>Đổi trạng thái</button>
                 </div>
             </div>
 
@@ -1627,6 +1629,7 @@
                 <div class="action-buttons">
                     <button class="btn btn-secondary" onclick="loadProfiles(1)">Làm mới</button>
                     <button class="btn btn-danger" id="profileDeleteBtn" onclick="deleteSelectedProfiles()" disabled>Xóa</button>
+                    <button class="btn btn-warning" id="profileBulkStatusBtn" onclick="openBulkProfileStatusModal()" disabled>Đổi trạng thái</button>
                 </div>
             </div>
 
@@ -1743,6 +1746,7 @@
                     <button class="btn btn-primary" onclick="openAddEmailModal()">Thêm Email</button>
                     <button class="btn btn-primary" id="emailEditBtn" onclick="openEditEmailModal()" disabled>Sửa</button>
                     <button class="btn btn-danger" id="emailDeleteBtn" onclick="deleteSelectedEmails()" disabled>Xóa</button>
+                    <button class="btn btn-warning" id="emailBulkStatusBtn" onclick="openBulkEmailStatusModal()" disabled>Đổi trạng thái</button>
                     <button class="btn btn-warning" id="emailBulkReadBtn" onclick="openBulkReadMailModal()">Đọc mail số lượng lớn</button>
                     <button class="btn btn-secondary" onclick="openGraphConfigModal()">Cấu hình Graph API</button>
                 </div>
@@ -1868,6 +1872,7 @@
                     <button class="btn btn-primary" onclick="openModal('addHwidModal')">➕ Thêm HWID</button>
                     <button class="btn btn-secondary" onclick="loadHwids(1)">🔄 Làm mới</button>
                     <button class="btn btn-danger" id="hwidDeleteBtn" onclick="deleteSelectedHwids()" disabled>🗑️ Xóa</button>
+                    <button class="btn btn-warning" id="hwidBulkStatusBtn" onclick="openBulkHwidStatusModal()" disabled>Đổi trạng thái</button>
                 </div>
             </div>
 
@@ -2646,6 +2651,133 @@
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeModal('bulkStatusModal')">Hủy</button>
                 <button class="btn btn-primary" onclick="saveBulkStatus()">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BULK CARD STATUS MODAL -->
+    <div class="modal-overlay" id="bulkCardStatusModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Đổi Trạng Thái Thẻ Số Lượng Lớn</h3>
+                <button class="modal-close" onclick="closeModal('bulkCardStatusModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Chọn trạng thái mới</label>
+                    <select class="filter-select" id="bulkCardStatusSelect" style="width: 100%;">
+                        <option value="Chưa sử dụng">Chưa sử dụng</option>
+                        <option value="Đang sử dụng">Đang sử dụng</option>
+                        <option value="Thẻ chết">Thẻ chết</option>
+                        <option value="Thẻ sống">Thẻ sống</option>
+                        <option value="Thẻ tốt">Thẻ tốt</option>
+                        <option value="Thẻ lỗi">Thẻ lỗi</option>
+                        <option value="Sub OK">Sub OK</option>
+                        <option value="Sub lỗi">Sub lỗi</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('bulkCardStatusModal')">Hủy</button>
+                <button class="btn btn-primary" onclick="saveBulkCardStatus()">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BULK USER STATUS MODAL -->
+    <div class="modal-overlay" id="bulkUserStatusModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Đổi Trạng Thái User Số Lượng Lớn</h3>
+                <button class="modal-close" onclick="closeModal('bulkUserStatusModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Chọn trạng thái mới</label>
+                    <select class="filter-select" id="bulkUserStatusSelect" style="width: 100%;">
+                        <option value="true">Hoạt động (Active)</option>
+                        <option value="false">Vô hiệu hóa (Inactive)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('bulkUserStatusModal')">Hủy</button>
+                <button class="btn btn-primary" onclick="saveBulkUserStatus()">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BULK PROFILE STATUS MODAL -->
+    <div class="modal-overlay" id="bulkProfileStatusModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Đổi Trạng Thái Profile Số Lượng Lớn</h3>
+                <button class="modal-close" onclick="closeModal('bulkProfileStatusModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Chọn trạng thái mới</label>
+                    <select class="filter-select" id="bulkProfileStatusSelect" style="width: 100%;">
+                        <option value="0">Hoạt động</option>
+                        <option value="1">Cảnh báo</option>
+                        <option value="2">Khóa</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('bulkProfileStatusModal')">Hủy</button>
+                <button class="btn btn-primary" onclick="saveBulkProfileStatus()">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BULK EMAIL STATUS MODAL -->
+    <div class="modal-overlay" id="bulkEmailStatusModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Đổi Trạng Thái Email Số Lượng Lớn</h3>
+                <button class="modal-close" onclick="closeModal('bulkEmailStatusModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Chọn trạng thái mới</label>
+                    <select class="filter-select" id="bulkEmailStatusSelect" style="width: 100%;">
+                        <option value="0">Hoạt động (Active)</option>
+                        <option value="1">Chưa kích hoạt (Email Not Activated)</option>
+                        <option value="2">Bị khóa (Banned)</option>
+                        <option value="3">Tạm thời (Temporary)</option>
+                        <option value="4">Sub OK</option>
+                        <option value="5">Sub Lỗi</option>
+                        <option value="6">Đang sử dụng</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('bulkEmailStatusModal')">Hủy</button>
+                <button class="btn btn-primary" onclick="saveBulkEmailStatus()">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BULK HWID STATUS MODAL -->
+    <div class="modal-overlay" id="bulkHwidStatusModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Đổi Trạng Thái HWID Số Lượng Lớn</h3>
+                <button class="modal-close" onclick="closeModal('bulkHwidStatusModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Chọn trạng thái mới</label>
+                    <select class="filter-select" id="bulkHwidStatusSelect" style="width: 100%;">
+                        <option value="0">Hoạt động (Active)</option>
+                        <option value="1">Bị khóa / Chưa kích hoạt</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('bulkHwidStatusModal')">Hủy</button>
+                <button class="btn btn-primary" onclick="saveBulkHwidStatus()">Xác nhận</button>
             </div>
         </div>
     </div>
@@ -3639,10 +3771,12 @@
             const assignBtn = document.getElementById('cardAssignBtn');
             const editBtn = document.getElementById('cardEditBtn');
             const deleteBtn = document.getElementById('cardDeleteBtn');
+            const bulkStatusBtn = document.getElementById('cardBulkStatusBtn');
 
             if (assignBtn) assignBtn.disabled = (selectedCards.length === 0);
             editBtn.disabled = (selectedCards.length !== 1);
             deleteBtn.disabled = (selectedCards.length === 0);
+            if (bulkStatusBtn) bulkStatusBtn.disabled = (selectedCards.length === 0);
         }
 
         function changeCardsPage(dir) {
@@ -4475,7 +4609,10 @@
         }
 
         function updateProfileActionButtons() {
-            document.getElementById('profileDeleteBtn').disabled = selectedProfiles.length === 0;
+            const deleteBtn = document.getElementById('profileDeleteBtn');
+            const bulkStatusBtn = document.getElementById('profileBulkStatusBtn');
+            if (deleteBtn) deleteBtn.disabled = selectedProfiles.length === 0;
+            if (bulkStatusBtn) bulkStatusBtn.disabled = selectedProfiles.length === 0;
         }
 
         function changeProfilesPage(offset) {
@@ -5477,8 +5614,12 @@
         }
 
         function updateEmailActionButtons() {
-            document.getElementById('emailEditBtn').disabled = selectedEmails.length !== 1;
-            document.getElementById('emailDeleteBtn').disabled = selectedEmails.length === 0;
+            const editBtn = document.getElementById('emailEditBtn');
+            const deleteBtn = document.getElementById('emailDeleteBtn');
+            const bulkStatusBtn = document.getElementById('emailBulkStatusBtn');
+            if (editBtn) editBtn.disabled = selectedEmails.length !== 1;
+            if (deleteBtn) deleteBtn.disabled = selectedEmails.length === 0;
+            if (bulkStatusBtn) bulkStatusBtn.disabled = selectedEmails.length === 0;
         }
 
         function changeEmailsPage(offset) {
@@ -6208,6 +6349,216 @@
             }
         }
 
+        function openBulkCardStatusModal() {
+            if (selectedCards.length === 0) return;
+            openModal('bulkCardStatusModal');
+        }
+
+        async function saveBulkCardStatus() {
+            const status = document.getElementById('bulkCardStatusSelect').value;
+            if (selectedCards.length === 0) return;
+
+            try {
+                const response = await fetch('/dashboard/api/cards/bulk-status/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({
+                        card_ids: selectedCards,
+                        status: status
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    alert(data.message || 'Đã cập nhật trạng thái thành công!');
+                    closeModal('bulkCardStatusModal');
+                    selectedCards = [];
+                    document.getElementById('selectAllCards').checked = false;
+                    const chks = document.querySelectorAll('.card-row-chk');
+                    chks.forEach(chk => chk.checked = false);
+                    document.querySelectorAll('#cardsTableBody tr').forEach(tr => tr.classList.remove('row-selected'));
+                    updateCardActionButtons();
+                    loadCards(1);
+                } else {
+                    alert('Lỗi: ' + (data.message || 'Không thể cập nhật trạng thái.'));
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Lỗi kết nối hoặc hệ thống.');
+            }
+        }
+
+        function openBulkUserStatusModal() {
+            if (selectedUsers.length === 0) return;
+            openModal('bulkUserStatusModal');
+        }
+
+        async function saveBulkUserStatus() {
+            const status = document.getElementById('bulkUserStatusSelect').value;
+            if (selectedUsers.length === 0) return;
+
+            try {
+                const response = await fetch('/dashboard/api/users/bulk-status/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({
+                        ids: selectedUsers,
+                        status: status
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    alert(data.message || 'Đã cập nhật trạng thái thành công!');
+                    closeModal('bulkUserStatusModal');
+                    selectedUsers = [];
+                    document.getElementById('selectAllUsers').checked = false;
+                    const chks = document.querySelectorAll('.user-row-chk');
+                    chks.forEach(chk => chk.checked = false);
+                    document.querySelectorAll('#usersTableBody tr').forEach(tr => tr.classList.remove('row-selected'));
+                    updateUserActionButtons();
+                    loadUsers(1);
+                } else {
+                    alert('Lỗi: ' + (data.message || 'Không thể cập nhật trạng thái.'));
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Lỗi kết nối hoặc hệ thống.');
+            }
+        }
+
+        function openBulkProfileStatusModal() {
+            if (selectedProfiles.length === 0) return;
+            openModal('bulkProfileStatusModal');
+        }
+
+        async function saveBulkProfileStatus() {
+            const status = document.getElementById('bulkProfileStatusSelect').value;
+            if (selectedProfiles.length === 0) return;
+
+            try {
+                const response = await fetch('/dashboard/api/profiles/bulk-status/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({
+                        ids: selectedProfiles,
+                        status: status
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    alert(data.message || 'Đã cập nhật trạng thái thành công!');
+                    closeModal('bulkProfileStatusModal');
+                    selectedProfiles = [];
+                    document.getElementById('selectAllProfiles').checked = false;
+                    const chks = document.querySelectorAll('.profile-row-chk');
+                    chks.forEach(chk => chk.checked = false);
+                    document.querySelectorAll('#profilesTableBody tr').forEach(tr => tr.classList.remove('row-selected'));
+                    updateProfileActionButtons();
+                    loadProfiles(1);
+                } else {
+                    alert('Lỗi: ' + (data.message || 'Không thể cập nhật trạng thái.'));
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Lỗi kết nối hoặc hệ thống.');
+            }
+        }
+
+        function openBulkEmailStatusModal() {
+            if (selectedEmails.length === 0) return;
+            openModal('bulkEmailStatusModal');
+        }
+
+        async function saveBulkEmailStatus() {
+            const status = document.getElementById('bulkEmailStatusSelect').value;
+            if (selectedEmails.length === 0) return;
+
+            try {
+                const response = await fetch('/dashboard/api/emails/bulk-status/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({
+                        ids: selectedEmails,
+                        status: status
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    alert(data.message || 'Đã cập nhật trạng thái thành công!');
+                    closeModal('bulkEmailStatusModal');
+                    selectedEmails = [];
+                    document.getElementById('selectAllEmails').checked = false;
+                    const chks = document.querySelectorAll('.email-row-chk');
+                    chks.forEach(chk => chk.checked = false);
+                    document.querySelectorAll('#emailsTableBody tr').forEach(tr => tr.classList.remove('row-selected'));
+                    updateEmailActionButtons();
+                    loadEmails(1);
+                } else {
+                    alert('Lỗi: ' + (data.message || 'Không thể cập nhật trạng thái.'));
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Lỗi kết nối hoặc hệ thống.');
+            }
+        }
+
+        function openBulkHwidStatusModal() {
+            if (selectedHwids.length === 0) return;
+            openModal('bulkHwidStatusModal');
+        }
+
+        async function saveBulkHwidStatus() {
+            const status = document.getElementById('bulkHwidStatusSelect').value;
+            if (selectedHwids.length === 0) return;
+
+            try {
+                const response = await fetch('/dashboard/api/hwids/bulk-status/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({
+                        ids: selectedHwids,
+                        status: status
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    alert(data.message || 'Đã cập nhật trạng thái thành công!');
+                    closeModal('bulkHwidStatusModal');
+                    selectedHwids = [];
+                    document.getElementById('selectAllHwids').checked = false;
+                    const chks = document.querySelectorAll('.hwid-row-chk');
+                    chks.forEach(chk => chk.checked = false);
+                    document.querySelectorAll('#hwidsTableBody tr').forEach(tr => tr.classList.remove('row-selected'));
+                    updateHwidActionButtons();
+                    loadHwids(1);
+                } else {
+                    alert('Lỗi: ' + (data.message || 'Không thể cập nhật trạng thái.'));
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Lỗi kết nối hoặc hệ thống.');
+            }
+        }
+
         function openBulkSubOwnerModal() {
             if (selectedAccounts.length === 0) return;
             openModal('bulkSubOwnerModal');
@@ -6473,7 +6824,9 @@
 
         function updateHwidActionButtons() {
             const btn = document.getElementById('hwidDeleteBtn');
+            const bulkStatusBtn = document.getElementById('hwidBulkStatusBtn');
             if (btn) btn.disabled = selectedHwids.length === 0;
+            if (bulkStatusBtn) bulkStatusBtn.disabled = selectedHwids.length === 0;
         }
 
         function changeHwidsPage(offset) {

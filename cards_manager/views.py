@@ -170,3 +170,29 @@ class CardViewSet(viewsets.ModelViewSet):
                 print(f"Error creating bulk card notification: {e}")
                 
         return Response({'success': True, 'message': f'Đã gán sở hữu thành công cho {len(card_ids)} thẻ.'})
+
+    @action(detail=False, methods=['post'], url_path='bulk-status')
+    def bulk_status(self, request):
+        card_ids = request.data.get('card_ids', [])
+        status = request.data.get('status')
+        
+        if not card_ids or not status:
+            return Response({'success': False, 'message': 'Dữ liệu không hợp lệ.'}, status=400)
+            
+        queryset = self.get_queryset().filter(id__in=card_ids)
+        cards_to_notify = list(queryset)
+        updated_count = queryset.update(status=status)
+        
+        if request.user.is_staff:
+            try:
+                from dashboard.models import Notification
+                for card in cards_to_notify:
+                    if card.owner:
+                        Notification.objects.create(
+                            user=card.owner,
+                            message=f"Thẻ {card.card_number} đã được cập nhật trạng thái thành '{status}' bởi quản trị viên."
+                        )
+            except Exception:
+                pass
+                
+        return Response({'success': True, 'message': f'Đã cập nhật trạng thái cho {updated_count} thẻ.'})

@@ -266,6 +266,25 @@ class DashboardUserViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({'success': False, 'message': f'Lỗi khi xóa người dùng: {str(e)}'}, status=500)
 
+    @action(detail=False, methods=['post'], url_path='bulk-status')
+    def bulk_status(self, request):
+        ids = request.data.get('ids', [])
+        status_val = request.data.get('status')
+        
+        if not ids or status_val is None:
+            return Response({'success': False, 'message': 'Dữ liệu không hợp lệ.'}, status=400)
+            
+        is_active = True
+        if str(status_val).lower() in ['inactive', 'false', '0']:
+            is_active = False
+            
+        if not is_active and request.user.id in ids:
+            return Response({'success': False, 'message': 'Không thể tự vô hiệu hóa tài khoản của chính mình.'}, status=400)
+            
+        updated_count = User.objects.filter(pk__in=ids).update(is_active=is_active)
+        return Response({'success': True, 'message': f'Đã cập nhật trạng thái cho {updated_count} người dùng.'})
+
+
 
 class BrowserProfilesViewSet(viewsets.ModelViewSet):
     queryset = BrowserProfiles.objects.all().order_by('-id')
@@ -275,6 +294,20 @@ class BrowserProfilesViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [filters.SearchFilter]
     search_fields = ['profile_name', 'profile_original_name', 'profile_os']
+
+    @action(detail=False, methods=['post'], url_path='bulk-status')
+    def bulk_status(self, request):
+        ids = request.data.get('ids', [])
+        status_val = request.data.get('status')
+        if not ids or status_val is None:
+            return Response({'success': False, 'message': 'Dữ liệu không hợp lệ.'}, status=400)
+        try:
+            status_val = int(status_val)
+        except ValueError:
+            return Response({'success': False, 'message': 'Trạng thái không hợp lệ.'}, status=400)
+            
+        updated_count = BrowserProfiles.objects.filter(pk__in=ids).update(profile_status=status_val)
+        return Response({'success': True, 'message': f'Đã cập nhật trạng thái cho {updated_count} profiles.'})
 
 
 class MunProxiesViewSet(viewsets.ModelViewSet):
@@ -581,6 +614,20 @@ class AccountsEmailsViewSet(viewsets.ModelViewSet):
             results[email_addr] = res
 
         return Response({'success': True, 'results': results})
+
+    @action(detail=False, methods=['post'], url_path='bulk-status')
+    def bulk_status(self, request):
+        ids = request.data.get('ids', [])
+        status_val = request.data.get('status')
+        if not ids or status_val is None:
+            return Response({'success': False, 'message': 'Dữ liệu không hợp lệ.'}, status=400)
+        try:
+            status_val = int(status_val)
+        except ValueError:
+            return Response({'success': False, 'message': 'Trạng thái không hợp lệ.'}, status=400)
+            
+        updated_count = AccountsEmails.objects.filter(pk__in=ids).update(status=status_val)
+        return Response({'success': True, 'message': f'Đã cập nhật trạng thái cho {updated_count} email.'})
 
 
 def extract_verification_code(subject, body):
@@ -1358,6 +1405,20 @@ class UserHwidViewSet(viewsets.ModelViewSet):
         obj.save()
         label = 'Đã kích hoạt' if obj.status == 0 else 'Đã tạm khóa'
         return Response({'success': True, 'message': label, 'status': obj.status})
+
+    @action(detail=False, methods=['post'], url_path='bulk-status')
+    def bulk_status(self, request):
+        ids = request.data.get('ids', [])
+        status_val = request.data.get('status')
+        if not ids or status_val is None:
+            return Response({'success': False, 'message': 'Dữ liệu không hợp lệ.'}, status=400)
+        try:
+            status_val = int(status_val)
+        except ValueError:
+            return Response({'success': False, 'message': 'Trạng thái không hợp lệ.'}, status=400)
+            
+        updated_count = UserHwid.objects.filter(pk__in=ids).update(status=status_val)
+        return Response({'success': True, 'message': f'Đã cập nhật trạng thái cho {updated_count} HWIDs.'})
 
 class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = NotificationSerializer

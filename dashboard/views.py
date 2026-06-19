@@ -330,16 +330,32 @@ class AccountsEmailsViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        from django.db.models import Q
         if user.is_superuser or user.is_staff:
             queryset = AccountsEmails.objects.all().select_related('type', 'owner', 'customer', 'created_by').prefetch_related('accounts_emails_set__type').order_by('-id')
         else:
-            queryset = AccountsEmails.objects.filter(owner=user).select_related('type', 'owner', 'customer', 'created_by').prefetch_related('accounts_emails_set__type').order_by('-id')
+            queryset = AccountsEmails.objects.filter(Q(owner=user) | Q(created_by=user)).select_related('type', 'owner', 'customer', 'created_by').prefetch_related('accounts_emails_set__type').order_by('-id')
         
         status = self.request.query_params.get('status')
         if status is not None and status != '':
             queryset = queryset.filter(status=status)
             
         return queryset
+
+    def perform_update(self, serializer):
+        user = self.request.user
+        if user.is_superuser or user.is_staff:
+            owner_id = self.request.data.get('owner')
+            if owner_id is not None:
+                try:
+                    owner_val = int(owner_id) if owner_id else None
+                except ValueError:
+                    owner_val = None
+                serializer.save(owner_id=owner_val)
+            else:
+                serializer.save()
+        else:
+            serializer.save()
 
     def create(self, request, *args, **kwargs):
         data = request.data
@@ -372,7 +388,19 @@ class AccountsEmailsViewSet(viewsets.ModelViewSet):
             defaults={'label': detected_type.title()}
         )
 
-        email_obj = AccountsEmails.objects.filter(email=email_addr, owner=request.user).first()
+        from django.db.models import Q
+        email_obj = AccountsEmails.objects.filter(
+            Q(email=email_addr) & (Q(owner=request.user) | Q(created_by=request.user))
+        ).first()
+
+        owner_val = request.user
+        owner_id = data.get('owner')
+        if (request.user.is_superuser or request.user.is_staff) and owner_id is not None:
+            try:
+                owner_val = User.objects.get(id=int(owner_id)) if owner_id else None
+            except (ValueError, User.DoesNotExist):
+                owner_val = None
+
         if email_obj:
             updated = False
             if password and email_obj.password != password:
@@ -396,6 +424,9 @@ class AccountsEmailsViewSet(viewsets.ModelViewSet):
             if note and email_obj.note != note:
                 email_obj.note = note
                 updated = True
+            if (request.user.is_superuser or request.user.is_staff) and email_obj.owner != owner_val:
+                email_obj.owner = owner_val
+                updated = True
             if updated:
                 email_obj.save()
         else:
@@ -408,7 +439,7 @@ class AccountsEmailsViewSet(viewsets.ModelViewSet):
                 proxy=proxy,
                 socks5=socks5,
                 note=note,
-                owner=request.user,
+                owner=owner_val,
                 created_by=request.user
             )
 
@@ -492,10 +523,11 @@ class AccountsEmailsViewSet(viewsets.ModelViewSet):
         
         # Get an email that is not registered yet
         user = request.user
+        from django.db.models import Q
         if user.is_superuser or user.is_staff:
             email_qs = AccountsEmails.objects.filter(status=0)
         else:
-            email_qs = AccountsEmails.objects.filter(owner=user, status=0)
+            email_qs = AccountsEmails.objects.filter(Q(owner=user) | Q(created_by=user), status=0)
             
         email_obj = email_qs.exclude(email__in=registered_emails).order_by('-id').first()
         
@@ -582,7 +614,10 @@ class AccountsEmailsViewSet(viewsets.ModelViewSet):
             )
                 
             # Check or create in database
-            email_obj = AccountsEmails.objects.filter(email=email_addr, owner=request.user).first()
+            from django.db.models import Q
+            email_obj = AccountsEmails.objects.filter(
+                Q(email=email_addr) & (Q(owner=request.user) | Q(created_by=request.user))
+            ).first()
             if not email_obj:
                 email_obj = AccountsEmails.objects.create(
                     email=email_addr,
@@ -626,7 +661,12 @@ class AccountsEmailsViewSet(viewsets.ModelViewSet):
         except ValueError:
             return Response({'success': False, 'message': 'Trạng thái không hợp lệ.'}, status=400)
             
-        updated_count = AccountsEmails.objects.filter(pk__in=ids).update(status=status_val)
+        user = request.user
+        if user.is_superuser or user.is_staff:
+            updated_count = AccountsEmails.objects.filter(pk__in=ids).update(status=status_val)
+        else:
+            from django.db.models import Q
+            updated_count = AccountsEmails.objects.filter(Q(owner=user) | Q(created_by=user), pk__in=ids).update(status=status_val)
         return Response({'success': True, 'message': f'Đã cập nhật trạng thái cho {updated_count} email.'})
 
 
@@ -1063,7 +1103,8 @@ class AccountsCreatedViewSet(viewsets.ModelViewSet):
             if email_candidates:
                 email_qs = AccountsEmails.objects.filter(email__in=email_candidates)
                 if not (user.is_superuser or user.is_staff):
-                    email_qs = email_qs.filter(owner=user)
+                    from django.db.models import Q
+                    email_qs = email_qs.filter(Q(owner=user) | Q(created_by=user))
                 email_match = email_qs.first()
                 if email_match:
                     email_id = email_match.id

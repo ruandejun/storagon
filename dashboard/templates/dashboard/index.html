@@ -1762,6 +1762,7 @@
                             <th>Email</th>
                             <th>Mật khẩu</th>
                             <th>Tạo bởi</th>
+                            <th>Sở hữu bởi</th>
                             <th style="width: 120px; text-align: center;">Trạng thái</th>
                             <th>From</th>
                             <th>Time</th>
@@ -2400,6 +2401,10 @@
                     <label class="form-label">Ghi chú</label>
                     <input type="text" class="form-input" id="addEmailNote" placeholder="Ghi chú thêm...">
                 </div>
+                <div class="form-group" id="addEmailOwnerGroup" style="display: none; margin-top: 12px;">
+                    <label class="form-label">Sở hữu bởi (Owner)</label>
+                    <select class="filter-select" id="addEmailOwner" style="width: 100%;"></select>
+                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeModal('addEmailModal')">Hủy</button>
@@ -2532,6 +2537,10 @@
                 <div class="form-group">
                     <label class="form-label">Ghi chú</label>
                     <input type="text" class="form-input" id="editEmailNote">
+                </div>
+                <div class="form-group" id="editEmailOwnerGroup" style="display: none; margin-top: 12px;">
+                    <label class="form-label">Sở hữu bởi (Owner)</label>
+                    <select class="filter-select" id="editEmailOwner" style="width: 100%;"></select>
                 </div>
             </div>
             <div class="modal-footer">
@@ -3279,6 +3288,8 @@
             const editOwnerSelect = document.getElementById('editCardOwner');
             const editUsedBySelect = document.getElementById('editCardUsedBy');
             const bulkAssignOwnerSelect = document.getElementById('bulkAssignOwnerSelect');
+            const addEmailOwnerSelect = document.getElementById('addEmailOwner');
+            const editEmailOwnerSelect = document.getElementById('editEmailOwner');
 
             const optionsHtml = allClients.map(u => `<option value="${u.id}">${u.username}</option>`).join('');
             const noneOption = '<option value="">-- Không chỉ định --</option>';
@@ -3294,6 +3305,12 @@
             }
             if (bulkAssignOwnerSelect) {
                 bulkAssignOwnerSelect.innerHTML = noneOption + optionsHtml;
+            }
+            if (addEmailOwnerSelect) {
+                addEmailOwnerSelect.innerHTML = noneOption + optionsHtml;
+            }
+            if (editEmailOwnerSelect) {
+                editEmailOwnerSelect.innerHTML = noneOption + optionsHtml;
             }
             const cardOwnerFilter = document.getElementById('cardOwnerFilter');
             if (cardOwnerFilter) {
@@ -5469,7 +5486,7 @@
             body.innerHTML = '';
 
             if (emails.length === 0) {
-                body.innerHTML = `<tr><td colspan="10" style="text-align:center; padding: 30px; color: var(--text-muted);">Không tìm thấy email nào.</td></tr>`;
+                body.innerHTML = `<tr><td colspan="11" style="text-align:center; padding: 30px; color: var(--text-muted);">Không tìm thấy email nào.</td></tr>`;
                 return;
             }
 
@@ -5520,7 +5537,8 @@
                     </td>
                     <td style="font-weight: 600;">${e.email}${createdBadgesHtml}</td>
                     <td><code>${e.password}</code></td>
-                    <td style="font-size: 12px; color: var(--text-muted); font-weight: 500;">${e.created_by || e.owner || '-'}</td>
+                    <td style="font-size: 12px; color: var(--text-muted); font-weight: 500;">${e.created_by || '-'}</td>
+                    <td style="font-size: 12px; color: var(--text-muted); font-weight: 500;">${e.owner || '-'}</td>
                     <td style="text-align: center;"><span class="badge ${statusClass}">${statusLabel}</span></td>
                     <td class="email-from-cell" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${e.latest_from || ''}">${e.latest_from || '-'}</td>
                     <td class="email-time-cell" style="font-size: 12px; color: var(--text-muted); white-space: nowrap;">${e.latest_time || '-'}</td>
@@ -5633,11 +5651,20 @@
             document.getElementById('addEmailProxy').value = '';
             document.getElementById('addEmailSocks5').value = '';
             document.getElementById('addEmailNote').value = '';
+            
+            const ownerGroup = document.getElementById('addEmailOwnerGroup');
+            if (ownerGroup) {
+                ownerGroup.style.display = currentUser.isStaff ? 'block' : 'none';
+                document.getElementById('addEmailOwner').value = '';
+            }
+
             openModal('addEmailModal');
         }
 
         async function saveAddEmail() {
             const bulk = document.getElementById('addEmailBulkText').value.trim();
+            const owner = currentUser.isStaff ? document.getElementById('addEmailOwner').value : '';
+
             if (bulk) {
                 const lines = bulk.split('\n').map(l => l.trim()).filter(l => l.length > 0);
                 const list_emails = [];
@@ -5645,12 +5672,16 @@
                 lines.forEach(l => {
                     const parts = l.split('|');
                     if (parts.length >= 2) {
-                        list_emails.push({
+                        const emailPayload = {
                             email: parts[0].trim(),
                             password: parts[1].trim(),
                             refresh_token: parts[2] ? parts[2].trim() : '',
                             client_id: parts[3] ? parts[3].trim() : ''
-                        });
+                        };
+                        if (owner) {
+                            emailPayload.owner = owner;
+                        }
+                        list_emails.push(emailPayload);
                     }
                 });
 
@@ -5702,13 +5733,17 @@
                 }
 
                 try {
+                    const payload = { email, password, proxy, socks5, note };
+                    if (owner) {
+                        payload.owner = owner;
+                    }
                     const response = await fetch('/dashboard/api/emails/', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'X-CSRFToken': csrftoken
                         },
-                        body: JSON.stringify({ email, password, proxy, socks5, note })
+                        body: JSON.stringify(payload)
                     });
                     if (response.ok) {
                         const data = await response.json();
@@ -5739,6 +5774,13 @@
             document.getElementById('editEmailStatus').value = email.status !== undefined ? email.status : 0;
             document.getElementById('editEmailNote').value = email.note || '';
 
+            const ownerGroup = document.getElementById('editEmailOwnerGroup');
+            if (ownerGroup) {
+                ownerGroup.style.display = currentUser.isStaff ? 'block' : 'none';
+                const clientObj = allClients.find(u => u.username === email.owner);
+                document.getElementById('editEmailOwner').value = clientObj ? clientObj.id : '';
+            }
+
             openModal('editEmailModal');
         }
 
@@ -5751,15 +5793,20 @@
             const used = document.getElementById('editEmailUsed').checked;
             const status = parseInt(document.getElementById('editEmailStatus').value);
             const note = document.getElementById('editEmailNote').value.trim();
+            const owner = currentUser.isStaff ? document.getElementById('editEmailOwner').value : '';
 
             try {
+                const payload = { email, password, proxy, socks5, used, status, note };
+                if (currentUser.isStaff) {
+                    payload.owner = owner;
+                }
                 const response = await fetch(`/dashboard/api/emails/${id}/`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': csrftoken
                     },
-                    body: JSON.stringify({ email, password, proxy, socks5, used, status, note })
+                    body: JSON.stringify(payload)
                 });
 
                 if (response.ok) {

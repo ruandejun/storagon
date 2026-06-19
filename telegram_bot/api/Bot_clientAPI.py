@@ -215,7 +215,8 @@ def get_browser_profiles(request):
 def get_accounts_emails(request):
     account_type = request.GET.get('account_type')
     action = request.GET.get('action')
-    list_objects = AccountsEmails.objects.filter(owner=request.user).order_by('-id')
+    from django.db.models import Q
+    list_objects = AccountsEmails.objects.filter(Q(owner=request.user) | Q(created_by=request.user)).order_by('-id')
     if account_type:
       if action == 'create_accounts':
         list_objects = list_objects.exclude(accounts_emails_set__type__value=account_type).filter(status=0)
@@ -284,11 +285,12 @@ def update_accounts_emails(request):
         return successResponse({"ok": "Get request processed"})
     update_post = json.loads(request.body)
 
-    accounts_emails_obj = AccountsEmails.objects.filter(pk=update_post['id'], owner=request.user)
+    from django.db.models import Q
+    accounts_emails_obj = AccountsEmails.objects.filter(Q(pk=update_post['id']) & (Q(owner=request.user) | Q(created_by=request.user)))
     if accounts_emails_obj.exists():
       accounts_emails_obj.update(**update_post['update_data'])
       accounts_emails_obj = AccountsEmails.objects.get(
-          pk=update_post['id'], owner=request.user)
+          Q(pk=update_post['id']) & (Q(owner=request.user) | Q(created_by=request.user)))
       accounts_emails_data = AccountsEmailsSerializer(accounts_emails_obj)
     return successResponse({'data':accounts_emails_data.data})
   
@@ -1780,12 +1782,13 @@ def remove_emails(request):
     if request.method == 'GET':
         return successResponse({"ok": "Get request processed"})
     remove_post = json.loads(request.body)
+    from django.db.models import Q
     if remove_post['list_id'] == 'all':
         list_objects = AccountsEmails.objects.filter(
-            owner=request.user)
+            Q(owner=request.user) | Q(created_by=request.user))
     else:
         print('remove_post==', remove_post['list_id'])
-        list_objects = AccountsEmails.objects.filter(pk__in=remove_post['list_id'], owner=request.user)
+        list_objects = AccountsEmails.objects.filter(Q(owner=request.user) | Q(created_by=request.user), pk__in=remove_post['list_id'])
         
     if list_objects.exists():
         print('===remove===', len(list_objects))

@@ -22,6 +22,10 @@
             --modal-bg: rgba(15, 23, 42, 0.95);
             --btn-hover: rgba(255, 255, 255, 0.08);
             --toast-bg: rgba(99, 102, 241, 0.9);
+
+            --otp-text: #34d399;
+            --otp-bg: rgba(16, 185, 129, 0.15);
+            --otp-border: rgba(16, 185, 129, 0.3);
         }
 
         /* Light Mode Overrides */
@@ -40,7 +44,10 @@
             --modal-bg: rgba(255, 255, 255, 0.98);
             --btn-hover: rgba(0, 0, 0, 0.05);
             --toast-bg: rgba(79, 70, 229, 0.95);
-        }
+
+            --otp-text: #065f46;
+            --otp-bg: rgba(6, 95, 70, 0.08);
+            --otp-border: rgba(6, 95, 70, 0.2);
 
         * {
             box-sizing: border-box;
@@ -1227,7 +1234,7 @@
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                             <label class="form-label" style="margin: 0; display: flex; align-items: center; gap: 8px;">
                                 Thư mới nhất
-                                <span id="emailGetOtpDisplay" style="display: none; align-items: center; gap: 4px; background: rgba(16, 185, 129, 0.2); border: 1px solid var(--success); color: var(--accent); padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 13px;"></span>
+                                <span id="emailGetOtpDisplay" style="display: none; align-items: center; gap: 4px; background: var(--otp-bg); border: 1px solid var(--otp-border); color: var(--otp-text); padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 13px;"></span>
                             </label>
                             <button class="btn btn-primary" id="btnReloadEmailGet" onclick="reloadEmailGetMailbox()" style="padding: 4px 8px; font-size: 11px; height: 26px; display: flex; align-items: center; justify-content: center; gap: 4px;">🔄 Tải lại</button>
                         </div>
@@ -1287,7 +1294,7 @@
                     <div style="margin-top: 10px; border-top: 1px dashed var(--border-color); padding-top: 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
                         <div style="display: flex; align-items: center; gap: 6px;">
                             <span class="form-label" style="margin: 0; font-size: 13px; font-weight: 600; white-space: nowrap;">Mã OTP:</span>
-                            <span id="createdAccOtpValue" style="font-family: monospace; font-size: 16px; font-weight: bold; color: var(--accent); letter-spacing: 1px;">------</span>
+                            <span id="createdAccOtpValue" style="font-family: monospace; font-size: 16px; font-weight: bold; color: var(--otp-text); letter-spacing: 1px;">------</span>
                             <span id="createdAccOtpLoader" style="display: none; align-items: center; vertical-align: middle;">
                                 <span style="display: inline-block; width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.1); border-top-color: var(--accent-glow); border-radius: 50%; animation: spin 1s linear infinite; vertical-align: middle;"></span>
                             </span>
@@ -1304,7 +1311,7 @@
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                             <label class="form-label" style="margin: 0; display: flex; align-items: center; gap: 8px;">
                                 Thư mới nhất
-                                <span id="createdAccOtpDisplay" style="display: none; align-items: center; gap: 4px; background: rgba(16, 185, 129, 0.2); border: 1px solid var(--success); color: var(--accent); padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 13px;"></span>
+                                <span id="createdAccOtpDisplay" style="display: none; align-items: center; gap: 4px; background: var(--otp-bg); border: 1px solid var(--otp-border); color: var(--otp-text); padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 13px;"></span>
                             </label>
                             <button class="btn btn-primary" id="btnReloadCreatedAccMail" onclick="reloadCreatedAccMailbox()" style="padding: 4px 8px; font-size: 11px; height: 26px; display: flex; align-items: center; justify-content: center; gap: 4px;">🔄 Tải lại</button>
                         </div>
@@ -2391,7 +2398,7 @@
             if (code) {
                 otpDisplay.style.display = 'inline-flex';
                 otpDisplay.innerHTML = `OTP: ${code} <span style="cursor: pointer; font-size: 11px; margin-left: 6px; text-decoration: underline;" onclick="event.stopPropagation(); navigator.clipboard.writeText('${code}').then(()=>showToast('Đã copy OTP: ${code}'))">Copy</span>`;
-                otpBlock = `<div style="margin-bottom: 10px; padding: 10px; background: rgba(16, 185, 129, 0.15); border: 1px solid var(--success); border-radius: 6px; font-weight: 700; text-align: center; font-size: 16px; color: var(--accent-glow); display: flex; align-items: center; justify-content: center; gap: 8px;">Mã OTP: ${code} <button class="btn btn-success" onclick="navigator.clipboard.writeText('${code}').then(()=>showToast('Đã copy OTP: ${code}'))" style="padding: 4px 10px; font-size: 11px; height: auto;">Copy OTP</button></div>`;
+                otpBlock = `<div style="margin-bottom: 10px; padding: 10px; background: var(--otp-bg); border: 1px solid var(--otp-border); border-radius: 6px; font-weight: 700; text-align: center; font-size: 16px; color: var(--otp-text); display: flex; align-items: center; justify-content: center; gap: 8px;">Mã OTP: ${code} <button class="btn" onclick="navigator.clipboard.writeText('${code}').then(()=>showToast('Đã copy OTP: ${code}'))" style="padding: 4px 10px; font-size: 11px; height: auto; background: var(--otp-text); color: var(--bg-color); border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Copy OTP</button></div>`;
             } else {
                 otpDisplay.style.display = 'none';
                 otpDisplay.innerHTML = '';
@@ -2558,7 +2565,7 @@ ${otpBlock}
             if (code) {
                 otpDisplay.style.display = 'inline-flex';
                 otpDisplay.innerHTML = `OTP: ${code} <span style="cursor: pointer; font-size: 11px; margin-left: 6px; text-decoration: underline;" onclick="event.stopPropagation(); navigator.clipboard.writeText('${code}').then(()=>showToast('Đã copy OTP: ${code}'))">Copy</span>`;
-                otpBlock = `<div style="margin-bottom: 10px; padding: 10px; background: rgba(16, 185, 129, 0.15); border: 1px solid var(--success); border-radius: 6px; font-weight: 700; text-align: center; font-size: 16px; color: var(--accent-glow); display: flex; align-items: center; justify-content: center; gap: 8px;">Mã OTP: ${code} <button class="btn btn-success" onclick="navigator.clipboard.writeText('${code}').then(()=>showToast('Đã copy OTP: ${code}'))" style="padding: 4px 10px; font-size: 11px; height: auto;">Copy OTP</button></div>`;
+                otpBlock = `<div style="margin-bottom: 10px; padding: 10px; background: var(--otp-bg); border: 1px solid var(--otp-border); border-radius: 6px; font-weight: 700; text-align: center; font-size: 16px; color: var(--otp-text); display: flex; align-items: center; justify-content: center; gap: 8px;">Mã OTP: ${code} <button class="btn" onclick="navigator.clipboard.writeText('${code}').then(()=>showToast('Đã copy OTP: ${code}'))" style="padding: 4px 10px; font-size: 11px; height: auto; background: var(--otp-text); color: var(--bg-color); border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Copy OTP</button></div>`;
             } else {
                 otpDisplay.style.display = 'none';
                 otpDisplay.innerHTML = '';

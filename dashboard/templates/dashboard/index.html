@@ -3432,7 +3432,11 @@
                 if (hwidMenu) hwidMenu.style.display = '';
             }
 
-            switchTab('overview');
+            const urlParams = new URLSearchParams(window.location.search);
+            const initialTab = urlParams.get('tab') || 'overview';
+            const initialPage = parseInt(urlParams.get('page')) || 1;
+            switchTab(initialTab, initialPage);
+
             // Refresh stats/charts loop
             setInterval(loadStats, 60000);
             fetchSystemUsers();
@@ -3443,14 +3447,24 @@
         });
 
         // Tab Switcher
-        function switchTab(tabName) {
+        function switchTab(tabName, targetPage) {
             if (!currentUser.isStaff && tabName === 'users') {
                 switchTab('overview');
                 return;
             }
 
             currentTab = tabName;
-            
+
+            let page = 1;
+            if (targetPage !== undefined && targetPage !== null && !isNaN(targetPage)) {
+                page = targetPage;
+            }
+
+            const url = new URL(window.location.href);
+            url.searchParams.set('tab', tabName);
+            url.searchParams.set('page', page);
+            window.history.replaceState({}, '', url.toString());
+
             // Toggle sidebar active styling
             document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
             const activeEl = document.querySelector(`.menu-item[data-tab="${tabName}"]`);
@@ -3479,28 +3493,38 @@
                 'hwids': '🖱️ HWID Manager — Quản lý máy tính được phép',
                 'notifications': 'Thông báo của tôi'
             };
-            document.getElementById('pageTitle').textContent = titleMap[tabName];
+            if (titleMap[tabName]) {
+                document.getElementById('pageTitle').textContent = titleMap[tabName];
+            }
 
             // Load specific tab data
             if (tabName === 'overview') {
                 loadStats();
             } else if (tabName === 'cards') {
-                loadCards(1);
+                loadCards(page);
             } else if (tabName === 'users') {
-                loadUsers(1);
+                loadUsers(page);
             } else if (tabName === 'profiles') {
-                loadProfiles(1);
+                loadProfiles(page);
             } else if (tabName === 'proxies') {
-                loadProxies(1);
+                loadProxies(page);
             } else if (tabName === 'emails') {
-                loadEmails(1);
+                loadEmails(page);
             } else if (tabName === 'accounts') {
-                loadAccounts(1);
+                loadAccounts(page);
             } else if (tabName === 'hwids') {
-                loadHwids(1);
+                loadHwids(page);
             } else if (tabName === 'notifications') {
                 loadNotifications();
             }
+        }
+
+        // Helper to update page parameter in URL during pagination
+        function updateUrlPage(tabName, page) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('tab', tabName);
+            url.searchParams.set('page', page);
+            window.history.replaceState({}, '', url.toString());
         }
 
         // Modal Helpers
@@ -3667,6 +3691,7 @@
         async function loadCards(page) {
             showTableLoading('cardsTableBody', 11);
             cardsPage = page;
+            updateUrlPage('cards', page);
             const search = document.getElementById('cardSearchInput').value.trim();
             const status = document.getElementById('cardStatusFilter').value;
             const owner = document.getElementById('cardOwnerFilter') ? document.getElementById('cardOwnerFilter').value : 'all';
@@ -4235,6 +4260,7 @@
         async function loadUsers(page) {
             showTableLoading('usersTableBody', 8);
             usersPage = page;
+            updateUrlPage('users', page);
             const search = document.getElementById('userSearchInput').value.trim();
             const role = document.getElementById('userRoleFilter').value;
             const status = document.getElementById('userStatusFilter').value;
@@ -4558,6 +4584,7 @@
         async function loadProfiles(page) {
             showTableLoading('profilesTableBody', 9);
             profilesPage = page;
+            updateUrlPage('profiles', page);
             const search = document.getElementById('profileSearchInput').value.trim();
 
             let url = `/dashboard/api/profiles/?page=${profilesPage}&page_size=${profilesPageSize}`;
@@ -4708,6 +4735,7 @@
         async function loadProxies(page) {
             showTableLoading('proxiesTableBody', 7);
             proxiesPage = page;
+            updateUrlPage('proxies', page);
             const search = document.getElementById('proxySearchInput').value.trim();
 
             let url = `/dashboard/api/proxies/?page=${proxiesPage}&page_size=${proxiesPageSize}`;
@@ -5648,6 +5676,7 @@
         async function loadEmails(page) {
             showTableLoading('emailsTableBody', 10);
             emailsPage = page;
+            updateUrlPage('emails', page);
             const search = document.getElementById('emailSearchInput').value.trim();
             const status = document.getElementById('emailStatusFilter').value;
             const owner = document.getElementById('emailOwnerFilter') ? document.getElementById('emailOwnerFilter').value : 'all';
@@ -6164,6 +6193,7 @@
         async function loadAccounts(page) {
             showTableLoading('accountsTableBody', 13);
             accountsPage = page;
+            updateUrlPage('accounts', page);
             const search = document.getElementById('accountSearchInput').value.trim();
             const typeFilter = document.getElementById('accountTypeFilter').value;
             const createdByFilter = document.getElementById('accountCreatedByFilter').value;
@@ -7021,6 +7051,7 @@
         async function loadHwids(page) {
             hwidsPage = page;
             showTableLoading('hwidsTableBody', 8);
+            updateUrlPage('hwids', page);
             
             const searchVal = document.getElementById('hwidSearchInput').value.trim();
             const userIdVal = document.getElementById('hwidUserIdFilter').value.trim();

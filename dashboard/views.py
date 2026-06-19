@@ -686,6 +686,38 @@ class AccountsEmailsViewSet(viewsets.ModelViewSet):
             updated_count = AccountsEmails.objects.filter(Q(owner=user) | Q(created_by=user), pk__in=ids).update(status=status_val)
         return Response({'success': True, 'message': f'Đã cập nhật trạng thái cho {updated_count} email.'})
 
+    @action(detail=False, methods=['post'], url_path='bulk-assign', permission_classes=[permissions.IsAdminUser])
+    def bulk_assign(self, request):
+        email_ids = request.data.get('email_ids', [])
+        owner_id = request.data.get('owner_id')
+        
+        if not email_ids:
+            return Response({'success': False, 'message': 'Không có email nào được chọn.'}, status=400)
+            
+        owner = None
+        if owner_id:
+            try:
+                owner = User.objects.get(id=owner_id)
+            except User.DoesNotExist:
+                return Response({'success': False, 'message': 'Người dùng không tồn tại.'}, status=404)
+                
+        emails_to_notify = list(AccountsEmails.objects.filter(id__in=email_ids))
+        AccountsEmails.objects.filter(id__in=email_ids).update(owner=owner)
+        
+        if owner:
+            try:
+                from dashboard.models import Notification
+                for email in emails_to_notify:
+                    if email.owner != owner:
+                        Notification.objects.create(
+                            user=owner,
+                            message=f"Bạn đã được gán quyền sở hữu email {email.email} qua gán hàng loạt."
+                        )
+            except Exception as e:
+                print(f"Error creating bulk email notification: {e}")
+                
+        return Response({'success': True, 'message': f'Đã gán sở hữu thành công cho {len(email_ids)} email.'})
+
 
 def extract_verification_code(subject, body):
     import re

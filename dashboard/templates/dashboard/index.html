@@ -1747,6 +1747,7 @@
                     <button class="btn btn-secondary" onclick="loadEmails(1)">Làm mới</button>
                     <button class="btn btn-primary" onclick="openAddEmailModal()">Thêm Email</button>
                     <button class="btn btn-primary" id="emailEditBtn" onclick="openEditEmailModal()" disabled>Sửa</button>
+                    <button class="btn btn-primary" id="emailAssignOwnerBtn" onclick="openEmailAssignOwnerModal()" disabled>Sở hữu</button>
                     <button class="btn btn-danger" id="emailDeleteBtn" onclick="deleteSelectedEmails()" disabled>Xóa</button>
                     <button class="btn btn-warning" id="emailBulkStatusBtn" onclick="openBulkEmailStatusModal()" disabled>Đổi trạng thái</button>
                     <button class="btn btn-warning" id="emailBulkReadBtn" onclick="openBulkReadMailModal()">Đọc mail số lượng lớn</button>
@@ -2362,6 +2363,31 @@
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeModal('editProxyModal')">Hủy</button>
                 <button class="btn btn-primary" onclick="saveEditProxy()">Lưu thay đổi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7B. BULK ASSIGN EMAIL OWNER MODAL -->
+    <div class="modal-overlay" id="emailAssignOwnerModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Gán sở hữu email hàng loạt</h3>
+                <button class="modal-close" onclick="closeModal('emailAssignOwnerModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label" id="emailAssignOwnerCountLabel">Đang chọn 0 email</label>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Chỉ định sở hữu bởi</label>
+                    <select class="filter-select" id="bulkAssignEmailOwnerSelect" style="width: 100%;">
+                        <option value="">-- Không chỉ định --</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('emailAssignOwnerModal')">Hủy</button>
+                <button class="btn btn-primary" id="emailBulkAssignSaveBtn" onclick="saveBulkAssignEmailOwner()">Gán sở hữu</button>
             </div>
         </div>
     </div>
@@ -3314,6 +3340,10 @@
             if (editEmailOwnerSelect) {
                 editEmailOwnerSelect.innerHTML = noneOption + optionsHtml;
             }
+            const bulkAssignEmailOwnerSelect = document.getElementById('bulkAssignEmailOwnerSelect');
+            if (bulkAssignEmailOwnerSelect) {
+                bulkAssignEmailOwnerSelect.innerHTML = noneOption + optionsHtml;
+            }
             const cardOwnerFilter = document.getElementById('cardOwnerFilter');
             if (cardOwnerFilter) {
                 cardOwnerFilter.innerHTML = '<option value="all">Tất cả chủ sở hữu</option><option value="unassigned">Chưa chỉ định</option>' + optionsHtml;
@@ -3364,10 +3394,12 @@
                 const assignBtn = document.getElementById('cardAssignBtn');
                 const editBtn = document.getElementById('cardEditBtn');
                 const deleteBtn = document.getElementById('cardDeleteBtn');
+                const emailAssignBtn = document.getElementById('emailAssignOwnerBtn');
                 if (addBtn) addBtn.style.display = 'none';
                 if (assignBtn) assignBtn.style.display = 'none';
                 if (editBtn) editBtn.style.display = 'none';
                 if (deleteBtn) deleteBtn.style.display = 'none';
+                if (emailAssignBtn) emailAssignBtn.style.display = 'none';
                 
                 // Hide recent users panel in overview
                 const recentUsersList = document.getElementById('recentUsersList');
@@ -5651,9 +5683,11 @@
 
         function updateEmailActionButtons() {
             const editBtn = document.getElementById('emailEditBtn');
+            const assignBtn = document.getElementById('emailAssignOwnerBtn');
             const deleteBtn = document.getElementById('emailDeleteBtn');
             const bulkStatusBtn = document.getElementById('emailBulkStatusBtn');
             if (editBtn) editBtn.disabled = selectedEmails.length !== 1;
+            if (assignBtn) assignBtn.disabled = selectedEmails.length === 0;
             if (deleteBtn) deleteBtn.disabled = selectedEmails.length === 0;
             if (bulkStatusBtn) bulkStatusBtn.disabled = selectedEmails.length === 0;
         }
@@ -5855,6 +5889,63 @@
                 loadEmails(1);
             } catch (err) {
                 alert('Lỗi khi xóa emails.');
+            }
+        }
+
+        function openEmailAssignOwnerModal() {
+            if (selectedEmails.length === 0) return;
+            const countLabel = document.getElementById('emailAssignOwnerCountLabel');
+            if (countLabel) {
+                countLabel.textContent = `Đang chọn ${selectedEmails.length} email`;
+            }
+            const bulkAssignEmailOwnerSelect = document.getElementById('bulkAssignEmailOwnerSelect');
+            if (bulkAssignEmailOwnerSelect) {
+                bulkAssignEmailOwnerSelect.value = '';
+            }
+            openModal('emailAssignOwnerModal');
+        }
+
+        async function saveBulkAssignEmailOwner() {
+            if (selectedEmails.length === 0) return;
+            const bulkAssignEmailOwnerSelect = document.getElementById('bulkAssignEmailOwnerSelect');
+            const ownerId = bulkAssignEmailOwnerSelect ? bulkAssignEmailOwnerSelect.value : '';
+            
+            const payload = {
+                email_ids: selectedEmails,
+                owner_id: ownerId ? parseInt(ownerId) : null
+            };
+
+            const saveBtn = document.getElementById('emailBulkAssignSaveBtn');
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.textContent = 'Đang xử lý...';
+            }
+
+            try {
+                const response = await fetch('/dashboard/api/emails/bulk-assign/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    alert(`Đã gán sở hữu thành công cho ${selectedEmails.length} email.`);
+                    closeModal('emailAssignOwnerModal');
+                    loadEmails(emailsPage);
+                } else {
+                    const err = await response.json();
+                    alert(`Lỗi gán sở hữu: ${err.message || JSON.stringify(err)}`);
+                }
+            } catch (err) {
+                alert('Lỗi kết nối khi gán sở hữu.');
+            } finally {
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = 'Gán sở hữu';
+                }
             }
         }
 

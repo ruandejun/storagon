@@ -84,12 +84,22 @@ services:
       - mongodb
       - postgredb
       - storagon
+      - frontend
     links:
       - storagon:storagon
       - mongodb:mongodb
       - postgredb:postgredb
       - memcache:memcached
       - redis:redis
+      - frontend:frontend
+    networks:
+      - backend
+
+  frontend:
+    build:
+      context: ../fitviet-frontend
+      dockerfile: Dockerfile
+    restart: always
     networks:
       - backend
   celery:

@@ -52,6 +52,22 @@ def deploy():
             print("Error: Git reset failed")
             return
             
+        # 2B. Pull latest frontend code changes
+        print("\n--- Pulling latest frontend code changes ---")
+        run_cmd("mkdir -p /root/fitviet-frontend")
+        run_cmd("cd /root/fitviet-frontend && git init")
+        # Ignore warning/errors from remote remove if it doesn't exist
+        run_cmd("cd /root/fitviet-frontend && git remote remove origin")
+        run_cmd("cd /root/fitviet-frontend && git remote add origin https://github.com/ruandejun/fitviet-frontend.git")
+        if not run_cmd("cd /root/fitviet-frontend && git fetch origin"):
+            print("Error: Frontend Git fetch failed")
+            return
+        if not run_cmd("cd /root/fitviet-frontend && git checkout -f main"):
+            run_cmd("cd /root/fitviet-frontend && git checkout -b main --track origin/main")
+        if not run_cmd("cd /root/fitviet-frontend && git reset --hard origin/main"):
+            print("Error: Frontend Git reset failed")
+            return
+            
         # 3. Stop containers
         print("\n--- Shutting down active docker compose stack ---")
         run_cmd("cd /root/storagon && docker compose down")

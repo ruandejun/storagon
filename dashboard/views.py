@@ -39,6 +39,14 @@ except Exception:
 def dashboard_index(request):
     return render(request, 'dashboard/index.html')
 
+@login_required(login_url='/dashboard/login/')
+def current_user_api(request):
+    return JsonResponse({
+        'username': request.user.username,
+        'is_staff': request.user.is_staff,
+        'is_superuser': request.user.is_superuser
+    })
+
 def login_view(request):
     if request.user.is_authenticated:
         return redirect('/dashboard/')

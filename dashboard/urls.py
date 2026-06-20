@@ -6,7 +6,7 @@ from .views import (
     dashboard_stats_api, DashboardUserViewSet, CardViewSet,
     BrowserProfilesViewSet, MunProxiesViewSet,
     AccountsEmailsViewSet, AccountsCreatedViewSet,
-    UserHwidViewSet, NotificationViewSet
+    UserHwidViewSet, NotificationViewSet, current_user_api
 )
 
 router = DefaultRouter()
@@ -25,6 +25,7 @@ urlpatterns = [
     url(r'^logout/$', logout_view, name='dashboard_logout'),
     url(r'^register/$', register_view, name='dashboard_register'),
     url(r'^forgot-password/$', forgot_password_view, name='dashboard_forgot_password'),
+    url(r'^api/me/$', current_user_api, name='current_user_api'),
     url(r'^api/stats/$', dashboard_stats_api, name='dashboard_stats_api'),
     url(r'^api/', include(router.urls)),
 ]

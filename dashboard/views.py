@@ -60,7 +60,14 @@ def login_view(request):
         except Exception:
             return JsonResponse({'success': False, 'message': 'Dữ liệu không hợp lệ.'}, status=400)
             
-        user = authenticate(request, username=username, password=password)
+        exact_username = username
+        try:
+            db_user = User.objects.get(username__iexact=username)
+            exact_username = db_user.username
+        except User.DoesNotExist:
+            pass
+
+        user = authenticate(request, username=exact_username, password=password)
         if user is not None:
             if user.is_active:
                 login(request, user)
@@ -100,7 +107,7 @@ def register_view(request):
         if not re.match(r'^\w[a-zA-Z0-9._]{5,29}$', username):
             return JsonResponse({'success': False, 'message': 'Tên đăng nhập phải từ 6-30 ký tự và không chứa ký tự đặc biệt.'}, status=400)
             
-        if User.objects.filter(username=username).exists():
+        if User.objects.filter(username__iexact=username).exists():
             return JsonResponse({'success': False, 'message': 'Tên đăng nhập đã tồn tại.'}, status=400)
             
         if User.objects.filter(email=email).exists():

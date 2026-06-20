@@ -607,7 +607,26 @@ class AccountsEmails(models.Model):
             if self._state.adding:
                 self.created_by = user
 
+        # Auto-link to existing AccountsCreated if this email already exists there
+        has_matching_acc = False
+        matching_acc = None
+        if self.email:
+            email_clean = self.email.strip()
+            from django.db.models import Q
+            from telegram_bot.models import AccountsCreated
+            acc_qs = AccountsCreated.objects.filter(Q(email__iexact=email_clean) | Q(username__iexact=email_clean))
+            matching_acc = acc_qs.first()
+            if matching_acc:
+                self.used = 1
+                has_matching_acc = True
+
         super(AccountsEmails, self).save(*args, **kwargs)
+
+        if has_matching_acc and matching_acc and matching_acc.accounts_emails != self:
+            matching_acc.accounts_emails = self
+            if not matching_acc.email:
+                matching_acc.email = self.email
+            matching_acc.save()
 
     def __unicode__(self):
         return self.email

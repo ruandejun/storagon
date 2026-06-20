@@ -38,10 +38,10 @@ def ghi_editor(request, note_id):
     })
 
 def ghi_get_api(request, note_id):
-    try:
-        note = QuickNote.objects.get(note_id=note_id)
-    except QuickNote.DoesNotExist:
-        return JsonResponse({'success': False, 'message': 'Ghi chú không tồn tại'}, status=404)
+    if not note_id.isalnum():
+        return JsonResponse({'success': False, 'message': 'Đường dẫn ghi chú không hợp lệ'}, status=400)
+
+    note, created = QuickNote.objects.get_or_create(note_id=note_id)
 
     if note.password:
         session_key = f'note_verified_{note_id}'
@@ -59,10 +59,10 @@ def ghi_save_api(request, note_id):
     if request.method != 'POST':
         return JsonResponse({'success': False, 'message': 'Chỉ chấp nhận phương thức POST'}, status=405)
 
-    try:
-        note = QuickNote.objects.get(note_id=note_id)
-    except QuickNote.DoesNotExist:
-        return JsonResponse({'success': False, 'message': 'Ghi chú không tồn tại'}, status=404)
+    if not note_id.isalnum():
+        return JsonResponse({'success': False, 'message': 'Đường dẫn ghi chú không hợp lệ'}, status=400)
+
+    note, created = QuickNote.objects.get_or_create(note_id=note_id)
 
     # Validate note access permissions
     if note.password:

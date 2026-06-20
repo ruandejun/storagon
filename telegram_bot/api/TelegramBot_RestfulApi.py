@@ -88,7 +88,7 @@ class AccountsEmailsSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = AccountsEmails
 		fields = ('id', 'created', 'modified', 'created_by','customer',
-				'modified_by', 'type', 'owner',
+				'modified_by', 'type', 'owner', 'owner_id', 'created_by_id',
 				'note', 'accounts_data', 'email',
 				'password', 'proxy',
 				'socks5','state',
@@ -101,6 +101,8 @@ class AccountsEmailsSerializer(serializers.ModelSerializer):
 	customer = serializers.SlugRelatedField(slug_field='username', read_only=True);
 	owner = serializers.SlugRelatedField(slug_field='username', read_only=True);
 	created_by = serializers.SlugRelatedField(slug_field='username', read_only=True);
+	owner_id = serializers.ReadOnlyField(source='owner.id')
+	created_by_id = serializers.ReadOnlyField(source='created_by.id')
 	created_accounts = serializers.SerializerMethodField()
 
 	@staticmethod

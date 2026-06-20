@@ -1641,6 +1641,29 @@ class AccountsCreatedViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='users-list')
     def users_list(self, request):
         users = User.objects.filter(is_active=True).order_by('username')
+        
+        # Filter by search query
+        search = request.query_params.get('search')
+        if search:
+            users = users.filter(username__icontains=search)
+            
+        # Filter by role
+        role = request.query_params.get('role')
+        if role == 'admin':
+            users = users.filter(is_superuser=True)
+        elif role == 'staff':
+            users = users.filter(is_staff=True, is_superuser=False)
+        elif role == 'user':
+            users = users.filter(is_staff=False, is_superuser=False)
+            
+        # Paginate if page parameter is present
+        if 'page' in request.query_params:
+            paginator = self.pagination_class()
+            page = paginator.paginate_queryset(users, request, view=self)
+            if page is not None:
+                user_data = [{'id': u.id, 'username': u.username} for u in page]
+                return paginator.get_paginated_response(user_data)
+                
         user_data = [{'id': u.id, 'username': u.username} for u in users]
         return Response(user_data)
 

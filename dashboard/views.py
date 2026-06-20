@@ -39,8 +39,9 @@ except Exception:
 def dashboard_index(request):
     return render(request, 'dashboard/index.html')
 
-@login_required(login_url='/dashboard/login/')
 def current_user_api(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'detail': 'Not authenticated'}, status=401)
     return JsonResponse({
         'username': request.user.username,
         'is_staff': request.user.is_staff,
@@ -69,7 +70,7 @@ def login_view(request):
         else:
             return JsonResponse({'success': False, 'message': 'Sai tài khoản hoặc mật khẩu.'}, status=400)
             
-    return render(request, 'dashboard/login.html')
+    return redirect('/dashboard/')
 
 def logout_view(request):
     logout(request)
@@ -147,8 +148,9 @@ def forgot_password_view(request):
             
     return JsonResponse({'success': False, 'message': 'Phương thức không được hỗ trợ.'}, status=405)
 
-@login_required(login_url='/dashboard/login/')
 def dashboard_stats_api(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'detail': 'Not authenticated'}, status=401)
     user = request.user
     if user.is_staff:
         cards_qs = Card.objects.all()

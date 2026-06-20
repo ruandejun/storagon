@@ -44,8 +44,10 @@ def current_user_api(request):
         return JsonResponse({'detail': 'Not authenticated'}, status=401)
     return JsonResponse({
         'username': request.user.username,
+        'email': request.user.email or '',
         'is_staff': request.user.is_staff,
-        'is_superuser': request.user.is_superuser
+        'is_superuser': request.user.is_superuser,
+        'date_joined': request.user.date_joined.strftime('%d-%m-%Y') if request.user.date_joined else ''
     })
 
 def login_view(request):

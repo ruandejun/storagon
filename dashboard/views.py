@@ -1329,6 +1329,14 @@ class AccountsCreatedViewSet(viewsets.ModelViewSet):
             return AccountsCreatedListSerializer
         return AccountsCreatedSerializer
 
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if request.user.is_authenticated:
+            instance.modified_by = request.user
+            instance.save(update_fields=['modified_by'])
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
     def get_queryset(self):
         user = self.request.user
         if user.is_superuser or user.is_staff:

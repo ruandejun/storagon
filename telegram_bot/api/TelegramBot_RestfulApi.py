@@ -130,6 +130,7 @@ class AccountsCreatedSerializer(serializers.ModelSerializer):
 	customer = serializers.SlugRelatedField(slug_field='username', read_only=True);
 	owner = serializers.SlugRelatedField(slug_field='username', read_only=True);
 	created_by = serializers.SlugRelatedField(slug_field='username', read_only=True);
+	modified_by = serializers.SlugRelatedField(slug_field='username', read_only=True);
 	profile_os = serializers.SerializerMethodField()
  
 	@staticmethod

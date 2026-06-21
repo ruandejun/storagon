@@ -67,8 +67,13 @@ class CardViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(card_obj)
             return Response(serializer.data)
 
-        return super().create(request, *args, **kwargs)
-
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if request.user.is_authenticated:
+            instance.used_by = request.user
+            instance.save(update_fields=['used_by'])
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
     def get_permissions(self):
         if self.action in ['create', 'destroy', 'bulk_assign']:

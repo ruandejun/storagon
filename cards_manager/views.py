@@ -67,6 +67,8 @@ class CardViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(card_obj)
             return Response(serializer.data)
 
+        return super().create(request, *args, **kwargs)
+
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         if request.user.is_authenticated:

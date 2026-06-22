@@ -53,5 +53,20 @@ class MyAppConfig(AppConfig):
         settings.REDIS_POOL = redis.ConnectionPool(host=settings.REDISDB['HOST'], port=settings.REDISDB['PORT'], db=settings.REDISDB['DB'], password=redis_password)
         #"Create connection pool to redis"
 
-        settings.geo_reader = geoip2.database.Reader(os.path.join(settings.BASE_DIR, 'GeoLite2-Country.mmdb'));
-        #"Load GeoIP2 database completed";
+        try:
+            settings.geo_reader = geoip2.database.Reader(os.path.join(settings.BASE_DIR, 'GeoLite2-Country.mmdb'))
+        except Exception as e:
+            print(f"Error loading GeoLite2-Country: {e}")
+            settings.geo_reader = None
+
+        try:
+            settings.geo_city_reader = geoip2.database.Reader(os.path.join(settings.BASE_DIR, 'GeoLite2-City.mmdb'))
+        except Exception as e:
+            print(f"Error loading GeoLite2-City: {e}")
+            settings.geo_city_reader = None
+
+        try:
+            settings.geo_asn_reader = geoip2.database.Reader(os.path.join(settings.BASE_DIR, 'GeoLite2-ASN.mmdb'))
+        except Exception as e:
+            print(f"Error loading GeoLite2-ASN: {e}")
+            settings.geo_asn_reader = None

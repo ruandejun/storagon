@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     dashboard_index, login_view, logout_view,
     register_view, forgot_password_view,
-    dashboard_stats_api, DashboardUserViewSet, CardViewSet,
+    dashboard_stats_api, dashboard_ip_info_api, DashboardUserViewSet, CardViewSet,
     BrowserProfilesViewSet, MunProxiesViewSet,
     AccountsEmailsViewSet, AccountsCreatedViewSet,
     UserHwidViewSet, NotificationViewSet, current_user_api
@@ -27,5 +27,6 @@ urlpatterns = [
     url(r'^forgot-password/$', forgot_password_view, name='dashboard_forgot_password'),
     url(r'^api/me/$', current_user_api, name='current_user_api'),
     url(r'^api/stats/$', dashboard_stats_api, name='dashboard_stats_api'),
+    url(r'^api/ip-info/$', dashboard_ip_info_api, name='dashboard_ip_info_api'),
     url(r'^api/', include(router.urls)),
 ]

@@ -52,6 +52,11 @@ def deploy():
             print("Error: Git reset failed")
             return
             
+        # 2A. Check and download GeoIP databases
+        print("\n--- Checking and downloading GeoIP databases ---")
+        run_cmd("test -f /root/storagon/GeoLite2-City.mmdb || wget -O /root/storagon/GeoLite2-City.mmdb https://raw.githubusercontent.com/P3TERX/GeoLite.mmdb/download/GeoLite2-City.mmdb")
+        run_cmd("test -f /root/storagon/GeoLite2-ASN.mmdb || wget -O /root/storagon/GeoLite2-ASN.mmdb https://raw.githubusercontent.com/P3TERX/GeoLite.mmdb/download/GeoLite2-ASN.mmdb")
+            
         # 2B. Pull latest frontend code changes
         print("\n--- Pulling latest frontend code changes ---")
         run_cmd("mkdir -p /root/fitviet-frontend")

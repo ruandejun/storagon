@@ -223,6 +223,55 @@ def dashboard_stats_api(request):
         'recent_users': recent_users
     })
 
+def dashboard_ip_info_api(request):
+    # Get client IP address
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0].strip()
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+
+    # Default fallback data
+    data = {
+        'ip': ip,
+        'country': 'N/A',
+        'city': 'N/A',
+        'region': 'N/A',
+        'org': 'N/A'
+    }
+
+    # Query GeoLite2 databases
+    # 1. Country & City
+    if hasattr(settings, 'geo_city_reader') and settings.geo_city_reader:
+        try:
+            response = settings.geo_city_reader.city(ip)
+            if response.country.name:
+                data['country'] = response.country.name
+            if response.city.name:
+                data['city'] = response.city.name
+            if response.subdivisions.most_specific.name:
+                data['region'] = response.subdivisions.most_specific.name
+        except Exception:
+            # Try geo_reader (Country only) as fallback
+            if hasattr(settings, 'geo_reader') and settings.geo_reader:
+                try:
+                    response = settings.geo_reader.country(ip)
+                    if response.country.name:
+                        data['country'] = response.country.name
+                except Exception:
+                    pass
+
+    # 2. ASN / Org / ISP
+    if hasattr(settings, 'geo_asn_reader') and settings.geo_asn_reader:
+        try:
+            response = settings.geo_asn_reader.asn(ip)
+            if response.autonomous_system_organization:
+                data['org'] = response.autonomous_system_organization
+        except Exception:
+            pass
+
+    return JsonResponse(data)
+
 class DashboardUserViewSet(viewsets.ModelViewSet):
     serializer_class = DashboardUserSerializer
     pagination_class = StandardResultsSetPagination

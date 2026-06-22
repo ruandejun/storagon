@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 
 from rest_framework import viewsets, filters, permissions, status
 from rest_framework.authentication import SessionAuthentication
@@ -235,6 +236,7 @@ def dashboard_ip_info_api(request):
     data = {
         'ip': ip,
         'country': 'N/A',
+        'country_code': 'N/A',
         'city': 'N/A',
         'region': 'N/A',
         'org': 'N/A'
@@ -247,6 +249,8 @@ def dashboard_ip_info_api(request):
             response = settings.geo_city_reader.city(ip)
             if response.country.name:
                 data['country'] = response.country.name
+            if response.country.iso_code:
+                data['country_code'] = response.country.iso_code
             if response.city.name:
                 data['city'] = response.city.name
             if response.subdivisions.most_specific.name:
@@ -258,6 +262,8 @@ def dashboard_ip_info_api(request):
                     response = settings.geo_reader.country(ip)
                     if response.country.name:
                         data['country'] = response.country.name
+                    if response.country.iso_code:
+                        data['country_code'] = response.country.iso_code
                 except Exception:
                     pass
 

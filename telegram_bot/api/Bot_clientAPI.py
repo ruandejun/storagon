@@ -2279,7 +2279,13 @@ def get_tool_setting(request):
         if hwid_obj_check.exists() or not hwid_objs.exists():
             # First-time login: auto-register HWID (if not existing at all)
             if not hwid_objs.exists():
-                UserHwid.objects.get_or_create(value=hwid, user=request.user, defaults={'status': 0})
+                hwid_obj, created = UserHwid.objects.get_or_create(value=hwid, user=request.user, defaults={'status': 0})
+            else:
+                hwid_obj = hwid_obj_check.first()
+            
+            # Update last_poll
+            hwid_obj.last_poll = timezone.now()
+            hwid_obj.save(update_fields=['last_poll'])
             
             # Load tool functions for valid/new machine
             list_objects = UserCreateFunction.objects.filter(user=request.user)
@@ -2408,6 +2414,68 @@ def add_checker_invalid(request):
     ]
     msg = CheckerInvalid.objects.bulk_create(objs)
     return successResponse()     
+  
+
+@api_view(['POST'])
+@login_required_ajax()
+@signature_test()
+@user_passes_test(banned_check)
+def agent_poll(request):
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        return errorResponse("Invalid JSON data", 400)
+    
+    hwid = data.get("hwid", "").strip()
+    if not hwid:
+        return errorResponse("HWID is required", 400)
+        
+    running_profiles = data.get("running_profiles", [])
+    
+    # 1. Update HWID status and last_poll timestamp
+    hwid_objs = UserHwid.objects.filter(user=request.user, value=hwid)
+    if hwid_objs.exists():
+        hwid_obj = hwid_objs.first()
+        hwid_obj.last_poll = timezone.now()
+        hwid_obj.save(update_fields=['last_poll'])
+    else:
+        hwid_obj = UserHwid.objects.create(
+            user=request.user, 
+            value=hwid, 
+            status=0,
+            last_poll=timezone.now()
+        )
+        
+    if hwid_obj.status != 0:
+        return errorResponse("HWID is banned or inactive", 403)
+        
+    # 2. Update running profiles list in django cache
+    from django.core.cache import cache
+    cache.set(f"running_profiles:{request.user.id}", running_profiles, timeout=30)
+    
+    # 3. Get pending commands for this user and HWID
+    pending_commands = AgentCommand.objects.filter(
+        user=request.user,
+        hwid=hwid,
+        status='pending'
+    ).order_by('id')
+    
+    commands_to_send = []
+    for cmd in pending_commands:
+        commands_to_send.append({
+            "id": cmd.id,
+            "command_type": cmd.command_type,
+            "profile_id": cmd.profile_id,
+            "profile_data": json.loads(cmd.profile_data) if cmd.profile_data else {}
+        })
+        cmd.status = 'sent'
+        cmd.save(update_fields=['status'])
+        
+    return successResponse({
+        "success": True,
+        "commands": commands_to_send
+    })
+
   
 
     

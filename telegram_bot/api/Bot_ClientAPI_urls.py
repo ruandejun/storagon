@@ -53,4 +53,5 @@ urlpatterns = [
 	url(r'^update_checker_task/', update_checker_task, name='update_checker_task'),
 	url(r'^add_checker_valid/', add_checker_valid, name='add_checker_valid'),
 	url(r'^add_checker_invalid/', add_checker_invalid, name='add_checker_invalid'),
+	url(r'^agent/poll/', agent_poll, name='agent_poll'),
 ]

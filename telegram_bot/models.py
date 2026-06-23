@@ -338,6 +338,7 @@ class UserHwid(models.Model):
     note = models.TextField(verbose_name=_("note"), blank=True, null=True, default='')
     status = models.PositiveSmallIntegerField(choices=AccountStatus.ChoiceList(), default=AccountStatus.normal,
                                                    db_index=True)      
+    last_poll = models.DateTimeField(verbose_name=_("last_poll"), null=True, blank=True, db_index=True)
     def __unicode__(self): return self.value    
     
 class MunAnti(models.Model):
@@ -751,4 +752,18 @@ class AccountsCreated(models.Model):
 
     def __str__(self):
         return self.email  
+    
+
+class AgentCommand(models.Model):
+    created = models.DateTimeField(verbose_name=_("created"), auto_now_add=True, db_index=True)
+    modified = models.DateTimeField(verbose_name=_("modified"), auto_now=True)
+    user = models.ForeignKey(User, related_name='agent_commands', on_delete=models.CASCADE)
+    hwid = models.CharField(verbose_name=_("hwid"), max_length=255, db_index=True)
+    command_type = models.CharField(verbose_name=_("command_type"), max_length=50) # 'open_profile', 'close_profile'
+    profile_id = models.IntegerField(verbose_name=_("profile_id"))
+    profile_data = models.TextField(verbose_name=_("profile_data"), blank=True, null=True, default='') # JSON encoded profile details
+    status = models.CharField(verbose_name=_("status"), max_length=20, default='pending', db_index=True) # 'pending', 'sent', 'success', 'failed'
+    
+    def __str__(self):
+        return f"{self.command_type} for Profile {self.profile_id} ({self.status})"
     

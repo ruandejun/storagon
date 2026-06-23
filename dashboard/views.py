@@ -363,13 +363,111 @@ class DashboardUserViewSet(viewsets.ModelViewSet):
 
 
 class BrowserProfilesViewSet(viewsets.ModelViewSet):
-    queryset = BrowserProfiles.objects.all().select_related('profile_owner', 'created_by', 'modified_by').order_by('-id')
     serializer_class = BrowserProfilesSerializer
     pagination_class = StandardResultsSetPagination
     authentication_classes = [SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [filters.SearchFilter]
     search_fields = ['profile_name', 'profile_original_name', 'profile_os']
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_superuser or user.is_staff:
+            return BrowserProfiles.objects.all().select_related('profile_owner', 'created_by', 'modified_by').order_by('-id')
+        return BrowserProfiles.objects.filter(profile_owner=user).select_related('profile_owner', 'created_by', 'modified_by').order_by('-id')
+
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        
+        from django.core.cache import cache
+        running_profiles = cache.get(f"running_profiles:{request.user.id}", [])
+        
+        from telegram_bot.models import UserHwid
+        from django.utils import timezone
+        
+        active_hwid = UserHwid.objects.filter(
+            user=request.user,
+            status=0,
+            last_poll__gte=timezone.now() - timezone.timedelta(seconds=15)
+        ).order_by('-last_poll').first()
+        
+        agent_status = {
+            "online": active_hwid is not None,
+            "hwid": active_hwid.value if active_hwid else None,
+            "last_poll": active_hwid.last_poll.isoformat() if (active_hwid and active_hwid.last_poll) else None
+        }
+        
+        if isinstance(response.data, dict) and 'results' in response.data:
+            for item in response.data['results']:
+                item['is_running'] = item['id'] in running_profiles
+            response.data['agent_status'] = agent_status
+        elif isinstance(response.data, list):
+            for item in response.data:
+                item['is_running'] = item['id'] in running_profiles
+        return response
+
+    @action(detail=True, methods=['post'])
+    def run(self, request, pk=None):
+        profile_obj = self.get_object()
+        from django.utils import timezone
+        from telegram_bot.models import UserHwid, AgentCommand
+        from telegram_bot.api.TelegramBot_RestfulApi import BrowserProfilesSerializer
+        import json
+
+        active_hwid_obj = UserHwid.objects.filter(
+            user=request.user,
+            status=0,
+            last_poll__gte=timezone.now() - timezone.timedelta(seconds=15)
+        ).order_by('-last_poll').first()
+        
+        if not active_hwid_obj:
+            return Response({"success": False, "message": "Không tìm thấy Agent hoạt động. Vui lòng mở tool MunLogin trên máy tính và đăng nhập."}, status=400)
+            
+        profile_serializer = BrowserProfilesSerializer(profile_obj)
+        profile_data_json = json.dumps(profile_serializer.data)
+        
+        AgentCommand.objects.create(
+            user=request.user,
+            hwid=active_hwid_obj.value,
+            command_type='open_profile',
+            profile_id=profile_obj.id,
+            profile_data=profile_data_json,
+            status='pending'
+        )
+        
+        return Response({
+            "success": True,
+            "message": "Đã xếp hàng lệnh mở trình duyệt."
+        })
+
+    @action(detail=True, methods=['post'])
+    def stop(self, request, pk=None):
+        profile_obj = self.get_object()
+        from django.utils import timezone
+        from telegram_bot.models import UserHwid, AgentCommand
+        
+        active_hwid_obj = UserHwid.objects.filter(
+            user=request.user,
+            status=0,
+            last_poll__gte=timezone.now() - timezone.timedelta(seconds=15)
+        ).order_by('-last_poll').first()
+        
+        if not active_hwid_obj:
+            return Response({"success": False, "message": "Không tìm thấy Agent hoạt động."}, status=400)
+            
+        AgentCommand.objects.create(
+            user=request.user,
+            hwid=active_hwid_obj.value,
+            command_type='close_profile',
+            profile_id=profile_obj.id,
+            profile_data='{}',
+            status='pending'
+        )
+        
+        return Response({
+            "success": True,
+            "message": "Đã xếp hàng lệnh đóng trình duyệt."
+        })
 
     @action(detail=False, methods=['post'], url_path='bulk-status')
     def bulk_status(self, request):

@@ -370,6 +370,134 @@ class BrowserProfilesViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter]
     search_fields = ['profile_name', 'profile_original_name', 'profile_os']
 
+    def perform_create(self, serializer):
+        data = serializer.validated_data
+        profile_os = data.get('profile_os', 'Window')
+        
+        import random
+        import json
+        import math
+        
+        chrome_versions = ["120.0.0.0", "121.0.0.0", "122.0.0.0", "123.0.0.0"]
+        chrome_ver = random.choice(chrome_versions)
+        
+        if profile_os == 'Window' or profile_os == 'Windows':
+            os_ua = 'Windows NT 10.0; Win64; x64'
+            profile_os = 'Window'
+        elif profile_os == 'Mac OS X' or profile_os == 'Mac' or profile_os == 'macOS':
+            os_ua = 'Macintosh; Intel Mac OS X 10_15_7'
+            profile_os = 'Mac OS X'
+        elif profile_os == 'Linux':
+            os_ua = 'X11; Linux x86_64'
+            profile_os = 'Linux'
+        else:
+            os_ua = 'Windows NT 10.0; Win64; x64'
+            profile_os = 'Window'
+            
+        user_agent = f"Mozilla/5.0 ({os_ua}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{chrome_ver} Safari/537.36"
+        
+        cpus = ["2", "4", "6", "8", "12"]
+        resolutions = ['1920x1080', '1536x864', '1440x900', '1366x768', '1280x720']
+        
+        list_canvas = [-3, -2, -1, 0, 1, 2, 3]
+        canvas_shift = {
+            'r': random.choice(list_canvas),
+            'g': random.choice(list_canvas),
+            'b': random.choice(list_canvas),
+            'a': random.choice(list_canvas)
+        }
+        
+        list_length = 44100
+        audio_content = {}
+        for i in range(0, list_length, 100):
+            index = int(random.uniform(0.01, 0.99) * i)
+            audio_content[index] = round(random.uniform(0.01, 0.99) * 0.0000001, 15)
+        audio_random1 = round(random.uniform(0.01, 0.99), 15)
+        audio_random2 = round(random.uniform(0.01, 0.99), 15)
+        audio_dict = {
+            'audio_content': audio_content,
+            'audio_random1': audio_random1,
+            'audio_random2': audio_random2
+        }
+        
+        list_floats = [math.pow(2, 0), math.pow(2, 10), math.pow(2, 11), math.pow(2, 12), math.pow(2, 13)]
+        list_int = [math.pow(2, 13), math.pow(2, 14), math.pow(2, 15)]
+        int_3386 = int(random.choice(list_int))
+        list_1234 = [math.pow(2, 1), math.pow(2, 2), math.pow(2, 3), math.pow(2, 4)]
+        list_1415 = [math.pow(2, 14), math.pow(2, 15)]
+        list_1213 = [math.pow(2, 12), math.pow(2, 13)]
+        list_45678 = [math.pow(2, 4), math.pow(2, 5), math.pow(2, 6), math.pow(2, 7), math.pow(2, 8)]
+        list_10111213 = [math.pow(2, 10), math.pow(2, 11), math.pow(2, 12), math.pow(2, 13)]
+        webgl_replace = {
+            '36347': int(random.choice(list_1213)),
+            '3379': int(random.choice(list_1415)),
+            '34076': int(random.choice(list_1415)),
+            '34024': int(random.choice(list_1415)),
+            '35661': int(random.choice(list_45678)),
+            '36349': int(random.choice(list_10111213)),
+            '3413': int(random.choice(list_1234)),
+            '3412': int(random.choice(list_1234)),
+            '3411': int(random.choice(list_1234)),
+            '3410': int(random.choice(list_1234)),
+            '35660': int(random.choice(list_1234)),
+            '34047': int(random.choice(list_1234)),
+            '34930': int(random.choice(list_1234)),
+            '34921': int(random.choice(list_1234)),
+            '3386': [int_3386, int_3386],
+            '33901': [round(random.uniform(0.01, 1), 15), random.choice(list_floats)],
+            '33902': [round(random.uniform(0.01, 1), 15), random.choice(list_floats)],
+            '34324': round(random.uniform(0.01, 0.99), 15),
+            '35376': round(random.uniform(0.01, 0.99), 15),
+            '35377': round(random.uniform(0.01, 0.99), 15),
+            '35379': round(random.uniform(0.01, 0.99), 15),
+            '35658': round(random.uniform(0.01, 0.99), 15),
+            'gl_index': round(random.uniform(0.01, 0.99), 15),
+            'gl_noise': round(random.uniform(0.01, 0.99), 15)
+        }
+        list_vgas = [
+            'ANGLE (NVIDIA Quadro 2000M Direct3D11 vs_5_0 ps_5_0)',
+            'ANGLE (Intel(R) HD Graphics 4000 Direct3D11 vs_5_0 ps_5_0)',
+            'ANGLE (NVIDIA GeForce GTX 760 Direct3D11 vs_5_0 ps_5_0)'
+        ]
+        webgl_replace['37446'] = random.choice(list_vgas)
+        list_es = ["WebGL 2.0 (OpenGL ES 3.0 Chromium)"]
+        list_glsl = ["WebGL GLSL ES (OpenGL Chromium)", "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)"]
+        webgl_replace['7938'] = random.choice(list_es)
+        webgl_replace['35724'] = random.choice(list_glsl)
+        webgl_replace['37445'] = "Google Inc. (ATI Technologies Inc.)"
+        
+        list_fonts = ['Arial', 'Calibri', 'Cambria', 'Consolas', 'Georgia', 'Segoe UI', 'Times New Roman', 'Trebuchet MS', 'Verdana']
+        fonts_max = random.randint(5, len(list_fonts))
+        list_use = list_fonts[:fonts_max]
+        
+        start_url = data.get('profile_start_url', '') or 'https://iphey.com'
+        profile_name = data.get('profile_name', '')
+        
+        proxy_details = data.get('profile_proxy_details', '') or data.get('profile_socks5_details', '')
+        
+        serializer.save(
+            profile_owner=self.request.user,
+            profile_os=profile_os,
+            profile_browser='Chrome',
+            profile_version=chrome_ver,
+            profile_user_agent=user_agent,
+            profile_resolution=random.choice(resolutions),
+            profile_cpu=random.choice(cpus),
+            profile_canvas=json.dumps(canvas_shift),
+            profile_rects=str(round(random.uniform(0.2, 0.35), 5)),
+            profile_audio=json.dumps(audio_dict),
+            profile_webgl=json.dumps(webgl_replace),
+            profile_font=str(list_use),
+            profile_start_url=start_url,
+            profile_original_name=profile_name,
+            profile_proxy_details=proxy_details,
+            profile_socks5_details=proxy_details,
+            profile_geo=2,
+            profile_webrtc=2,
+            profile_time_zone=2,
+            profile_status=0
+        )
+
     def get_queryset(self):
         user = self.request.user
         if user.is_superuser or user.is_staff:

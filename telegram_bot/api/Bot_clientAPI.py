@@ -264,15 +264,17 @@ def get_accounts_emails(request):
 def add_accounts_emails(request):
     accounts_playload = json.loads(request.body)
     list_emails = accounts_playload['list_emails']
-    objs = [
-    AccountsEmails(
-        owner=request.user,
-        created_by=request.user,
-        email=e['email'],
-        password=e['password']
-      ) for e in list_emails
-    ]
-    msg = AccountsEmails.objects.bulk_create(objs)
+    for e in list_emails:
+        email_clean = e.get('email', '').strip()
+        if not email_clean:
+            continue
+        obj = AccountsEmails(
+            owner=request.user,
+            created_by=request.user,
+            email=email_clean,
+            password=e.get('password', '')
+        )
+        obj.save()
     return successResponse() 
 
   
@@ -286,12 +288,13 @@ def update_accounts_emails(request):
     update_post = json.loads(request.body)
 
     from django.db.models import Q
-    accounts_emails_obj = AccountsEmails.objects.filter(Q(pk=update_post['id']) & (Q(owner=request.user) | Q(created_by=request.user)))
-    if accounts_emails_obj.exists():
-      accounts_emails_obj.update(**update_post['update_data'])
-      accounts_emails_obj = AccountsEmails.objects.get(
-          Q(pk=update_post['id']) & (Q(owner=request.user) | Q(created_by=request.user)))
-      accounts_emails_data = AccountsEmailsSerializer(accounts_emails_obj)
+    accounts_emails_qs = AccountsEmails.objects.filter(Q(pk=update_post['id']) & (Q(owner=request.user) | Q(created_by=request.user)))
+    if accounts_emails_qs.exists():
+      email_obj = accounts_emails_qs.first()
+      for key, value in update_post['update_data'].items():
+          setattr(email_obj, key, value)
+      email_obj.save()
+      accounts_emails_data = AccountsEmailsSerializer(email_obj)
     return successResponse({'data':accounts_emails_data.data})
   
 
@@ -1720,9 +1723,11 @@ def update_account_by_id(request):
 
     accounts_objs = AccountsCreated.objects.filter(pk=update_post['id'], owner=request.user)
     if accounts_objs.exists():
-      accounts_objs.update(**update_post['update_data'])
-      account_obj = AccountsCreated.objects.get(
-          pk=update_post['id'], owner=request.user)
+      account_obj = accounts_objs.first()
+      for key, value in update_post['update_data'].items():
+          setattr(account_obj, key, value)
+      account_obj.save()
+      
       if 'socks5' in update_post['update_data'] and account_obj.browser_profiles:
           print('===update socks5')
           account_obj.browser_profiles.profile_socks5_details = update_post['update_data']['socks5']

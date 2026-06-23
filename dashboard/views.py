@@ -651,27 +651,34 @@ class AccountsEmailsViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='get-unused-email')
     def get_unused_email(self, request):
         type_val = request.query_params.get('type', '').strip().lower()
-        if not type_val:
-            return Response({'success': False, 'message': 'Vui lòng chọn loại tài khoản.'}, status=400)
-            
-        # Get emails already used for this type
-        registered_emails = AccountsCreated.objects.filter(type__value=type_val).values_list('email', flat=True)
+        search_val = request.query_params.get('search', '').strip()
         
-        # Get an email that is not registered yet
         user = request.user
         from django.db.models import Q
         if user.is_superuser or user.is_staff:
-            email_qs = AccountsEmails.objects.filter(status=0)
+            email_qs = AccountsEmails.objects.all()
         else:
-            email_qs = AccountsEmails.objects.filter(Q(owner=user) | Q(created_by=user), status=0)
+            email_qs = AccountsEmails.objects.filter(Q(owner=user) | Q(created_by=user))
             
-        email_obj = email_qs.exclude(email__in=registered_emails).order_by('-id').first()
-        
-        if not email_obj:
-            return Response({
-                'success': False,
-                'message': f'Không tìm thấy email nào chưa đăng ký loại tài khoản "{type_val.title()}".'
-            })
+        if search_val:
+            email_obj = email_qs.filter(email__iexact=search_val).first()
+            if not email_obj:
+                return Response({
+                    'success': False,
+                    'message': f'Không tìm thấy email "{search_val}" nào thuộc quyền sở hữu của bạn.'
+                })
+        else:
+            if not type_val:
+                return Response({'success': False, 'message': 'Vui lòng chọn loại tài khoản.'}, status=400)
+            # Get emails already used for this type
+            registered_emails = AccountsCreated.objects.filter(type__value=type_val).values_list('email', flat=True)
+            email_qs = email_qs.filter(status=0).exclude(email__in=registered_emails)
+            email_obj = email_qs.order_by('-id').first()
+            if not email_obj:
+                return Response({
+                    'success': False,
+                    'message': f'Không tìm thấy email nào chưa đăng ký loại tài khoản "{type_val.title()}".'
+                })
             
         # Set status to 6 (Đang sử dụng)
         email_obj.status = 6
@@ -1419,9 +1426,8 @@ class AccountsCreatedViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='get-active-account')
     def get_active_account(self, request):
         type_val = request.query_params.get('type', '').strip().lower()
-        if not type_val:
-            return Response({'success': False, 'message': 'Vui lòng chọn loại tài khoản.'}, status=400)
-            
+        search_val = request.query_params.get('search', '').strip()
+        
         user = request.user
         if user.is_superuser or user.is_staff:
             qs = AccountsCreated.objects.all()
@@ -1431,13 +1437,23 @@ class AccountsCreatedViewSet(viewsets.ModelViewSet):
                 Q(owner=user) | Q(created_by=user) | Q(subscription_owner=user.username)
             )
             
-        account_obj = qs.filter(status=0, type__value=type_val).order_by('-id').first()
-        
-        if not account_obj:
-            return Response({
-                'success': False,
-                'message': f'Không tìm thấy tài khoản hoạt động nào cho loại tài khoản "{type_val.title()}".'
-            })
+        if search_val:
+            from django.db.models import Q
+            account_obj = qs.filter(Q(email__iexact=search_val) | Q(username__iexact=search_val)).order_by('-id').first()
+            if not account_obj:
+                return Response({
+                    'success': False,
+                    'message': f'Không tìm thấy tài khoản nào khớp với Email/Username "{search_val}" thuộc quyền sở hữu của bạn.'
+                })
+        else:
+            if not type_val:
+                return Response({'success': False, 'message': 'Vui lòng chọn loại tài khoản.'}, status=400)
+            account_obj = qs.filter(status=0, type__value=type_val).order_by('-id').first()
+            if not account_obj:
+                return Response({
+                    'success': False,
+                    'message': f'Không tìm thấy tài khoản hoạt động nào cho loại tài khoản "{type_val.title()}".'
+                })
             
         account_obj.viewed += 1
         account_obj.status = 6

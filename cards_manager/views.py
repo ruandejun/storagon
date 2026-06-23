@@ -91,7 +91,11 @@ class CardViewSet(viewsets.ModelViewSet):
 
         status = self.request.query_params.get('status')
         if status and status != 'Tất cả':
-            queryset = queryset.filter(status=status)
+            if ',' in status:
+                status_list = [s.strip() for s in status.split(',')]
+                queryset = queryset.filter(status__in=status_list)
+            else:
+                queryset = queryset.filter(status=status)
 
         owner = self.request.query_params.get('owner')
         if owner:

@@ -469,6 +469,29 @@ class BrowserProfiles(models.Model):
             if self._state.adding:
                 self.created_by = user
 
+        # Sync profile_vendor and profile_renderer into profile_webgl JSON string if present
+        if self.profile_vendor or self.profile_renderer:
+            import json
+            webgl_data = {}
+            if self.profile_webgl and self.profile_webgl.strip() and self.profile_webgl != 'Noise':
+                try:
+                    webgl_data = json.loads(self.profile_webgl)
+                except Exception:
+                    pass
+            if not isinstance(webgl_data, dict):
+                webgl_data = {}
+            
+            modified = False
+            if self.profile_vendor and webgl_data.get("37445") != self.profile_vendor:
+                webgl_data["37445"] = self.profile_vendor
+                modified = True
+            if self.profile_renderer and webgl_data.get("37446") != self.profile_renderer:
+                webgl_data["37446"] = self.profile_renderer
+                modified = True
+            
+            if modified and webgl_data:
+                self.profile_webgl = json.dumps(webgl_data, ensure_ascii=False)
+
         super(BrowserProfiles, self).save(*args, **kwargs)
 
     def __unicode__(self):

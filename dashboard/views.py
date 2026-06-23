@@ -226,11 +226,13 @@ def dashboard_stats_api(request):
 
 def dashboard_ip_info_api(request):
     # Get client IP address
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0].strip()
-    else:
-        ip = request.META.get('REMOTE_ADDR')
+    ip = request.GET.get('ip', '').strip()
+    if not ip:
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0].strip()
+        else:
+            ip = request.META.get('REMOTE_ADDR')
 
     # Default fallback data
     data = {

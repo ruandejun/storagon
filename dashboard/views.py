@@ -428,6 +428,16 @@ class BrowserProfilesViewSet(viewsets.ModelViewSet):
         list_1213 = [math.pow(2, 12), math.pow(2, 13)]
         list_45678 = [math.pow(2, 4), math.pow(2, 5), math.pow(2, 6), math.pow(2, 7), math.pow(2, 8)]
         list_10111213 = [math.pow(2, 10), math.pow(2, 11), math.pow(2, 12), math.pow(2, 13)]
+        profile_vendor = data.get('profile_vendor', '') or "Google Inc. (ATI Technologies Inc.)"
+        profile_renderer = data.get('profile_renderer', '')
+        if not profile_renderer:
+            list_vgas = [
+                'ANGLE (NVIDIA Quadro 2000M Direct3D11 vs_5_0 ps_5_0)',
+                'ANGLE (Intel(R) HD Graphics 4000 Direct3D11 vs_5_0 ps_5_0)',
+                'ANGLE (NVIDIA GeForce GTX 760 Direct3D11 vs_5_0 ps_5_0)'
+            ]
+            profile_renderer = random.choice(list_vgas)
+            
         webgl_replace = {
             '36347': int(random.choice(list_1213)),
             '3379': int(random.choice(list_1415)),
@@ -454,17 +464,12 @@ class BrowserProfilesViewSet(viewsets.ModelViewSet):
             'gl_index': round(random.uniform(0.01, 0.99), 15),
             'gl_noise': round(random.uniform(0.01, 0.99), 15)
         }
-        list_vgas = [
-            'ANGLE (NVIDIA Quadro 2000M Direct3D11 vs_5_0 ps_5_0)',
-            'ANGLE (Intel(R) HD Graphics 4000 Direct3D11 vs_5_0 ps_5_0)',
-            'ANGLE (NVIDIA GeForce GTX 760 Direct3D11 vs_5_0 ps_5_0)'
-        ]
-        webgl_replace['37446'] = random.choice(list_vgas)
+        webgl_replace['37446'] = profile_renderer
         list_es = ["WebGL 2.0 (OpenGL ES 3.0 Chromium)"]
         list_glsl = ["WebGL GLSL ES (OpenGL Chromium)", "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)"]
         webgl_replace['7938'] = random.choice(list_es)
         webgl_replace['35724'] = random.choice(list_glsl)
-        webgl_replace['37445'] = "Google Inc. (ATI Technologies Inc.)"
+        webgl_replace['37445'] = profile_vendor
         
         list_fonts = ['Arial', 'Calibri', 'Cambria', 'Consolas', 'Georgia', 'Segoe UI', 'Times New Roman', 'Trebuchet MS', 'Verdana']
         fonts_max = random.randint(5, len(list_fonts))
@@ -492,6 +497,8 @@ class BrowserProfilesViewSet(viewsets.ModelViewSet):
             profile_original_name=profile_name,
             profile_proxy_details=proxy_details,
             profile_socks5_details=proxy_details,
+            profile_vendor=profile_vendor,
+            profile_renderer=profile_renderer,
             profile_geo=2,
             profile_webrtc=2,
             profile_time_zone=2,

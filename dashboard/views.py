@@ -51,8 +51,11 @@ def current_user_api(request):
         'date_joined': request.user.date_joined.strftime('%d-%m-%Y') if request.user.date_joined else ''
     })
 
+@csrf_exempt
 def login_view(request):
     if request.user.is_authenticated:
+        if request.method == 'POST' or request.headers.get('x-requested-with') == 'XMLHttpRequest' or 'application/json' in request.headers.get('accept', ''):
+            return JsonResponse({'success': True, 'message': 'Đã đăng nhập.'})
         return redirect('/dashboard/')
         
     if request.method == 'POST':

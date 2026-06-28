@@ -646,7 +646,9 @@ class AccountsEmailsViewSet(viewsets.ModelViewSet):
         if user.is_superuser or user.is_staff:
             queryset = AccountsEmails.objects.all().select_related('type', 'owner', 'customer', 'created_by').prefetch_related('accounts_emails_set__type').order_by('-id')
         else:
-            queryset = AccountsEmails.objects.filter(Q(owner=user) | Q(created_by=user)).select_related('type', 'owner', 'customer', 'created_by').prefetch_related('accounts_emails_set__type').order_by('-id')
+            queryset = AccountsEmails.objects.filter(
+                Q(owner=user) | Q(created_by=user) | Q(accounts_emails_set__owner=user) | Q(accounts_emails_set__created_by=user) | Q(accounts_emails_set__subscription_owner=user.username)
+            ).distinct().select_related('type', 'owner', 'customer', 'created_by').prefetch_related('accounts_emails_set__type').order_by('-id')
         
         status = self.request.query_params.get('status')
         if status is not None and status != '':
@@ -1684,7 +1686,8 @@ class AccountsCreatedViewSet(viewsets.ModelViewSet):
         else:
             if not type_val:
                 return Response({'success': False, 'message': 'Vui lòng chọn loại tài khoản.'}, status=400)
-            account_obj = qs.filter(status=0, type__value=type_val).order_by('-id').first()
+            from django.db.models import Q
+            account_obj = qs.filter(Q(status=0) & (Q(type__value__iexact=type_val) | Q(type__label__iexact=type_val))).order_by('-id').first()
             if not account_obj:
                 return Response({
                     'success': False,
@@ -1708,10 +1711,13 @@ class AccountsCreatedViewSet(viewsets.ModelViewSet):
                 email_candidates.append(account_obj.username.strip())
                 
             if email_candidates:
-                email_qs = AccountsEmails.objects.filter(email__in=email_candidates)
+                from django.db.models import Q
+                query = Q()
+                for c in email_candidates:
+                    query |= Q(email__iexact=c)
+                email_qs = AccountsEmails.objects.filter(query)
                 if not (user.is_superuser or user.is_staff):
-                    from django.db.models import Q
-                    email_qs = email_qs.filter(Q(owner=user) | Q(created_by=user))
+                    email_qs = email_qs.filter(Q(owner=user) | Q(created_by=user) | Q(accounts_emails_set__owner=user) | Q(accounts_emails_set__subscription_owner=user.username)).distinct()
                 email_match = email_qs.first()
                 if email_match:
                     email_id = email_match.id
@@ -1994,7 +2000,24 @@ class AccountsCreatedViewSet(viewsets.ModelViewSet):
         import urllib.request
         import json
         
-        secret_clean = secret.replace(' ', '')
+        secret_clean = secret.replace(' ', '').replace('=', '').upper()
+        # 1. Try local Python TOTP computation (fast and robust)
+        try:
+            import base64, hmac, hashlib, time, struct
+            key = base64.b32decode(secret_clean, casefold=True)
+            counter = int(time.time() // 30)
+            msg = struct.pack(">Q", counter)
+            h = hmac.new(key, msg, hashlib.sha1).digest()
+            offset = h[19] & 15
+            code = (struct.unpack(">I", h[offset:offset+4])[0] & 0x7fffffff) % 1000000
+            token = f"{code:06d}"
+            return Response({'success': True, 'token': token})
+        except Exception:
+            pass
+
+        # 2. Fallback to external API if local computation fails
+        import urllib.request
+        import json
         try:
             url = f"https://2fa.live/tok/{secret_clean}"
             req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})

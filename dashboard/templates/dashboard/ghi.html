@@ -2642,7 +2642,13 @@
                     showToast('Vui lòng đăng nhập Dashboard trước khi thực hiện chức năng này!');
                     return;
                 }
-                const data = await resp.json();
+
+                let data;
+                try {
+                    data = await resp.json();
+                } catch (e) {
+                    throw new Error('Máy chủ phản hồi không đúng định dạng.');
+                }
                 
                 if (resp.ok && data.success) {
                     const accData = data.account_data;
@@ -2693,7 +2699,7 @@
                 }
             } catch (err) {
                 console.error(err);
-                showToast('Lỗi kết nối máy chủ.');
+                showToast(err.message || 'Lỗi kết nối máy chủ.');
             } finally {
                 btn.disabled = false;
                 btn.textContent = '🔑 Lấy Info';
@@ -2702,7 +2708,7 @@
 
         async function fetchCreatedAccOtp() {
             const id = document.getElementById('createdAccId').value;
-            if (!id) return;
+            const secretVal = (document.getElementById('createdAcc2Fa').value || '').trim();
 
             const btn = document.getElementById('btnGetCreatedAccOtp');
             const displayBox = document.getElementById('createdAccOtpDisplayBadge');
@@ -2716,30 +2722,41 @@
                 displayBox.textContent = '';
             }
 
-            try {
-                const resp = await fetch(`/dashboard/api/accounts/${id}/get-2fa/`);
-                if (resp.status === 401 || resp.status === 403) {
-                    showToast('Vui lòng đăng nhập Dashboard trước!');
-                    return;
+            let tokenFound = null;
+
+            if (id) {
+                try {
+                    const resp = await fetch(`/dashboard/api/accounts/${id}/get-2fa/`);
+                    if (resp.ok) {
+                        const data = await resp.json();
+                        if (data.success && data.token) {
+                            tokenFound = data.token;
+                        }
+                    }
+                } catch (err) {
+                    console.error('API 2FA fetch failed, trying local TOTP...', err);
                 }
-                const data = await resp.json();
-                
-                if (resp.ok && data.success && data.token) {
+            }
+
+            // Fallback to client-side TOTP calculation if server API didn't return token
+            if (!tokenFound && secretVal) {
+                tokenFound = await calculateTotp(secretVal);
+            }
+
+            try {
+                if (tokenFound) {
                     if (displayBox) {
-                        displayBox.textContent = `Mã OTP: ${data.token} (Nhấp để copy)`;
+                        displayBox.textContent = `Mã OTP: ${tokenFound} (Nhấp để copy)`;
                         displayBox.style.display = 'block';
                     }
-                    navigator.clipboard.writeText(data.token).then(() => {
-                        showToast(`✅ OTP: ${data.token} (Đã copy vào bộ nhớ tạm)`);
+                    navigator.clipboard.writeText(tokenFound).then(() => {
+                        showToast(`✅ OTP: ${tokenFound} (Đã copy vào bộ nhớ tạm)`);
                     }).catch(() => {
-                        showToast(`OTP: ${data.token}`);
+                        showToast(`OTP: ${tokenFound}`);
                     });
                 } else {
-                    showToast(data.message || 'Không thể lấy mã OTP.');
+                    showToast('Không thể lấy mã OTP. Vui lòng kiểm tra lại 2FA Secret.');
                 }
-            } catch (err) {
-                console.error(err);
-                showToast('Lỗi kết nối khi lấy mã OTP.');
             } finally {
                 if (btn) {
                     btn.disabled = false;

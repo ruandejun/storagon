@@ -646,11 +646,11 @@ class AccountsEmails(models.Model):
 
         super(AccountsEmails, self).save(*args, **kwargs)
 
-        if has_matching_acc and matching_acc and matching_acc.accounts_emails != self:
-            matching_acc.accounts_emails = self
+        if has_matching_acc and matching_acc and matching_acc.accounts_emails_id != self.pk:
+            update_kwargs = {'accounts_emails': self}
             if not matching_acc.email:
-                matching_acc.email = self.email
-            matching_acc.save()
+                update_kwargs['email'] = self.email
+            AccountsCreated.objects.filter(pk=matching_acc.pk).update(**update_kwargs)
 
     def __unicode__(self):
         return self.email
@@ -758,9 +758,9 @@ class AccountsCreated(models.Model):
                 
             if email_obj:
                 self.accounts_emails = email_obj
-                # Mark email as used
-                email_obj.used = 1
-                email_obj.save()
+                # Mark email as used without triggering recursive save()
+                if email_obj.used != 1:
+                    AccountsEmails.objects.filter(pk=email_obj.pk).update(used=1)
 
         user = get_current_user()
         if user:

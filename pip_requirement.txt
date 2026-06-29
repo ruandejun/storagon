@@ -39,3 +39,5 @@ tqdm
 openai
 Pillow
 topsdk==20.4.21.40
+srp
+cryptography

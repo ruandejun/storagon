@@ -2137,9 +2137,40 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
 # Apple Subscription API Views
 # =============================================================================
 
-# In-memory session store for Apple auth sessions
-# In production, use Django cache or Redis
-_apple_sessions = {}
+# Persistent session store for Apple auth sessions using Django cache
+class AppleSessionStore:
+    CACHE_KEY = "global_apple_sessions_dict"
+    
+    def _load(self):
+        from django.core.cache import cache
+        return cache.get(self.CACHE_KEY, {})
+        
+    def _save(self, data):
+        from django.core.cache import cache
+        cache.set(self.CACHE_KEY, data, 86400 * 30) # 30 days persistence!
+
+    def get(self, key, default=None):
+        return self._load().get(key, default)
+        
+    def __getitem__(self, key):
+        data = self._load()
+        return data[key]
+        
+    def __setitem__(self, key, value):
+        data = self._load()
+        data[key] = value
+        self._save(data)
+        
+    def pop(self, key, default=None):
+        data = self._load()
+        val = data.pop(key, default)
+        self._save(data)
+        return val
+        
+    def items(self):
+        return self._load().items()
+
+_apple_sessions = AppleSessionStore()
 
 
 @csrf_exempt

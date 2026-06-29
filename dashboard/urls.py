@@ -9,7 +9,7 @@ from .views import (
     UserHwidViewSet, NotificationViewSet, current_user_api,
     apple_sub_login, apple_sub_verify_2fa, apple_sub_purchase,
     apple_sub_accounts, tiktok_user_lookup, tiktok_sub_tiers,
-    apple_sub_account_info, apple_sub_add_payment
+    apple_sub_account_info, apple_sub_add_payment, apple_sub_import_token
 )
 
 router = DefaultRouter()
@@ -39,6 +39,7 @@ urlpatterns = [
     url(r'^api/apple-sub/accounts/$', apple_sub_accounts, name='apple_sub_accounts'),
     url(r'^api/apple-sub/account-info/$', apple_sub_account_info, name='apple_sub_account_info'),
     url(r'^api/apple-sub/add-payment/$', apple_sub_add_payment, name='apple_sub_add_payment'),
+    url(r'^api/apple-sub/import-token/$', apple_sub_import_token, name='apple_sub_import_token'),
     url(r'^api/apple-sub/tiktok-lookup/$', tiktok_user_lookup, name='tiktok_user_lookup'),
     url(r'^api/apple-sub/tiktok-tiers/$', tiktok_sub_tiers, name='tiktok_sub_tiers'),
 

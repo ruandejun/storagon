@@ -2,6 +2,7 @@ import json
 import logging
 import re
 import time
+import uuid
 from django.shortcuts import render, redirect
 
 logger = logging.getLogger(__name__)
@@ -2394,6 +2395,71 @@ def apple_sub_accounts(request):
         'accounts': accounts,
         'total': len(accounts)
     })
+
+
+@csrf_exempt
+@login_required(login_url='/dashboard/login/')
+def apple_sub_import_token(request):
+    """
+    POST /dashboard/api/apple-sub/import-token/
+    Import Apple account session token or cookies extracted from browser.
+    
+    Body: {apple_id, token, ds_person_id?, proxy?}
+    Returns: {success, session_id, message, account_info}
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'POST only'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
+    
+    apple_id = data.get('apple_id', '').strip()
+    token = data.get('token', '').strip()
+    ds_person_id = data.get('ds_person_id', '').strip() or 'imported'
+    proxy = data.get('proxy', '').strip() or None
+    
+    if not apple_id or not token:
+        return JsonResponse({'success': False, 'message': 'Apple ID và Token/Cookie là bắt buộc.'}, status=400)
+    
+    try:
+        from .apple_auth import AppleAuthClient
+        session_id = str(uuid.uuid4())
+        client = AppleAuthClient(proxy=proxy)
+        client.session_id = session_id
+        client.authenticated = True
+        client.ds_person_id = ds_person_id
+        client.gs_token = token
+        client.idms_token = token
+        client.itunes_token = token
+        
+        _apple_sessions[session_id] = {
+            'client_data': client.get_session_data(),
+            'apple_id': apple_id,
+            'password': '',
+            'proxy': proxy,
+            'anisette_url': 'http://anisette:6969',
+            'created_at': time.time(),
+            'user_id': request.user.id,
+            'authenticated': True,
+            'account_info': {
+                'apple_id': apple_id,
+                'ds_person_id': ds_person_id,
+                'token_preview': token[:20] + '...',
+                'imported': True,
+                'authenticated_at': time.strftime('%Y-%m-%d %H:%M:%S'),
+            }
+        }
+        
+        return JsonResponse({
+            'success': True,
+            'session_id': session_id,
+            'message': f'Đã import Token cho Apple ID {apple_id} thành công!',
+            'account_info': _apple_sessions[session_id]['account_info']
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'Import token error: {str(e)}'}, status=500)
 
 
 @csrf_exempt

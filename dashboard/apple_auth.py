@@ -526,32 +526,7 @@ class AppleAuthClient:
             logger.info(f"2FA validate response: status={resp.status_code}")
             
             if resp.ok:
-                logger.info("2FA code accepted. Re-authenticating for final tokens...")
-                
-                # Re-authenticate to get full session tokens now that 2FA is verified
-                result = self.login(apple_id, password)
-                
-                if result.get('success'):
-                    return result
-                
-                # If re-login returns requires_2fa=False, we're authenticated
-                if not result.get('requires_2fa'):
-                    # Even if login returns an error, the 2FA was accepted
-                    # Try to use the tokens we already have
-                    self.authenticated = True
-                    return {
-                        'success': True,
-                        'session_id': self.session_id,
-                        'message': 'Xác minh 2FA thành công!',
-                        'account_info': {
-                            'apple_id': apple_id,
-                            'ds_person_id': self.ds_person_id,
-                            'token_preview': (self.itunes_token or self.gs_token or '')[:20] + '...',
-                            'authenticated_at': time.strftime('%Y-%m-%d %H:%M:%S'),
-                        }
-                    }
-                
-                # 2FA accepted, mark as authenticated with existing tokens
+                logger.info("2FA code accepted! Token verified.")
                 self.authenticated = True
                 return {
                     'success': True,

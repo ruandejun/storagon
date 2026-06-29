@@ -8,7 +8,8 @@ from .views import (
     AccountsEmailsViewSet, AccountsCreatedViewSet,
     UserHwidViewSet, NotificationViewSet, current_user_api,
     apple_sub_login, apple_sub_verify_2fa, apple_sub_purchase,
-    apple_sub_accounts, tiktok_user_lookup, tiktok_sub_tiers
+    apple_sub_accounts, tiktok_user_lookup, tiktok_sub_tiers,
+    apple_sub_account_info, apple_sub_add_payment
 )
 
 router = DefaultRouter()
@@ -36,6 +37,8 @@ urlpatterns = [
     url(r'^api/apple-sub/verify-2fa/$', apple_sub_verify_2fa, name='apple_sub_verify_2fa'),
     url(r'^api/apple-sub/purchase/$', apple_sub_purchase, name='apple_sub_purchase'),
     url(r'^api/apple-sub/accounts/$', apple_sub_accounts, name='apple_sub_accounts'),
+    url(r'^api/apple-sub/account-info/$', apple_sub_account_info, name='apple_sub_account_info'),
+    url(r'^api/apple-sub/add-payment/$', apple_sub_add_payment, name='apple_sub_add_payment'),
     url(r'^api/apple-sub/tiktok-lookup/$', tiktok_user_lookup, name='tiktok_user_lookup'),
     url(r'^api/apple-sub/tiktok-tiers/$', tiktok_sub_tiers, name='tiktok_sub_tiers'),
 

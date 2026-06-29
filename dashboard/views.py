@@ -2434,3 +2434,116 @@ def tiktok_sub_tiers(request):
         return JsonResponse(result)
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+
+@csrf_exempt
+@login_required(login_url='/dashboard/login/')
+def apple_sub_account_info(request):
+    """
+    POST /dashboard/api/apple-sub/account-info/
+    Get Apple account info including current payment method.
+    
+    Body: {session_id}
+    Returns: {success, has_payment_method, payment_info, account}
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'POST only'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
+    
+    session_id = data.get('session_id', '')
+    if not session_id:
+        return JsonResponse({'success': False, 'message': 'Session ID là bắt buộc.'}, status=400)
+    
+    session_data = _apple_sessions.get(session_id)
+    if not session_data:
+        return JsonResponse({'success': False, 'message': 'Session không tồn tại.'}, status=404)
+    if not session_data.get('authenticated'):
+        return JsonResponse({'success': False, 'message': 'Apple Account chưa xác thực.'}, status=403)
+    
+    try:
+        from .apple_auth import AppleAuthClient, AppleStoreClient
+        auth_client = AppleAuthClient(
+            anisette_url=session_data['anisette_url'],
+            proxy=session_data['proxy']
+        )
+        auth_client.restore_session(session_data['client_data'])
+        store_client = AppleStoreClient(auth_client)
+        result = store_client.get_account_info()
+        return JsonResponse(result)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+
+@csrf_exempt
+@login_required(login_url='/dashboard/login/')
+def apple_sub_add_payment(request):
+    """
+    POST /dashboard/api/apple-sub/add-payment/
+    Add or update payment method (credit/debit card) on Apple account.
+    
+    Body: {session_id, card_number, expiry_month, expiry_year, cvv,
+           first_name, last_name, address_line1?, city?, state?,
+           zip_code?, country_code?, phone?}
+    Returns: {success, message, card_type, last_four}
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'POST only'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
+    
+    session_id = data.get('session_id', '')
+    card_number = data.get('card_number', '').strip()
+    expiry_month = data.get('expiry_month', '').strip()
+    expiry_year = data.get('expiry_year', '').strip()
+    cvv = data.get('cvv', '').strip()
+    first_name = data.get('first_name', '').strip()
+    last_name = data.get('last_name', '').strip()
+    
+    # Validate required fields
+    if not session_id:
+        return JsonResponse({'success': False, 'message': 'Session ID là bắt buộc.'}, status=400)
+    if not card_number or not expiry_month or not expiry_year or not cvv:
+        return JsonResponse({'success': False, 'message': 'Thông tin thẻ là bắt buộc (số thẻ, tháng/năm hết hạn, CVV).'}, status=400)
+    if not first_name or not last_name:
+        return JsonResponse({'success': False, 'message': 'Tên chủ thẻ là bắt buộc.'}, status=400)
+    
+    session_data = _apple_sessions.get(session_id)
+    if not session_data:
+        return JsonResponse({'success': False, 'message': 'Session không tồn tại.'}, status=404)
+    if not session_data.get('authenticated'):
+        return JsonResponse({'success': False, 'message': 'Apple Account chưa xác thực.'}, status=403)
+    
+    try:
+        from .apple_auth import AppleAuthClient, AppleStoreClient
+        auth_client = AppleAuthClient(
+            anisette_url=session_data['anisette_url'],
+            proxy=session_data['proxy']
+        )
+        auth_client.restore_session(session_data['client_data'])
+        store_client = AppleStoreClient(auth_client)
+        
+        result = store_client.add_payment_method(
+            card_number=card_number,
+            expiry_month=expiry_month,
+            expiry_year=expiry_year,
+            cvv=cvv,
+            first_name=first_name,
+            last_name=last_name,
+            address_line1=data.get('address_line1', ''),
+            city=data.get('city', ''),
+            state=data.get('state', ''),
+            zip_code=data.get('zip_code', ''),
+            country_code=data.get('country_code', 'VN'),
+            phone=data.get('phone', ''),
+        )
+        return JsonResponse(result)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)
+

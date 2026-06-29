@@ -701,3 +701,255 @@ class AppleStoreClient:
         except Exception as e:
             logger.error(f"Buy product error: {e}")
             return {'success': False, 'message': f'Purchase error: {str(e)}'}
+    
+    def get_account_info(self, server_pod="p71"):
+        """
+        Fetch current Apple account info including payment methods.
+        Uses the same authenticated MZFinance session as buyProduct.
+        
+        Returns:
+            dict with account info, including payment method status
+        """
+        if not self.auth.authenticated:
+            return {'success': False, 'message': 'Chưa xác thực Apple ID.'}
+        
+        url = f"https://{server_pod}-buy.itunes.apple.com/WebObjects/MZFinance.woa/wa/accountSummary"
+        anisette = self.auth.get_anisette_headers()
+        
+        headers = {
+            'User-Agent': self.STORE_USER_AGENT,
+            'Content-Type': 'application/x-apple-plist',
+            'X-Apple-Store-Front': self.auth.store_front,
+            'X-Dsid': str(self.auth.ds_person_id or ''),
+            'X-Token': self.auth.itunes_token or self.auth.gs_token or '',
+            **anisette
+        }
+        
+        if self.auth.auth_cookies:
+            self.auth.session.cookies.update(self.auth.auth_cookies)
+        
+        try:
+            # Request account summary
+            payload = plistlib.dumps({
+                'includePaymentSummary': True,
+                'includeAccountSummary': True,
+            }, fmt=plistlib.FMT_XML)
+            
+            r = self.auth.session.post(url, headers=headers, data=payload, timeout=15)
+            
+            if r.status_code == 200:
+                try:
+                    resp = plistlib.loads(r.content)
+                    payment_info = resp.get('paymentSummary', resp.get('payment', {}))
+                    
+                    has_payment = bool(
+                        payment_info.get('creditCardType') or 
+                        payment_info.get('lastFourDigits') or
+                        payment_info.get('paymentType')
+                    )
+                    
+                    return {
+                        'success': True,
+                        'has_payment_method': has_payment,
+                        'payment_info': {
+                            'type': payment_info.get('creditCardType', payment_info.get('paymentType', 'None')),
+                            'last_four': payment_info.get('lastFourDigits', ''),
+                            'name_on_card': payment_info.get('creditCardHolder', ''),
+                            'expiry': payment_info.get('creditCardExpires', ''),
+                        },
+                        'account': {
+                            'first_name': resp.get('firstName', ''),
+                            'last_name': resp.get('lastName', ''),
+                            'email': resp.get('appleId', ''),
+                            'country': resp.get('countryCode', ''),
+                            'store_credit': resp.get('creditBalance', '0'),
+                        },
+                        'raw_keys': list(resp.keys()) if isinstance(resp, dict) else [],
+                    }
+                except Exception as parse_err:
+                    return {
+                        'success': True,
+                        'has_payment_method': None,
+                        'message': f'Account info retrieved but parse error: {parse_err}',
+                        'raw_preview': r.text[:500],
+                    }
+            else:
+                return {
+                    'success': False,
+                    'message': f'Account info failed (HTTP {r.status_code})',
+                    'response_preview': r.text[:300],
+                }
+        except Exception as e:
+            logger.error(f"Account info error: {e}")
+            return {'success': False, 'message': str(e)}
+    
+    def add_payment_method(self, card_number, expiry_month, expiry_year, 
+                           cvv, first_name, last_name,
+                           address_line1="", city="", state="", 
+                           zip_code="", country_code="VN",
+                           phone="", server_pod="p71"):
+        """
+        Add or update payment method on Apple account.
+        Uses the same authenticated MZFinance session + Anisette headers
+        that buyProduct uses.
+        
+        Args:
+            card_number: Credit/debit card number (16 digits)
+            expiry_month: Card expiry month (01-12)
+            expiry_year: Card expiry year (2-digit or 4-digit)
+            cvv: Security code (3-4 digits)
+            first_name: Cardholder first name
+            last_name: Cardholder last name
+            address_line1: Billing address line 1
+            city: Billing city
+            state: Billing state/province
+            zip_code: Billing zip/postal code
+            country_code: Billing country (ISO 2-letter, default VN)
+            phone: Phone number
+            server_pod: iTunes Store server pod (default p71)
+            
+        Returns:
+            dict with result of payment method update
+        """
+        if not self.auth.authenticated:
+            return {'success': False, 'message': 'Chưa xác thực Apple ID.'}
+        
+        # Validate inputs
+        card_clean = card_number.replace(' ', '').replace('-', '')
+        if not card_clean.isdigit() or len(card_clean) < 13 or len(card_clean) > 19:
+            return {'success': False, 'message': 'Số thẻ không hợp lệ (13-19 chữ số).'}
+        
+        if not cvv.isdigit() or len(cvv) < 3 or len(cvv) > 4:
+            return {'success': False, 'message': 'CVV không hợp lệ (3-4 chữ số).'}
+        
+        # Normalize expiry year to 4-digit
+        exp_year = str(expiry_year)
+        if len(exp_year) == 2:
+            exp_year = f"20{exp_year}"
+        
+        exp_month = str(expiry_month).zfill(2)
+        
+        # Detect card type
+        card_type = self._detect_card_type(card_clean)
+        
+        url = f"https://{server_pod}-buy.itunes.apple.com/WebObjects/MZFinance.woa/wa/updateAccountInfo"
+        anisette = self.auth.get_anisette_headers()
+        
+        headers = {
+            'User-Agent': self.STORE_USER_AGENT,
+            'Content-Type': 'application/x-apple-plist',
+            'X-Apple-Store-Front': self.auth.store_front,
+            'X-Dsid': str(self.auth.ds_person_id or ''),
+            'X-Token': self.auth.itunes_token or self.auth.gs_token or '',
+            **anisette
+        }
+        
+        if self.auth.auth_cookies:
+            self.auth.session.cookies.update(self.auth.auth_cookies)
+        
+        # Build payment update payload (plist format matching Apple's internal format)
+        payment_payload = {
+            'paymentType': 'CreditCard',
+            'creditCardType': card_type,
+            'creditCardNumber': card_clean,
+            'creditCardExpireMonth': exp_month,
+            'creditCardExpireYear': exp_year,
+            'securityCode': cvv,
+            'creditCardHolder': f"{first_name} {last_name}",
+            'firstName': first_name,
+            'lastName': last_name,
+            'addressLine1': address_line1,
+            'city': city,
+            'state': state,
+            'postalCode': zip_code,
+            'countryCode': country_code,
+            'phone': phone,
+            'updatePaymentInfo': True,
+            'hasConfirmedTerms': True,
+        }
+        
+        try:
+            payload_bytes = plistlib.dumps(payment_payload, fmt=plistlib.FMT_XML)
+            
+            logger.info(f"Sending payment update to {url} with card type={card_type}, last4={card_clean[-4:]}")
+            
+            r = self.auth.session.post(
+                url,
+                headers=headers,
+                data=payload_bytes,
+                timeout=20
+            )
+            
+            if r.status_code == 200:
+                try:
+                    resp = plistlib.loads(r.content)
+                    
+                    # Check for error in response
+                    error_msg = resp.get('customerMessage', resp.get('failureType', ''))
+                    if error_msg:
+                        return {
+                            'success': False,
+                            'message': f'Apple từ chối: {error_msg}',
+                            'error_type': resp.get('failureType', ''),
+                            'raw_keys': list(resp.keys()),
+                        }
+                    
+                    return {
+                        'success': True,
+                        'message': f'Đã thêm thẻ {card_type} ****{card_clean[-4:]} thành công!',
+                        'card_type': card_type,
+                        'last_four': card_clean[-4:],
+                        'expiry': f'{exp_month}/{exp_year}',
+                    }
+                except Exception:
+                    # If response is not plist, check raw
+                    if 'success' in r.text.lower() or r.status_code == 200:
+                        return {
+                            'success': True,
+                            'message': f'Thêm thẻ ****{card_clean[-4:]} - Response received',
+                            'raw_preview': r.text[:300],
+                        }
+                    return {
+                        'success': False,
+                        'message': f'Unexpected response format',
+                        'raw_preview': r.text[:300],
+                    }
+            elif r.status_code == 412:
+                # 412 = Precondition Failed (often needs re-auth)
+                return {
+                    'success': False,
+                    'message': 'Session hết hạn. Cần đăng nhập lại Apple ID.',
+                    'status_code': 412,
+                    'requires_reauth': True,
+                }
+            else:
+                return {
+                    'success': False,
+                    'message': f'Payment update failed (HTTP {r.status_code})',
+                    'status_code': r.status_code,
+                    'response_preview': r.text[:300]
+                }
+        except Exception as e:
+            logger.error(f"Payment method update error: {e}")
+            return {'success': False, 'message': f'Payment update error: {str(e)}'}
+    
+    @staticmethod
+    def _detect_card_type(card_number):
+        """Detect credit card type from card number."""
+        if card_number.startswith('4'):
+            return 'Visa'
+        elif card_number[:2] in ('51', '52', '53', '54', '55') or \
+             (2221 <= int(card_number[:4]) <= 2720):
+            return 'MasterCard'
+        elif card_number[:2] in ('34', '37'):
+            return 'Amex'
+        elif card_number[:4] in ('6011', '6221', '6229') or \
+             card_number[:2] in ('64', '65'):
+            return 'Discover'
+        elif card_number[:4] in ('3528', '3589') or card_number[:2] == '35':
+            return 'JCB'
+        elif card_number[:2] in ('62', '81'):
+            return 'UnionPay'
+        else:
+            return 'Visa'  # Default fallback
+

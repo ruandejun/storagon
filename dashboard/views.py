@@ -2159,7 +2159,9 @@ def apple_sub_login(request):
     apple_id = data.get('apple_id', '').strip()
     password = data.get('password', '').strip()
     proxy = data.get('proxy', '').strip() or None
-    anisette_url = data.get('anisette_url', 'http://localhost:6969').strip()
+    anisette_url = data.get('anisette_url', '').strip()
+    if not anisette_url or 'localhost' in anisette_url or '127.0.0.1' in anisette_url:
+        anisette_url = 'http://anisette:6969'
     
     if not apple_id or not password:
         return JsonResponse({'success': False, 'message': 'Apple ID và Password là bắt buộc.'}, status=400)

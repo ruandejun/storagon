@@ -2157,7 +2157,7 @@ def apple_sub_login(request):
         return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
     
     apple_id = data.get('apple_id', '').strip()
-    password = data.get('password', '').strip()
+    password = str(data.get('password', ''))
     proxy = data.get('proxy', '').strip() or None
     anisette_url = data.get('anisette_url', '').strip()
     if not anisette_url or 'localhost' in anisette_url or '127.0.0.1' in anisette_url:
@@ -2169,7 +2169,9 @@ def apple_sub_login(request):
     try:
         from .apple_auth import AppleAuthClient
         client = AppleAuthClient(anisette_url=anisette_url, proxy=proxy)
+        logger.info(f"Initiating Apple ID login for {apple_id} (pass_len={len(password)})")
         result = client.login(apple_id, password)
+        logger.info(f"Apple ID login result for {apple_id}: {result.get('message')}")
         
         # Store session for 2FA follow-up
         session_id = result.get('session_id', client.session_id)

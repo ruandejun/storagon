@@ -2497,6 +2497,26 @@ def apple_sub_import_token(request):
 
 @csrf_exempt
 @login_required(login_url='/dashboard/login/')
+def apple_sub_delete_account(request):
+    """
+    POST /dashboard/api/apple-sub/delete-account/
+    Remove an Apple account session.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'POST only'}, status=405)
+    try:
+        data = json.loads(request.body)
+        session_id = data.get('session_id', '')
+        if not session_id:
+            return JsonResponse({'success': False, 'message': 'Session ID là bắt buộc.'}, status=400)
+        _apple_sessions.pop(session_id, None)
+        return JsonResponse({'success': True, 'message': 'Đã xóa tài khoản thành công.'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+
+@csrf_exempt
+@login_required(login_url='/dashboard/login/')
 def tiktok_user_lookup(request):
     """
     GET /dashboard/api/apple-sub/tiktok-lookup/?username=xxx

@@ -104,8 +104,8 @@ class AppleAuthClient:
     DEFAULT_STOREFRONT = "143465-19,32"
     
     # User-Agent mimicking macOS
-    USER_AGENT = "Configurator/2.15 (Macintosh; OS X 11.0.0; 16G29) AppleWebKit/2603.3.8"
-    GSA_CLIENT_INFO = "<iMac20,1> <Mac OS X;13.0;22A380> <com.apple.AuthKit/1 (com.apple.dt.Xcode/3594.4.19)>"
+    USER_AGENT = "akd/1.0 CFNetwork/978.0.7 Darwin/18.7.0"
+    GSA_CLIENT_INFO = "<MacBookPro13,2> <macOS;13.1;22C65> <com.apple.AuthKit/1 (com.apple.dt.Xcode/3594.4.19)>"
     STORE_USER_AGENT = "AppStore/3.0 iOS/17.4 model/iPhone15,2 hwp/t8120 build/21E219 (6; dt:251)"
     
     def __init__(self, anisette_url="http://anisette:6969", proxy=None):
@@ -165,6 +165,7 @@ class AppleAuthClient:
                     'X-Apple-I-MD-LU': 'X-Apple-I-MD-LU',
                     'X-Apple-I-SRL-NO': 'X-Apple-I-SRL-NO',
                     'X-Mme-Client-Info': 'X-Mme-Client-Info',
+                    'X-MMe-Client-Info': 'X-MMe-Client-Info',
                     'X-Mme-Device-Id': 'X-Mme-Device-Id',
                     'X-Apple-I-TimeZone': 'X-Apple-I-TimeZone',
                     'X-Apple-I-Client-Time': 'X-Apple-I-Client-Time',
@@ -173,6 +174,12 @@ class AppleAuthClient:
                 for src_key, dst_key in header_mapping.items():
                     if src_key in data:
                         headers[dst_key] = str(data[src_key])
+                
+                # Ensure client info key consistency
+                client_info = data.get('X-MMe-Client-Info') or data.get('X-Mme-Client-Info')
+                if client_info:
+                    headers['X-MMe-Client-Info'] = str(client_info)
+                    headers['X-Mme-Client-Info'] = str(client_info)
                 
                 if headers:
                     logger.info("Anisette headers fetched successfully")
@@ -191,9 +198,10 @@ class AppleAuthClient:
             'X-Apple-I-MD-RINFO': '17106176',
             'X-Mme-Device-Id': device_id,
             'X-Mme-Client-Info': self.GSA_CLIENT_INFO,
+            'X-MMe-Client-Info': self.GSA_CLIENT_INFO,
             'X-Apple-I-TimeZone': 'Asia/Ho_Chi_Minh',
             'X-Apple-I-Client-Time': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
-            'X-Apple-Locale': 'vi_VN',
+            'X-Apple-Locale': 'en_US',
         }
     
     def _generate_cpd(self, anisette):
@@ -204,6 +212,7 @@ class AppleAuthClient:
             'pbe': False,
             'prkgen': True,
             'svct': 'iCloud',
+            'loc': anisette.get('X-Apple-Locale', 'en_US'),
         }
         cpd.update(anisette)
         return cpd
@@ -219,12 +228,16 @@ class AppleAuthClient:
         }
         body['Request'].update(parameters)
         
+        client_info = anisette.get('X-MMe-Client-Info') or anisette.get('X-Mme-Client-Info') or self.GSA_CLIENT_INFO
+        
         headers = {
             'Content-Type': 'text/x-xml-plist',
             'Accept': '*/*',
             'User-Agent': self.USER_AGENT,
-            'X-MMe-Client-Info': self.GSA_CLIENT_INFO,
+            'X-MMe-Client-Info': client_info,
+            'X-Mme-Client-Info': client_info,
         }
+        headers.update(anisette)
         
         resp = self.session.post(
             self.GSA_ENDPOINT,

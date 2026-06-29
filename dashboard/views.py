@@ -2126,3 +2126,311 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
     def mark_read_all(self, request):
         Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
         return Response({'success': True})
+
+
+# =============================================================================
+# Apple Subscription API Views
+# =============================================================================
+
+# In-memory session store for Apple auth sessions
+# In production, use Django cache or Redis
+_apple_sessions = {}
+
+
+@csrf_exempt
+@login_required(login_url='/dashboard/login/')
+def apple_sub_login(request):
+    """
+    POST /dashboard/api/apple-sub/login/
+    Initiate Apple ID authentication with GrandSlam SRP-6a.
+    
+    Body: {apple_id, password, proxy?, anisette_url?}
+    Returns: {success, requires_2fa, session_id, message}
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'POST only'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
+    
+    apple_id = data.get('apple_id', '').strip()
+    password = data.get('password', '').strip()
+    proxy = data.get('proxy', '').strip() or None
+    anisette_url = data.get('anisette_url', 'http://localhost:6969').strip()
+    
+    if not apple_id or not password:
+        return JsonResponse({'success': False, 'message': 'Apple ID và Password là bắt buộc.'}, status=400)
+    
+    try:
+        from .apple_auth import AppleAuthClient
+        client = AppleAuthClient(anisette_url=anisette_url, proxy=proxy)
+        result = client.login(apple_id, password)
+        
+        # Store session for 2FA follow-up
+        session_id = result.get('session_id', client.session_id)
+        _apple_sessions[session_id] = {
+            'client_data': client.get_session_data(),
+            'apple_id': apple_id,
+            'password': password,
+            'proxy': proxy,
+            'anisette_url': anisette_url,
+            'created_at': time.time(),
+            'user_id': request.user.id,
+        }
+        
+        return JsonResponse(result)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'Login error: {str(e)}'}, status=500)
+
+
+@csrf_exempt
+@login_required(login_url='/dashboard/login/')
+def apple_sub_verify_2fa(request):
+    """
+    POST /dashboard/api/apple-sub/verify-2fa/
+    Verify Apple 2FA code after initial login.
+    
+    Body: {session_id, code_2fa}
+    Returns: {success, message, account_info}
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'POST only'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
+    
+    session_id = data.get('session_id', '')
+    code_2fa = data.get('code_2fa', '').strip()
+    
+    if not session_id or not code_2fa:
+        return JsonResponse({'success': False, 'message': 'Session ID và mã 2FA là bắt buộc.'}, status=400)
+    
+    if len(code_2fa) != 6 or not code_2fa.isdigit():
+        return JsonResponse({'success': False, 'message': 'Mã 2FA phải là 6 chữ số.'}, status=400)
+    
+    session_data = _apple_sessions.get(session_id)
+    if not session_data:
+        return JsonResponse({'success': False, 'message': 'Session không tồn tại hoặc đã hết hạn.'}, status=404)
+    
+    try:
+        from .apple_auth import AppleAuthClient
+        client = AppleAuthClient(
+            anisette_url=session_data['anisette_url'],
+            proxy=session_data['proxy']
+        )
+        client.restore_session(session_data['client_data'])
+        
+        result = client.verify_2fa(
+            session_data['apple_id'],
+            session_data['password'],
+            code_2fa
+        )
+        
+        # Update stored session
+        _apple_sessions[session_id]['client_data'] = client.get_session_data()
+        
+        if result.get('success'):
+            _apple_sessions[session_id]['authenticated'] = True
+            _apple_sessions[session_id]['account_info'] = result.get('account_info', {})
+        
+        return JsonResponse(result)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'2FA error: {str(e)}'}, status=500)
+
+
+@csrf_exempt
+@login_required(login_url='/dashboard/login/')
+def apple_sub_purchase(request):
+    """
+    POST /dashboard/api/apple-sub/purchase/
+    Execute subscription purchase and verify with TikTok.
+    
+    Body: {session_id, tiktok_username, tier_id?, adam_id?}
+    Returns: {success, message, purchase_result, tiktok_result}
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'POST only'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
+    
+    session_id = data.get('session_id', '')
+    tiktok_username = data.get('tiktok_username', '').strip()
+    tier_id = data.get('tier_id', '')
+    adam_id = data.get('adam_id', '')
+    
+    if not session_id:
+        return JsonResponse({'success': False, 'message': 'Session ID là bắt buộc.'}, status=400)
+    if not tiktok_username:
+        return JsonResponse({'success': False, 'message': 'TikTok username là bắt buộc.'}, status=400)
+    
+    session_data = _apple_sessions.get(session_id)
+    if not session_data:
+        return JsonResponse({'success': False, 'message': 'Session không tồn tại.'}, status=404)
+    if not session_data.get('authenticated'):
+        return JsonResponse({'success': False, 'message': 'Apple Account chưa xác thực.'}, status=403)
+    
+    try:
+        from .apple_auth import AppleAuthClient, AppleStoreClient
+        from .tiktok_sub import TikTokClient
+        
+        # Step 1: Lookup TikTok user
+        tiktok = TikTokClient(proxy=session_data.get('proxy'))
+        user_info = tiktok.lookup_user(tiktok_username)
+        
+        if not user_info.get('success'):
+            return JsonResponse({
+                'success': False,
+                'step': 'tiktok_lookup',
+                'message': f'Không tìm thấy user TikTok: {tiktok_username}'
+            })
+        
+        tiktok_user_id = user_info.get('user_id', '')
+        
+        # Step 2: Execute Apple purchase
+        auth_client = AppleAuthClient(
+            anisette_url=session_data['anisette_url'],
+            proxy=session_data['proxy']
+        )
+        auth_client.restore_session(session_data['client_data'])
+        
+        store_client = AppleStoreClient(auth_client)
+        
+        # Use provided adam_id or default TikTok app
+        purchase_adam_id = adam_id or store_client.TIKTOK_ADAM_ID
+        purchase_result = store_client.buy_product(purchase_adam_id)
+        
+        if not purchase_result.get('success'):
+            return JsonResponse({
+                'success': False,
+                'step': 'apple_purchase',
+                'message': f'Mua gói thất bại: {purchase_result.get("message", "")}',
+                'purchase_result': purchase_result
+            })
+        
+        # Step 3: Verify receipt with TikTok
+        receipt_data = purchase_result.get('receipt_data', '')
+        verify_result = tiktok.verify_receipt(
+            receipt_data=receipt_data,
+            user_id=tiktok_user_id,
+            channel_id=tiktok_user_id,  # Self-subscribe or creator channel
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Đăng ký subscription thành công!',
+            'tiktok_user': {
+                'username': user_info.get('username', tiktok_username),
+                'user_id': tiktok_user_id,
+                'nickname': user_info.get('nickname', ''),
+            },
+            'purchase_result': {
+                'transaction_id': purchase_result.get('transaction_id', ''),
+                'receipt_preview': receipt_data[:50] + '...' if receipt_data else '',
+            },
+            'tiktok_verify': verify_result,
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'Purchase error: {str(e)}'}, status=500)
+
+
+@csrf_exempt
+@login_required(login_url='/dashboard/login/')
+def apple_sub_accounts(request):
+    """
+    GET /dashboard/api/apple-sub/accounts/
+    List all authenticated Apple accounts for current user.
+    
+    Returns: {accounts: [...]}
+    """
+    if request.method != 'GET':
+        return JsonResponse({'success': False, 'message': 'GET only'}, status=405)
+    
+    user_id = request.user.id
+    accounts = []
+    
+    # Filter sessions for current user
+    now = time.time()
+    expired_keys = []
+    for sid, sdata in _apple_sessions.items():
+        # Clean up sessions older than 24 hours
+        if now - sdata.get('created_at', 0) > 86400:
+            expired_keys.append(sid)
+            continue
+        
+        if sdata.get('user_id') == user_id:
+            accounts.append({
+                'session_id': sid,
+                'apple_id': sdata.get('apple_id', ''),
+                'authenticated': sdata.get('authenticated', False),
+                'account_info': sdata.get('account_info', {}),
+                'proxy': sdata.get('proxy', 'Direct'),
+                'created_at': time.strftime(
+                    '%Y-%m-%d %H:%M:%S',
+                    time.localtime(sdata.get('created_at', 0))
+                ),
+            })
+    
+    # Cleanup expired
+    for key in expired_keys:
+        _apple_sessions.pop(key, None)
+    
+    return JsonResponse({
+        'success': True,
+        'accounts': accounts,
+        'total': len(accounts)
+    })
+
+
+@csrf_exempt
+@login_required(login_url='/dashboard/login/')
+def tiktok_user_lookup(request):
+    """
+    GET /dashboard/api/apple-sub/tiktok-lookup/?username=xxx
+    Lookup TikTok user info from username.
+    
+    Returns: {success, user_id, username, nickname, avatar, ...}
+    """
+    if request.method != 'GET':
+        return JsonResponse({'success': False, 'message': 'GET only'}, status=405)
+    
+    username = request.GET.get('username', '').strip()
+    if not username:
+        return JsonResponse({'success': False, 'message': 'Username là bắt buộc.'}, status=400)
+    
+    try:
+        from .tiktok_sub import TikTokClient
+        client = TikTokClient()
+        result = client.lookup_user(username)
+        return JsonResponse(result)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+
+@csrf_exempt
+@login_required(login_url='/dashboard/login/')
+def tiktok_sub_tiers(request):
+    """
+    GET /dashboard/api/apple-sub/tiktok-tiers/?creator_id=xxx
+    Get available subscription tiers for a TikTok creator.
+    
+    Returns: {success, tiers: [...]}
+    """
+    if request.method != 'GET':
+        return JsonResponse({'success': False, 'message': 'GET only'}, status=405)
+    
+    creator_id = request.GET.get('creator_id', '').strip()
+    
+    try:
+        from .tiktok_sub import TikTokClient
+        client = TikTokClient()
+        result = client.get_subscription_tiers(creator_id or None)
+        return JsonResponse(result)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)

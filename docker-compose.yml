@@ -23,11 +23,13 @@ services:
       - redis
       - mongodb
       - postgredb
+      - anisette
     links:
       - mongodb:mongodb
       - postgredb:postgredb
       - memcache:memcached
       - redis:redis
+      - anisette:anisette
     networks:
       - backend
     ports: ["8889:8889"]
@@ -102,6 +104,20 @@ services:
     restart: always
     networks:
       - backend
+
+  anisette:
+    image: dadoum/anisette-v3-server:latest
+    container_name: anisette
+    restart: always
+    ports:
+      - "6969:6969"
+    volumes:
+      - ./anisette_data:/home/Alcoholic/.config/anisette-v3:rw
+    environment:
+      - TZ=Asia/Ho_Chi_Minh
+    networks:
+      - backend
+
   celery:
     build: .
     command: celery -A storagon -b redis://default:hanoi123@redis:6379/0 worker -l info --pidfile=

@@ -6,7 +6,9 @@ from .views import (
     dashboard_stats_api, dashboard_ip_info_api, DashboardUserViewSet, CardViewSet,
     BrowserProfilesViewSet, MunProxiesViewSet,
     AccountsEmailsViewSet, AccountsCreatedViewSet,
-    UserHwidViewSet, NotificationViewSet, current_user_api
+    UserHwidViewSet, NotificationViewSet, current_user_api,
+    apple_sub_login, apple_sub_verify_2fa, apple_sub_purchase,
+    apple_sub_accounts, tiktok_user_lookup, tiktok_sub_tiers
 )
 
 router = DefaultRouter()
@@ -28,5 +30,15 @@ urlpatterns = [
     url(r'^api/me/$', current_user_api, name='current_user_api'),
     url(r'^api/stats/$', dashboard_stats_api, name='dashboard_stats_api'),
     url(r'^api/ip-info/$', dashboard_ip_info_api, name='dashboard_ip_info_api'),
+
+    # Apple Subscription API endpoints
+    url(r'^api/apple-sub/login/$', apple_sub_login, name='apple_sub_login'),
+    url(r'^api/apple-sub/verify-2fa/$', apple_sub_verify_2fa, name='apple_sub_verify_2fa'),
+    url(r'^api/apple-sub/purchase/$', apple_sub_purchase, name='apple_sub_purchase'),
+    url(r'^api/apple-sub/accounts/$', apple_sub_accounts, name='apple_sub_accounts'),
+    url(r'^api/apple-sub/tiktok-lookup/$', tiktok_user_lookup, name='tiktok_user_lookup'),
+    url(r'^api/apple-sub/tiktok-tiers/$', tiktok_sub_tiers, name='tiktok_sub_tiers'),
+
     url(r'^api/', include(router.urls)),
 ]
+

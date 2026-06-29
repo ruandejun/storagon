@@ -2270,12 +2270,14 @@ def apple_sub_verify_2fa(request):
             code_2fa
         )
         
-        # Update stored session
-        _apple_sessions[session_id]['client_data'] = client.get_session_data()
-        
-        if result.get('success'):
-            _apple_sessions[session_id]['authenticated'] = True
-            _apple_sessions[session_id]['account_info'] = result.get('account_info', {})
+        # Update stored session in cache
+        sess = _apple_sessions.get(session_id)
+        if sess:
+            sess['client_data'] = client.get_session_data()
+            if result.get('success'):
+                sess['authenticated'] = True
+                sess['account_info'] = result.get('account_info', {})
+            _apple_sessions[session_id] = sess
         
         return JsonResponse(result)
     except Exception as e:

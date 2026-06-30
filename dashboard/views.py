@@ -2686,6 +2686,7 @@ def apple_sub_get_password(request):
     """
     POST /dashboard/api/apple-sub/get-password/
     Retrieve Apple ID password for authenticated owner's desktop agent.
+    First checks in-memory sessions, then falls back to AccountsCreated database.
     """
     if request.method != 'POST':
         return JsonResponse({'success': False, 'message': 'POST only'}, status=405)
@@ -2696,24 +2697,65 @@ def apple_sub_get_password(request):
         if not session_id and not apple_id:
             return JsonResponse({'success': False, 'message': 'Session ID hoặc Apple ID là bắt buộc.'}, status=400)
         
+        # 1. Try in-memory session store first
         sess = None
         if session_id:
             sess = _apple_sessions.get(session_id)
-        else:
+        if not sess and apple_id:
             for s in _apple_sessions.values():
                 if s.get('apple_id') == apple_id and s.get('user_id') == request.user.id:
                     sess = s
                     break
         
-        if not sess:
-            return JsonResponse({'success': False, 'message': 'Không tìm thấy session.'}, status=404)
-        if sess.get('user_id') != request.user.id:
-            return JsonResponse({'success': False, 'message': 'Không có quyền.'}, status=403)
-        return JsonResponse({
-            'success': True,
-            'apple_id': sess.get('apple_id', ''),
-            'password': sess.get('password', ''),
-        })
+        if sess:
+            if sess.get('user_id') != request.user.id:
+                return JsonResponse({'success': False, 'message': 'Không có quyền.'}, status=403)
+            return JsonResponse({
+                'success': True,
+                'apple_id': sess.get('apple_id', ''),
+                'password': sess.get('password', ''),
+            })
+        
+        # 2. Fallback: Look up from AccountsCreated database
+        from telegram_bot.models import AccountsCreated
+        from django.db.models import Q
+        
+        lookup_email = apple_id or session_id
+        qs = AccountsCreated.objects.filter(
+            Q(owner=request.user) | Q(created_by=request.user)
+        ).filter(
+            Q(email__iexact=lookup_email) | Q(username__iexact=lookup_email)
+        ).order_by('-id')
+        
+        acc = qs.first()
+        if acc and acc.password:
+            # Also check linked AccountsEmails for proxy/password
+            proxy_str = acc.proxy or acc.socks5 or ''
+            return JsonResponse({
+                'success': True,
+                'apple_id': acc.email or acc.username or lookup_email,
+                'password': acc.password,
+                'proxy': proxy_str,
+            })
+        
+        # 3. Try AccountsEmails as last resort
+        from telegram_bot.models import AccountsEmails
+        email_qs = AccountsEmails.objects.filter(
+            Q(owner=request.user) | Q(created_by=request.user)
+        ).filter(
+            email__iexact=lookup_email
+        ).order_by('-id')
+        
+        email_obj = email_qs.first()
+        if email_obj and email_obj.password:
+            return JsonResponse({
+                'success': True,
+                'apple_id': email_obj.email or lookup_email,
+                'password': email_obj.password,
+                'proxy': email_obj.proxy or email_obj.socks5 or '',
+            })
+        
+        return JsonResponse({'success': False, 'message': 'Không tìm thấy thông tin đăng nhập.'}, status=404)
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)}, status=500)
 

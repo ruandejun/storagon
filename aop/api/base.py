@@ -302,10 +302,11 @@ class BaseApi(object):
 
     def _do_request(self, url, data=None, files=None, **kwargs):
         try:
-            if files:
-                return requests.post(url, data=data, files=files, **kwargs)
-            else:
-                return requests.post(url, data=data, **kwargs)
+            with requests.Session() as session:
+                if files:
+                    return session.post(url, data=data, files=files, **kwargs)
+                else:
+                    return session.post(url, data=data, **kwargs)
         except requests.RequestException as e:
                 self.raise_aop_error(str(e))
 

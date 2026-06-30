@@ -3,6 +3,9 @@ import logging
 import re
 import time
 import uuid
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 from django.shortcuts import render, redirect
 
 logger = logging.getLogger(__name__)
@@ -40,6 +43,28 @@ try:
 except Exception:
     Session = None
     SessionStatus = None
+
+
+def _make_http_session() -> requests.Session:
+    """Tạo requests.Session với connection pooling và retry logic chuẩn.
+    
+    Dùng với `with _make_http_session() as session:` để đảm bảo
+    connections luôn được đóng đúng cách (giảm TIME_WAIT socket tích tụ).
+    """
+    session = requests.Session()
+    adapter = HTTPAdapter(
+        pool_connections=4,
+        pool_maxsize=10,
+        max_retries=Retry(
+            total=2,
+            backoff_factor=0.5,
+            status_forcelist=[502, 503, 504],
+            raise_on_status=False,
+        ),
+    )
+    session.mount('https://', adapter)
+    session.mount('http://', adapter)
+    return session
 
 @login_required(login_url='/dashboard/login/')
 def dashboard_index(request):
@@ -1240,11 +1265,12 @@ def get_microsoft_access_token_helper(email_obj):
         # OAuth2 Refresh Token Flow
         try:
             token_url = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
-            res = requests.post(token_url, data={
-                'grant_type': 'refresh_token',
-                'client_id': target_client_id,
-                'refresh_token': target_refresh_token
-            }, timeout=10)
+            with _make_http_session() as session:
+                res = session.post(token_url, data={
+                    'grant_type': 'refresh_token',
+                    'client_id': target_client_id,
+                    'refresh_token': target_refresh_token
+                }, timeout=10)
             
             if res.status_code == 200:
                 res_json = res.json()
@@ -1271,12 +1297,13 @@ def get_microsoft_access_token_helper(email_obj):
                 return {'success': False, 'message': 'Thiếu Client ID/Secret trong cấu hình App-only.'}
             try:
                 token_url = f"https://login.microsoftonline.com/{config_tenant_id}/oauth2/v2.0/token"
-                res = requests.post(token_url, data={
-                    'grant_type': 'client_credentials',
-                    'client_id': config_client_id,
-                    'client_secret': config_client_secret,
-                    'scope': 'https://graph.microsoft.com/.default'
-                }, timeout=10)
+                with _make_http_session() as session:
+                    res = session.post(token_url, data={
+                        'grant_type': 'client_credentials',
+                        'client_id': config_client_id,
+                        'client_secret': config_client_secret,
+                        'scope': 'https://graph.microsoft.com/.default'
+                    }, timeout=10)
                 if res.status_code == 200:
                     res_json = res.json()
                     access_token = res_json.get('access_token')
@@ -1302,7 +1329,8 @@ def get_microsoft_access_token_helper(email_obj):
                 }
                 if config_client_secret:
                     payload['client_secret'] = config_client_secret
-                res = requests.post(token_url, data=payload, timeout=10)
+                with _make_http_session() as session:
+                    res = session.post(token_url, data=payload, timeout=10)
                 if res.status_code == 200:
                     res_json = res.json()
                     access_token = res_json.get('access_token')
@@ -1326,7 +1354,6 @@ def get_microsoft_access_token_helper(email_obj):
 
 
 def read_single_mailbox_helper(email_obj, user):
-    import requests
     email_addr = email_obj.email
     password = email_obj.password
     refresh_token = email_obj.refresh_token
@@ -1448,64 +1475,27 @@ def read_single_mailbox_helper(email_obj, user):
         # OAuth2 Refresh Token Flow
         try:
             token_url = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
-            res = requests.post(token_url, data={
-                'grant_type': 'refresh_token',
-                'client_id': target_client_id,
-                'refresh_token': target_refresh_token
-            }, timeout=10)
+            with _make_http_session() as session:
+                res = session.post(token_url, data={
+                    'grant_type': 'refresh_token',
+                    'client_id': target_client_id,
+                    'refresh_token': target_refresh_token
+                }, timeout=10)
             
-            if res.status_code == 200:
-                res_json = res.json()
-                access_token = res_json.get('access_token')
-                new_refresh_token = res_json.get('refresh_token')
-                
-                # Save the rotated refresh token
-                if new_refresh_token and new_refresh_token != email_obj.refresh_token:
-                    email_obj.refresh_token = new_refresh_token
-                    email_obj.save()
-                    
-                # Fetch messages
-                msg_url = "https://graph.microsoft.com/v1.0/me/messages?$top=15"
-                msg_res = requests.get(msg_url, headers={
-                    'Authorization': f'Bearer {access_token}',
-                    'Accept': 'application/json'
-                }, timeout=10)
-                
-                if msg_res.status_code == 200:
-                    emails_list = msg_res.json().get('value', [])
-                    parsed_emails = [parse_graph_message(m) for m in emails_list]
-                    if parsed_emails:
-                        update_email_latest_stats(email_obj, parsed_emails[0])
-                    return {'success': True, 'emails': parsed_emails}
-                else:
-                    return {'success': False, 'message': f'Lỗi Graph API: {msg_res.text}'}
-            else:
-                try:
-                    err_msg = res.json().get("error_description", res.text)
-                except Exception:
-                    err_msg = res.text
-                return {'success': False, 'message': f'Lỗi OAuth Refresh: {err_msg}'}
-        except Exception as e:
-            return {'success': False, 'message': f'Lỗi kết nối OAuth Refresh: {str(e)}'}
-
-    else:
-        # ROPC or Client Credentials
-        if config_flow == 'client_credentials':
-            if not config_client_id or not config_client_secret:
-                return {'success': False, 'message': 'Thiếu Client ID/Secret trong cấu hình App-only.'}
-            try:
-                token_url = f"https://login.microsoftonline.com/{config_tenant_id}/oauth2/v2.0/token"
-                res = requests.post(token_url, data={
-                    'grant_type': 'client_credentials',
-                    'client_id': config_client_id,
-                    'client_secret': config_client_secret,
-                    'scope': 'https://graph.microsoft.com/.default'
-                }, timeout=10)
                 if res.status_code == 200:
-                    app_token = res.json().get('access_token')
-                    msg_url = f"https://graph.microsoft.com/v1.0/users/{email_addr}/messages?$top=15"
-                    msg_res = requests.get(msg_url, headers={
-                        'Authorization': f'Bearer {app_token}',
+                    res_json = res.json()
+                    access_token = res_json.get('access_token')
+                    new_refresh_token = res_json.get('refresh_token')
+                    
+                    # Save the rotated refresh token
+                    if new_refresh_token and new_refresh_token != email_obj.refresh_token:
+                        email_obj.refresh_token = new_refresh_token
+                        email_obj.save()
+                        
+                    # Fetch messages within the same session (reuses connection)
+                    msg_url = "https://graph.microsoft.com/v1.0/me/messages?$top=15"
+                    msg_res = session.get(msg_url, headers={
+                        'Authorization': f'Bearer {access_token}',
                         'Accept': 'application/json'
                     }, timeout=10)
                     
@@ -1518,7 +1508,47 @@ def read_single_mailbox_helper(email_obj, user):
                     else:
                         return {'success': False, 'message': f'Lỗi Graph API: {msg_res.text}'}
                 else:
-                    return {'success': False, 'message': f'Lỗi lấy App Token: {res.text}'}
+                    try:
+                        err_msg = res.json().get("error_description", res.text)
+                    except Exception:
+                        err_msg = res.text
+                    return {'success': False, 'message': f'Lỗi OAuth Refresh: {err_msg}'}
+        except Exception as e:
+            return {'success': False, 'message': f'Lỗi kết nối OAuth Refresh: {str(e)}'}
+
+    else:
+        # ROPC or Client Credentials
+        if config_flow == 'client_credentials':
+            if not config_client_id or not config_client_secret:
+                return {'success': False, 'message': 'Thiếu Client ID/Secret trong cấu hình App-only.'}
+            try:
+                token_url = f"https://login.microsoftonline.com/{config_tenant_id}/oauth2/v2.0/token"
+                with _make_http_session() as session:
+                    res = session.post(token_url, data={
+                        'grant_type': 'client_credentials',
+                        'client_id': config_client_id,
+                        'client_secret': config_client_secret,
+                        'scope': 'https://graph.microsoft.com/.default'
+                    }, timeout=10)
+                    if res.status_code == 200:
+                        app_token = res.json().get('access_token')
+                        msg_url = f"https://graph.microsoft.com/v1.0/users/{email_addr}/messages?$top=15"
+                        # Reuse same session connection for Graph API call
+                        msg_res = session.get(msg_url, headers={
+                            'Authorization': f'Bearer {app_token}',
+                            'Accept': 'application/json'
+                        }, timeout=10)
+                        
+                        if msg_res.status_code == 200:
+                            emails_list = msg_res.json().get('value', [])
+                            parsed_emails = [parse_graph_message(m) for m in emails_list]
+                            if parsed_emails:
+                                update_email_latest_stats(email_obj, parsed_emails[0])
+                            return {'success': True, 'emails': parsed_emails}
+                        else:
+                            return {'success': False, 'message': f'Lỗi Graph API: {msg_res.text}'}
+                    else:
+                        return {'success': False, 'message': f'Lỗi lấy App Token: {res.text}'}
             except Exception as e:
                 return {'success': False, 'message': f'Lỗi kết nối Graph API (App): {str(e)}'}
 
@@ -1538,28 +1568,30 @@ def read_single_mailbox_helper(email_obj, user):
                 }
                 if config_client_secret:
                     payload['client_secret'] = config_client_secret
-                res = requests.post(token_url, data=payload, timeout=10)
-                if res.status_code == 200:
-                    user_token = res.json().get('access_token')
-                    msg_url = "https://graph.microsoft.com/v1.0/me/messages?$top=15"
-                    msg_res = requests.get(msg_url, headers={
-                        'Authorization': f'Bearer {user_token}',
-                        'Accept': 'application/json'
-                    }, timeout=10)
-                    if msg_res.status_code == 200:
-                        emails_list = msg_res.json().get('value', [])
-                        parsed_emails = [parse_graph_message(m) for m in emails_list]
-                        if parsed_emails:
-                            update_email_latest_stats(email_obj, parsed_emails[0])
-                        return {'success': True, 'emails': parsed_emails}
+                with _make_http_session() as session:
+                    res = session.post(token_url, data=payload, timeout=10)
+                    if res.status_code == 200:
+                        user_token = res.json().get('access_token')
+                        msg_url = "https://graph.microsoft.com/v1.0/me/messages?$top=15"
+                        # Reuse same session connection for Graph API call
+                        msg_res = session.get(msg_url, headers={
+                            'Authorization': f'Bearer {user_token}',
+                            'Accept': 'application/json'
+                        }, timeout=10)
+                        if msg_res.status_code == 200:
+                            emails_list = msg_res.json().get('value', [])
+                            parsed_emails = [parse_graph_message(m) for m in emails_list]
+                            if parsed_emails:
+                                update_email_latest_stats(email_obj, parsed_emails[0])
+                            return {'success': True, 'emails': parsed_emails}
+                        else:
+                            return {'success': False, 'message': f'Lỗi Graph API: {msg_res.text}'}
                     else:
-                        return {'success': False, 'message': f'Lỗi Graph API: {msg_res.text}'}
-                else:
-                    try:
-                        err_msg = res.json().get("error_description", res.text)
-                    except Exception:
-                        err_msg = res.text
-                    return {'success': False, 'message': f'Lỗi ROPC: {err_msg}'}
+                        try:
+                            err_msg = res.json().get("error_description", res.text)
+                        except Exception:
+                            err_msg = res.text
+                        return {'success': False, 'message': f'Lỗi ROPC: {err_msg}'}
             except Exception as e:
                 return {'success': False, 'message': f'Lỗi kết nối ROPC: {str(e)}'}
 

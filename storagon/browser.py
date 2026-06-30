@@ -182,22 +182,12 @@ class Rqbrowser:
 				filePath = pathToSave+'/'+link.split('/')[-1];
 		else:
 			filePath = pathToSave
-		r = requests.get(link, stream=True)
-		r.raise_for_status()
-		# try:
-		# 	response = self.browser.open(link);
-		# except urllib2.HTTPError as e:
-		# 	print(e.getcode(), e.read())
-		# 	raise e
-		CHUNK = 8 * 1024
-		with open(filePath, 'wb') as f:
-			for chunk in r.iter_content(chunk_size=CHUNK):
-				# If you have chunk encoded response uncomment if
-				# and set chunk_size parameter to None.
-				# if chunk:
-				f.write(chunk)
-		r.close()
-		f.close()
+		with requests.get(link, stream=True) as r:
+			r.raise_for_status()
+			CHUNK = 8 * 1024
+			with open(filePath, 'wb') as f:
+				for chunk in r.iter_content(chunk_size=CHUNK):
+					f.write(chunk)
 
 	def setAddHeader(self, headerKey, headerValue):
 		self.header.update({headerKey:headerValue})

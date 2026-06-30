@@ -99,7 +99,7 @@ services:
 
   frontend:
     build:
-      context: ../fitviet-frontend
+      context: ../c69-frontend
       dockerfile: Dockerfile
     restart: always
     networks:

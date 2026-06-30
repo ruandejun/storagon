@@ -24,7 +24,7 @@ class TikTokClient:
     WEB_API = "https://www.tiktok.com/@{username}"
     
     # TikTok receipt verification
-    RECEIPT_VERIFY_API = "https://api-va.tiktok.com/passport/web/receipt/verify/"
+    RECEIPT_VERIFY_API = "https://api-va.tiktokv.com/passport/web/receipt/verify/"
     
     # Alternative API endpoints (mobile)
     MOBILE_USER_API = "https://api16-normal-c-useast1a.tiktokv.com/aweme/v1/user/"
@@ -240,7 +240,7 @@ class TikTokClient:
             try:
                 # TikTok internal API for subscription products
                 r = self.session.get(
-                    f"https://api-va.tiktok.com/aweme/v1/live/subscription/product/list/",
+                    f"https://api-va.tiktokv.com/aweme/v1/live/subscription/product/list/",
                     params={
                         'host_user_id': creator_user_id,
                     },
@@ -265,8 +265,12 @@ class TikTokClient:
                                 'benefits': [b.get('text', '') for b in p.get('benefits', [])],
                             })
                     return {'success': True, 'tiers': tiers, 'source': 'creator'}
+                else:
+                    logger.warning(f"TikTok API returned status {r.status_code} for creator {creator_user_id}")
+                    return {'success': False, 'tiers': [], 'message': f'TikTok API error (Status {r.status_code})', 'source': 'creator'}
             except Exception as e:
                 logger.warning(f"Failed to fetch creator tiers: {e}")
+                return {'success': False, 'tiers': [], 'message': f'Lỗi kết nối: {str(e)}', 'source': 'creator'}
         
         return {'success': True, 'tiers': default_tiers, 'source': 'default'}
     
@@ -331,7 +335,7 @@ class TikTokClient:
         """Check if a user has an active subscription to a creator."""
         try:
             r = self.session.get(
-                "https://api-va.tiktok.com/aweme/v1/live/subscription/check/",
+                "https://api-va.tiktokv.com/aweme/v1/live/subscription/check/",
                 params={
                     'user_id': user_id,
                     'host_user_id': creator_id,

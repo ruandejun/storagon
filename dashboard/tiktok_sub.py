@@ -252,8 +252,8 @@ class TikTokClient:
                 if r.status_code == 200:
                     data = r.json()
                     products = data.get('data', {}).get('product_list', [])
+                    tiers = []
                     if products:
-                        tiers = []
                         for p in products:
                             tiers.append({
                                 'tier_id': p.get('product_id', ''),
@@ -264,8 +264,7 @@ class TikTokClient:
                                 'description': p.get('description', ''),
                                 'benefits': [b.get('text', '') for b in p.get('benefits', [])],
                             })
-                        if tiers:
-                            return {'success': True, 'tiers': tiers}
+                    return {'success': True, 'tiers': tiers, 'source': 'creator'}
             except Exception as e:
                 logger.warning(f"Failed to fetch creator tiers: {e}")
         

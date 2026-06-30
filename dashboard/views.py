@@ -2679,3 +2679,42 @@ def apple_sub_add_payment(request):
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
+
+@csrf_exempt
+@login_required(login_url='/dashboard/login/')
+def apple_sub_get_password(request):
+    """
+    POST /dashboard/api/apple-sub/get-password/
+    Retrieve Apple ID password for authenticated owner's desktop agent.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'POST only'}, status=405)
+    try:
+        data = json.loads(request.body)
+        session_id = data.get('session_id', '')
+        apple_id = data.get('apple_id', '')
+        if not session_id and not apple_id:
+            return JsonResponse({'success': False, 'message': 'Session ID hoặc Apple ID là bắt buộc.'}, status=400)
+        
+        sess = None
+        if session_id:
+            sess = _apple_sessions.get(session_id)
+        else:
+            for s in _apple_sessions.values():
+                if s.get('apple_id') == apple_id and s.get('user_id') == request.user.id:
+                    sess = s
+                    break
+        
+        if not sess:
+            return JsonResponse({'success': False, 'message': 'Không tìm thấy session.'}, status=404)
+        if sess.get('user_id') != request.user.id:
+            return JsonResponse({'success': False, 'message': 'Không có quyền.'}, status=403)
+        return JsonResponse({
+            'success': True,
+            'apple_id': sess.get('apple_id', ''),
+            'password': sess.get('password', ''),
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+

@@ -10,7 +10,7 @@ from .views import (
     apple_sub_login, apple_sub_verify_2fa, apple_sub_purchase,
     apple_sub_accounts, tiktok_user_lookup, tiktok_sub_tiers,
     apple_sub_account_info, apple_sub_add_payment, apple_sub_import_token,
-    apple_sub_delete_account
+    apple_sub_delete_account, apple_sub_get_password
 )
 
 router = DefaultRouter()
@@ -40,6 +40,7 @@ urlpatterns = [
     url(r'^api/apple-sub/accounts/$', apple_sub_accounts, name='apple_sub_accounts'),
     url(r'^api/apple-sub/account-info/$', apple_sub_account_info, name='apple_sub_account_info'),
     url(r'^api/apple-sub/add-payment/$', apple_sub_add_payment, name='apple_sub_add_payment'),
+    url(r'^api/apple-sub/get-password/$', apple_sub_get_password, name='apple_sub_get_password'),
     url(r'^api/apple-sub/import-token/$', apple_sub_import_token, name='apple_sub_import_token'),
     url(r'^api/apple-sub/delete-account/$', apple_sub_delete_account, name='apple_sub_delete_account'),
     url(r'^api/apple-sub/tiktok-lookup/$', tiktok_user_lookup, name='tiktok_user_lookup'),

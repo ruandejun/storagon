@@ -107,7 +107,7 @@ class CardViewSet(viewsets.ModelViewSet):
                     queryset = queryset.filter(owner_id=int(owner))
                 except ValueError:
                     pass
-        return queryset.select_related('owner', 'used_by').order_by('-created_at', '-id')
+        return queryset.select_related('owner', 'used_by').order_by('created_at', 'id')
 
     def perform_update(self, serializer):
         user = self.request.user

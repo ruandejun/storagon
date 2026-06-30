@@ -798,7 +798,23 @@ class AppleStoreClient:
                 try:
                     resp = plistlib.loads(r.content)
                     receipt = resp.get('receipt-data', '')
-                    transaction_id = resp.get('transactionId', resp.get('songId', ''))
+                    def _find_transaction_id(d):
+                        target_keys = ('transaction-id', 'transactionId', 'songId', 'original-transaction-id', 'originalTransactionId')
+                        if isinstance(d, dict):
+                            for k, v in d.items():
+                                if k in target_keys and v:
+                                    return v
+                                res = _find_transaction_id(v)
+                                if res:
+                                    return res
+                        elif isinstance(d, list):
+                            for item in d:
+                                res = _find_transaction_id(item)
+                                if res:
+                                    return res
+                        return None
+                    
+                    transaction_id = _find_transaction_id(resp) or ''
                     
                     return {
                         'success': True,

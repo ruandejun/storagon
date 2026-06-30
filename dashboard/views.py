@@ -2344,8 +2344,13 @@ def apple_sub_purchase(request):
         
         store_client = AppleStoreClient(auth_client)
         
-        # Use provided adam_id or default TikTok app
-        purchase_adam_id = adam_id or store_client.TIKTOK_ADAM_ID
+        # Use provided adam_id, or numeric tier_id if available, otherwise default to TikTok app
+        purchase_adam_id = adam_id
+        if not purchase_adam_id and tier_id:
+            if str(tier_id).strip().isdigit():
+                purchase_adam_id = str(tier_id).strip()
+        
+        purchase_adam_id = purchase_adam_id or store_client.TIKTOK_ADAM_ID
         purchase_result = store_client.buy_product(purchase_adam_id)
         
         if not purchase_result.get('success'):

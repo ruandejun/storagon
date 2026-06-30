@@ -1377,91 +1377,94 @@ def get_inject_info(request):
     '''
     inject_data['rects'] = '''
     (function fakeRects() {
+        let roundedRects = new WeakSet();
+        let rawRects = new WeakSet();
+        let off = {{rects}};
+
         function doUpdateProp(obj, prop, newVal){
             let props = Object.getOwnPropertyDescriptor(obj, prop) || {configurable:true};
             props["value"] = newVal;
             props["configurable"] = true;
             Object.defineProperty(obj, prop, props);
-
             return props;
         }
 
-        // Generate offset
-        let off = {{rects}};
-        console.log('=====off',off)
-        function updatedRect(old,round,overwrite){
-            function genOffset(round,val){
-                return val + (round ? Math.round(off) : off);
+        // Override DOMRectReadOnly.prototype getters in the frame context
+        try {
+            if (self.DOMRectReadOnly && self.DOMRectReadOnly.prototype) {
+                const props = ["top", "right", "bottom", "left", "width", "height", "x", "y"];
+                props.forEach(prop => {
+                    let origDesc = Object.getOwnPropertyDescriptor(self.DOMRectReadOnly.prototype, prop);
+                    if (!origDesc || !origDesc.get) return;
+                    if (origDesc.get._isWrapped) return;
+
+                    let wrappedGetter = function() {
+                        let val = origDesc.get.call(this);
+                        if (roundedRects.has(this)) {
+                            return val + Math.round(off);
+                        } else if (rawRects.has(this)) {
+                            return val + off;
+                        }
+                        return val;
+                    };
+                    wrappedGetter._isWrapped = true;
+
+                    if (self._makeNative) {
+                        self._makeNative(wrappedGetter, "get " + prop);
+                    } else {
+                        try {
+                            let fnStr = "function get " + prop + "() { [native code] }";
+                            wrappedGetter.toString = function() { return fnStr; };
+                        } catch(e) {}
+                    }
+
+                    Object.defineProperty(self.DOMRectReadOnly.prototype, prop, {
+                        get: wrappedGetter,
+                        configurable: true,
+                        enumerable: true
+                    });
+                });
             }
-            let temp = overwrite === true ? old : new DOMRect();
-
-            temp.top 	= genOffset(round,old.top);
-            temp.right	= genOffset(round,old.right);
-            temp.bottom = genOffset(round,old.bottom);
-            temp.left 	= genOffset(round,old.left);
-            temp.width 	= genOffset(round,old.width);
-            temp.height = genOffset(round,old.height);
-            temp.x 		= genOffset(round,old.x);
-            temp.y 		= genOffset(round,old.y);
-
-            return temp;
-        }
+        } catch(e) {}
 
         function getClientRectsProtection(el){
             if (window.location.host === "docs.google.com") return;
 
             let clientRects = self[el].prototype.getClientRects;
-            let boundingRects = self[el].prototype.getBoundingClientRect;
-            
             doUpdateProp(self[el].prototype,"getClientRects",function(){
                 let rects = clientRects.apply(this,arguments);
-                console.log('==getClientRects==', rects)
-                if (this === undefined || this === null) return rects;
-                let krect = Object.keys(rects);
-
-                let DOMRectList = function(){};
-                let list = new DOMRectList();
-                list.length = krect.length;
-                for (let i = 0;i<list.length;i++){
-                    if (krect[i] === "length") continue;
-                    list[i] = updatedRect(rects[krect[i]],false,false);
+                if (rects) {
+                    for (let i = 0; i < rects.length; i++) {
+                        rawRects.add(rects[i]);
+                    }
                 }
-                return list;
+                return rects;
             });
 
-            
-            doUpdateProp(self[el].prototype,"getBoundingClientRect",function(){
-                let rect = boundingRects.apply(this,arguments);
-                if (this === undefined || this === null) return rect;
-
-                //window.top.postMessage("trace-protection::ran::clientrectsbounding::" + el + "get", '*');
-
-                return updatedRect(rect,true,true);
-            });
-            
             doUpdateProp(self[el].prototype.getClientRects, "toString",function(){
-                //window.top.postMessage("trace-protection::ran::clientrects::" + el + "getstring", '*');
                 return "getClientRects() { [native code] }";
             });
-            console.log('==getClientRectsProtection==')
-            doUpdateProp(self[el].prototype.getBoundingClientRect, "toString",function(){
+        }
 
+        function getBoundingClientRectsProtection(el){
+            let boundingRects = self[el].prototype.getBoundingClientRect;
+            doUpdateProp(self[el].prototype,"getBoundingClientRect",function(){
+                let rect = boundingRects.apply(this,arguments);
+                if (rect) {
+                    roundedRects.add(rect);
+                }
+                return rect;
+            });
+
+            doUpdateProp(self[el].prototype.getBoundingClientRect, "toString",function(){
                 return "getBoundingClientRect() { [native code] }";
             });
-            
-            
-            console.log('==getBoundingClientRectsProtection==')
         }
 
         ["Element","Range"].forEach(function(el){
-            // Check for broken frames
-            if (el === undefined) return;
-
-            // getClientRects
+            if (self[el] === undefined) return;
             getClientRectsProtection(el);
-
-            // getBoundingClientRect
-            //getBoundingClientRectsProtection(el);
+            getBoundingClientRectsProtection(el);
         });
     })();
     '''

@@ -79,6 +79,7 @@ def deploy():
         
         # 4. Rebuild and start containers (clears memcached and redis automatically)
         print("\n--- Building and starting container stack ---")
+        run_cmd("cd /root/storagon && docker compose build --no-cache frontend")
         if not run_cmd("cd /root/storagon && docker compose up --build -d"):
             print("Error: docker compose up --build failed")
             return

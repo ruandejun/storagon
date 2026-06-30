@@ -71,11 +71,12 @@ class CardViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        if request.user.is_authenticated:
+        if request.user.is_authenticated and not request.user.is_staff:
             instance.used_by = request.user
             instance.save(update_fields=['used_by'])
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+
 
     def get_permissions(self):
         if self.action in ['create', 'destroy', 'bulk_assign']:
@@ -111,6 +112,19 @@ class CardViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         user = self.request.user
         card = serializer.instance
+        
+        # Calculate used_count transition if not explicitly provided
+        old_status = card.status
+        new_status = serializer.validated_data.get('status', old_status)
+        counting = ["Đã sử dụng", "Thẻ sống", "Thẻ tốt", "Thẻ chết"]
+        
+        new_used_count = serializer.validated_data.get('used_count')
+        if new_used_count is None:
+            if old_status not in counting and new_status in counting:
+                new_used_count = card.used_count + 1
+            else:
+                new_used_count = card.used_count
+
         if not user.is_staff:
             serializer.save(
                 card_number=card.card_number,
@@ -118,16 +132,18 @@ class CardViewSet(viewsets.ModelViewSet):
                 cvv=card.cvv,
                 extra_info=card.extra_info,
                 owner=card.owner,
-                used_by=user
+                used_by=user,
+                used_count=new_used_count
             )
         else:
             old_instance = self.get_object()
             old_owner = old_instance.owner
             old_status = old_instance.status
             old_extra = old_instance.extra_info
-            serializer.save()
+            serializer.save(used_count=new_used_count)
             new_instance = serializer.instance
             new_owner = new_instance.owner
+            
             
             try:
                 from dashboard.models import Notification
@@ -192,7 +208,16 @@ class CardViewSet(viewsets.ModelViewSet):
             
         queryset = self.get_queryset().filter(id__in=card_ids)
         cards_to_notify = list(queryset)
-        updated_count = queryset.update(status=status)
+        
+        counting = ["Đã sử dụng", "Thẻ sống", "Thẻ tốt", "Thẻ chết"]
+        updated_count = 0
+        for card in queryset:
+            old_status = card.status
+            card.status = status
+            if old_status not in counting and status in counting:
+                card.used_count += 1
+            card.save(update_fields=['status', 'used_count'])
+            updated_count += 1
         
         if request.user.is_staff:
             try:
